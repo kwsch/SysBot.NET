@@ -14,17 +14,18 @@ namespace SysBot.Pokemon
     public class SurpriseTradeBot
     {
         private readonly SwitchBot Bot;
+        private readonly PokemonPool<PK8> Pool = new PokemonPool<PK8>();
         private const int MyGiftAddress = 0x4293D8B0;
-        private byte[] MyGiftData;
+        private const int ReadPartyFormatPokeSize = 0x158;
 
-        private string DumpFolder;
+        public string DumpFolder { get; set; }
 
-        public SurpriseTradeBot(string ip, int port)
-        {
-            Bot = new SwitchBot(ip, port);
-        }
-
+        public SurpriseTradeBot(string ip, int port) => Bot = new SwitchBot(ip, port);
         public SurpriseTradeBot(SwitchBotConfig cfg) : this(cfg.IP, cfg.Port) { }
+
+        public void Load(PK8 pk) => Pool.Add(pk);
+        public bool LoadFolder(string folder) => Pool.LoadFolder(folder);
+        private PK8 GetInjectPokemonData() => Pool.GetRandomPoke();
 
         /// <summary>
         /// Connects to the console, then runs the bot.
@@ -37,18 +38,14 @@ namespace SysBot.Pokemon
             await Bot.Disconnect().ConfigureAwait(false);
         }
 
-        public void InitializeSettings(PK8 pk, string dumpFolder)
-        {
-            DumpFolder = dumpFolder;
-            MyGiftData = pk.EncryptedPartyData;
-        }
-
         private async Task MainLoop(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
                 // Inject to b1s1
-                await Bot.Send(Poke(MyGiftAddress, MyGiftData), token).ConfigureAwait(false);
+                var pkm = GetInjectPokemonData();
+                var edata = pkm.EncryptedPartyData;
+                await Bot.Send(Poke(MyGiftAddress, edata), token).ConfigureAwait(false);
 
                 // load up y comm
                 await Bot.Send(Click(Y), token).ConfigureAwait(false);
@@ -101,8 +98,11 @@ namespace SysBot.Pokemon
                 if (token.IsCancellationRequested)
                     break;
 
+                if (DumpFolder == null)
+                    continue; // don't dump, just loop
+
                 // get pokemon from box1slot1
-                var data = await Bot.ReadBytes(MyGiftAddress, MyGiftData.Length, token).ConfigureAwait(false);
+                var data = await Bot.ReadBytes(MyGiftAddress, ReadPartyFormatPokeSize, token).ConfigureAwait(false);
                 var pk8 = new PK8(data);
                 File.WriteAllBytes(Path.Combine(DumpFolder, Util.CleanFileName(pk8.FileName)), pk8.DecryptedPartyData);
             }
