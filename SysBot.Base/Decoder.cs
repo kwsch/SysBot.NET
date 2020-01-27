@@ -31,10 +31,10 @@ namespace SysBot.Base
 
             if (IsNum(_1))
                 result |= (byte) (_1 - '0');
-            else if (IsHexUpper(_0))
+            else if (IsHexUpper(_1))
                 result |= (byte) (_1 - 'A');
             else
-                throw new ArgumentOutOfRangeException(nameof(_0));
+                throw new ArgumentOutOfRangeException(nameof(_1));
             return result;
         }
     }
