@@ -49,46 +49,46 @@ namespace SysBot.Pokemon
 
                 // load up y comm
                 await Bot.Send(Click(Y), token).ConfigureAwait(false);
-                await Task.Delay(1000, token).ConfigureAwait(false);
+                await Task.Delay(1_000, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
 
                 // navigate to start trade
                 await Bot.Send(Click(DDOWN), token).ConfigureAwait(false);
-                await Task.Delay(500, token).ConfigureAwait(false);
+                await Task.Delay(0_500, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
 
                 await Bot.Send(Click(A), token).ConfigureAwait(false);
-                await Task.Delay(4000, token).ConfigureAwait(false);
+                await Task.Delay(4_000, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
 
                 await Bot.Send(Click(A), token).ConfigureAwait(false);
-                await Task.Delay(700, token).ConfigureAwait(false);
+                await Task.Delay(0_700, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
 
                 await Bot.Send(Click(A), token).ConfigureAwait(false);
-                await Task.Delay(8000, token).ConfigureAwait(false);
+                await Task.Delay(8_000, token).ConfigureAwait(false);
                 await Bot.Send(Click(A), token).ConfigureAwait(false);
-                await Task.Delay(700, token).ConfigureAwait(false);
+                await Task.Delay(0_700, token).ConfigureAwait(false);
                 await Bot.Send(Click(A), token).ConfigureAwait(false);
-                await Task.Delay(700, token).ConfigureAwait(false);
+                await Task.Delay(0_700, token).ConfigureAwait(false);
                 await Bot.Send(Click(A), token).ConfigureAwait(false);
-                await Task.Delay(700, token).ConfigureAwait(false);
+                await Task.Delay(0_700, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
 
                 // Time we wait for a trade
-                await Task.Delay(4500, token).ConfigureAwait(false);
+                await Task.Delay(4_500, token).ConfigureAwait(false);
                 await Bot.Send(Click(Y), token).ConfigureAwait(false);
-                await Task.Delay(700, token).ConfigureAwait(false);
+                await Task.Delay(0_700, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
