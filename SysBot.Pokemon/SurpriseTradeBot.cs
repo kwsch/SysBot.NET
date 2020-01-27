@@ -8,6 +8,9 @@ using static SysBot.Base.SwitchButton;
 
 namespace SysBot.Pokemon
 {
+    /// <summary>
+    /// Bot that launches Surprise Trade and repeatedly trades the same PKM. Dumps all received pkm to a dump folder.
+    /// </summary>
     public class SurpriseTradeBot
     {
         private readonly SwitchBot Bot;
@@ -23,13 +26,21 @@ namespace SysBot.Pokemon
 
         public SurpriseTradeBot(SwitchBotConfig cfg) : this(cfg.IP, cfg.Port) { }
 
-        public async Task RunAsync(PK8 pk, string dumpFolder, CancellationToken token)
+        /// <summary>
+        /// Connects to the console, then runs the bot.
+        /// </summary>
+        /// <param name="token">Cancel this token to have the bot stop looping.</param>
+        public async Task RunAsync(CancellationToken token)
         {
-            DumpFolder = dumpFolder;
-            MyGiftData = pk.EncryptedPartyData;
             await Bot.Connect().ConfigureAwait(false);
             await MainLoop(token).ConfigureAwait(false);
             await Bot.Disconnect().ConfigureAwait(false);
+        }
+
+        public void InitializeSettings(PK8 pk, string dumpFolder)
+        {
+            DumpFolder = dumpFolder;
+            MyGiftData = pk.EncryptedPartyData;
         }
 
         private async Task MainLoop(CancellationToken token)

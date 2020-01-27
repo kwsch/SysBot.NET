@@ -60,7 +60,8 @@ namespace SysBot.ConsoleApp
             }
 
             var bot = new SurpriseTradeBot(cfg.IP, cfg.Port);
-            await bot.RunAsync(pk8, cfg.Lines[3], CancellationToken.None).ConfigureAwait(false);
+            bot.InitializeSettings(pk8, cfg.Lines[3]);
+            await bot.RunAsync(CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

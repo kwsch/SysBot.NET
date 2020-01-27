@@ -64,7 +64,7 @@ namespace SysBot.Base
          */
 
         /// <summary>
-        /// Requests the Bot to send <see cref="count"/> data from <see cref="offset"/>.
+        /// Requests the Bot to send <see cref="count"/> bytes from <see cref="offset"/>.
         /// </summary>
         /// <param name="offset">Address of the data</param>
         /// <param name="count">Amount of bytes</param>
