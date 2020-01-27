@@ -23,20 +23,14 @@ namespace SysBot.Pokemon
 
             var loadedAny = false;
             var files = Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories);
-            foreach (var f in files)
+            var matchFiles = LoadUtil.GetFilesOfSize(files, ExpectedSize);
+            var matchPKM = LoadUtil.GetPKMFilesOfType<T>(matchFiles);
+
+            foreach (var dest in matchPKM)
             {
-                var fi = new FileInfo(f);
-                if (fi.Length != ExpectedSize)
-                    continue;
-
-                var data = File.ReadAllBytes(f);
-                var pkm = PKMConverter.GetPKMfromBytes(data);
-                if (!(pkm is T dest))
-                    continue;
-
                 if (dest.Species == 0 || !new LegalityAnalysis(dest).Valid)
                 {
-                    Console.WriteLine("Provided pk8 is not valid: " + fi.Name);
+                    Console.WriteLine("Provided pk8 is not valid: " + dest.FileName);
                     continue;
                 }
 
