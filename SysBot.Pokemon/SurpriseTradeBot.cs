@@ -14,7 +14,7 @@ namespace SysBot.Pokemon
     public class SurpriseTradeBot
     {
         private readonly SwitchBot Bot;
-        private readonly PokemonPool<PK8> Pool = new PokemonPool<PK8>();
+        public readonly PokemonPool<PK8> Pool = new PokemonPool<PK8>();
         private const int MyGiftAddress = 0x4293D8B0;
         private const int ReadPartyFormatPokeSize = 0x158;
 
