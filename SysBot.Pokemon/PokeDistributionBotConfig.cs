@@ -4,8 +4,8 @@ namespace SysBot.Pokemon
 {
     public class PokeDistributionBotConfig : SwitchBotConfig
     {
-        public readonly string DistributeFolder;
-        public readonly string DumpFolder;
+        public readonly string? DistributeFolder;
+        public readonly string? DumpFolder;
 
         public PokeDistributionBotConfig(string[] lines) : base(lines)
         {

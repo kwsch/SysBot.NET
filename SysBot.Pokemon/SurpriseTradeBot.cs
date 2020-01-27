@@ -18,7 +18,7 @@ namespace SysBot.Pokemon
         private const int MyGiftAddress = 0x4293D8B0;
         private const int ReadPartyFormatPokeSize = 0x158;
 
-        public string DumpFolder { get; set; }
+        public string? DumpFolder { get; set; }
 
         public SurpriseTradeBot(string ip, int port) => Bot = new SwitchBot(ip, port);
         public SurpriseTradeBot(SwitchBotConfig cfg) : this(cfg.IP, cfg.Port) { }

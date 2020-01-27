@@ -10,23 +10,23 @@ namespace SysBot.Pokemon
         public static async Task RunBotAsync(string[] lines, CancellationToken token)
         {
             PokeDistributionBotConfig cfg = new PokeDistributionBotConfig(lines);
-            if (cfg.Lines.Length < 3 || !Directory.Exists(cfg.Lines[2]))
+            if (cfg.DistributeFolder == null || !Directory.Exists(cfg.DistributeFolder))
             {
-                Console.WriteLine("Needs a valid source folder. The 4th line is an optional dump folder.");
+                Console.WriteLine("Needs a valid source folder.");
                 Console.ReadKey();
                 return;
             }
 
-            var bot = new SurpriseTradeBot(cfg.IP, cfg.Port);
-            if (!bot.LoadFolder(cfg.Lines[2]))
+            var bot = new SurpriseTradeBot(cfg);
+            if (!bot.LoadFolder(cfg.DistributeFolder))
             {
                 Console.WriteLine("Failed to load anything legal.");
                 Console.ReadKey();
                 return;
             }
 
-            if (cfg.Lines.Length < 4 && Directory.Exists(cfg.Lines[3]))
-                bot.DumpFolder = cfg.Lines[3];
+            if (cfg.DumpFolder != null && Directory.Exists(cfg.DumpFolder))
+                bot.DumpFolder = cfg.DumpFolder;
 
             await bot.RunAsync(token).ConfigureAwait(false);
         }
