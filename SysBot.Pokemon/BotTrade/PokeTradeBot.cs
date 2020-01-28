@@ -41,10 +41,12 @@ namespace SysBot.Pokemon
             {
                 if (!Pool.TryDequeue(out var poke))
                 {
+                    Bot.Log("Waiting for new trade data. Sleeping for a bit.");
                     await Task.Delay(10_000, token).ConfigureAwait(false);
                     continue;
                 }
 
+                Bot.Log("Starting next trade. Getting data...");
                 var pkm = poke.TradeData;
                 var edata = pkm.EncryptedPartyData;
                 await Bot.Send(Poke(MyGiftAddress, edata), token).ConfigureAwait(false);
@@ -72,6 +74,7 @@ namespace SysBot.Pokemon
                 if (token.IsCancellationRequested)
                     break;
 
+                Bot.Log("Trade complete!");
                 await ReadDumpB1S1(token).ConfigureAwait(false);
             }
         }

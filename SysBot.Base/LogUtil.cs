@@ -9,13 +9,13 @@ namespace SysBot.Base
         private static readonly ILogger Logger = new BotLogger();
 
         // hook in here if you want to forward the message elsewhere???
-        public static List<Action<string>> Forwarders = new List<Action<string>>();
+        public static List<Action<string, string>> Forwarders = new List<Action<string, string>>();
 
-        public static void Log(LogLevel level, string message)
+        public static void Log(LogLevel level, string message, string identity)
         {
             Logger.Log(level, message);
             foreach (var fwd in Forwarders)
-                fwd(message);
+                fwd(message, identity);
         }
     }
 

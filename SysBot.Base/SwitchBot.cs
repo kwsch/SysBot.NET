@@ -14,15 +14,18 @@ namespace SysBot.Base
         private readonly string IP;
         private readonly int Port;
 
+        public string Name => $"Unnamed Bot: {GetType().Name}";
+
         public SwitchBot(string ipaddress, int port)
         {
             IP = ipaddress;
             Port = port;
+            LogUtil.Log(LogLevel.Info, "I'm Alive!", Name);
         }
 
         public SwitchBot(SwitchBotConfig cfg) : this(cfg.IP, cfg.Port) { }
 
-        public void Log(string message, LogLevel level) => LogUtil.Log(level, message);
+        public void Log(string message, LogLevel level) => LogUtil.Log(level, message, Name);
         public void Log(string message) => Log(message, LogLevel.Info);
         public void LogError(string message) => Log(message, LogLevel.Error);
 

@@ -43,6 +43,7 @@ namespace SysBot.Pokemon
             while (!token.IsCancellationRequested)
             {
                 // Inject to b1s1
+                Bot.Log("Starting next trade. Getting data...");
                 var pkm = GetInjectPokemonData();
                 var edata = pkm.EncryptedPartyData;
                 await Bot.Send(Poke(MyGiftAddress, edata), token).ConfigureAwait(false);
@@ -98,6 +99,7 @@ namespace SysBot.Pokemon
                 if (token.IsCancellationRequested)
                     break;
 
+                Bot.Log("Trade complete!");
                 await ReadDumpB1S1(token).ConfigureAwait(false);
             }
         }
