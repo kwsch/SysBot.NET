@@ -2,12 +2,12 @@
 
 namespace SysBot.Pokemon
 {
-    public class PokeDistributionBotConfig : SwitchBotConfig
+    public class SurpriseTradeBotConfig : SwitchBotConfig
     {
         public readonly string? DistributeFolder;
         public readonly string? DumpFolder;
 
-        public PokeDistributionBotConfig(string[] lines) : base(lines)
+        public SurpriseTradeBotConfig(string[] lines) : base(lines)
         {
             if (lines.Length > 2)
                 DistributeFolder = lines[2];

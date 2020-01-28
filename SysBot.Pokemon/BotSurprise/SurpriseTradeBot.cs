@@ -98,14 +98,19 @@ namespace SysBot.Pokemon
                 if (token.IsCancellationRequested)
                     break;
 
-                if (DumpFolder == null)
-                    continue; // don't dump, just loop
-
-                // get pokemon from box1slot1
-                var data = await Bot.ReadBytes(MyGiftAddress, ReadPartyFormatPokeSize, token).ConfigureAwait(false);
-                var pk8 = new PK8(data);
-                File.WriteAllBytes(Path.Combine(DumpFolder, Util.CleanFileName(pk8.FileName)), pk8.DecryptedPartyData);
+                await ReadDumpB1S1(token).ConfigureAwait(false);
             }
+        }
+
+        private async Task ReadDumpB1S1(CancellationToken token)
+        {
+            if (DumpFolder == null)
+                return;
+
+            // get pokemon from box1slot1
+            var data = await Bot.ReadBytes(MyGiftAddress, ReadPartyFormatPokeSize, token).ConfigureAwait(false);
+            var pk8 = new PK8(data);
+            File.WriteAllBytes(Path.Combine(DumpFolder, Util.CleanFileName(pk8.FileName)), pk8.DecryptedPartyData);
         }
 
         private static async Task WaitForTradeToFinish(CancellationToken token)

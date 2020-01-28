@@ -24,7 +24,7 @@ namespace SysBot.Pokemon
         /// <param name="lines">Lines to initialize with</param>
         public static SurpriseTradeBot CreateNewSurpriseTradeBot(string[] lines)
         {
-            var cfg = new PokeDistributionBotConfig(lines);
+            var cfg = new SurpriseTradeBotConfig(lines);
             if (cfg.DistributeFolder == null || !Directory.Exists(cfg.DistributeFolder))
                 throw new ArgumentNullException(nameof(cfg.DistributeFolder), "Needs a valid source folder.");
 
