@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 
 namespace SysBot.Base
 {
@@ -20,6 +21,10 @@ namespace SysBot.Base
         }
 
         public SwitchBot(SwitchBotConfig cfg) : this(cfg.IP, cfg.Port) { }
+
+        public void Log(string message, LogLevel level) => LogUtil.Log(level, message);
+        public void Log(string message) => Log(message, LogLevel.Info);
+        public void LogError(string message) => Log(message, LogLevel.Error);
 
         public async Task Connect() => await Connection.ConnectAsync(IP, Port).ConfigureAwait(false);
         public async Task<bool> Disconnect() => await Task.Run(() => Connection.DisconnectAsync(new SocketAsyncEventArgs())).ConfigureAwait(false);
