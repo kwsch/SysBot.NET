@@ -11,6 +11,12 @@ namespace SysBot.Base
         private static readonly Encoding Encoder = Encoding.UTF8;
         private static byte[] Encode(string command) => Encoder.GetBytes(command + "\r\n");
 
+        /// <summary>
+        /// Removes the virtual controller from the bot. Allows physical controllers to control manually.
+        /// </summary>
+        /// <returns>Encoded command bytes</returns>
+        public static byte[] DetachController() => Encode("detachController");
+
         /* 
          *
          * Controller Button Commands
