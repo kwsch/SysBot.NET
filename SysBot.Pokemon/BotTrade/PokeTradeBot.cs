@@ -55,7 +55,7 @@ namespace SysBot.Pokemon
                 await Click(DDOWN, 50, token).ConfigureAwait(false);
 
                 for (int i = 0; i < 2; i++)
-                    await Task.Delay(1_000, token).ConfigureAwait(false);
+                    await Click(A, 1_000, token).ConfigureAwait(false);
 
                 // Loading Screen
                 await Task.Delay(2_000, token).ConfigureAwait(false);
@@ -105,7 +105,7 @@ namespace SysBot.Pokemon
                 // Wait 30 Seconds until Trade is finished...
                 await Task.Delay(30_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
 
-                // Pokemon has been prolly arrived, bypass Trade Evolution...
+                // Pokemon has probably arrived, bypass Trade Evolution...
                 await Click(Y, 1_000, token).ConfigureAwait(false);
 
                 await Task.Delay(1_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
@@ -120,14 +120,14 @@ namespace SysBot.Pokemon
                 for (int i = 0; i < 3; i++)
                     await Click(A, 1_000, token).ConfigureAwait(false);
 
-                // Spam A Button in Case of Trade Evolution/Moves Learnings/Dex
+                // Spam A Button in Case of Trade Evolution/Moves Learning/Dex
                 for (int i = 0; i < 20; i++)
                     await Click(A, 1_000, token).ConfigureAwait(false);
 
                 for (int i = 0; i < 3; i++)
                     await Click(B, 1_000, token).ConfigureAwait(false);
 
-                // Trade was Successfull!
+                // Trade was Successful!
                 if (token.IsCancellationRequested)
                     break;
 
