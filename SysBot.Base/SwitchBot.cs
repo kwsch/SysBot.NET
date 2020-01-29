@@ -10,7 +10,7 @@ namespace SysBot.Base
     /// </summary>
     public class SwitchBot
     {
-        public readonly Socket Connection = new Socket(SocketType.Stream, ProtocolType.IPv4);
+        public readonly Socket Connection = new Socket(SocketType.Stream, ProtocolType.Tcp);
         private readonly string IP;
         private readonly int Port;
 

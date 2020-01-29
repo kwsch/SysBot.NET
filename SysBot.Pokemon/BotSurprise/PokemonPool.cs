@@ -7,7 +7,7 @@ namespace SysBot.Pokemon
 {
     public class PokemonPool<T> : List<T> where T : PKM
     {
-        public int ExpectedSize;
+        public int ExpectedSize = 344;
 
         public T GetRandomPoke()
         {

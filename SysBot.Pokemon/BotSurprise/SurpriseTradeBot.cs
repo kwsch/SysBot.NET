@@ -87,7 +87,7 @@ namespace SysBot.Pokemon
                     break;
 
                 // Time we wait for a trade
-                await Task.Delay(4_500, token).ConfigureAwait(false);
+                await Task.Delay(45_000, token).ConfigureAwait(false);
                 await Bot.Send(Click(Y), token).ConfigureAwait(false);
                 await Task.Delay(0_700, token).ConfigureAwait(false);
 
