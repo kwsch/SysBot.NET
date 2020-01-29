@@ -14,8 +14,4 @@
     <ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Actions\" />
-  </ItemGroup>
-
 </Project>
