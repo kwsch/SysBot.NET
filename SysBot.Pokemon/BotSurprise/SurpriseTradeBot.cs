@@ -11,16 +11,15 @@ namespace SysBot.Pokemon
     /// <summary>
     /// Bot that launches Surprise Trade and repeatedly trades the same PKM. Dumps all received pkm to a dump folder.
     /// </summary>
-    public class SurpriseTradeBot
+    public class SurpriseTradeBot : PokeRoutineExecutor
     {
-        private readonly SwitchBot Bot;
         public readonly PokemonPool<PK8> Pool = new PokemonPool<PK8>();
         private const int MyGiftAddress = 0x4293D8B0;
         private const int ReadPartyFormatPokeSize = 0x158;
 
         public string? DumpFolder { get; set; }
 
-        public SurpriseTradeBot(string ip, int port) => Bot = new SwitchBot(ip, port);
+        public SurpriseTradeBot(string ip, int port) : base(ip, port) { }
         public SurpriseTradeBot(SwitchBotConfig cfg) : this(cfg.IP, cfg.Port) { }
 
         public void Load(PK8 pk) => Pool.Add(pk);
@@ -49,47 +48,37 @@ namespace SysBot.Pokemon
                 await Bot.Send(Poke(MyGiftAddress, edata), token).ConfigureAwait(false);
 
                 // load up y comm
-                await Bot.Send(Click(Y), token).ConfigureAwait(false);
-                await Task.Delay(1_000, token).ConfigureAwait(false);
+                await Click(Y, 1_000, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
 
                 // navigate to start trade
-                await Bot.Send(Click(DDOWN), token).ConfigureAwait(false);
-                await Task.Delay(0_500, token).ConfigureAwait(false);
+                await Click(DDOWN, 0_500, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
 
-                await Bot.Send(Click(A), token).ConfigureAwait(false);
-                await Task.Delay(4_000, token).ConfigureAwait(false);
+                await Click(A, 4_000, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
 
-                await Bot.Send(Click(A), token).ConfigureAwait(false);
-                await Task.Delay(0_700, token).ConfigureAwait(false);
+                await Click(A, 0_700, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
 
-                await Bot.Send(Click(A), token).ConfigureAwait(false);
-                await Task.Delay(8_000, token).ConfigureAwait(false);
-                await Bot.Send(Click(A), token).ConfigureAwait(false);
-                await Task.Delay(0_700, token).ConfigureAwait(false);
-                await Bot.Send(Click(A), token).ConfigureAwait(false);
-                await Task.Delay(0_700, token).ConfigureAwait(false);
-                await Bot.Send(Click(A), token).ConfigureAwait(false);
-                await Task.Delay(0_700, token).ConfigureAwait(false);
+                await Click(A, 8_000, token).ConfigureAwait(false);
+                for (int i = 0; i < 3; i++)
+                    await Click(A, 0_700, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
 
                 // Time we wait for a trade
                 await Task.Delay(45_000, token).ConfigureAwait(false);
-                await Bot.Send(Click(Y), token).ConfigureAwait(false);
-                await Task.Delay(0_700, token).ConfigureAwait(false);
+                await Click(Y, 0_700, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
