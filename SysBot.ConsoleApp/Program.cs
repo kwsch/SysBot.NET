@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using PKHeX.Core;
 using SysBot.Pokemon;
 
 namespace SysBot.ConsoleApp
@@ -35,8 +37,27 @@ namespace SysBot.ConsoleApp
                 return;
             }
 
+            await DoSurpriseTrade(lines).ConfigureAwait(false);
+        }
+
+        private static async Task DoSurpriseTrade(string[] lines)
+        {
             // Default Bot: Surprise Trade bot. See associated files.
             await SurpriseTradeBotUtil.RunBotAsync(lines, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        private static async Task DoLinkTrade(string[] lines)
+        {
+            // Default Bot: Surprise Trade bot. See associated files.
+            var prioQ = new ConcurrentPriorityQueue<uint, PokeTradeDetail<PK8>>();
+            var queue = new PokeTradeQueue<PK8>(prioQ);
+
+            var token = CancellationToken.None;
+
+            var monitor = PokeTradeBotUtil.MonitorQueueAddIfEmpty(queue, lines[2], token);
+            var bot1 = PokeTradeBotUtil.RunBotAsync(lines, queue, token);
+
+            await Task.WhenAll(monitor, bot1).ConfigureAwait(false);
         }
     }
 }
