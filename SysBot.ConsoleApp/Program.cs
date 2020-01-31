@@ -37,7 +37,7 @@ namespace SysBot.ConsoleApp
                 return;
             }
 
-            await DoSurpriseTrade(lines).ConfigureAwait(false);
+            await DoLinkTrade(lines).ConfigureAwait(false);
         }
 
         private static async Task DoSurpriseTrade(string[] lines)

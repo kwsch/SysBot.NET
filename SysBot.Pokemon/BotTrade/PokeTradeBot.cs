@@ -39,10 +39,10 @@ namespace SysBot.Pokemon
                 await Click(A, 1_000, token).ConfigureAwait(false);
 
                 // Select Password
-                await Click(DDOWN, 50, token).ConfigureAwait(false);
+                await Click(DDOWN, 200, token).ConfigureAwait(false);
 
                 for (int i = 0; i < 2; i++)
-                    await Click(A, 1_000, token).ConfigureAwait(false);
+                    await Click(A, 2_000, token).ConfigureAwait(false);
 
                 // Loading Screen
                 await Task.Delay(2_000, token).ConfigureAwait(false);

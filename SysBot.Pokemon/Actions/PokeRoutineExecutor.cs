@@ -19,12 +19,12 @@ namespace SysBot.Pokemon
             {
                 // Go to 0
                 foreach (var e in arr[0])
-                    await Click(e, 100, token).ConfigureAwait(false);
+                    await Click(e, 1000, token).ConfigureAwait(false);
 
                 var digit = TradeUtil.GetCodeDigit(code, i);
                 var entry = arr[digit];
                 foreach (var e in entry)
-                    await Click(e, 100, token).ConfigureAwait(false);
+                    await Click(e, 500, token).ConfigureAwait(false);
 
                 // Confirm Digit
                 await Click(A, 1_500, token).ConfigureAwait(false);
