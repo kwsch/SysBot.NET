@@ -53,8 +53,6 @@ namespace SysBot.Pokemon
                     code = Util.Rand.Next(8000, 8400);
                 await EnterTradeCode(code, token).ConfigureAwait(false);
 
-                await Click(PLUS, 0_100, token).ConfigureAwait(false);
-
                 // Start a Link Trade, in case of Empty Slot/Egg/Bad Pokemon we press sometimes B to return to the Overworld and skip this Slot.
                 // Confirming...
                 for (int i = 0; i < 4; i++)

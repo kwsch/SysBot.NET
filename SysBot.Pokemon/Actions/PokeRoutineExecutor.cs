@@ -25,10 +25,13 @@ namespace SysBot.Pokemon
                 var entry = arr[digit];
                 foreach (var e in entry)
                     await Click(e, 100, token).ConfigureAwait(false);
+
+                // Confirm Digit
+                await Click(A, 1_500, token).ConfigureAwait(false);
             }
 
-            //Confirm 
-            await Click(PLUS, 1_500, token).ConfigureAwait(false);
+            // Confirm Code
+            await Click(PLUS, 0_100, token).ConfigureAwait(false);
         }
 
         private static readonly SwitchButton[][] arr =
