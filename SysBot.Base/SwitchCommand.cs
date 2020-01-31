@@ -55,7 +55,7 @@ namespace SysBot.Base
         /// Sets the specified <see cref="stick"/> to the desired <see cref="x"/> and <see cref="y"/> positions.
         /// </summary>
         /// <returns>Encoded command bytes</returns>
-        public static byte[] SetStick(SwitchStick stick, int x, int y) => Encode($"setStick {stick} {x} {y}");
+        public static byte[] SetStick(SwitchStick stick, short x, short y) => Encode($"setStick {stick} {x} {y}");
 
         /// <summary>
         /// Resets the specified <see cref="stick"/> to (0,0)
