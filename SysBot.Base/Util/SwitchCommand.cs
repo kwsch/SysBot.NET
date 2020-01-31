@@ -4,11 +4,11 @@ using System.Text;
 namespace SysBot.Base
 {
     /// <summary>
-    /// Encodes commands for a <see cref="SwitchBot"/> to be sent as a <see cref="byte"/> array.
+    /// Encodes commands for a <see cref="SwitchConnectionAsync"/> to be sent as a <see cref="byte"/> array.
     /// </summary>
     public static class SwitchCommand
     {
-        private static readonly Encoding Encoder = Encoding.UTF8;
+        private static readonly Encoding Encoder = Encoding.ASCII;
         private static byte[] Encode(string command) => Encoder.GetBytes(command + "\r\n");
 
         /// <summary>

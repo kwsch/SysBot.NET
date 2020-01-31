@@ -12,8 +12,9 @@ namespace SysBot.Base
             var dest = new byte[bytes.Length / 2];
             for (int i = 0; i < dest.Length; i++)
             {
-                var _0 = (char)bytes[(i * 2) + 0];
-                var _1 = (char)bytes[(i * 2) + 1];
+                int ofs = i * 2;
+                var _0 = (char)bytes[ofs + 0];
+                var _1 = (char)bytes[ofs + 1];
                 dest[i] = DecodeTuple(_0, _1);
             }
             return dest;

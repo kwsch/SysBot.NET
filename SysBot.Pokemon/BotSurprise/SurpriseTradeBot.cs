@@ -25,50 +25,38 @@ namespace SysBot.Pokemon
         public void Load(PK8 pk) => Pool.Add(pk);
         public bool LoadFolder(string folder) => Pool.LoadFolder(folder);
         private PK8 GetInjectPokemonData() => Pool.GetRandomPoke();
-
-        /// <summary>
-        /// Connects to the console, then runs the bot.
-        /// </summary>
-        /// <param name="token">Cancel this token to have the bot stop looping.</param>
-        public async Task RunAsync(CancellationToken token)
-        {
-            await Bot.Connect().ConfigureAwait(false);
-            await MainLoop(token).ConfigureAwait(false);
-            await Bot.Disconnect().ConfigureAwait(false);
-        }
-
-        private async Task MainLoop(CancellationToken token)
+        
+        protected override async Task MainLoop(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
                 // Inject to b1s1
-                Bot.Log("Starting next trade. Getting data...");
+                ConnectionAsync.Log("Starting next trade. Getting data...");
                 var pkm = GetInjectPokemonData();
                 var edata = pkm.EncryptedPartyData;
-                await Bot.Send(Poke(MyGiftAddress, edata), token).ConfigureAwait(false);
+                await ConnectionAsync.Send(Poke(MyGiftAddress, edata), token).ConfigureAwait(false);
 
-                // load up y comm
+                ConnectionAsync.Log("Open Y-COM Menu");
                 await Click(Y, 1_000, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
 
-                // navigate to start trade
-                await Click(DDOWN, 0_500, token).ConfigureAwait(false);
-
-                if (token.IsCancellationRequested)
-                    break;
-
+                ConnectionAsync.Log("Select Surprise Trade");
+                await Click(DDOWN, 0_100, token).ConfigureAwait(false);
                 await Click(A, 4_000, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
 
+                ConnectionAsync.Log("Select Pokemon");
+                // Box 1 Slot 1
                 await Click(A, 0_700, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
 
+                ConnectionAsync.Log("Confirming...");
                 await Click(A, 8_000, token).ConfigureAwait(false);
                 for (int i = 0; i < 3; i++)
                     await Click(A, 0_700, token).ConfigureAwait(false);
@@ -88,9 +76,15 @@ namespace SysBot.Pokemon
                 if (token.IsCancellationRequested)
                     break;
 
-                Bot.Log("Trade complete!");
+                ConnectionAsync.Log("Trade complete!");
                 await ReadDumpB1S1(token).ConfigureAwait(false);
             }
+        }
+
+        private async Task Recover(CancellationToken token)
+        {
+            for (int i = 0; i < 3; i++)
+                await Click(B, 1000, token).ConfigureAwait(false);
         }
 
         private async Task ReadDumpB1S1(CancellationToken token)
@@ -99,7 +93,7 @@ namespace SysBot.Pokemon
                 return;
 
             // get pokemon from box1slot1
-            var data = await Bot.ReadBytes(MyGiftAddress, ReadPartyFormatPokeSize, token).ConfigureAwait(false);
+            var data = await ConnectionAsync.ReadBytes(MyGiftAddress, ReadPartyFormatPokeSize, token).ConfigureAwait(false);
             var pk8 = new PK8(data);
             File.WriteAllBytes(Path.Combine(DumpFolder, Util.CleanFileName(pk8.FileName)), pk8.DecryptedPartyData);
         }

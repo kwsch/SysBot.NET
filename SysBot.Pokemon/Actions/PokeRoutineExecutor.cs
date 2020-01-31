@@ -6,21 +6,14 @@ using static SysBot.Base.SwitchButton;
 
 namespace SysBot.Pokemon
 {
-    public class PokeRoutineExecutor
+    public abstract class PokeRoutineExecutor : SwitchRoutineExecutor
     {
-        public readonly SwitchBot Bot;
-        protected PokeRoutineExecutor(string ip, int port) => Bot = new SwitchBot(ip, port);
-
-        public async Task Click(SwitchButton b, int delay, CancellationToken token)
-        {
-            await Bot.Send(SwitchCommand.Click(b), token).ConfigureAwait(false);
-            await Task.Delay(delay, token).ConfigureAwait(false);
-        }
+        protected PokeRoutineExecutor(string ip, int port) : base(ip, port) { }
 
         public async Task Click(SwitchButton b, int delayMin, int delayMax, CancellationToken token) =>
             await Click(b, Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
 
-        protected async Task SelectTradeCode(int code, CancellationToken token)
+        protected async Task EnterTradeCode(int code, CancellationToken token)
         {
             for (int i = 0; i < 4; i++)
             {
