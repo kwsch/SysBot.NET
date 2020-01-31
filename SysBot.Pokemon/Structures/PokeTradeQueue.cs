@@ -18,6 +18,8 @@ namespace SysBot.Pokemon
 
         public PokeTradeDetail<TPoke> Find(Func<PokeTradeDetail<TPoke>, bool> match) => Queue.Find(match).Value;
 
+        public int Count => Queue.Count;
+
         public void Enqueue(PokeTradeDetail<TPoke> detail, uint priority = TierFree) => Queue.Enqueue(priority, detail);
 
         public bool TryDequeue(out PokeTradeDetail<TPoke> detail)
