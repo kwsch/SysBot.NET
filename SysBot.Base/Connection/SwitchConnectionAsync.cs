@@ -40,28 +40,28 @@ namespace SysBot.Base
             LogUtil.Log(LogLevel.Info, "Disconnected.", Name);
         }
 
-        public async Task<int> Read(byte[] buffer, CancellationToken token) => await Task.Run(() => Connection.Receive(buffer), token).ConfigureAwait(false);
-        public async Task<int> Send(byte[] buffer, CancellationToken token) => await Task.Run(() => Connection.Send(buffer), token).ConfigureAwait(false);
+        public async Task<int> ReadAsync(byte[] buffer, CancellationToken token) => await Task.Run(() => Connection.Receive(buffer), token).ConfigureAwait(false);
+        public async Task<int> SendAsync(byte[] buffer, CancellationToken token) => await Task.Run(() => Connection.Send(buffer), token).ConfigureAwait(false);
 
         private const int BaseDelay = 200;
         private const int DelayFactor = 8;
 
-        public async Task<byte[]> ReadBytes(uint offset, int length, CancellationToken token)
+        public async Task<byte[]> ReadBytesAsync(uint offset, int length, CancellationToken token)
         {
             var cmd = SwitchCommand.Peek(offset, length);
-            await Send(cmd, token).ConfigureAwait(false);
+            await SendAsync(cmd, token).ConfigureAwait(false);
 
             // give it time to push data back
             await Task.Delay((length / DelayFactor) + BaseDelay, token).ConfigureAwait(false);
             var buffer = new byte[(length * 2) + 1];
-            var _ = await Read(buffer, token).ConfigureAwait(false);
+            var _ = await ReadAsync(buffer, token).ConfigureAwait(false);
             return Decoder.ConvertHexByteStringToBytes(buffer);
         }
 
-        public async Task WriteBytes(byte[] data, uint offset, CancellationToken token)
+        public async Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token)
         {
             var cmd = SwitchCommand.Poke(offset, data);
-            await Send(cmd, token).ConfigureAwait(false);
+            await SendAsync(cmd, token).ConfigureAwait(false);
 
             // give it time to push data back
             await Task.Delay((data.Length / DelayFactor) + BaseDelay, token).ConfigureAwait(false);

@@ -31,32 +31,31 @@ namespace SysBot.Pokemon
             while (!token.IsCancellationRequested)
             {
                 // Inject to b1s1
-                ConnectionAsync.Log("Starting next trade. Getting data...");
+                Connection.Log("Starting next trade. Getting data...");
                 var pkm = GetInjectPokemonData();
-                var edata = pkm.EncryptedPartyData;
-                await ConnectionAsync.Send(Poke(MyGiftAddress, edata), token).ConfigureAwait(false);
+                await Connection.WriteBytesAsync(pkm.EncryptedPartyData, MyGiftAddress, token).ConfigureAwait(false);
 
-                ConnectionAsync.Log("Open Y-COM Menu");
+                Connection.Log("Open Y-COM Menu");
                 await Click(Y, 1_000, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
 
-                ConnectionAsync.Log("Select Surprise Trade");
+                Connection.Log("Select Surprise Trade");
                 await Click(DDOWN, 0_100, token).ConfigureAwait(false);
                 await Click(A, 4_000, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
 
-                ConnectionAsync.Log("Select Pokemon");
+                Connection.Log("Select Pokemon");
                 // Box 1 Slot 1
                 await Click(A, 0_700, token).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested)
                     break;
 
-                ConnectionAsync.Log("Confirming...");
+                Connection.Log("Confirming...");
                 await Click(A, 8_000, token).ConfigureAwait(false);
                 for (int i = 0; i < 3; i++)
                     await Click(A, 0_700, token).ConfigureAwait(false);
@@ -76,7 +75,7 @@ namespace SysBot.Pokemon
                 if (token.IsCancellationRequested)
                     break;
 
-                ConnectionAsync.Log("Trade complete!");
+                Connection.Log("Trade complete!");
                 await ReadDumpB1S1(token).ConfigureAwait(false);
             }
         }
@@ -93,7 +92,7 @@ namespace SysBot.Pokemon
                 return;
 
             // get pokemon from box1slot1
-            var data = await ConnectionAsync.ReadBytes(MyGiftAddress, ReadPartyFormatPokeSize, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(MyGiftAddress, ReadPartyFormatPokeSize, token).ConfigureAwait(false);
             var pk8 = new PK8(data);
             File.WriteAllBytes(Path.Combine(DumpFolder, Util.CleanFileName(pk8.FileName)), pk8.DecryptedPartyData);
         }

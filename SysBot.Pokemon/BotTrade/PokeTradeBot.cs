@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
 using SysBot.Base;
-using static SysBot.Base.SwitchCommand;
 using static SysBot.Base.SwitchButton;
 
 namespace SysBot.Pokemon
@@ -17,22 +16,21 @@ namespace SysBot.Pokemon
 
         public PokeTradeBot(PokeTradeQueue<PK8> queue, string ip, int port) : base(ip, port) => Pool = queue;
         public PokeTradeBot(PokeTradeQueue<PK8> queue, SwitchBotConfig cfg) : this(queue, cfg.IP, cfg.Port) { }
-        
+
         protected override async Task MainLoop(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
                 if (!Pool.TryDequeue(out var poke))
                 {
-                    ConnectionAsync.Log("Waiting for new trade data. Sleeping for a bit.");
+                    Connection.Log("Waiting for new trade data. Sleeping for a bit.");
                     await Task.Delay(10_000, token).ConfigureAwait(false);
                     continue;
                 }
 
-                ConnectionAsync.Log("Starting next trade. Getting data...");
+                Connection.Log("Starting next trade. Getting data...");
                 var pkm = poke.TradeData;
-                var edata = pkm.EncryptedPartyData;
-                await ConnectionAsync.Send(Poke(MyGiftAddress, edata), token).ConfigureAwait(false);
+                await Connection.WriteBytesAsync(pkm.EncryptedPartyData, MyGiftAddress, token).ConfigureAwait(false);
 
                 // load up y comm
                 await Click(Y, 1_000, token).ConfigureAwait(false);
@@ -120,7 +118,7 @@ namespace SysBot.Pokemon
                 if (token.IsCancellationRequested)
                     break;
 
-                ConnectionAsync.Log("Trade complete!");
+                Connection.Log("Trade complete!");
                 await ReadDumpB1S1(token).ConfigureAwait(false);
             }
         }
@@ -131,7 +129,7 @@ namespace SysBot.Pokemon
                 return;
 
             // get pokemon from box1slot1
-            var data = await ConnectionAsync.ReadBytes(MyGiftAddress, ReadPartyFormatPokeSize, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(MyGiftAddress, ReadPartyFormatPokeSize, token).ConfigureAwait(false);
             var pk8 = new PK8(data);
             File.WriteAllBytes(Path.Combine(DumpFolder, Util.CleanFileName(pk8.FileName)), pk8.DecryptedPartyData);
         }
