@@ -11,6 +11,7 @@ namespace SysBot.Pokemon
     {
         public const uint Box1Slot1 = 0x4293D8B0;
         public const uint TrainerDataOffset = 0x42935E48;
+        public const uint ShownTradeDataOffset = 0xAC843F68;
 
         public const int BoxFormatSlotSize = 0x158;
         public const int TrainerDataLength = 0x110;
@@ -32,6 +33,20 @@ namespace SysBot.Pokemon
             return await ReadPokemon(ofs, token, BoxFormatSlotSize).ConfigureAwait(false);
         }
 
+        public async Task<PK8?> ReadUntilPresent(uint offset, int waitms, int waitInterval, CancellationToken token, int size = BoxFormatSlotSize)
+        {
+            int msWaited = 0;
+            while (msWaited < waitms)
+            {
+                var pk = await ReadPokemon(offset, token, size).ConfigureAwait(false);
+                if (pk.Species != 0 && pk.ChecksumValid)
+                    return pk;
+                await Task.Delay(waitInterval, token).ConfigureAwait(false);
+                msWaited += waitInterval;
+            }
+            return null;
+        }
+
         public async Task ReadDumpB1S1(string? folder, CancellationToken token)
         {
             if (folder == null)
@@ -39,7 +54,14 @@ namespace SysBot.Pokemon
 
             // get pokemon from box1slot1
             var pk8 = await ReadBoxPokemon(0, 0, token).ConfigureAwait(false);
-            File.WriteAllBytes(Path.Combine(folder, Util.CleanFileName(pk8.FileName)), pk8.DecryptedPartyData);
+            DumpPokemon(folder, pk8);
+        }
+
+        private static void DumpPokemon(string? folder, PKM pk)
+        {
+            if (folder == null)
+                return;
+            File.WriteAllBytes(Path.Combine(folder, Util.CleanFileName(pk.FileName)), pk.DecryptedPartyData);
         }
 
         public async Task<SAV8SWSH> GetFakeTrainerSAV(CancellationToken token)
