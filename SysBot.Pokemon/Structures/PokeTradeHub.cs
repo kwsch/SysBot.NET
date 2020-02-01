@@ -7,18 +7,31 @@ namespace SysBot.Pokemon
 {
     public class PokeTradeHub<T> where T : PKM
     {
-        public readonly PokeTradeQueue<T> Queue = new PokeTradeQueue<T>();
-        public readonly Barrier Barrier = new Barrier(0, ReleaseBarrier);
-        public bool UseBarrier = true;
-
+        #region Trade Tracking
         private int completedTrades;
         public int CompletedTrades => completedTrades;
         public void AddCompletedTrade() => Interlocked.Increment(ref completedTrades);
+        #endregion
+
+        #region Trade Codes
+        public int MaxTradeCode;
+        public int MinTradeCode;
+
+        public int GetRandomTradeCode() => Util.Rand.Next(MinTradeCode, MaxTradeCode + 1);
+        #endregion
+
+        #region Barrier Synchronization
+        public readonly Barrier Barrier = new Barrier(0, ReleaseBarrier);
+        public bool UseBarrier = true;
 
         private static void ReleaseBarrier(Barrier obj)
         {
             Console.WriteLine($"{obj.ParticipantCount} bots released.");
         }
+        #endregion
+
+        #region Distribution Queue
+        public readonly PokeTradeQueue<T> Queue = new PokeTradeQueue<T>();
 
         public async Task MonitorQueueAddIfEmpty(string path, CancellationToken token)
         {
@@ -38,5 +51,6 @@ namespace SysBot.Pokemon
                 Queue.Enqueue(detail);
             }
         }
+        #endregion
     }
 }

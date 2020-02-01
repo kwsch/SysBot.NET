@@ -54,7 +54,7 @@ namespace SysBot.Pokemon
                 // Enter Code
                 var code = poke.Code;
                 if (code < 0)
-                    code = Util.Rand.Next(8000, 8400);
+                    code = Hub.GetRandomTradeCode();
                 await EnterTradeCode(code, token).ConfigureAwait(false);
 
                 // Wait for Barrier to trigger all bots simultaneously.
