@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
@@ -20,23 +21,21 @@ namespace SysBot.ConsoleApp
                 Console.ReadKey();
                 return;
             }
-
-            if (!File.Exists(Path))
+            if (!Directory.Exists("bots"))
             {
-                Console.WriteLine($"Create {Path}, with IP and Port on separate lines.");
+                Console.WriteLine("`bots` folder not found.");
                 Console.ReadKey();
                 return;
             }
 
-            var lines = File.ReadAllLines("config.txt");
-            if (lines.Length < 2)
+            var configs = Directory.EnumerateFiles("bots", "bot*.txt").Select(File.ReadAllLines).ToArray();
+            if (configs.Length == 0)
             {
-                Console.WriteLine($"Create {Path}, with IP and Port on separate lines.");
+                Console.WriteLine($"No configs found. Create {Path}, with IP and Port on separate lines.");
                 Console.ReadKey();
                 return;
             }
-
-            await DoLinkTrade(lines).ConfigureAwait(false);
+            await DoLinkTradeMulti(configs).ConfigureAwait(false);
         }
 
         private static async Task DoSurpriseTrade(string[] lines)
@@ -45,17 +44,20 @@ namespace SysBot.ConsoleApp
             await SurpriseTradeBotUtil.RunBotAsync(lines, CancellationToken.None).ConfigureAwait(false);
         }
 
-        private static async Task DoLinkTrade(string[] lines)
+        private static async Task DoLinkTradeMulti(params string[][] lines)
         {
             // Default Bot: Code Trade bot. See associated files.
             var hub = new PokeTradeHub<PK8> {UseBarrier = true};
 
             var token = CancellationToken.None;
 
-            var monitor = hub.MonitorQueueAddIfEmpty(lines[2], token);
-            var bot1 = PokeTradeBotUtil.RunBotAsync(lines, hub, token);
+            var first = lines[0];
+            Task[] threads = new Task[lines.Length + 1];
+            threads[0] = hub.MonitorQueueAddIfEmpty(first[2], token);
+            for (int i = 0; i < lines.Length; i++)
+                threads[i + 1] = PokeTradeBotUtil.RunBotAsync(lines[i], hub, token);
 
-            await Task.WhenAll(monitor, bot1).ConfigureAwait(false);
+            await Task.WhenAll(threads).ConfigureAwait(false);
         }
     }
 }
