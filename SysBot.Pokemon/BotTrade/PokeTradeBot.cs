@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
@@ -11,10 +10,6 @@ namespace SysBot.Pokemon
     public class PokeTradeBot : PokeRoutineExecutor
     {
         public readonly PokeTradeHub<PK8> Hub;
-        private const int MyGiftAddress = 0x4293D8B0;
-        private const int ReadPartyFormatPokeSize = 0x158;
-        private const int TrainerDataOffset = 0x42935e48;
-        private const int TrainerDataLength = 0x110;
 
         public string? DumpFolder { get; set; }
 
@@ -41,7 +36,7 @@ namespace SysBot.Pokemon
                 // Update Barrier Settings
                 waitBarrier = UpdateBarrier(Hub.Barrier, poke.IsRandomCode, waitBarrier);
                 var pkm = poke.TradeData;
-                await Connection.WriteBytesAsync(pkm.EncryptedPartyData, MyGiftAddress, token).ConfigureAwait(false);
+                await Connection.WriteBytesAsync(pkm.EncryptedPartyData, Box1Slot1, token).ConfigureAwait(false);
 
                 // load up y comm
                 await Click(Y, 1_000, token).ConfigureAwait(false);
@@ -134,17 +129,8 @@ namespace SysBot.Pokemon
 
                 Connection.Log("Trade complete!");
                 Hub.AddCompletedTrade();
-                await ReadDumpB1S1(token).ConfigureAwait(false);
+                await ReadDumpB1S1(DumpFolder, token).ConfigureAwait(false);
             }
-        }
-
-        private async Task<SAV8SWSH> GetFakeTrainerSAV(CancellationToken token)
-        {
-            var sav = new SAV8SWSH();
-            var info = sav.MyStatus;
-            var read = await Connection.ReadBytesAsync(TrainerDataOffset, TrainerDataLength, token).ConfigureAwait(false);
-            read.CopyTo(info.Data);
-            return sav;
         }
 
         /// <summary>
@@ -163,17 +149,6 @@ namespace SysBot.Pokemon
             if (alreadyWait)
                 b.RemoveParticipant();
             return false;
-        }
-
-        private async Task ReadDumpB1S1(CancellationToken token)
-        {
-            if (DumpFolder == null)
-                return;
-
-            // get pokemon from box1slot1
-            var data = await Connection.ReadBytesAsync(MyGiftAddress, ReadPartyFormatPokeSize, token).ConfigureAwait(false);
-            var pk8 = new PK8(data);
-            File.WriteAllBytes(Path.Combine(DumpFolder, Util.CleanFileName(pk8.FileName)), pk8.DecryptedPartyData);
         }
     }
 }
