@@ -5,6 +5,10 @@ using PKHeX.Core;
 
 namespace SysBot.Pokemon
 {
+    /// <summary>
+    /// Centralizes logic for trade bot coordination.
+    /// </summary>
+    /// <typeparam name="T">Type of <see cref="PKM"/> to distribute.</typeparam>
     public class PokeTradeHub<T> where T : PKM
     {
         #region Trade Tracking
@@ -14,25 +18,50 @@ namespace SysBot.Pokemon
         #endregion
 
         #region Trade Codes
-        public int MaxTradeCode;
-        public int MinTradeCode;
+        /// <summary>
+        /// Minimum trade code to be yielded.
+        /// </summary>
+        public int MinTradeCode = 8180;
 
+        /// <summary>
+        /// Maximum trade code to be yielded.
+        /// </summary>
+        public int MaxTradeCode = 8199;
+
+        /// <summary>
+        /// Gets a random trade code based on the range settings.
+        /// </summary>
         public int GetRandomTradeCode() => Util.Rand.Next(MinTradeCode, MaxTradeCode + 1);
         #endregion
 
         #region Barrier Synchronization
+        /// <summary>
+        /// Blocks bots from proceeding until all participating bots are waiting at the same step.
+        /// </summary>
         public readonly Barrier Barrier = new Barrier(0, ReleaseBarrier);
+
+        /// <summary>
+        /// Toggle to use the <see cref="Barrier"/> during bot operation.
+        /// </summary>
         public bool UseBarrier = true;
 
-        private static void ReleaseBarrier(Barrier obj)
+        /// <summary>
+        /// When the Barrier releases the bots, this method is executed before the bots continue execution.
+        /// </summary>
+        private static void ReleaseBarrier(Barrier b)
         {
-            Console.WriteLine($"{obj.ParticipantCount} bots released.");
+            Console.WriteLine($"{b.ParticipantCount} bots released.");
         }
         #endregion
 
         #region Distribution Queue
         public readonly PokeTradeQueue<T> Queue = new PokeTradeQueue<T>();
 
+        /// <summary>
+        /// Spins up a loop that adds a random <see cref="T"/> to the <see cref="Queue"/> if nothing is in it.
+        /// </summary>
+        /// <param name="path">Folder to randomly distribute from</param>
+        /// <param name="token">Thread cancellation</param>
         public async Task MonitorQueueAddIfEmpty(string path, CancellationToken token)
         {
             var blank = (T)Activator.CreateInstance(typeof(T));
