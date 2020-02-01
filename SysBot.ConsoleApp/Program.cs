@@ -38,15 +38,21 @@ namespace SysBot.ConsoleApp
             await DoLinkTradeMulti(configs).ConfigureAwait(false);
         }
 
-        private static async Task DoSurpriseTrade(string[] lines)
+        private static async Task DoSurpriseTradeMulti(params string[][] lines)
         {
-            // Default Bot: Surprise Trade bot. See associated files.
-            await SurpriseTradeBotUtil.RunBotAsync(lines, CancellationToken.None).ConfigureAwait(false);
+            // Surprise Trade bots. See associated files.
+            var token = CancellationToken.None;
+
+            Task[] threads = new Task[lines.Length];
+            for (int i = 0; i < lines.Length; i++)
+                threads[i] = SurpriseTradeBotUtil.RunBotAsync(lines[i], token);
+
+            await Task.WhenAll(threads).ConfigureAwait(false);
         }
 
         private static async Task DoLinkTradeMulti(params string[][] lines)
         {
-            // Default Bot: Code Trade bot. See associated files.
+            // Default Bot: Code Trade bots. See associated files.
             var hub = new PokeTradeHub<PK8> {UseBarrier = true};
 
             var token = CancellationToken.None;
