@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
@@ -45,6 +46,20 @@ namespace SysBot.Pokemon
                 msWaited += waitInterval;
             }
             return null;
+        }
+
+        public async Task<bool> ReadUntilChanged(uint offset, byte[] original, int waitms, int waitInterval, CancellationToken token)
+        {
+            int msWaited = 0;
+            while (msWaited < waitms)
+            {
+                var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
+                if (!result.SequenceEqual(original))
+                    return true;
+                await Task.Delay(waitInterval, token).ConfigureAwait(false);
+                msWaited += waitInterval;
+            }
+            return false;
         }
 
         public async Task ReadDumpB1S1(string? folder, CancellationToken token)

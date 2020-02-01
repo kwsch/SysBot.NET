@@ -73,8 +73,12 @@ namespace SysBot.Pokemon
 
                 await Click(A, 1_000, token).ConfigureAwait(false);
 
-                // Wait 30 Seconds for Trainer...
-                await Task.Delay(40_000, token).ConfigureAwait(false);
+                // Wait 40 Seconds for Trainer...
+                await Connection.WriteBytesAsync(new byte[344], ShownTradeDataOffset, token).ConfigureAwait(false);
+                var partnerFound = await ReadUntilChanged(ShownTradeDataOffset, new byte[4], 40_000, 2_000, token).ConfigureAwait(false);
+
+                if (!partnerFound)
+                    break; // Error handling here!
 
                 // Potential Trainer Found!
 
@@ -86,15 +90,11 @@ namespace SysBot.Pokemon
                 await Click(A, 2_000, token).ConfigureAwait(false);
 
                 // Wait for User Input...
-                for (int i = 0; i < 25; i++)
-                    await Click(A, 1_000, token).ConfigureAwait(false);
+                var pk = await ReadUntilPresent(ShownTradeDataOffset, 25_000, 1_000, token).ConfigureAwait(false);
+                if (pk == null)
+                    break; // Error handling here!
 
                 await Click(A, 3_000, token).ConfigureAwait(false);
-
-                // Link Trade Started, wait 10 seconds, abort after 15 Seconds!
-                for (int i = 0; i < 3; i++)
-                    await Click(B, 1_000, token).ConfigureAwait(false);
-
                 for (int i = 0; i < 3; i++)
                     await Click(A, 1_500, token).ConfigureAwait(false);
 
