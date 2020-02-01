@@ -43,8 +43,8 @@ namespace SysBot.Base
         public async Task<int> ReadAsync(byte[] buffer, CancellationToken token) => await Task.Run(() => Connection.Receive(buffer), token).ConfigureAwait(false);
         public async Task<int> SendAsync(byte[] buffer, CancellationToken token) => await Task.Run(() => Connection.Send(buffer), token).ConfigureAwait(false);
 
-        private const int BaseDelay = 200;
-        private const int DelayFactor = 8;
+        private const int BaseDelay = 64;
+        private const int DelayFactor = 256;
 
         public async Task<byte[]> ReadBytesAsync(uint offset, int length, CancellationToken token)
         {

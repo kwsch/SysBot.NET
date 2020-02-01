@@ -25,8 +25,8 @@ namespace SysBot.Base
         public int Read(byte[] buffer) => Connection.Receive(buffer);
         public int Send(byte[] buffer) => Connection.Send(buffer);
 
-        private const int BaseDelay = 200;
-        private const int DelayFactor = 8;
+        private const int BaseDelay = 64;
+        private const int DelayFactor = 256;
 
         public byte[] ReadBytes(uint offset, int length)
         {
