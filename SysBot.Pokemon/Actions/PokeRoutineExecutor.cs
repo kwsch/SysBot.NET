@@ -30,8 +30,7 @@ namespace SysBot.Pokemon
                 await Click(A, 1_500, token).ConfigureAwait(false);
             }
 
-            // Confirm Code
-            await Click(PLUS, 0_100, token).ConfigureAwait(false);
+            // Confirm Code outside of this method (allow synchronization)
         }
 
         private static readonly SwitchButton[][] arr =

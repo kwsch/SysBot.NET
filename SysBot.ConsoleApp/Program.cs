@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,14 +47,13 @@ namespace SysBot.ConsoleApp
 
         private static async Task DoLinkTrade(string[] lines)
         {
-            // Default Bot: Surprise Trade bot. See associated files.
-            var prioQ = new ConcurrentPriorityQueue<uint, PokeTradeDetail<PK8>>();
-            var queue = new PokeTradeQueue<PK8>(prioQ);
+            // Default Bot: Code Trade bot. See associated files.
+            var hub = new PokeTradeHub<PK8> {UseBarrier = true};
 
             var token = CancellationToken.None;
 
-            var monitor = PokeTradeBotUtil.MonitorQueueAddIfEmpty(queue, lines[2], token);
-            var bot1 = PokeTradeBotUtil.RunBotAsync(lines, queue, token);
+            var monitor = hub.MonitorQueueAddIfEmpty(lines[2], token);
+            var bot1 = PokeTradeBotUtil.RunBotAsync(lines, hub, token);
 
             await Task.WhenAll(monitor, bot1).ConfigureAwait(false);
         }

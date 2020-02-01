@@ -8,11 +8,15 @@ namespace SysBot.Pokemon
         public TPoke TradeData;
         public PokeTradeTrainerInfo Trainer;
 
-        public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, int code = -1)
+        private const int RandomCode = -1;
+
+        public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, int code = RandomCode)
         {
             Code = code;
             TradeData = pkm;
             Trainer = info;
         }
+
+        public bool IsRandomCode => Code == RandomCode;
     }
 }
