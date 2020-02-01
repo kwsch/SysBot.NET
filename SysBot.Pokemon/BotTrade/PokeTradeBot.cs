@@ -13,6 +13,9 @@ namespace SysBot.Pokemon
         public readonly PokeTradeHub<PK8> Hub;
         private const int MyGiftAddress = 0x4293D8B0;
         private const int ReadPartyFormatPokeSize = 0x158;
+        private const int TrainerDataOffset = 0x42935e48;
+        private const int TrainerDataLength = 0x110;
+
         public string? DumpFolder { get; set; }
 
         public PokeTradeBot(PokeTradeHub<PK8> hub, string ip, int port) : base(ip, port) => Hub = hub;
@@ -20,7 +23,11 @@ namespace SysBot.Pokemon
 
         protected override async Task MainLoop(CancellationToken token)
         {
+            // Initialize bot information
             bool waitBarrier = false;
+            var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
+            Connection.Name = $"{sav.OT}-{sav.DisplayTID}";
+
             while (!token.IsCancellationRequested)
             {
                 if (!Hub.Queue.TryDequeue(out var poke))
@@ -129,6 +136,15 @@ namespace SysBot.Pokemon
                 Hub.AddCompletedTrade();
                 await ReadDumpB1S1(token).ConfigureAwait(false);
             }
+        }
+
+        private async Task<SAV8SWSH> GetFakeTrainerSAV(CancellationToken token)
+        {
+            var sav = new SAV8SWSH();
+            var info = sav.MyStatus;
+            var read = await Connection.ReadBytesAsync(TrainerDataOffset, TrainerDataLength, token).ConfigureAwait(false);
+            read.CopyTo(info.Data);
+            return sav;
         }
 
         /// <summary>
