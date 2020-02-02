@@ -40,7 +40,13 @@ namespace SysBot.Base
             LogUtil.Log(LogLevel.Info, "Disconnected.", Name);
         }
 
-        public async Task<int> ReadAsync(byte[] buffer, CancellationToken token) => await Task.Run(() => Connection.Receive(buffer), token).ConfigureAwait(false);
+        public int Read(byte[] buffer)
+        {
+            int br = Connection.Receive(buffer, 0, 1, SocketFlags.None);
+            while (buffer[br - 1] != (byte)'\n')
+                br += Connection.Receive(buffer, br, 1, SocketFlags.None);
+            return br;
+        }
         public async Task<int> SendAsync(byte[] buffer, CancellationToken token) => await Task.Run(() => Connection.Send(buffer), token).ConfigureAwait(false);
 
         private const int BaseDelay = 50;
@@ -55,7 +61,7 @@ namespace SysBot.Base
             await Task.Delay(BaseDelay, token).ConfigureAwait(false);
 
             var buffer = new byte[(length * 2) + 1];
-            var _ = await ReadAsync(buffer, token).ConfigureAwait(false);
+            var _ = Read(buffer);
             return Decoder.ConvertHexByteStringToBytes(buffer);
         }
 
