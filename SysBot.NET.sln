@@ -13,7 +13,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SysBot.ConsoleApp", "SysBot
 		{850BECFD-3789-4C07-885E-0AA108C46F60} = {850BECFD-3789-4C07-885E-0AA108C46F60}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SysBot.Tests", "SysBot.Tests\SysBot.Tests.csproj", "{1D51AD25-4C03-49D3-8074-7D092168CB20}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SysBot.Tests", "SysBot.Tests\SysBot.Tests.csproj", "{1D51AD25-4C03-49D3-8074-7D092168CB20}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{02DCB75C-452F-4E70-B7AF-C37729B10699}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
