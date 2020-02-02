@@ -25,14 +25,15 @@ namespace SysBot.Pokemon
                 // Repeat until an egg is generated.
                 while (true)
                 {
-                    await SetStick(LEFT, -19000, 19000, 500, token).ConfigureAwait(false);
-                    await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false);
-
-                    await SetStick(LEFT, 19000, 19000, 500, token).ConfigureAwait(false);
-                    await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false);
-
                     await SetEggStepCounter(Location, token).ConfigureAwait(false);
-                    await Task.Delay(250, token).ConfigureAwait(false);
+
+                    // Walk Diagonally Left
+                    await SetStick(LEFT, -19000, 19000, 500, token).ConfigureAwait(false);
+                    await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false); // reset
+
+                    // Walk Diagonally Right, slightly longer to ensure we stay at the Daycare lady.
+                    await SetStick(LEFT, 19000, 19000, 550, token).ConfigureAwait(false);
+                    await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false); // reset
 
                     bool checkEgg = await IsEggReady(Location, token).ConfigureAwait(false);
                     if (checkEgg)
