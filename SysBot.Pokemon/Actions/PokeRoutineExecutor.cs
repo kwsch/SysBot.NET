@@ -55,6 +55,7 @@ namespace SysBot.Pokemon
             var data = await Connection.ReadBytesAsync(offset, size, token).ConfigureAwait(false);
             return new PK8(data);
         }
+
         public async Task<PK8> ReadBoxPokemon(int box, int slot, CancellationToken token)
         {
             var ofs = Box1Slot1 + (uint)(BoxFormatSlotSize * ((30 * box) + slot));
@@ -135,39 +136,35 @@ namespace SysBot.Pokemon
             // Confirm Code outside of this method (allow synchronization)
         }
 
-        public async Task<bool> IsEggReady(Daycare daycare)
+        public async Task<bool> IsEggReady(Daycare daycare, CancellationToken token)
         {
-            if(daycare == Daycare.Wildarea)
+            var ofs = daycare switch
             {
-                if (BitConverter.ToUInt16(await Connection.ReadBytesAsync(DayCare_Wildarea_Egg_Is_Ready, 1, CancellationToken.None), 1) == 1) { return true; }
-            }
-            else if(daycare == Daycare.Route5)
-            {
-                if (BitConverter.ToUInt16(await Connection.ReadBytesAsync(DayCare_Route5_Egg_Is_Ready, 1,CancellationToken.None),1) == 1) { return true; }
-            }
-            return false;
+                Daycare.WildArea => DayCare_Wildarea_Egg_Is_Ready,
+                Daycare.Route5 => DayCare_Route5_Egg_Is_Ready,
+                _ => throw new ArgumentException(nameof(daycare)),
+            };
+
+            var data = await Connection.ReadBytesAsync(ofs, 1, token).ConfigureAwait(false);
+            return data[0] == 1;
         }
 
-        public async Task<bool> SetEggStepCounter(Daycare daycare)
+        public async Task SetEggStepCounter(Daycare daycare, CancellationToken token)
         {
-            if (daycare == Daycare.Wildarea)
+            var ofs = daycare switch
             {
-                var cmd = SwitchCommand.Poke(DayCare_Wildarea_Step_Counter, BitConverter.GetBytes(180));
-                await Connection.SendAsync(cmd, CancellationToken.None);
-            }
-            else if (daycare == Daycare.Route5)
-            {
-                var cmd = SwitchCommand.Poke(DayCare_Route5_Step_Counter, BitConverter.GetBytes(180));
-                await Connection.SendAsync(cmd, CancellationToken.None);
-            }
-            return false;
+                Daycare.WildArea => DayCare_Wildarea_Step_Counter,
+                Daycare.Route5 => DayCare_Route5_Step_Counter,
+                _ => throw new ArgumentException(nameof(daycare)),
+            };
+
+            var data = new byte[] { 0xB4, 0, 0, 0 }; // 180
+            await Connection.WriteBytesAsync(data, ofs, token).ConfigureAwait(false);
         }
-
-
 
         public enum Daycare
         {
-            Wildarea,
+            WildArea,
             Route5
         }
 
