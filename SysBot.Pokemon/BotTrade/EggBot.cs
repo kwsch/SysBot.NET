@@ -25,11 +25,11 @@ namespace SysBot.Pokemon
                 // Repeat until an egg is generated.
                 while (true)
                 {
-                    await SetStick(LEFT, -19000, 19000, 500, CancellationToken.None).ConfigureAwait(false);
-                    await SetStick(LEFT, 0, 0, 500, CancellationToken.None).ConfigureAwait(false);
+                    await SetStick(LEFT, -19000, 19000, 500, token).ConfigureAwait(false);
+                    await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false);
 
-                    await SetStick(LEFT, 19000, 19000, 500, CancellationToken.None).ConfigureAwait(false);
-                    await SetStick(LEFT, 0, 0, 500, CancellationToken.None).ConfigureAwait(false);
+                    await SetStick(LEFT, 19000, 19000, 500, token).ConfigureAwait(false);
+                    await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false);
 
                     await SetEggStepCounter(Location, token).ConfigureAwait(false);
                     await Task.Delay(250, token).ConfigureAwait(false);
@@ -48,13 +48,13 @@ namespace SysBot.Pokemon
                     await Click(A, 500, token).ConfigureAwait(false);
                 await Task.Delay(4000, token).ConfigureAwait(false);
 
-                await Click(A, 250, CancellationToken.None).ConfigureAwait(false);
+                await Click(A, 250, token).ConfigureAwait(false);
                 await Task.Delay(1600, token).ConfigureAwait(false);
-                await Click(A, 250, CancellationToken.None).ConfigureAwait(false);
+                await Click(A, 250, token).ConfigureAwait(false);
                 await Task.Delay(1600, token).ConfigureAwait(false);
-                await Click(A, 250, CancellationToken.None).ConfigureAwait(false);
+                await Click(A, 250, token).ConfigureAwait(false);
 
-                var pk = await ReadBoxPokemon(1, 1, CancellationToken.None).ConfigureAwait(false);
+                var pk = await ReadBoxPokemon(1, 1, token).ConfigureAwait(false);
                 await Task.Delay(200, token).ConfigureAwait(false);
                 if (pk.Species == 0)
                     continue;
