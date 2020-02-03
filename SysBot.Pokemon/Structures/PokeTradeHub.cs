@@ -96,6 +96,11 @@ namespace SysBot.Pokemon
             var blank = (T)Activator.CreateInstance(typeof(T));
             var size = blank.SIZE_PARTY;
 
+            string queued = Path.Combine(path, "queued");
+            string processed = Path.Combine(path, "processed");
+            Directory.CreateDirectory(queued);
+            Directory.CreateDirectory(processed);
+
             while (!token.IsCancellationRequested)
             {
                 await Task.Delay(5_000, token).ConfigureAwait(false);
@@ -117,8 +122,8 @@ namespace SysBot.Pokemon
                     var trainer = new PokeTradeTrainerInfo(name);
 
                     // Move to subfolder as it is processed.
-                    var processedPath = Path.Combine(path, "loaded", Path.GetFileName(f));
-                    var finalPath = Path.Combine(path, "loaded", Path.GetFileName(f));
+                    var processedPath = Path.Combine(queued, Path.GetFileName(f));
+                    var finalPath = Path.Combine(processed, Path.GetFileName(f));
                     File.Move(f, processedPath);
 
                     var detail = new PokeTradeDetail<T>(t, trainer, notifier, code)
