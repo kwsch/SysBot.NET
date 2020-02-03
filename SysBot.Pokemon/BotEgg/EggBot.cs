@@ -70,14 +70,16 @@ namespace SysBot.Pokemon
 
                 await ReadDumpB1S1(DumpFolder, token).ConfigureAwait(false);
 
+                await Task.Delay(200, token).ConfigureAwait(false);
+
+                Console.WriteLine($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
+
                 if (pk.IsShiny)
                 {
                     Console.WriteLine("Shiny Found!");
                     break;
                 }
 
-                await Task.Delay(200, token).ConfigureAwait(false);
-                Console.WriteLine($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
                 encounterCount++;
             }
 
