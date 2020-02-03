@@ -21,6 +21,9 @@ namespace SysBot.Pokemon
         {
             int encounterCount = 0;
             var blank = new PK8();
+            var b1s1 = await ReadBoxPokemon(0, 0, token).ConfigureAwait(false);
+            if (!b1s1.IsEgg)
+                Console.WriteLine("Box 1 Slot 1 not empty. Move this Pokemon before using the bot!");
             while (!token.IsCancellationRequested)
             {
                 // Walk a step left, then right => check if egg was generated on this attempt.
