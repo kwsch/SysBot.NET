@@ -10,14 +10,12 @@ namespace SysBot.ConsoleApp
 {
     internal static class Program
     {
-        private const string Path = "config.txt";
-
         private static async Task Main(string[] args)
         {
             Console.WriteLine("Starting up.");
             if (args.Length != 0)
             {
-                Console.WriteLine($"Don't provide any args. Just use {Path}");
+                Console.WriteLine("Don't provide any args. Just use the config folder.");
                 Console.ReadKey();
                 return;
             }
@@ -31,11 +29,20 @@ namespace SysBot.ConsoleApp
             var configs = Directory.EnumerateFiles("bots", "bot*.txt").Select(File.ReadAllLines).ToArray();
             if (configs.Length == 0)
             {
-                Console.WriteLine($"No configs found. Create {Path}, with IP and Port on separate lines.");
+                Console.WriteLine("No configs found. Create a config folder, with each text file having IP and Port on separate lines.");
                 Console.ReadKey();
                 return;
             }
-            await DoLinkTradeMulti(configs).ConfigureAwait(false);
+
+            const int choice = 0;
+            var task = choice switch
+            {
+                1 => DoLinkTradeMulti(configs),
+                2 => DoShinyEggFinder(configs),
+                _ => DoSurpriseTradeMulti(configs),
+            };
+
+            await task.ConfigureAwait(false);
         }
 
         private static async Task DoSurpriseTradeMulti(params string[][] lines)
@@ -53,7 +60,7 @@ namespace SysBot.ConsoleApp
         private static async Task DoLinkTradeMulti(params string[][] lines)
         {
             // Default Bot: Code Trade bots. See associated files.
-            var hub = new PokeTradeHub<PK8> {UseBarrier = true};
+            var hub = new PokeTradeHub<PK8>();
 
             var token = CancellationToken.None;
 
@@ -62,6 +69,18 @@ namespace SysBot.ConsoleApp
             threads[0] = hub.MonitorQueueAddIfEmpty(first[2], token);
             for (int i = 0; i < lines.Length; i++)
                 threads[i + 1] = PokeTradeBotUtil.RunBotAsync(lines[i], hub, token);
+
+            await Task.WhenAll(threads).ConfigureAwait(false);
+        }
+
+        private static async Task DoShinyEggFinder(params string[][] lines)
+        {
+            // Shiny Egg receiver bots. See associated files.
+            var token = CancellationToken.None;
+
+            Task[] threads = new Task[lines.Length];
+            for (int i = 0; i < lines.Length; i++)
+                threads[i] = EggBotUtil.RunBotAsync(lines[i], token);
 
             await Task.WhenAll(threads).ConfigureAwait(false);
         }

@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using SysBot.Base;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Base.SwitchStick;
 
@@ -14,6 +15,7 @@ namespace SysBot.Pokemon
         private const Daycare Location = Daycare.Route5;
 
         public EggBot(string ip, int port) : base(ip, port) { }
+        public EggBot(SwitchBotConfig cfg) : this(cfg.IP, cfg.Port) { }
 
         protected override async Task MainLoop(CancellationToken token)
         {
