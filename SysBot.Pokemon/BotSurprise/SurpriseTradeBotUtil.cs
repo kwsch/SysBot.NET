@@ -29,7 +29,7 @@ namespace SysBot.Pokemon
                 throw new ArgumentNullException(nameof(cfg.DistributeFolder), "Needs a valid source folder.");
 
             var bot = new SurpriseTradeBot(cfg);
-            if (!bot.LoadFolder(cfg.DistributeFolder))
+            if (!bot.Pool.LoadFolder(cfg.DistributeFolder))
                 throw new ArgumentNullException(nameof(cfg.DistributeFolder), "Failed to load anything legal.");
 
             if (cfg.DumpFolder != null && Directory.Exists(cfg.DumpFolder))

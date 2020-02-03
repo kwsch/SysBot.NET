@@ -9,9 +9,18 @@ namespace SysBot.Pokemon
 {
     public class PokeTradeBot : PokeRoutineExecutor
     {
-        public readonly PokeTradeHub<PK8> Hub;
+        private readonly PokeTradeHub<PK8> Hub;
 
+        /// <summary>
+        /// Folder to dump received trade data to.
+        /// </summary>
+        /// <remarks>If null, will skip dumping.</remarks>
         public string? DumpFolder { get; set; }
+
+        /// <summary>
+        /// Synchronized start for multiple bots.
+        /// </summary>
+        public bool ShouldWaitAtBarrier { get; private set; }
 
         public PokeTradeBot(PokeTradeHub<PK8> hub, string ip, int port) : base(ip, port) => Hub = hub;
         public PokeTradeBot(PokeTradeHub<PK8> hub, SwitchBotConfig cfg) : this(hub, cfg.IP, cfg.Port) { }
@@ -19,7 +28,6 @@ namespace SysBot.Pokemon
         protected override async Task MainLoop(CancellationToken token)
         {
             // Initialize bot information
-            bool waitBarrier = false;
             var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
             Connection.Name = $"{sav.OT}-{sav.DisplayTID}";
 
@@ -34,7 +42,7 @@ namespace SysBot.Pokemon
 
                 Connection.Log("Starting next trade. Getting data...");
                 // Update Barrier Settings
-                waitBarrier = UpdateBarrier(Hub.Barrier, poke.IsRandomCode, waitBarrier);
+                ShouldWaitAtBarrier = UpdateBarrier(Hub.Barrier, poke.IsRandomCode, ShouldWaitAtBarrier);
                 var pkm = poke.TradeData;
                 await Connection.WriteBytesAsync(pkm.EncryptedPartyData, Box1Slot1, token).ConfigureAwait(false);
 
@@ -60,7 +68,7 @@ namespace SysBot.Pokemon
                 await EnterTradeCode(code, token).ConfigureAwait(false);
 
                 // Wait for Barrier to trigger all bots simultaneously.
-                if (waitBarrier && Hub.UseBarrier)
+                if (ShouldWaitAtBarrier && Hub.UseBarrier)
                     Hub.Barrier.SignalAndWait(TimeSpan.FromSeconds(60), token);
                 await Click(PLUS, 0_100, token).ConfigureAwait(false);
 
@@ -130,6 +138,18 @@ namespace SysBot.Pokemon
                 Connection.Log("Trade complete!");
                 Hub.AddCompletedTrade();
                 await ReadDumpB1S1(DumpFolder, token).ConfigureAwait(false);
+            }
+
+            ExitRoutine();
+        }
+
+        private void ExitRoutine()
+        {
+            // On exit, remove self from Barrier list
+            if (ShouldWaitAtBarrier)
+            {
+                Hub.Barrier.RemoveParticipant();
+                ShouldWaitAtBarrier = false;
             }
         }
 

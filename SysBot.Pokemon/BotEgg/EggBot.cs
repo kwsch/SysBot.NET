@@ -17,8 +17,8 @@ namespace SysBot.Pokemon
 
         protected override async Task MainLoop(CancellationToken token)
         {
-            int enc = 0;
-            var blank = PKMConverter.GetBlank(8).EncryptedPartyData;
+            int encounterCount = 0;
+            var blank = new PK8().EncryptedPartyData;
             while (!token.IsCancellationRequested)
             {
                 // Walk a step left, then right => check if egg was generated on this attempt.
@@ -55,7 +55,7 @@ namespace SysBot.Pokemon
                 await Task.Delay(1600, token).ConfigureAwait(false);
                 await Click(A, 250, token).ConfigureAwait(false);
 
-                var pk = await ReadBoxPokemon(1, 1, token).ConfigureAwait(false);
+                var pk = await ReadBoxPokemon(0, 0, token).ConfigureAwait(false);
                 await Task.Delay(200, token).ConfigureAwait(false);
                 if (pk.Species == 0)
                     continue;
@@ -69,8 +69,8 @@ namespace SysBot.Pokemon
                 }
 
                 await Task.Delay(200, token).ConfigureAwait(false);
-                Console.WriteLine($"Encounter: {enc}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
-                enc++;
+                Console.WriteLine($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
+                encounterCount++;
             }
 
             Console.WriteLine($"{Environment.NewLine}Done!");

@@ -13,13 +13,15 @@ namespace SysBot.Pokemon
     {
         public readonly PokemonPool<PK8> Pool = new PokemonPool<PK8>();
 
+        /// <summary>
+        /// Folder to dump received trade data to.
+        /// </summary>
+        /// <remarks>If null, will skip dumping.</remarks>
         public string? DumpFolder { get; set; }
 
         public SurpriseTradeBot(string ip, int port) : base(ip, port) { }
         public SurpriseTradeBot(SwitchBotConfig cfg) : this(cfg.IP, cfg.Port) { }
 
-        public void Load(PK8 pk) => Pool.Add(pk);
-        public bool LoadFolder(string folder) => Pool.LoadFolder(folder);
         private PK8 GetInjectPokemonData() => Pool.GetRandomPoke();
         
         protected override async Task MainLoop(CancellationToken token)

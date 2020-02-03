@@ -16,15 +16,15 @@ namespace SysBot.Pokemon
         public const uint ShownTradeDataOffset = 0xAC843F68;
 
         /* Route 5 Daycare */
-        //public const uint DayCareSlot_1_Wildarea_Present = 0x429e4EA8;
-        //public const uint DayCareSlot_2_Wildarea_Present = 0x429e4ff1;
+        //public const uint DayCareSlot_1_WildArea_Present = 0x429e4EA8;
+        //public const uint DayCareSlot_2_WildArea_Present = 0x429e4ff1;
 
         //public const uint DayCareSlot_1_WildArea = 0x429E4EA9;
         //public const uint DayCareSlot_2_WildArea = 0x429e4ff2;
 
-        /*public const uint DayCare_Wildarea_Unknown = 0x429e513a;*/
+        //public const uint DayCare_WildArea_Unknown = 0x429e513a;
         public const uint DayCare_Wildarea_Step_Counter = 0x429e513c;
-        //public const uint DayCare_Wildarea_EggSeed = 0x429e5140;
+        //public const uint DayCare_WildArea_EggSeed = 0x429e5140;
         public const uint DayCare_Wildarea_Egg_Is_Ready = 0x429e5148;
 
         /* Wild Area Daycare */
@@ -145,6 +145,7 @@ namespace SysBot.Pokemon
                 _ => throw new ArgumentException(nameof(daycare)),
             };
 
+            // Read a single byte of the Daycare metadata to check the IsEggReady flag.
             var data = await Connection.ReadBytesAsync(ofs, 1, token).ConfigureAwait(false);
             return data[0] == 1;
         }
@@ -158,6 +159,9 @@ namespace SysBot.Pokemon
                 _ => throw new ArgumentException(nameof(daycare)),
             };
 
+            // Set the step counter in the Daycare metadata to 180. This is the threshold that triggers the "Should I create a new egg" subroutine.
+            // When the game executes the subroutine, it will generate a new seed and set the IsEggReady flag.
+            // Just setting the IsEggReady flag won't refresh the seed; we want a different egg every time.
             var data = new byte[] { 0xB4, 0, 0, 0 }; // 180
             await Connection.WriteBytesAsync(data, ofs, token).ConfigureAwait(false);
         }
