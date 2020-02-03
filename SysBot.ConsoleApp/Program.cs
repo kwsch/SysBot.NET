@@ -34,15 +34,34 @@ namespace SysBot.ConsoleApp
                 return;
             }
 
-            const int choice = 0;
+            if (!File.Exists("config.txt"))
+            {
+                Console.WriteLine("Config file does not exist.");
+                Console.ReadKey();
+                return;
+            }
+
+            var lines = File.ReadAllText("config.txt");
+            if (!int.TryParse(lines, out var choice))
+            {
+                Console.WriteLine("Config file does not have a supported choice.");
+                Console.ReadKey();
+                return;
+            }
+
+            var task = GetMasterBotTask(choice, configs);
+            await task.ConfigureAwait(false);
+        }
+
+        private static Task GetMasterBotTask(int choice, string[][] configs)
+        {
             var task = choice switch
             {
                 1 => DoLinkTradeMulti(configs),
                 2 => DoShinyEggFinder(configs),
                 _ => DoSurpriseTradeMulti(configs),
             };
-
-            await task.ConfigureAwait(false);
+            return task;
         }
 
         private static async Task DoSurpriseTradeMulti(params string[][] lines)
