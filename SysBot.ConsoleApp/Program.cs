@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
@@ -18,12 +19,26 @@ namespace SysBot.ConsoleApp
         {
             Console.WriteLine("Starting up.");
             if (args.Length != 0)
-            {
-                Console.WriteLine("Don't provide any args. Just use the config folder.");
-                Console.ReadKey();
-                return;
-            }
+                await LaunchViaArgs(args).ConfigureAwait(false);
+            else
+                await LaunchWithoutArgs().ConfigureAwait(false);
+        }
 
+        private static async Task LaunchViaArgs(string[] args)
+        {
+            var BotTypes = typeof(Program).GetFields(BindingFlags.NonPublic | BindingFlags.FlattenHierarchy | BindingFlags.Static)
+                .Where(z => z.Name.StartsWith("Path"))
+                .Select(z => z.Name).ToArray();
+            // Launch a single bot.
+            var type = args[1];
+            var config = args[2];
+            var lines = File.ReadAllLines(config);
+            var task = GetBotsWithConfigs(Array.IndexOf(BotTypes, type), new[] { lines });
+            await task.ConfigureAwait(false);
+        }
+
+        private static async Task LaunchWithoutArgs()
+        {
             var task0 = GetBotTask(PathSurprise, 0, out var count0);
             var task1 = GetBotTask(PathLinkCode, 1, out var count1);
             var task2 = GetBotTask(PathShinyEgg, 2, out var count2);
@@ -50,6 +65,11 @@ namespace SysBot.ConsoleApp
                 return Task.CompletedTask;
 
             var configs = files.Select(File.ReadAllLines).ToArray();
+            return GetBotsWithConfigs(botType, configs);
+        }
+
+        private static Task GetBotsWithConfigs(int botType, string[][] configs)
+        {
             return botType switch
             {
                 1 => DoLinkTradeMulti(configs),
