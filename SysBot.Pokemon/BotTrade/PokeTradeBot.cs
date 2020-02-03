@@ -45,7 +45,7 @@ namespace SysBot.Pokemon
                 // Update Barrier Settings
                 ShouldWaitAtBarrier = UpdateBarrier(Hub.Barrier, poke.IsRandomCode, ShouldWaitAtBarrier);
                 var pkm = poke.TradeData;
-                await Connection.WriteBytesAsync(pkm.EncryptedPartyData, Box1Slot1, token).ConfigureAwait(false);
+                await SetBoxPokemon(pkm, 0, 0, token, sav).ConfigureAwait(false);
 
                 // load up y comm
                 await Click(Y, 1_000, token).ConfigureAwait(false);

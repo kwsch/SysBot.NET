@@ -50,15 +50,30 @@ namespace SysBot.Pokemon
         public async Task SetStick(SwitchStick stick, int x, int y, int delayMin, int delayMax, CancellationToken token) =>
             await SetStick(stick, x, y, Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
 
+        private static uint GetBoxSlotOffset(int box, int slot) => Box1Slot1 + (uint)(BoxFormatSlotSize * ((30 * box) + slot));
+
         public async Task<PK8> ReadPokemon(uint offset, CancellationToken token, int size = BoxFormatSlotSize)
         {
             var data = await Connection.ReadBytesAsync(offset, size, token).ConfigureAwait(false);
             return new PK8(data);
         }
 
+        public async Task SetBoxPokemon(PK8 pkm, int box, int slot, CancellationToken token, SAV8? sav = null)
+        {
+            if (sav != null)
+            {
+                // Update PKM to the current save's handler data
+                DateTime Date = DateTime.Now;
+                pkm.Trade(sav, Date.Day, Date.Month, Date.Year);
+                pkm.RefreshChecksum();
+            }
+            var ofs = GetBoxSlotOffset(box, slot);
+            await Connection.WriteBytesAsync(pkm.EncryptedPartyData, ofs, token).ConfigureAwait(false);
+        }
+
         public async Task<PK8> ReadBoxPokemon(int box, int slot, CancellationToken token)
         {
-            var ofs = Box1Slot1 + (uint)(BoxFormatSlotSize * ((30 * box) + slot));
+            var ofs = GetBoxSlotOffset(box, slot);
             return await ReadPokemon(ofs, token, BoxFormatSlotSize).ConfigureAwait(false);
         }
 

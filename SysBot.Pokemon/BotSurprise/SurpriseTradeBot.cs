@@ -35,7 +35,7 @@ namespace SysBot.Pokemon
                 // Inject to b1s1
                 Connection.Log("Starting next trade. Getting data...");
                 var pkm = GetInjectPokemonData();
-                await Connection.WriteBytesAsync(pkm.EncryptedPartyData, Box1Slot1, token).ConfigureAwait(false);
+                await SetBoxPokemon(pkm, 0, 0, token, sav).ConfigureAwait(false);
 
                 Connection.Log("Open Y-COM Menu");
                 await Click(Y, 1_000, token).ConfigureAwait(false);

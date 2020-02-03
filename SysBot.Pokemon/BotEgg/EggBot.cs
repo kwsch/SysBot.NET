@@ -18,7 +18,7 @@ namespace SysBot.Pokemon
         protected override async Task MainLoop(CancellationToken token)
         {
             int encounterCount = 0;
-            var blank = new PK8().EncryptedPartyData;
+            var blank = new PK8();
             while (!token.IsCancellationRequested)
             {
                 // Walk a step left, then right => check if egg was generated on this attempt.
@@ -41,7 +41,7 @@ namespace SysBot.Pokemon
                 }
 
                 // Deletes Box 1 Slot 1 to have a consistent destination for the eggs.
-                await Connection.WriteBytesAsync(blank, Box1Slot1, token).ConfigureAwait(false);
+                await SetBoxPokemon(blank, 0, 0, token).ConfigureAwait(false);
 
                 await Task.Delay(1000, token).ConfigureAwait(false);
 
