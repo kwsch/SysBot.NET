@@ -10,6 +10,10 @@ namespace SysBot.ConsoleApp
 {
     internal static class Program
     {
+        private const string PathSurprise = "Surprise";
+        private const string PathLinkCode = "LinkCode";
+        private const string PathShinyEgg = "ShinyEgg";
+
         private static async Task Main(string[] args)
         {
             Console.WriteLine("Starting up.");
@@ -19,49 +23,39 @@ namespace SysBot.ConsoleApp
                 Console.ReadKey();
                 return;
             }
-            if (!Directory.Exists("bots"))
+
+            var task0 = GetBotTask(PathSurprise, 0, out var count0);
+            var task1 = GetBotTask(PathLinkCode, 1, out var count1);
+            var task2 = GetBotTask(PathShinyEgg, 2, out var count2);
+
+            int botCount = count0 + count1 + count2;
+
+            if (botCount == 0)
             {
-                Console.WriteLine("`bots` folder not found.");
+                Console.WriteLine("No bots started. Verify folder configs.");
                 Console.ReadKey();
                 return;
             }
 
-            var configs = Directory.EnumerateFiles("bots", "bot*.txt").Select(File.ReadAllLines).ToArray();
-            if (configs.Length == 0)
-            {
-                Console.WriteLine("No configs found. Create a config folder, with each text file having IP and Port on separate lines.");
-                Console.ReadKey();
-                return;
-            }
-
-            if (!File.Exists("config.txt"))
-            {
-                Console.WriteLine("Config file does not exist.");
-                Console.ReadKey();
-                return;
-            }
-
-            var lines = File.ReadAllText("config.txt");
-            if (!int.TryParse(lines, out var choice))
-            {
-                Console.WriteLine("Config file does not have a supported choice.");
-                Console.ReadKey();
-                return;
-            }
-
-            var task = GetMasterBotTask(choice, configs);
-            await task.ConfigureAwait(false);
+            var tasks = new[] { task0, task1, task2 };
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
-        private static Task GetMasterBotTask(int choice, string[][] configs)
+        private static Task GetBotTask(string path, int botType, out int count)
         {
-            var task = choice switch
+            Directory.CreateDirectory(path);
+            var files = Directory.GetFiles(path, "bot*.txt", SearchOption.TopDirectoryOnly);
+            count = files.Length;
+            if (count == 0)
+                return Task.CompletedTask;
+
+            var configs = files.Select(File.ReadAllLines).ToArray();
+            return botType switch
             {
                 1 => DoLinkTradeMulti(configs),
                 2 => DoShinyEggFinder(configs),
                 _ => DoSurpriseTradeMulti(configs),
             };
-            return task;
         }
 
         private static async Task DoSurpriseTradeMulti(params string[][] lines)
