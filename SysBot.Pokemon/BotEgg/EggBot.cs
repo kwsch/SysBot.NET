@@ -22,7 +22,7 @@ namespace SysBot.Pokemon
             int encounterCount = 0;
             var blank = new PK8();
             var b1s1 = await ReadBoxPokemon(0, 0, token).ConfigureAwait(false);
-            if (!b1s1.IsEgg)
+            if (!(b1s1.Species == 0 || b1s1.IsEgg)) // empty or egg is OK
             {
                 Console.WriteLine("Box 1 Slot 1 not empty. Move this Pokemon before using the bot!");
                 return;
