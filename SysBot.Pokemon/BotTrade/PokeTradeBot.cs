@@ -41,6 +41,7 @@ namespace SysBot.Pokemon
                 }
 
                 Connection.Log("Starting next trade. Getting data...");
+                poke.InitializeTrade(this);
                 // Update Barrier Settings
                 ShouldWaitAtBarrier = UpdateBarrier(Hub.Barrier, poke.IsRandomCode, ShouldWaitAtBarrier);
                 var pkm = poke.TradeData;
@@ -77,6 +78,7 @@ namespace SysBot.Pokemon
                 for (int i = 0; i < 4; i++)
                     await Click(A, 2_000, token).ConfigureAwait(false);
 
+                poke.SearchTrade(this);
                 await Task.Delay(Util.Rand.Next(100, 1000), token).ConfigureAwait(false);
 
                 await Click(A, 1_000, token).ConfigureAwait(false);
@@ -135,6 +137,7 @@ namespace SysBot.Pokemon
                 if (token.IsCancellationRequested)
                     break;
 
+                poke.CompleteTrade(this);
                 Connection.Log("Trade complete!");
                 Hub.AddCompletedTrade();
                 await ReadDumpB1S1(DumpFolder, token).ConfigureAwait(false);
