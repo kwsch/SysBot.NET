@@ -13,8 +13,9 @@ Supported Pokémon Sword/Shield Bots:
 - Link Trade Bot: Trades out Pokémon files to specific Link Codes, and can randomly distribute when no priority trades are needed.
 - Shiny Egg Finding Bot: Repeatedly grabs eggs until a shiny egg is received.
 
-## SysBot.Console:
+## SysBot.ConsoleApp:
 - Simple Launcher for spinning up bots. Provide config files in separate folders to launch specific bots.
+- Is currently set up to spin up Pokémon bots (as described above). Refer to the Wiki for details on how to use.
 
 ## SysBot.Tests:
 - Unit Tests for ensuring logic behaves as intended :)
