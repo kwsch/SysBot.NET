@@ -85,7 +85,6 @@ namespace SysBot.Pokemon
             }
 
             Console.WriteLine($"{Environment.NewLine}Done!");
-            Console.ReadLine();
         }
     }
 }

@@ -22,6 +22,9 @@ namespace SysBot.ConsoleApp
                 await LaunchViaArgs(args).ConfigureAwait(false);
             else
                 await LaunchWithoutArgs().ConfigureAwait(false);
+
+            Console.WriteLine("No bots are currently running. Press any key to exit.");
+            Console.ReadKey();
         }
 
         private static async Task LaunchViaArgs(string[] args)
@@ -48,7 +51,6 @@ namespace SysBot.ConsoleApp
             if (botCount == 0)
             {
                 Console.WriteLine("No bots started. Verify folder configs.");
-                Console.ReadKey();
                 return;
             }
 
