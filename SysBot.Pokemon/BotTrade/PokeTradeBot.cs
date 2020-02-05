@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using PKHeX.Core;
 using SysBot.Base;
 using static SysBot.Base.SwitchButton;
+using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
@@ -24,6 +25,8 @@ namespace SysBot.Pokemon
 
         public PokeTradeBot(PokeTradeHub<PK8> hub, string ip, int port) : base(ip, port) => Hub = hub;
         public PokeTradeBot(PokeTradeHub<PK8> hub, SwitchBotConfig cfg) : this(hub, cfg.IP, cfg.Port) { }
+
+        private static readonly byte[] EMPTY_EC = new byte[4];
 
         protected override async Task MainLoop(CancellationToken token)
         {
@@ -85,7 +88,7 @@ namespace SysBot.Pokemon
 
                 // Wait 40 Seconds for Trainer...
                 await Connection.WriteBytesAsync(new byte[344], ShownTradeDataOffset, token).ConfigureAwait(false);
-                var partnerFound = await ReadUntilChanged(ShownTradeDataOffset, new byte[4], 40_000, 2_000, token).ConfigureAwait(false);
+                var partnerFound = await ReadUntilChanged(ShownTradeDataOffset, EMPTY_EC, 40_000, 2_000, token).ConfigureAwait(false);
 
                 if (!partnerFound)
                     break; // Error handling here!

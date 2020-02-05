@@ -6,44 +6,12 @@ using System.Threading.Tasks;
 using PKHeX.Core;
 using SysBot.Base;
 using static SysBot.Base.SwitchButton;
+using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
     public abstract class PokeRoutineExecutor : SwitchRoutineExecutor
     {
-        public const uint Box1Slot1 = 0x4293D8B0;
-        public const uint TrainerDataOffset = 0x42935E48;
-        public const uint ShownTradeDataOffset = 0xAC843F68;
-
-        public const uint IsConnected = 0x2f865c78;
-
-        /* Route 5 Daycare */
-        //public const uint DayCareSlot_1_WildArea_Present = 0x429e4EA8;
-        //public const uint DayCareSlot_2_WildArea_Present = 0x429e4ff1;
-
-        //public const uint DayCareSlot_1_WildArea = 0x429E4EA9;
-        //public const uint DayCareSlot_2_WildArea = 0x429e4ff2;
-
-        //public const uint DayCare_WildArea_Unknown = 0x429e513a;
-        public const uint DayCare_Wildarea_Step_Counter = 0x429e513c;
-        //public const uint DayCare_WildArea_EggSeed = 0x429e5140;
-        public const uint DayCare_Wildarea_Egg_Is_Ready = 0x429e5148;
-
-        /* Wild Area Daycare */
-        //public const uint DayCareSlot_1_Route5_Present = 0x429e4bf0;
-        //public const uint DayCareSlot_2_Route5_Present = 0x429e4d39;
-
-        //public const uint DayCareSlot_1_Route5 = 0x429e4bf1;
-        //public const uint DayCareSlot_2_Route5 = 0x429e4d3a;
-
-        //public const uint DayCare_Route5_Unknown = 0x429e4e82;
-        public const uint DayCare_Route5_Step_Counter = 0x429e4e84;
-        //public const uint DayCare_Route5_EggSeed = 0x429e4e88;
-        public const uint DayCare_Route5_Egg_Is_Ready = 0x429e4e90;
-
-        public const int BoxFormatSlotSize = 0x158;
-        public const int TrainerDataLength = 0x110;
-
         protected PokeRoutineExecutor(string ip, int port) : base(ip, port) { }
 
         public async Task Click(SwitchButton b, int delayMin, int delayMax, CancellationToken token) =>
