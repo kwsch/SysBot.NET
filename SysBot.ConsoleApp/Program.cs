@@ -17,7 +17,6 @@ namespace SysBot.ConsoleApp
 
         private static async Task Main(string[] args)
         {
-            Console.WriteLine("Starting up.");
             if (args.Length > 1)
                 await LaunchViaArgs(args).ConfigureAwait(false);
             else
@@ -29,6 +28,7 @@ namespace SysBot.ConsoleApp
 
         private static async Task LaunchViaArgs(string[] args)
         {
+            Console.WriteLine("Starting up single-bot environment from provided arguments.");
             var BotTypes = typeof(Program).GetFields(BindingFlags.NonPublic | BindingFlags.FlattenHierarchy | BindingFlags.Static)
                 .Where(z => z.Name.StartsWith("Path"))
                 .Select(z => z.GetRawConstantValue()).ToArray();
@@ -42,6 +42,7 @@ namespace SysBot.ConsoleApp
 
         private static async Task LaunchWithoutArgs()
         {
+            Console.WriteLine("Starting up multi-bot environment.");
             var task0 = GetBotTask(PathSurprise, 0, out var count0);
             var task1 = GetBotTask(PathLinkCode, 1, out var count1);
             var task2 = GetBotTask(PathShinyEgg, 2, out var count2);
@@ -67,6 +68,8 @@ namespace SysBot.ConsoleApp
                 return Task.CompletedTask;
 
             var configs = files.Select(File.ReadAllLines).ToArray();
+
+            Console.WriteLine($"Found {count} config(s) in {path}. Creating bot(s)...");
             return GetBotsWithConfigs(botType, configs);
         }
 
@@ -84,6 +87,7 @@ namespace SysBot.ConsoleApp
         {
             // Surprise Trade bots. See associated files.
             var token = CancellationToken.None;
+            Console.WriteLine($"Creating {lines.Length} bot(s) for Surprise Trades.");
 
             Task[] threads = new Task[lines.Length];
             for (int i = 0; i < lines.Length; i++)
@@ -95,13 +99,15 @@ namespace SysBot.ConsoleApp
         private static async Task DoLinkTradeMulti(params string[][] lines)
         {
             // Default Bot: Code Trade bots. See associated files.
-            var hub = new PokeTradeHub<PK8>();
-
             var token = CancellationToken.None;
 
             var first = lines[0];
+            var hubRandomPath = first[2];
+            Console.WriteLine($"Creating a hub for {lines.Length} bot(s) with random distribution from the following path: {hubRandomPath}");
+            var hub = new PokeTradeHub<PK8>();
+
             Task[] threads = new Task[lines.Length + 1];
-            threads[0] = hub.MonitorQueueAddIfEmpty(first[2], token);
+            threads[0] = hub.MonitorQueueAddIfEmpty(hubRandomPath, token);
             for (int i = 0; i < lines.Length; i++)
                 threads[i + 1] = PokeTradeBotUtil.RunBotAsync(lines[i], hub, token);
 

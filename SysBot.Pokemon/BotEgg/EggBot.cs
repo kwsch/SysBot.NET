@@ -49,42 +49,35 @@ namespace SysBot.Pokemon
                         break;
                 }
 
-                // Deletes Box 1 Slot 1 to have a consistent destination for the eggs.
+                Connection.Log("Egg available! Clearing destination slot.");
                 await SetBoxPokemon(blank, 0, 0, token).ConfigureAwait(false);
-
-                await Task.Delay(1000, token).ConfigureAwait(false);
 
                 for (int i = 0; i < 4; i++)
                     await Click(A, 500, token).ConfigureAwait(false);
                 await Task.Delay(4000, token).ConfigureAwait(false);
 
-                await Click(A, 250, token).ConfigureAwait(false);
-                await Task.Delay(1600, token).ConfigureAwait(false);
-                await Click(A, 250, token).ConfigureAwait(false);
-                await Task.Delay(1600, token).ConfigureAwait(false);
-                await Click(A, 250, token).ConfigureAwait(false);
+                await Click(A, 1850, token).ConfigureAwait(false);
+                await Click(A, 1850, token).ConfigureAwait(false);
+                await Click(A, 450, token).ConfigureAwait(false);
 
+                Connection.Log("Egg received. Checking details.");
                 var pk = await ReadBoxPokemon(0, 0, token).ConfigureAwait(false);
-                await Task.Delay(200, token).ConfigureAwait(false);
                 if (pk.Species == 0)
-                    continue;
-
-                await ReadDumpB1S1(DumpFolder, token).ConfigureAwait(false);
-
-                await Task.Delay(200, token).ConfigureAwait(false);
-
-                Console.WriteLine($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
-
-                if (pk.IsShiny)
                 {
-                    Console.WriteLine("Shiny Found!");
-                    break;
+                    Connection.Log("Invalid data detected in destination slot. Restarting loop.");
+                    continue;
                 }
 
-                encounterCount++;
-            }
+                Connection.Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
+                DumpPokemon(DumpFolder, pk);
 
-            Console.WriteLine($"{Environment.NewLine}Done!");
+                encounterCount++;
+                if (!pk.IsShiny)
+                    continue;
+
+                Connection.Log("Shiny Found!");
+                break;
+            }
         }
     }
 }

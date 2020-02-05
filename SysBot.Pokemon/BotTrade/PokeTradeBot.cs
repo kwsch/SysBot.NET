@@ -30,9 +30,10 @@ namespace SysBot.Pokemon
 
         protected override async Task MainLoop(CancellationToken token)
         {
-            // Initialize bot information
+            Connection.Log("Grabbing trainer data of host console...");
             var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
             Connection.Name = $"{sav.OT}-{sav.DisplayTID}";
+            Connection.Log($"Identified as {Connection.Name}");
 
             while (!token.IsCancellationRequested)
             {

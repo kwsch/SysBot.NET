@@ -85,7 +85,7 @@ namespace SysBot.Pokemon
             DumpPokemon(folder, pk8);
         }
 
-        private static void DumpPokemon(string? folder, PKM pk)
+        public static void DumpPokemon(string? folder, PKM pk)
         {
             if (folder == null)
                 return;
@@ -178,16 +178,16 @@ namespace SysBot.Pokemon
             return new SlotQualityCheck(b1s1);
         }
 
-        public static void PrintBadSlotMessage(SlotQualityCheck q)
+        public void PrintBadSlotMessage(SlotQualityCheck q)
         {
             switch (q.Quality)
             {
                 case SlotQuality.BadData:
-                    Console.WriteLine("Garbage detected in required Box Slot. Preventing execution.");
+                    Connection.Log("Garbage detected in required Box Slot. Preventing execution.");
                     return;
                 case SlotQuality.HasData:
-                    Console.WriteLine("Required Box Slot not empty. Move this Pokemon before using the bot!");
-                    Console.WriteLine(new ShowdownSet(q.Data!).Text);
+                    Connection.Log("Required Box Slot not empty. Move this Pokemon before using the bot!");
+                    Connection.Log(new ShowdownSet(q.Data!).Text);
                     return;
             }
         }
