@@ -21,6 +21,11 @@ namespace SysBot.Pokemon
 
         protected override async Task MainLoop(CancellationToken token)
         {
+            Connection.Log("Grabbing trainer data of host console...");
+            var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
+            Connection.Name = $"{sav.OT}-{sav.DisplayTID}";
+            Connection.Log($"Identified as {Connection.Name}");
+
             var b1s1 = await GetBoxSlotQuality(0, 0, token).ConfigureAwait(false);
             if (b1s1.Quality != SlotQuality.Overwritable)
             {
