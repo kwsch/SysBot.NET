@@ -17,16 +17,17 @@ namespace SysBot.Pokemon
         public EggBot(string ip, int port) : base(ip, port) { }
         public EggBot(SwitchBotConfig cfg) : this(cfg.IP, cfg.Port) { }
 
+        private int encounterCount;
+
         protected override async Task MainLoop(CancellationToken token)
         {
-            int encounterCount = 0;
-            var blank = new PK8();
-            var b1s1 = await ReadBoxPokemon(0, 0, token).ConfigureAwait(false);
-            if (!(b1s1.Species == 0 || b1s1.IsEgg)) // empty or egg is OK
+            var b1s1 = await GetBoxSlotQuality(0, 0, token).ConfigureAwait(false);
+            if (b1s1.Quality != SlotQuality.Overwritable)
             {
-                Console.WriteLine("Box 1 Slot 1 not empty. Move this Pokemon before using the bot!");
+                PrintBadSlotMessage(b1s1);
                 return;
             }
+            var blank = new PK8();
             while (!token.IsCancellationRequested)
             {
                 // Walk a step left, then right => check if egg was generated on this attempt.

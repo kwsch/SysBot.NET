@@ -204,6 +204,26 @@ namespace SysBot.Pokemon
             await Connection.WriteBytesAsync(data, ofs, token).ConfigureAwait(false);
         }
 
+        public async Task<SlotQualityCheck> GetBoxSlotQuality(int box, int slot, CancellationToken token)
+        {
+            var b1s1 = await ReadBoxPokemon(box, slot, token).ConfigureAwait(false);
+            return new SlotQualityCheck(b1s1);
+        }
+
+        public static void PrintBadSlotMessage(SlotQualityCheck q)
+        {
+            switch (q.Quality)
+            {
+                case SlotQuality.BadData:
+                    Console.WriteLine("Garbage detected in required Box Slot. Preventing execution.");
+                    return;
+                case SlotQuality.HasData:
+                    Console.WriteLine("Required Box Slot not empty. Move this Pokemon before using the bot!");
+                    Console.WriteLine(new ShowdownSet(q.Data!).Text);
+                    return;
+            }
+        }
+
         public enum Daycare
         {
             WildArea,
