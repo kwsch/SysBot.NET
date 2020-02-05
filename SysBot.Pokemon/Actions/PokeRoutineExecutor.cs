@@ -15,6 +15,8 @@ namespace SysBot.Pokemon
         public const uint TrainerDataOffset = 0x42935E48;
         public const uint ShownTradeDataOffset = 0xAC843F68;
 
+        public const uint IsConnected = 0x2f865c78;
+
         /* Route 5 Daycare */
         //public const uint DayCareSlot_1_WildArea_Present = 0x429e4EA8;
         //public const uint DayCareSlot_2_WildArea_Present = 0x429e4ff1;
@@ -149,6 +151,27 @@ namespace SysBot.Pokemon
             }
 
             // Confirm Code outside of this method (allow synchronization)
+        }
+
+        public async Task<bool> IsGameConnected(CancellationToken token)
+        {
+            // Reads the Y-Com Flag is the Game is connected Online
+            var data = await Connection.ReadBytesAsync(IsConnected, 1, token).ConfigureAwait(false);
+            return data[0] == 1;
+        }
+
+        public async Task Reconnect_To_YCom(CancellationToken token)
+        {
+            // Press B in case a Error Message is Present
+            await Click(B, 1000, token).ConfigureAwait(false);
+
+            await Click(Y, 1000, token).ConfigureAwait(false);
+            await Click(PLUS, 15_000, token).ConfigureAwait(false);
+
+            for (int i = 0; i < 5; i++)
+            {
+                await Click(B, 500, token).ConfigureAwait(false);
+            }
         }
 
         public async Task<bool> IsEggReady(Daycare daycare, CancellationToken token)

@@ -37,6 +37,12 @@ namespace SysBot.Pokemon
                 var pkm = GetInjectPokemonData();
                 await SetBoxPokemon(pkm, 0, 0, token, sav).ConfigureAwait(false);
 
+                if(!await IsGameConnected(token).ConfigureAwait(false))
+                {
+                    Connection.Log("Reconnecting to Y-Com...");
+                    await Reconnect_To_YCom(token).ConfigureAwait(false);
+                }
+
                 Connection.Log("Open Y-COM Menu");
                 await Click(Y, 1_000, token).ConfigureAwait(false);
 
@@ -91,7 +97,7 @@ namespace SysBot.Pokemon
         private static async Task WaitForTradeToFinish(CancellationToken token)
         {
             // probably needs to be longer for trade evolutions
-            await Task.Delay(30_000, token).ConfigureAwait(false);
+            await Task.Delay(35_000, token).ConfigureAwait(false);
         }
     }
 }
