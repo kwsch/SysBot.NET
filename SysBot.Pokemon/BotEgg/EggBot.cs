@@ -19,6 +19,8 @@ namespace SysBot.Pokemon
 
         private int encounterCount;
 
+        public Func<PK8, bool> StopCondition { private get; set; } = pkm => pkm.IsShiny;
+
         protected override async Task MainLoop(CancellationToken token)
         {
             Connection.Log("Grabbing trainer data of host console...");
@@ -77,10 +79,10 @@ namespace SysBot.Pokemon
                 DumpPokemon(DumpFolder, pk);
 
                 encounterCount++;
-                if (!pk.IsShiny)
+                if (!StopCondition(pk))
                     continue;
 
-                Connection.Log("Shiny Found!");
+                Connection.Log("Result found!");
                 break;
             }
         }
