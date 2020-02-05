@@ -47,6 +47,7 @@ namespace SysBot.Base
                 br += Connection.Receive(buffer, br, 1, SocketFlags.None);
             return br;
         }
+
         public async Task<int> SendAsync(byte[] buffer, CancellationToken token) => await Task.Run(() => Connection.Send(buffer), token).ConfigureAwait(false);
 
         private const int BaseDelay = 50;

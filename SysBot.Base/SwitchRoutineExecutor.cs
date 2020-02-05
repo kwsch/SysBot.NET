@@ -30,7 +30,7 @@ namespace SysBot.Base
             await Task.Delay(delay, token).ConfigureAwait(false);
         }
 
-        public async Task SetStick(SwitchStick stick , int x, int y, int delay, CancellationToken token)
+        public async Task SetStick(SwitchStick stick, int x, int y, int delay, CancellationToken token)
         {
             await Connection.SendAsync(SwitchCommand.SetStick(stick, (short)x, (short)y), token).ConfigureAwait(false);
             await Task.Delay(delay, token).ConfigureAwait(false);

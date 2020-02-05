@@ -9,7 +9,7 @@ namespace System.Collections.Concurrent
     /// <typeparam name="TKey">Specifies the type of keys used to prioritize values.</typeparam>
     /// <typeparam name="TValue">Specifies the type of elements in the queue.</typeparam>
     [DebuggerDisplay("Count={" + nameof(Count) + "}")]
-    public class ConcurrentPriorityQueue<TKey, TValue> : IProducerConsumerCollection<KeyValuePair<TKey, TValue>>  where TKey : IComparable<TKey>
+    public class ConcurrentPriorityQueue<TKey, TValue> : IProducerConsumerCollection<KeyValuePair<TKey, TValue>> where TKey : IComparable<TKey>
     {
         private readonly object _syncLock = new object();
         private readonly MinBinaryHeap _minHeap = new MinBinaryHeap();

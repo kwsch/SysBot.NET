@@ -12,8 +12,8 @@ namespace SysBot.Tests
         {
             // Ensure that we can get more than one pokemon out of the pool.
             var pool = new PokemonPool<PK8>();
-            var a = new PK8 {Species = 5};
-            var b = new PK8 {Species = 12};
+            var a = new PK8 { Species = 5 };
+            var b = new PK8 { Species = 12 };
             pool.Add(a);
             pool.Add(b);
 

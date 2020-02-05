@@ -23,7 +23,7 @@ namespace SysBot.Pokemon
         public SurpriseTradeBot(SwitchBotConfig cfg) : this(cfg.IP, cfg.Port) { }
 
         private PK8 GetInjectPokemonData() => Pool.GetRandomPoke();
-        
+
         protected override async Task MainLoop(CancellationToken token)
         {
             // Initialize bot information
@@ -37,7 +37,7 @@ namespace SysBot.Pokemon
                 var pkm = GetInjectPokemonData();
                 await SetBoxPokemon(pkm, 0, 0, token, sav).ConfigureAwait(false);
 
-                if(!await IsGameConnected(token).ConfigureAwait(false))
+                if (!await IsGameConnected(token).ConfigureAwait(false))
                 {
                     Connection.Log("Reconnecting to Y-Com...");
                     await Reconnect_To_YCom(token).ConfigureAwait(false);
@@ -86,12 +86,6 @@ namespace SysBot.Pokemon
                 Connection.Log("Trade complete!");
                 await ReadDumpB1S1(DumpFolder, token).ConfigureAwait(false);
             }
-        }
-
-        private async Task Recover(CancellationToken token)
-        {
-            for (int i = 0; i < 3; i++)
-                await Click(B, 1000, token).ConfigureAwait(false);
         }
 
         private static async Task WaitForTradeToFinish(CancellationToken token)
