@@ -102,7 +102,7 @@ namespace SysBot.ConsoleApp
             var token = CancellationToken.None;
 
             var first = lines[0];
-            var hubRandomPath = first[2];
+            var hubRandomPath = first[3];
             Console.WriteLine($"Creating a hub for {lines.Length} bot(s) with random distribution from the following path: {hubRandomPath}");
             var hub = new PokeTradeHub<PK8>();
 
