@@ -24,19 +24,19 @@ namespace SysBot.Pokemon
 
         private PK8 GetInjectPokemonData() => Pool.GetRandomPoke();
 
+        private const int InjectBox = 0;
+        private const int InjectSlot = 0;
+
         protected override async Task MainLoop(CancellationToken token)
         {
-            Connection.Log("Grabbing trainer data of host console...");
-            var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
-            Connection.Name = $"{sav.OT}-{sav.DisplayTID}";
-            Connection.Log($"Identified as {Connection.Name}");
+            var sav = await IdentifyTrainer(token).ConfigureAwait(false);
 
             while (!token.IsCancellationRequested)
             {
                 // Inject to b1s1
                 Connection.Log("Starting next trade. Getting data...");
                 var pkm = GetInjectPokemonData();
-                await SetBoxPokemon(pkm, 0, 0, token, sav).ConfigureAwait(false);
+                await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
 
                 if (!await IsGameConnected(token).ConfigureAwait(false))
                 {
@@ -85,7 +85,8 @@ namespace SysBot.Pokemon
                     break;
 
                 Connection.Log("Trade complete!");
-                await ReadDumpB1S1(DumpFolder, token).ConfigureAwait(false);
+                if (DumpFolder != null)
+                    DumpPokemon(DumpFolder, await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false));
             }
         }
 

@@ -28,12 +28,12 @@ namespace SysBot.Pokemon
 
         private static readonly byte[] EMPTY_EC = new byte[4];
 
+        private const int InjectBox = 0;
+        private const int InjectSlot = 0;
+
         protected override async Task MainLoop(CancellationToken token)
         {
-            Connection.Log("Grabbing trainer data of host console...");
-            var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
-            Connection.Name = $"{sav.OT}-{sav.DisplayTID}";
-            Connection.Log($"Identified as {Connection.Name}");
+            var sav = await IdentifyTrainer(token).ConfigureAwait(false);
 
             while (!token.IsCancellationRequested)
             {
@@ -49,7 +49,7 @@ namespace SysBot.Pokemon
                 // Update Barrier Settings
                 ShouldWaitAtBarrier = UpdateBarrier(Hub.Barrier, poke.IsRandomCode, ShouldWaitAtBarrier);
                 var pkm = poke.TradeData;
-                await SetBoxPokemon(pkm, 0, 0, token, sav).ConfigureAwait(false);
+                await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
 
                 // load up y comm
                 await Click(Y, 1_000, token).ConfigureAwait(false);
@@ -144,7 +144,8 @@ namespace SysBot.Pokemon
                 poke.CompleteTrade(this);
                 Connection.Log("Trade complete!");
                 Hub.AddCompletedTrade();
-                await ReadDumpB1S1(DumpFolder, token).ConfigureAwait(false);
+                if (DumpFolder != null)
+                    DumpPokemon(DumpFolder, await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false));
             }
 
             ExitRoutine();

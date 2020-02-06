@@ -75,14 +75,13 @@ namespace SysBot.Pokemon
             return false;
         }
 
-        public async Task ReadDumpB1S1(string? folder, CancellationToken token)
+        public async Task<SAV8SWSH> IdentifyTrainer(CancellationToken token)
         {
-            if (folder == null)
-                return;
-
-            // get pokemon from box1slot1
-            var pk8 = await ReadBoxPokemon(0, 0, token).ConfigureAwait(false);
-            DumpPokemon(folder, pk8);
+            Connection.Log("Grabbing trainer data of host console...");
+            var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
+            Connection.Name = $"{sav.OT}-{sav.DisplayTID}";
+            Connection.Log($"{Connection.IP} identified as {Connection.Name}");
+            return sav;
         }
 
         public static void DumpPokemon(string? folder, PKM pk)

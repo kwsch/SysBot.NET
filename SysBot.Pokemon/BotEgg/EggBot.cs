@@ -19,19 +19,19 @@ namespace SysBot.Pokemon
 
         private int encounterCount;
 
+        private const int InjectBox = 0;
+        private const int InjectSlot = 0;
+
         public Func<PK8, bool> StopCondition { private get; set; } = pkm => pkm.IsShiny;
 
         protected override async Task MainLoop(CancellationToken token)
         {
-            Connection.Log("Grabbing trainer data of host console...");
-            var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
-            Connection.Name = $"{sav.OT}-{sav.DisplayTID}";
-            Connection.Log($"Identified as {Connection.Name}");
+            await IdentifyTrainer(token).ConfigureAwait(false);
 
-            var b1s1 = await GetBoxSlotQuality(0, 0, token).ConfigureAwait(false);
-            if (b1s1.Quality != SlotQuality.Overwritable)
+            var existing = await GetBoxSlotQuality(InjectBox, InjectSlot, token).ConfigureAwait(false);
+            if (existing.Quality != SlotQuality.Overwritable)
             {
-                PrintBadSlotMessage(b1s1);
+                PrintBadSlotMessage(existing);
                 return;
             }
             var blank = new PK8();
@@ -57,7 +57,7 @@ namespace SysBot.Pokemon
                 }
 
                 Connection.Log("Egg available! Clearing destination slot.");
-                await SetBoxPokemon(blank, 0, 0, token).ConfigureAwait(false);
+                await SetBoxPokemon(blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
 
                 for (int i = 0; i < 4; i++)
                     await Click(A, 500, token).ConfigureAwait(false);
@@ -68,7 +68,7 @@ namespace SysBot.Pokemon
                 await Click(A, 450, token).ConfigureAwait(false);
 
                 Connection.Log("Egg received. Checking details.");
-                var pk = await ReadBoxPokemon(0, 0, token).ConfigureAwait(false);
+                var pk = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
                 if (pk.Species == 0)
                 {
                     Connection.Log("Invalid data detected in destination slot. Restarting loop.");
