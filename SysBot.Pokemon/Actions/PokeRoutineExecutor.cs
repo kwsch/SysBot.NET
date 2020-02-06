@@ -102,21 +102,12 @@ namespace SysBot.Pokemon
 
         protected async Task EnterTradeCode(int code, CancellationToken token)
         {
-            for (int i = 0; i < 4; i++)
+            var keys = TradeUtil.GetPresses(code);
+            foreach (var key in keys)
             {
-                // Go to 0
-                foreach (var e in arr[0])
-                    await Click(e, 1000, token).ConfigureAwait(false);
-
-                var digit = TradeUtil.GetCodeDigit(code, i);
-                var entry = arr[digit];
-                foreach (var e in entry)
-                    await Click(e, 500, token).ConfigureAwait(false);
-
-                // Confirm Digit
-                await Click(A, 1_500, token).ConfigureAwait(false);
+                var delay = key == A ? 1_500 : 0_500;
+                await Click(key, delay, token).ConfigureAwait(false);
             }
-
             // Confirm Code outside of this method (allow synchronization)
         }
 
