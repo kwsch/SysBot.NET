@@ -20,8 +20,8 @@ namespace SysBot.Base
         {
             IP = ipaddress;
             Port = port;
-            Name = $"Unnamed Bot: {GetType().Name}";
-            LogUtil.Log(LogLevel.Info, "I'm Alive!", Name);
+            Name = $"{IP}: {GetType().Name}";
+            Log("I'm Alive!");
         }
     }
 }

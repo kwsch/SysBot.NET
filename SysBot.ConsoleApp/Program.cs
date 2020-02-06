@@ -106,10 +106,10 @@ namespace SysBot.ConsoleApp
             Console.WriteLine($"Creating a hub for {lines.Length} bot(s) with random distribution from the following path: {hubRandomPath}");
             var hub = new PokeTradeHub<PK8>();
 
-            Task[] threads = new Task[lines.Length + 1];
-            threads[0] = hub.MonitorQueueAddIfEmpty(hubRandomPath, token);
+            Task[] threads = new Task[lines.Length + 1]; // hub as last thread
             for (int i = 0; i < lines.Length; i++)
-                threads[i + 1] = PokeTradeBotUtil.RunBotAsync(lines[i], hub, token);
+                threads[i] = PokeTradeBotUtil.RunBotAsync(lines[i], hub, token);
+            threads[^1] = hub.MonitorQueueAddIfEmpty(hubRandomPath, token);
 
             await Task.WhenAll(threads).ConfigureAwait(false);
         }
@@ -118,6 +118,7 @@ namespace SysBot.ConsoleApp
         {
             // Shiny Egg receiver bots. See associated files.
             var token = CancellationToken.None;
+            Console.WriteLine($"Creating {lines.Length} bot(s) for Finding Eggs.");
 
             Task[] threads = new Task[lines.Length];
             for (int i = 0; i < lines.Length; i++)
