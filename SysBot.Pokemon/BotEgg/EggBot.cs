@@ -12,7 +12,7 @@ namespace SysBot.Pokemon
     {
         public string? DumpFolder { get; set; }
 
-        private const Daycare Location = Daycare.Route5;
+        private const SwordShieldDaycare Location = SwordShieldDaycare.Route5;
 
         public EggBot(string ip, int port) : base(ip, port) { }
         public EggBot(SwitchBotConfig cfg) : this(cfg.IP, cfg.Port) { }

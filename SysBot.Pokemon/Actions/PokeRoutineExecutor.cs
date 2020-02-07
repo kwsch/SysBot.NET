@@ -132,12 +132,12 @@ namespace SysBot.Pokemon
             }
         }
 
-        public async Task<bool> IsEggReady(Daycare daycare, CancellationToken token)
+        public async Task<bool> IsEggReady(SwordShieldDaycare daycare, CancellationToken token)
         {
             var ofs = daycare switch
             {
-                Daycare.WildArea => DayCare_Wildarea_Egg_Is_Ready,
-                Daycare.Route5 => DayCare_Route5_Egg_Is_Ready,
+                SwordShieldDaycare.WildArea => DayCare_Wildarea_Egg_Is_Ready,
+                SwordShieldDaycare.Route5 => DayCare_Route5_Egg_Is_Ready,
                 _ => throw new ArgumentException(nameof(daycare)),
             };
 
@@ -146,12 +146,12 @@ namespace SysBot.Pokemon
             return data[0] == 1;
         }
 
-        public async Task SetEggStepCounter(Daycare daycare, CancellationToken token)
+        public async Task SetEggStepCounter(SwordShieldDaycare daycare, CancellationToken token)
         {
             var ofs = daycare switch
             {
-                Daycare.WildArea => DayCare_Wildarea_Step_Counter,
-                Daycare.Route5 => DayCare_Route5_Step_Counter,
+                SwordShieldDaycare.WildArea => DayCare_Wildarea_Step_Counter,
+                SwordShieldDaycare.Route5 => DayCare_Route5_Step_Counter,
                 _ => throw new ArgumentException(nameof(daycare)),
             };
 
@@ -181,25 +181,5 @@ namespace SysBot.Pokemon
                     return;
             }
         }
-
-        public enum Daycare
-        {
-            WildArea,
-            Route5
-        }
-
-        private static readonly SwitchButton[][] arr =
-        {
-            new[] {DDOWN, DDOWN, DDOWN }, // 0
-            new[] {DUP, DUP, DUP, DLEFT}, // 1
-            new[] {DUP, DUP, DUP,      }, // 2
-            new[] {DUP, DUP, DUP,DRIGHT}, // 3
-            new[] {DUP, DUP, DLEFT,    }, // 4
-            new[] {DUP, DUP,           }, // 5
-            new[] {DUP, DUP, DRIGHT,   }, // 6
-            new[] {DUP, DLEFT,         }, // 7
-            new[] {DUP,                }, // 8
-            new[] {DUP, DRIGHT         }, // 9
-        };
     }
 }
