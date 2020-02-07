@@ -38,10 +38,10 @@ namespace SysBot.Pokemon
                 var pkm = GetInjectPokemonData();
                 await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
 
-                if (!await IsGameConnected(token).ConfigureAwait(false))
+                if (!await IsGameConnectedToYCom(token).ConfigureAwait(false))
                 {
                     Connection.Log("Reconnecting to Y-Com...");
-                    await Reconnect_To_YCom(token).ConfigureAwait(false);
+                    await ReconnectToYCom(token).ConfigureAwait(false);
                 }
 
                 Connection.Log("Open Y-COM Menu");

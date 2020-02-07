@@ -1,4 +1,6 @@
-﻿namespace SysBot.Pokemon
+﻿using System;
+
+namespace SysBot.Pokemon
 {
     public static class PokeDataOffsets
     {
@@ -38,5 +40,15 @@
 
         public const int BoxFormatSlotSize = 0x158;
         public const int TrainerDataLength = 0x110;
+
+        public static uint GetDaycareOffset(SwordShieldDaycare daycare)
+        {
+            return daycare switch
+            {
+                SwordShieldDaycare.WildArea => DayCare_Wildarea_Egg_Is_Ready,
+                SwordShieldDaycare.Route5 => DayCare_Route5_Egg_Is_Ready,
+                _ => throw new ArgumentException(nameof(daycare)),
+            };
+        }
     }
 }
