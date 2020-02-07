@@ -17,6 +17,12 @@ namespace SysBot.Base
         /// <returns>Encoded command bytes</returns>
         public static byte[] DetachController() => Encode("detachController");
 
+        /// <summary>
+        /// Configures the sys-botbase parameter to the specified value.
+        /// </summary>
+        /// <returns>Encoded command bytes</returns>
+        public static byte[] Configure(SwitchConfigureParameter p, int ms) => Encode($"{p} {ms}");
+
         /* 
          *
          * Controller Button Commands
