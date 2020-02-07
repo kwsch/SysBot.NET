@@ -44,6 +44,12 @@ namespace SysBot.Pokemon
                     continue;
                 }
 
+                if (!await IsGameConnected(token).ConfigureAwait(false))
+                {
+                    Connection.Log("Reconnecting to Y-Com...");
+                    await Reconnect_To_YCom(token).ConfigureAwait(false);
+                }
+
                 Connection.Log("Starting next trade. Getting data...");
                 poke.InitializeTrade(this);
                 // Update Barrier Settings
