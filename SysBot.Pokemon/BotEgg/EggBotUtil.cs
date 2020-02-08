@@ -7,7 +7,7 @@ namespace SysBot.Pokemon
     public static class EggBotUtil
     {
         /// <summary>
-        /// Initializes a <see cref="SysBot"/> and starts executing a <see cref="SurpriseTradeBot"/>.
+        /// Initializes a <see cref="SysBot"/> connection and starts executing a <see cref="EggBot"/>.
         /// </summary>
         /// <param name="lines">Lines to initialize with</param>
         /// <param name="token">Token to indicate cancellation.</param>

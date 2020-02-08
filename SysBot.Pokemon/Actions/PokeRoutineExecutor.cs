@@ -111,6 +111,15 @@ namespace SysBot.Pokemon
             // Confirm Code outside of this method (allow synchronization)
         }
 
+        public async Task EnsureConnectedToYCom(CancellationToken token)
+        {
+            if (!await IsGameConnectedToYCom(token).ConfigureAwait(false))
+            {
+                Connection.Log("Reconnecting to Y-Com...");
+                await ReconnectToYCom(token).ConfigureAwait(false);
+            }
+        }
+
         public async Task<bool> IsGameConnectedToYCom(CancellationToken token)
         {
             // Reads the Y-Com Flag is the Game is connected Online

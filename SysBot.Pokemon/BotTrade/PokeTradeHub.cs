@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -60,26 +61,28 @@ namespace SysBot.Pokemon
 
         #region Distribution Queue
         public readonly PokeTradeQueue<T> Queue = new PokeTradeQueue<T>();
+        public readonly PokemonPool<T> Pool = new PokemonPool<T>();
+        public readonly ConcurrentListSlim<PokeTradeBot> Bots = new ConcurrentListSlim<PokeTradeBot>();
 
         /// <summary>
         /// Spins up a loop that adds a random <see cref="T"/> to the <see cref="Queue"/> if nothing is in it.
         /// </summary>
         /// <param name="path">Folder to randomly distribute from</param>
         /// <param name="token">Thread cancellation</param>
-        public async Task MonitorQueueAddIfEmpty(string path, CancellationToken token)
+        public async Task MonitorTradeQueueAddIfEmpty(string path, CancellationToken token)
         {
             var blank = (T)Activator.CreateInstance(typeof(T));
-            var pool = new PokemonPool<T> { ExpectedSize = blank.SIZE_PARTY };
-            pool.LoadFolder(path);
+            Pool.ExpectedSize = blank.SIZE_PARTY;
+            Pool.LoadFolder(path);
 
             var trainer = new PokeTradeTrainerInfo("Random");
             while (!token.IsCancellationRequested)
             {
-                await Task.Delay(10_000, token).ConfigureAwait(false);
-                if (Queue.Count != 0)
+                await Task.Delay(1_000, token).ConfigureAwait(false);
+                if (Bots.All(z => z.CurrentRoutine != PokeTradeRoutine.LinkTrade) || Queue.Count != 0)
                     continue;
 
-                var random = pool.GetRandomPoke();
+                var random = Pool.GetRandomPoke();
                 var detail = new PokeTradeDetail<T>(random, trainer, LogNotifier);
                 Queue.Enqueue(detail);
             }

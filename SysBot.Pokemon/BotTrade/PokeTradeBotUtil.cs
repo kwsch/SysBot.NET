@@ -7,15 +7,20 @@ namespace SysBot.Pokemon
 {
     public static class PokeTradeBotUtil
     {
+        public static readonly byte[] EMPTY_EC = new byte[4];
+        public static readonly byte[] EMPTY_SLOT = new byte[344];
+
         /// <summary>
-        /// Initializes a <see cref="SysBot"/> and starts executing a <see cref="SurpriseTradeBot"/>.
+        /// Initializes a <see cref="SysBot"/> connection and starts executing a <see cref="PokeTradeBot"/>.
         /// </summary>
         /// <param name="lines">Lines to initialize with</param>
         /// <param name="queue">Queue to consume from; added to from another thread.</param>
+        /// <param name="routine">Task the Trade Bot will perform</param>
         /// <param name="token">Token to indicate cancellation.</param>
-        public static async Task RunBotAsync(string[] lines, PokeTradeHub<PK8> queue, CancellationToken token)
+        public static async Task RunBotAsync(string[] lines, PokeTradeHub<PK8> queue, PokeTradeRoutine routine, CancellationToken token)
         {
             var bot = CreateNewPokeTradeBot(lines, queue);
+            bot.NextRoutine = routine;
             await bot.RunAsync(token).ConfigureAwait(false);
         }
 

@@ -77,26 +77,14 @@ namespace SysBot.ConsoleApp
         {
             return botType switch
             {
-                1 => DoLinkTradeMulti(configs),
                 2 => DoShinyEggFinder(configs),
-                _ => DoSurpriseTradeMulti(configs),
+                1 => DoTradeHubMulti(PokeTradeRoutine.LinkTrade, configs),
+                0 => DoTradeHubMulti(PokeTradeRoutine.SurpriseTrade, configs),
+                _ => DoTradeHubMulti(PokeTradeRoutine.Idle, configs),
             };
         }
 
-        private static async Task DoSurpriseTradeMulti(params string[][] lines)
-        {
-            // Surprise Trade bots. See associated files.
-            var token = CancellationToken.None;
-            Console.WriteLine($"Creating {lines.Length} bot(s) for Surprise Trades.");
-
-            Task[] threads = new Task[lines.Length];
-            for (int i = 0; i < lines.Length; i++)
-                threads[i] = SurpriseTradeBotUtil.RunBotAsync(lines[i], token);
-
-            await Task.WhenAll(threads).ConfigureAwait(false);
-        }
-
-        private static async Task DoLinkTradeMulti(params string[][] lines)
+        private static async Task DoTradeHubMulti(PokeTradeRoutine initialRoutine = PokeTradeRoutine.Idle, params string[][] lines)
         {
             // Default Bot: Code Trade bots. See associated files.
             var token = CancellationToken.None;
@@ -108,8 +96,8 @@ namespace SysBot.ConsoleApp
 
             Task[] threads = new Task[lines.Length + 1]; // hub as last thread
             for (int i = 0; i < lines.Length; i++)
-                threads[i] = PokeTradeBotUtil.RunBotAsync(lines[i], hub, token);
-            threads[^1] = hub.MonitorQueueAddIfEmpty(hubRandomPath, token);
+                threads[i] = PokeTradeBotUtil.RunBotAsync(lines[i], hub, initialRoutine, token);
+            threads[^1] = hub.MonitorTradeQueueAddIfEmpty(hubRandomPath, token);
 
             await Task.WhenAll(threads).ConfigureAwait(false);
         }

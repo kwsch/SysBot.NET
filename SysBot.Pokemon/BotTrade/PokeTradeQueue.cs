@@ -20,10 +20,11 @@ namespace SysBot.Pokemon
 
         public void Enqueue(PokeTradeDetail<TPoke> detail, uint priority = TierFree) => Queue.Enqueue(priority, detail);
 
-        public bool TryDequeue(out PokeTradeDetail<TPoke> detail)
+        public bool TryDequeue(out PokeTradeDetail<TPoke> detail, out uint priority)
         {
             var result = Queue.TryDequeue(out var kvp);
             detail = kvp.Value;
+            priority = kvp.Key;
             return result;
         }
     }
