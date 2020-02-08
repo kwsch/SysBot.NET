@@ -26,138 +26,249 @@ namespace SysBot.Pokemon
         public PokeTradeBot(PokeTradeHub<PK8> hub, string ip, int port) : base(ip, port) => Hub = hub;
         public PokeTradeBot(PokeTradeHub<PK8> hub, SwitchBotConfig cfg) : this(hub, cfg.IP, cfg.Port) { }
 
-        private static readonly byte[] EMPTY_EC = new byte[4];
-
         private const int InjectBox = 0;
         private const int InjectSlot = 0;
+
+        public PokeTradeRoutine CurrentRoutine { get; private set; }
+        public PokeTradeRoutine NextRoutine { get; set; }
 
         protected override async Task MainLoop(CancellationToken token)
         {
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
-
+            Hub.Bots.Add(this);
             while (!token.IsCancellationRequested)
             {
-                if (!Hub.Queue.TryDequeue(out var poke))
+                CurrentRoutine = NextRoutine;
+                var task = CurrentRoutine switch
                 {
-                    Connection.Log("Waiting for new trade data. Sleeping for a bit.");
-                    await Task.Delay(10_000, token).ConfigureAwait(false);
+                    PokeTradeRoutine.LinkTrade => DoLinkTrades(sav, token),
+                    PokeTradeRoutine.SurpriseTrade => DoSurpriseTrades(sav, token),
+                    _ => DoNothing(token),
+                };
+                await task.ConfigureAwait(false);
+            }
+            Hub.Bots.Remove(this);
+        }
+
+        private async Task DoNothing(CancellationToken token)
+        {
+            bool waiting = false;
+            while (!token.IsCancellationRequested && NextRoutine == PokeTradeRoutine.Idle)
+            {
+                if (!waiting)
+                    Connection.Log("No task assigned. Waiting for new task assignment.");
+                waiting = true;
+                await Task.Delay(1_000, token).ConfigureAwait(false);
+            }
+        }
+
+        private async Task DoLinkTrades(SAV8SWSH sav, CancellationToken token)
+        {
+            bool waiting = false;
+            while (!token.IsCancellationRequested && NextRoutine == PokeTradeRoutine.LinkTrade)
+            {
+                Connection.Log("Starting next Link Code trade. Getting data...");
+                if (!Hub.Queue.TryDequeue(out var poke, out var priority))
+                {
+                    if (!waiting)
+                        Connection.Log("Nothing to send in the queue! Waiting for new trade data.");
+                    waiting = true;
+                    await Task.Delay(1_000, token).ConfigureAwait(false);
                     continue;
                 }
 
-                if (!await IsGameConnectedToYCom(token).ConfigureAwait(false))
-                {
-                    Connection.Log("Reconnecting to Y-Com...");
-                    await ReconnectToYCom(token).ConfigureAwait(false);
-                }
-
-                Connection.Log("Starting next trade. Getting data...");
-                poke.InitializeTrade(this);
-                // Update Barrier Settings
-                ShouldWaitAtBarrier = UpdateBarrier(Hub.Barrier, poke.IsRandomCode, ShouldWaitAtBarrier);
-                var pkm = poke.TradeData;
-                await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
-
-                // load up y comm
-                await Click(Y, 1_000, token).ConfigureAwait(false);
-
-                // Select Link Trade Trade
-                await Click(A, 1_000, token).ConfigureAwait(false);
-
-                // Select Password
-                await Click(DDOWN, 200, token).ConfigureAwait(false);
-
-                for (int i = 0; i < 2; i++)
-                    await Click(A, 2_000, token).ConfigureAwait(false);
-
-                // Loading Screen
-                await Task.Delay(2_000, token).ConfigureAwait(false);
-
-                // Enter Code
-                var code = poke.Code;
-                if (code < 0)
-                    code = Hub.GetRandomTradeCode();
-                await EnterTradeCode(code, token).ConfigureAwait(false);
-
-                // Wait for Barrier to trigger all bots simultaneously.
-                if (ShouldWaitAtBarrier && Hub.UseBarrier)
-                    Hub.Barrier.SignalAndWait(TimeSpan.FromSeconds(60), token);
-                await Click(PLUS, 0_100, token).ConfigureAwait(false);
-
-                // Start a Link Trade, in case of Empty Slot/Egg/Bad Pokemon we press sometimes B to return to the Overworld and skip this Slot.
-                // Confirming...
-                for (int i = 0; i < 4; i++)
-                    await Click(A, 2_000, token).ConfigureAwait(false);
-
-                poke.SearchTrade(this);
-                await Task.Delay(Util.Rand.Next(100, 1000), token).ConfigureAwait(false);
-
-                await Click(A, 1_000, token).ConfigureAwait(false);
-
-                // Wait 40 Seconds for Trainer...
-                await Connection.WriteBytesAsync(new byte[344], ShownTradeDataOffset, token).ConfigureAwait(false);
-                var partnerFound = await ReadUntilChanged(ShownTradeDataOffset, EMPTY_EC, 40_000, 2_000, token).ConfigureAwait(false);
-
-                if (!partnerFound)
-                    break; // Error handling here!
-
-                // Potential Trainer Found!
-
-                // Select Pokemon
-                // pkm already injected to b1s1
-                await Task.Delay(300, token).ConfigureAwait(false);
-
-                await Click(A, 2_000, token).ConfigureAwait(false);
-                await Click(A, 2_000, token).ConfigureAwait(false);
-
-                // Wait for User Input...
-                var pk = await ReadUntilPresent(ShownTradeDataOffset, 25_000, 1_000, token).ConfigureAwait(false);
-                if (pk == null)
-                    break; // Error handling here!
-
-                await Click(A, 3_000, token).ConfigureAwait(false);
-                for (int i = 0; i < 3; i++)
-                    await Click(A, 1_500, token).ConfigureAwait(false);
-
-                // Wait 30 Seconds until Trade is finished...
-                await Task.Delay(30_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
-
-                // Pokemon has probably arrived, bypass Trade Evolution...
-                await Click(Y, 1_000, token).ConfigureAwait(false);
-
-                await Task.Delay(1_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
-
-                for (int i = 0; i < 10; i++)
-                {
-                    await Click(B, 1_000, token).ConfigureAwait(false);
-                    await Click(B, 1_000, token).ConfigureAwait(false);
-                    await Click(A, 1_000, token).ConfigureAwait(false);
-                }
-
-                for (int i = 0; i < 3; i++)
-                    await Click(A, 1_000, token).ConfigureAwait(false);
-
-                // Spam A Button in Case of Trade Evolution/Moves Learning/Dex
-                for (int i = 0; i < 20; i++)
-                    await Click(A, 1_000, token).ConfigureAwait(false);
-
-                for (int i = 0; i < 3; i++)
-                    await Click(B, 1_000, token).ConfigureAwait(false);
-
-                // Trade was Successful!
-                if (token.IsCancellationRequested)
-                    break;
-
-                poke.CompleteTrade(this);
-                Connection.Log("Trade complete!");
-                Hub.AddCompletedTrade();
-                if (DumpFolder != null)
-                    DumpPokemon(DumpFolder, await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false));
+                waiting = false;
+                await EnsureConnectedToYCom(token).ConfigureAwait(false);
+                var result = await PerformLinkCodeTrade(sav, poke, token).ConfigureAwait(false);
+                if (result != PokeTradeResult.Success) // requeue
+                    Hub.Queue.Enqueue(poke, priority);
             }
 
-            ExitRoutine();
+            ExitLinkTradeRoutine();
         }
 
-        private void ExitRoutine()
+        private async Task DoSurpriseTrades(SAV8SWSH sav, CancellationToken token)
+        {
+            while (!token.IsCancellationRequested && NextRoutine == PokeTradeRoutine.SurpriseTrade)
+            {
+                var pkm = Hub.Pool.GetRandomPoke();
+                await EnsureConnectedToYCom(token).ConfigureAwait(false);
+                var _ = await PerformSurpriseTrade(sav, pkm, token).ConfigureAwait(false);
+            }
+        }
+
+        private async Task<PokeTradeResult> PerformLinkCodeTrade(SAV8SWSH sav, PokeTradeDetail<PK8> poke, CancellationToken token)
+        {
+            poke.TradeInitialize(this);
+            // Update Barrier Settings
+            ShouldWaitAtBarrier = UpdateBarrier(Hub.Barrier, poke.IsRandomCode, ShouldWaitAtBarrier);
+            var pkm = poke.TradeData;
+            await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+
+            Connection.Log("Open Y-COM Menu");
+            await Click(Y, 1_000, token).ConfigureAwait(false);
+
+            Connection.Log("Select Link Trade");
+            await Click(A, 1_000, token).ConfigureAwait(false);
+
+            Connection.Log("Select Link Trade Code");
+            await Click(DDOWN, 200, token).ConfigureAwait(false);
+
+            for (int i = 0; i < 2; i++)
+                await Click(A, 2_000, token).ConfigureAwait(false);
+
+            // Loading Screen
+            await Task.Delay(2_000, token).ConfigureAwait(false);
+
+            Connection.Log("Entering Link Trade Code...");
+            var code = poke.Code;
+            if (code < 0)
+                code = Hub.GetRandomTradeCode();
+            await EnterTradeCode(code, token).ConfigureAwait(false);
+
+            // Wait for Barrier to trigger all bots simultaneously.
+            if (ShouldWaitAtBarrier && Hub.UseBarrier)
+                Hub.Barrier.SignalAndWait(TimeSpan.FromSeconds(60), token);
+            await Click(PLUS, 0_100, token).ConfigureAwait(false);
+
+            // Start a Link Trade, in case of Empty Slot/Egg/Bad Pokemon we press sometimes B to return to the Overworld and skip this Slot.
+            // Confirming...
+            for (int i = 0; i < 4; i++)
+                await Click(A, 2_000, token).ConfigureAwait(false);
+
+            poke.TradeSearching(this);
+            await Task.Delay(Util.Rand.Next(100, 1000), token).ConfigureAwait(false);
+
+            await Click(A, 1_000, token).ConfigureAwait(false);
+
+            // Clear the shown data offset.
+            await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, ShownTradeDataOffset, token).ConfigureAwait(false);
+
+            // Wait 40 Seconds for Trainer...
+            var partnerFound = await ReadUntilChanged(ShownTradeDataOffset, PokeTradeBotUtil.EMPTY_EC, 40_000, 2_000, token).ConfigureAwait(false);
+
+            if (token.IsCancellationRequested)
+                return PokeTradeResult.Aborted;
+            if (!partnerFound)
+                return PokeTradeResult.NoTrainerFound;
+
+            // Potential Trainer Found!
+
+            // Select Pokemon
+            // pkm already injected to b1s1
+            await Task.Delay(300, token).ConfigureAwait(false);
+
+            await Click(A, 2_000, token).ConfigureAwait(false);
+            await Click(A, 2_000, token).ConfigureAwait(false);
+
+            // Wait for User Input...
+            var pk = await ReadUntilPresent(ShownTradeDataOffset, 25_000, 1_000, token).ConfigureAwait(false);
+            if (pk == null)
+                return PokeTradeResult.TrainerTooSlow;
+
+            await Click(A, 3_000, token).ConfigureAwait(false);
+            for (int i = 0; i < 3; i++)
+                await Click(A, 1_500, token).ConfigureAwait(false);
+
+            // Wait 30 Seconds until Trade is finished...
+            await Task.Delay(30_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
+
+            // Pokemon has probably arrived, bypass Trade Evolution...
+            await Click(Y, 1_000, token).ConfigureAwait(false);
+
+            await Task.Delay(1_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
+
+            for (int i = 0; i < 10; i++)
+            {
+                await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
+            }
+
+            for (int i = 0; i < 3; i++)
+                await Click(A, 1_000, token).ConfigureAwait(false);
+
+            // Spam A Button in Case of Trade Evolution/Moves Learning/Dex
+            for (int i = 0; i < 20; i++)
+                await Click(A, 1_000, token).ConfigureAwait(false);
+
+            for (int i = 0; i < 3; i++)
+                await Click(B, 1_000, token).ConfigureAwait(false);
+
+            if (token.IsCancellationRequested)
+                return PokeTradeResult.Aborted;
+
+            // Trade was Successful!
+            poke.TradeFinished(this);
+            Connection.Log("Trade complete!");
+            Hub.AddCompletedTrade();
+            if (DumpFolder != null)
+                DumpPokemon(DumpFolder, await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false));
+
+            return PokeTradeResult.Success;
+        }
+
+        private async Task<PokeTradeResult> PerformSurpriseTrade(SAV8SWSH sav, PK8 pkm, CancellationToken token)
+        {
+            // Inject to b1s1
+            Connection.Log("Starting next Surprise Trade. Getting data...");
+            await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+
+            Connection.Log("Open Y-COM Menu");
+            await Click(Y, 1_000, token).ConfigureAwait(false);
+
+            if (token.IsCancellationRequested)
+                return PokeTradeResult.Aborted;
+
+            Connection.Log("Select Surprise Trade");
+            await Click(DDOWN, 0_100, token).ConfigureAwait(false);
+            await Click(A, 4_000, token).ConfigureAwait(false);
+
+            if (token.IsCancellationRequested)
+                return PokeTradeResult.Aborted;
+
+            Connection.Log("Select Pokemon");
+            // Box 1 Slot 1
+            await Click(A, 0_700, token).ConfigureAwait(false);
+
+            if (token.IsCancellationRequested)
+                return PokeTradeResult.Aborted;
+
+            Connection.Log("Confirming...");
+            await Click(A, 8_000, token).ConfigureAwait(false);
+            for (int i = 0; i < 3; i++)
+                await Click(A, 0_700, token).ConfigureAwait(false);
+
+            if (token.IsCancellationRequested)
+                return PokeTradeResult.Aborted;
+
+            // Time we wait for a trade
+            await Task.Delay(45_000, token).ConfigureAwait(false);
+            await Click(Y, 0_700, token).ConfigureAwait(false);
+
+            if (token.IsCancellationRequested)
+                return PokeTradeResult.Aborted;
+
+            await WaitForSurpriseTradeToFinish(token).ConfigureAwait(false);
+
+            if (token.IsCancellationRequested)
+                return PokeTradeResult.Aborted;
+
+            Connection.Log("Trade complete!");
+            if (DumpFolder != null)
+                DumpPokemon(DumpFolder, await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false));
+
+            return PokeTradeResult.Success;
+        }
+
+        private async Task WaitForSurpriseTradeToFinish(CancellationToken token)
+        {
+            // Spam A Button in Case of Trade Evolution/Moves Learning/Dex
+            for (int i = 0; i < 20; i++)
+                await Click(A, 1_000, token).ConfigureAwait(false);
+        }
+
+        private void ExitLinkTradeRoutine()
         {
             // On exit, remove self from Barrier list
             if (ShouldWaitAtBarrier)
