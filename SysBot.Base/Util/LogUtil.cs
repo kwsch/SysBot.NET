@@ -13,7 +13,8 @@ namespace SysBot.Base
 
         public static void Log(LogLevel level, string message, string identity)
         {
-            Logger.Log(level, message);
+            Console.WriteLine(message);
+            // Logger.Log(level, message));
             foreach (var fwd in Forwarders)
                 fwd(message, identity);
         }
