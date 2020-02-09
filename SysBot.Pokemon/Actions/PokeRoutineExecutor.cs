@@ -161,8 +161,8 @@ namespace SysBot.Pokemon
 
         public async Task<SlotQualityCheck> GetBoxSlotQuality(int box, int slot, CancellationToken token)
         {
-            var b1s1 = await ReadBoxPokemon(box, slot, token).ConfigureAwait(false);
-            return new SlotQualityCheck(b1s1);
+            var result = await ReadBoxPokemon(box, slot, token).ConfigureAwait(false);
+            return new SlotQualityCheck(result);
         }
 
         public void PrintBadSlotMessage(SlotQualityCheck q)
