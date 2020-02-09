@@ -17,7 +17,7 @@ namespace SysBot.Base
         /// <param name="token">Cancel this token to have the bot stop looping.</param>
         public async Task RunAsync(CancellationToken token)
         {
-            await Connection.Connect().ConfigureAwait(false);
+            Connection.Connect();
             await MainLoop(token).ConfigureAwait(false);
             Connection.Disconnect();
         }

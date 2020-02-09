@@ -14,9 +14,9 @@ namespace SysBot.Base
         public SwitchConnectionAsync(string ipaddress, int port) : base(ipaddress, port) { }
         public SwitchConnectionAsync(SwitchBotConfig cfg) : this(cfg.IP, cfg.Port) { }
 
-        public async Task Connect()
+        public void Connect()
         {
-            await Connection.ConnectAsync(IP, Port).ConfigureAwait(false);
+            Connection.Connect(IP, Port);
             Connected = true;
         }
 

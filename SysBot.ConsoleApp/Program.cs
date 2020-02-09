@@ -97,7 +97,7 @@ namespace SysBot.ConsoleApp
             Task[] threads = new Task[lines.Length + 1]; // hub as last thread
             for (int i = 0; i < lines.Length; i++)
                 threads[i] = PokeTradeBotUtil.RunBotAsync(lines[i], hub, initialRoutine, token);
-            threads[^1] = hub.MonitorTradeQueueAddIfEmpty(hubRandomPath, token);
+            threads[threads.Length - 1] = hub.MonitorTradeQueueAddIfEmpty(hubRandomPath, token);
 
             await Task.WhenAll(threads).ConfigureAwait(false);
         }
