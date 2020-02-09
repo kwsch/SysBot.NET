@@ -5,5 +5,6 @@
         Idle,
         LinkTrade,
         SurpriseTrade,
+        Reserved,
     }
 }

@@ -5,7 +5,7 @@ using System.Linq;
 namespace System.Collections.Concurrent
 {
     [DebuggerDisplay("Count={" + nameof(Count) + "}")]
-    public class ConcurrentListSlim<T>
+    public class FlexBotList<T>
     {
         private readonly object _syncLock = new object();
         private readonly List<T> _list = new List<T>();
@@ -35,6 +35,19 @@ namespace System.Collections.Concurrent
         {
             lock (_syncLock)
                 return _list.All(condition);
+        }
+
+        public bool Tag(Predicate<T> condition, Action<T> action, out T result)
+        {
+            lock (_syncLock)
+            {
+                result = _list.Find(condition);
+                if (result == null)
+                    return false;
+
+                action(result);
+                return true;
+            }
         }
     }
 }
