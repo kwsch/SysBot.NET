@@ -94,6 +94,14 @@ namespace SysBot.ConsoleApp
             Console.WriteLine($"Creating a hub for {lines.Length} bot(s) with random distribution from the following path: {hubRandomPath}");
             var hub = new PokeTradeHub<PK8>();
 
+            const string hubcfg = "hub.txt";
+            if (File.Exists(hubcfg))
+            {
+                var txt = File.ReadAllLines(hubcfg);
+                hub.MinTradeCode = int.Parse(txt[0]);
+                hub.MaxTradeCode = int.Parse(txt[1]);
+            }
+
             Task[] threads = new Task[lines.Length + 1]; // hub as last thread
             for (int i = 0; i < lines.Length; i++)
                 threads[i] = PokeTradeBotUtil.RunBotAsync(lines[i], hub, initialRoutine, token);
