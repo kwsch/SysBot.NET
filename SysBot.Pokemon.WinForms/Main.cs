@@ -72,7 +72,7 @@ namespace SysBot.Pokemon.WinForms
             var index = RunningEnvironment!.Bots.IndexOf(bot);
             var start = line.IndexOf(bot.Connection.Name, StringComparison.Ordinal);
             var substring = line.Substring(start).Trim();
-            LV_Bots.Items[index].SubItems[2].Text = substring;
+            LV_Bots.Items[index].SubItems[3].Text = substring;
         }
 
         private BotEnvironmentConfig GetCurrentConfiguration()

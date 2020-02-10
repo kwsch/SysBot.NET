@@ -44,7 +44,7 @@ namespace SysBot.Pokemon
                 {
                     PokeRoutineType.LinkTrade => DoLinkTrades(sav, token),
                     PokeRoutineType.SurpriseTrade => DoSurpriseTrades(sav, token),
-                    PokeRoutineType.DuduBot => DoDuduTrades(sav, token),
+                    PokeRoutineType.DuduBot => DoDuduTrades(token),
                     _ => DoNothing(token),
                 };
                 await task.ConfigureAwait(false);
@@ -99,12 +99,12 @@ namespace SysBot.Pokemon
             }
         }
 
-        private async Task DoDuduTrades(SAV8SWSH sav, CancellationToken token)
+        private async Task DoDuduTrades(CancellationToken token)
         {
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.DuduBot)
             {
                 await EnsureConnectedToYCom(token).ConfigureAwait(false);
-                var _ = await PerformDuduTrade(sav, token).ConfigureAwait(false);
+                var _ = await PerformDuduTrade(token).ConfigureAwait(false);
             }
         }
 
@@ -292,7 +292,7 @@ namespace SysBot.Pokemon
             return PokeTradeResult.Success;
         }
 
-        private async Task<PokeTradeResult> PerformDuduTrade(SAV8SWSH sav, CancellationToken token)
+        private async Task<PokeTradeResult> PerformDuduTrade(CancellationToken token)
         {
             Connection.Log("Starting next Dudu Bot Trade. Getting data...");
             Connection.Log("Open Y-COM Menu");
