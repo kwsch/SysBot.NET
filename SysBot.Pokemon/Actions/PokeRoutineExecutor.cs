@@ -127,6 +127,12 @@ namespace SysBot.Pokemon
             return Encoding.Unicode.GetString(data).Trim('\0') == Name;
         }
 
+        public async Task<bool> CheckIfTradePartnerIsFound(string Name, CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(TradePartnerNameOffset, 26, token);
+            return string.IsNullOrEmpty(Encoding.Unicode.GetString(data).Trim('\0'));
+        }
+
         public async Task<bool> IsGameConnectedToYCom(CancellationToken token)
         {
             // Reads the Y-Com Flag is the Game is connected Online
