@@ -20,11 +20,13 @@ namespace SysBot.Base
 
         public static T GetConfig<T>(string ip, int port) where T : SwitchBotConfig, new()
         {
-            return new T
+            var cfg = new T
             {
                 IP = ip,
                 Port = port,
             };
+            cfg.IP = cfg.GetAddress().ToString(); // sanitize leading zeroes out for paranoia's sake
+            return cfg;
         }
     }
 }
