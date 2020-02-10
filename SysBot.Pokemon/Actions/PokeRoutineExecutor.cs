@@ -204,19 +204,19 @@ namespace SysBot.Pokemon
             return BitConverter.ToUInt16(data, 0) == expectedScreen;
         }
 
-        /*
         public async Task GetScreenState(CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(ScreenStateOffset,4, token).ConfigureAwait(false);
-
             uint State = BitConverter.ToUInt16(data, 0);
 
-            if(State == Overworld) { Connection.Log("Overworld "); }
-            else if (State == BoxView) { Connection.Log("Box is Open"); }
-            else if (State == DuringTrade) { Connection.Log("Trade Animation"); }
-            else if (State == TradeEvo) { Connection.Log("Trade Evolution"); }
+            var status = "No Status";
+            if (State == Overworld) status = "Overworld";
+            if (State == BoxView) status = "Viewing the box";
+            if (State == TradeEvo) status = "In a Trade Evolution";
+            if (State == DuringTrade) status = "Trading";
+
+            Connection.Log(status);
         }
-        */
 
         public async Task<SlotQualityCheck> GetBoxSlotQuality(int box, int slot, CancellationToken token)
         {
