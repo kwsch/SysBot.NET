@@ -6,17 +6,31 @@ namespace SysBot.Pokemon
 {
     public sealed class PokeTradeHubConfig : IDumper
     {
+        private const string FeatureToggle = nameof(FeatureToggle);
         private const string Files = nameof(Files);
         private const string TradeCode = nameof(TradeCode);
 
+        #region Toggles
+        [Category(FeatureToggle), Description("Destination folder: where all received PKM files are dumped to.")]
+        public bool Dump { get; set; }
+
+        [Category(FeatureToggle), Description("Link Trade: Distributes PKM files when idle.")]
+        public bool DistributeWhileIdle { get; set; } = true;
+
+        [Category(FeatureToggle), Description("Link Trade: Enables trading priority files.")]
+        public bool MonitorForPriorityTrades { get; set; }
+        #endregion
+
+        #region Folders
         [Category(Files), Description("Source folder: where PKM files to distribute are selected from.")]
         public string DistributeFolder { get; set; } = string.Empty;
 
         [Category(Files), Description("Destination folder: where all received PKM files are dumped to.")]
         public string DumpFolder { get; set; } = string.Empty;
 
-        [Category(Files), Description("Destination folder: where all received PKM files are dumped to.")]
-        public bool Dump { get; set; }
+        [Category(Files), Description("Link Trade: where priority PKM details to distribute are selected from.")]
+        public string PriorityFolder { get; set; } = string.Empty;
+        #endregion
 
         #region Trade Codes
         /// <summary>
@@ -35,7 +49,7 @@ namespace SysBot.Pokemon
         /// Amount of Trades that have been completed.
         /// </summary>
         [Category(TradeCode), Description("Completed Trades.")]
-        public uint CompletedTrades { get; set; } = 0;
+        public int CompletedTrades { get; set; }
 
         /// <summary>
         /// Gets a random trade code based on the range settings.

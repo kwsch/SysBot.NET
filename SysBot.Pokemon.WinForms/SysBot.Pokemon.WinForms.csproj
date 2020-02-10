@@ -11,13 +11,13 @@
     <Description>Nintendo Switch Pokémon Bot Manager</Description>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <StartupObject>SysBot.Pokemon.WinForms.Program</StartupObject>
-    <AssemblyName>SysBot.Pokemon</AssemblyName>
+    <AssemblyName>SysBot.Pokemon.WinForms</AssemblyName>
     <LangVersion>8</LangVersion>
     <Version>01.00.00</Version>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup Condition="$(TargetFramework.StartsWith('net4')) AND '$(Configuration)' == 'Release'">
+  <ItemGroup>
     <PackageReference Include="Costura.Fody" Version="4.1.0" />
     <PackageReference Include="Fody" Version="6.0.5">
       <PrivateAssets>all</PrivateAssets>

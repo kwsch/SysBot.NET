@@ -1,7 +1,6 @@
 ﻿using System;
-using SysBot.Pokemon;
 
-namespace SysBot.WinForms
+namespace SysBot.Pokemon.WinForms
 {
     public sealed class BotEnvironmentConfig
     {

@@ -1,6 +1,5 @@
 using System;
 using System.Windows.Forms;
-using SysBot.WinForms;
 
 namespace SysBot.Pokemon.WinForms
 {

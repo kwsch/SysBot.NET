@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace SysBot.WinForms
+namespace SysBot.Pokemon.WinForms
 {
     public static class WinFormsUtil
     {

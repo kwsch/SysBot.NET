@@ -1,6 +1,6 @@
 ﻿using SysBot.Pokemon.WinForms.Properties;
 
-namespace SysBot.WinForms
+namespace SysBot.Pokemon.WinForms
 {
     partial class Main
     {
@@ -30,6 +30,10 @@ namespace SysBot.WinForms
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
+            "",
+            "192.168.001.001",
+            ""}, -1);
             this.B_New = new System.Windows.Forms.Button();
             this.B_Delete = new System.Windows.Forms.Button();
             this.LV_Bots = new System.Windows.Forms.ListView();
@@ -72,6 +76,7 @@ namespace SysBot.WinForms
             this.B_Delete.TabIndex = 1;
             this.B_Delete.Text = "Delete";
             this.B_Delete.UseVisualStyleBackColor = true;
+            this.B_Delete.Click += new System.EventHandler(this.B_Delete_Click);
             // 
             // LV_Bots
             // 
@@ -82,7 +87,10 @@ namespace SysBot.WinForms
             this.CH_Name,
             this.CH_IP,
             this.CH_Port});
+            this.LV_Bots.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LV_Bots.HideSelection = false;
+            this.LV_Bots.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
+            listViewItem1});
             this.LV_Bots.Location = new System.Drawing.Point(3, 29);
             this.LV_Bots.Name = "LV_Bots";
             this.LV_Bots.Size = new System.Drawing.Size(511, 183);
@@ -92,6 +100,7 @@ namespace SysBot.WinForms
             // CH_Name
             // 
             this.CH_Name.Text = "Name";
+            this.CH_Name.Width = 150;
             // 
             // CH_IP
             // 

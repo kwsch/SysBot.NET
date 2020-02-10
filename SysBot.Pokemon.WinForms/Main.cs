@@ -6,9 +6,8 @@ using System.Windows.Forms;
 using Newtonsoft.Json;
 using PKHeX.Core;
 using SysBot.Base;
-using SysBot.Pokemon;
 
-namespace SysBot.WinForms
+namespace SysBot.Pokemon.WinForms
 {
     public sealed partial class Main : Form
     {
@@ -43,7 +42,7 @@ namespace SysBot.WinForms
             CB_Routine.ValueMember = nameof(ComboItem.Value);
             CB_Routine.DataSource = list;
             TB_IP.ValidatingType = typeof(System.Net.IPAddress);
-            CB_Routine.SelectedValue = nameof(PokeRoutineType.LinkTrade); // default option
+            CB_Routine.SelectedIndex = 2; // default option
         }
 
         private BotEnvironmentConfig GetCurrentConfiguration()
@@ -92,6 +91,33 @@ namespace SysBot.WinForms
         {
             var cfg = CreateNewBotConfig();
             Bots.Add(cfg);
+
+            var row = new[] { cfg.IP, cfg.Port.ToString(), cfg.NextRoutineType.ToString() };
+            var lvi = new ListViewItem(row);
+            LV_Bots.Items.Add(lvi);
+
+            B_Start.Enabled = true;
+            B_Delete.Enabled = true;
+            System.Media.SystemSounds.Asterisk.Play();
+        }
+
+        private void B_Delete_Click(object sender, EventArgs e)
+        {
+            var indexes = LV_Bots.SelectedIndices;
+            var items = indexes.Cast<int>().OrderByDescending(z => z);
+            foreach (var item in items)
+            {
+                Bots.RemoveAt(item);
+                LV_Bots.Items.RemoveAt(item);
+            }
+
+            if (Bots.Count == 0)
+            {
+                B_Start.Enabled = false;
+                B_Delete.Enabled = false;
+            }
+
+            System.Media.SystemSounds.Asterisk.Play();
         }
 
         private PokeBotConfig CreateNewBotConfig()
