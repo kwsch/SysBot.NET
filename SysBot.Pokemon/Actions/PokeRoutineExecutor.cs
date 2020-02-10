@@ -127,10 +127,10 @@ namespace SysBot.Pokemon
             return StringConverter.GetString7(data, 0, 26) == Name;
         }
 
-        public async Task<bool> CheckIfTradePartnerIsFound(string Name, CancellationToken token)
+        public async Task<string> GetTradePartnerName(CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(TradePartnerNameOffset, 26, token);
-            return string.IsNullOrEmpty(StringConverter.GetString7(data,0,26));
+            return StringConverter.GetString7(data,0,26);
         }
 
         public async Task<bool> IsGameConnectedToYCom(CancellationToken token)

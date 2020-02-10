@@ -160,9 +160,8 @@ namespace SysBot.Pokemon
 
             // Select Pokemon
             // pkm already injected to b1s1
-            var trainerName = await Connection.ReadBytesAsync(TradePartnerNameOffset, 26, token);
-            var tradingPartner = StringConverter.GetString7(trainerName, 0, 26);
-            Connection.Log($"Found Trading Partner: {tradingPartner} ...");
+            var TrainerName = await GetTradePartnerName(token).ConfigureAwait(false);
+            Connection.Log($"Found Trading Partner: {TrainerName} ...");
             await Task.Delay(300, token).ConfigureAwait(false);
 
             await Click(A, 2_000, token).ConfigureAwait(false);
@@ -203,7 +202,14 @@ namespace SysBot.Pokemon
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
 
-            if(await ReadBoxPokemon(0,0,token) != pkm) { Connection.Log("Trade was successfully!"); }
+            if (await ReadBoxPokemon(0, 0, token) == pkm)
+            {
+                Connection.Log("Trade failed, return to Overworld!");
+                await ResetTradePosition(token);
+                return PokeTradeResult.NoTrainerFound;
+            }
+            else
+                Connection.Log("Trade was successfull");
 
             // Trade was Successful!
             poke.TradeFinished(this);
