@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
+using SysBot.Base;
+using LogLevel = NLog.LogLevel;
 
 namespace SysBot.Pokemon.WinForms
 {
@@ -32,12 +34,7 @@ namespace SysBot.Pokemon.WinForms
 
         private List<Task> CreateBotTasks(CancellationToken token)
         {
-            var tasks = new List<Task>();
-            foreach (var b in Bots)
-            {
-                var task = b.RunAsync(token);
-                tasks.Add(task);
-            }
+            var tasks = Bots.Select(b => b.RunAsync(token)).ToList();
             bool hasTradeBot = Bots.Any(z => z is PokeTradeBot);
             if (hasTradeBot)
                 AddTradeBotMonitors(tasks, token);
@@ -53,6 +50,9 @@ namespace SysBot.Pokemon.WinForms
                     throw new DirectoryNotFoundException(nameof(path));
                 var task = Hub.MonitorTradeQueueAddIfEmpty(path, token);
                 tasks.Add(task);
+
+                if (Hub.Pool.Count == 0)
+                    LogUtil.Log(LogLevel.Error, "Nothing to distribute for Empty Trade Queues!", "Hub");
             }
             if (Hub.Config.MonitorForPriorityTrades)
             {

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Newtonsoft.Json;
+using NLog;
 using PKHeX.Core;
 using SysBot.Base;
 
@@ -46,6 +47,17 @@ namespace SysBot.Pokemon.WinForms
             CB_Routine.ValueMember = nameof(ComboItem.Value);
             CB_Routine.DataSource = list;
             CB_Routine.SelectedIndex = 2; // default option
+
+            LogUtil.Forwarders.Add(AppendLog);
+        }
+
+        private void AppendLog(string message, string identity)
+        {
+            var line = $"{identity}: {message}{Environment.NewLine}";
+            if (InvokeRequired)
+                Invoke((MethodInvoker)delegate { RTB_Logs.AppendText(line); });
+            else
+                RTB_Logs.AppendText(line);
         }
 
         private BotEnvironmentConfig GetCurrentConfiguration()
@@ -72,7 +84,9 @@ namespace SysBot.Pokemon.WinForms
             B_Stop.Enabled = true;
             B_New.Enabled = false;
             B_Delete.Enabled = false;
+            LogUtil.Log(LogLevel.Info, "Starting", "Form");
             env.Start(cfg);
+            Tab_Logs.Select();
             RunningEnvironment = env;
         }
 
