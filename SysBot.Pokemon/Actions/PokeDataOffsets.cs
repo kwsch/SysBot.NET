@@ -7,6 +7,7 @@ namespace SysBot.Pokemon
         public const uint Box1Slot1 = 0x4293D8B0;
         public const uint TrainerDataOffset = 0x42935E48;
         public const uint ShownTradeDataOffset = 0x2E32206A;
+        public const uint TradePartnerNameOffset = 0xAC84173C;
 
         public const uint IsConnected = 0x2f865c78;
 
