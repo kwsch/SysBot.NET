@@ -92,6 +92,7 @@ namespace SysBot.Pokemon.WinForms
                 case PokeRoutineType.Reserved:
                 case PokeRoutineType.LinkTrade:
                 case PokeRoutineType.SurpriseTrade:
+                case PokeRoutineType.DuduBot:
                     return new PokeTradeBot(Hub, cfg);
 
                 case PokeRoutineType.EggFetch:

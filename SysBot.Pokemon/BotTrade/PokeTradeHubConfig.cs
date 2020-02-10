@@ -57,7 +57,7 @@ namespace SysBot.Pokemon
         /// <summary>
         /// Gets a random trade code based on the range settings.
         /// </summary>
-        public int GetRandomTradeCode() => Util.Rand.Next(MinTradeCode, MaxTradeCode + 1);
+        public int GetRandomTradeCode() => PKHeX.Core.Util.Rand.Next(MinTradeCode, MaxTradeCode + 1);
         #endregion
 
         public void CreateDefaults(string path)

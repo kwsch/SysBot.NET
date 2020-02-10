@@ -7,5 +7,6 @@
         LinkTrade,
         SurpriseTrade,
         EggFetch,
+        DuduBot,
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
@@ -44,6 +45,7 @@ namespace SysBot.Pokemon
                 {
                     PokeRoutineType.LinkTrade => DoLinkTrades(sav, token),
                     PokeRoutineType.SurpriseTrade => DoSurpriseTrades(sav, token),
+                    PokeRoutineType.DuduBot => DoDuduTrades(sav, token),
                     _ => DoNothing(token),
                 };
                 await task.ConfigureAwait(false);
@@ -98,6 +100,15 @@ namespace SysBot.Pokemon
             }
         }
 
+        private async Task DoDuduTrades(SAV8SWSH sav, CancellationToken token)
+        {
+            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.DuduBot)
+            {
+                await EnsureConnectedToYCom(token).ConfigureAwait(false);
+                var _ = await PerformDuduTrade(sav, token).ConfigureAwait(false);
+            }
+        }
+
         private async Task<PokeTradeResult> PerformLinkCodeTrade(SAV8SWSH sav, PokeTradeDetail<PK8> poke, CancellationToken token)
         {
             poke.TradeInitialize(this);
@@ -138,7 +149,7 @@ namespace SysBot.Pokemon
                 await Click(A, 2_000, token).ConfigureAwait(false);
 
             poke.TradeSearching(this);
-            await Task.Delay(Util.Rand.Next(100, 1000), token).ConfigureAwait(false);
+            await Task.Delay(PKHeX.Core.Util.Rand.Next(100, 1000), token).ConfigureAwait(false);
 
             await Click(A, 1_000, token).ConfigureAwait(false);
 
@@ -180,12 +191,12 @@ namespace SysBot.Pokemon
                 await Click(A, 1_500, token).ConfigureAwait(false);
 
             // Wait 30 Seconds until Trade is finished...
-            await Task.Delay(30_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
+            await Task.Delay(30_000 + PKHeX.Core.Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
 
             // Pokemon has probably arrived, bypass Trade Evolution...
             await Click(Y, 1_000, token).ConfigureAwait(false);
 
-            await Task.Delay(1_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
+            await Task.Delay(1_000 + PKHeX.Core.Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
 
             await ExitTrade(token);
 
@@ -272,6 +283,95 @@ namespace SysBot.Pokemon
                 DumpPokemon(DumpFolder, await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false));
 
             await Task.Delay(10_000, token).ConfigureAwait(false);
+
+            return PokeTradeResult.Success;
+        }
+
+        private async Task<PokeTradeResult> PerformDuduTrade(SAV8SWSH sav, CancellationToken token)
+        {
+            Connection.Log("Starting next Dudu Bot Trade. Getting data...");
+            Connection.Log("Open Y-COM Menu");
+            await Click(Y, 1_000, token).ConfigureAwait(false);
+
+            Connection.Log("Select Link Trade");
+            await Click(A, 1_000, token).ConfigureAwait(false);
+
+            Connection.Log("Select Link Trade Code");
+            await Click(DDOWN, 200, token).ConfigureAwait(false);
+
+            for (int i = 0; i < 2; i++)
+                await Click(A, 2_000, token).ConfigureAwait(false);
+
+            // Loading Screen
+            await Task.Delay(2_000, token).ConfigureAwait(false);
+
+            var code = Hub.Config.GetRandomTradeCode();
+            Connection.Log($"Entering Link Trade Code: {code} ...");
+            await EnterTradeCode(code, token).ConfigureAwait(false);
+
+            // Wait for Barrier to trigger all bots simultaneously.
+            if (ShouldWaitAtBarrier && Hub.UseBarrier)
+                Hub.Barrier.SignalAndWait(TimeSpan.FromSeconds(60), token);
+            await Click(PLUS, 0_100, token).ConfigureAwait(false);
+
+            // Start a Link Trade, in case of Empty Slot/Egg/Bad Pokemon we press sometimes B to return to the Overworld and skip this Slot.
+            // Confirming...
+            for (int i = 0; i < 4; i++)
+                await Click(A, 2_000, token).ConfigureAwait(false);
+
+            Connection.Log("Searching for a trade partner");
+            await Task.Delay(PKHeX.Core.Util.Rand.Next(100, 1000), token).ConfigureAwait(false);
+
+            await Click(A, 1_000, token).ConfigureAwait(false);
+
+            // Clear the shown data offset.
+            await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, ShownTradeDataOffset, token).ConfigureAwait(false);
+
+            // Wait 40 Seconds for Trainer...
+            var partnerFound = await ReadUntilChanged(ShownTradeDataOffset, PokeTradeBotUtil.EMPTY_EC, 40_000, 2_000, token).ConfigureAwait(false);
+
+            if (token.IsCancellationRequested)
+                return PokeTradeResult.Aborted;
+            if (!partnerFound)
+            {
+                await ResetTradePosition(token);
+                return PokeTradeResult.NoTrainerFound;
+            }
+
+            // Potential Trainer Found!
+
+            // Select Pokemon
+            // pkm already injected to b1s1
+            var TrainerName = await GetTradePartnerName(token).ConfigureAwait(false);
+            Connection.Log($"Found Trading Partner: {TrainerName} ...");
+
+            // Wait for User Input...
+            var pk = await ReadUntilPresent(ShownTradeDataOffset, 25_000, 1_000, token).ConfigureAwait(false);
+            if (pk == null)
+            {
+                await ExitTrade(token);
+                return PokeTradeResult.TrainerTooSlow;
+            }
+
+            await ExitTrade(token);
+            var ec = pk.EncryptionConstant;
+            var pid = pk.PID;
+            if (pk.IsShiny)
+            {
+                Connection.Log("The pokemon is already shiny!"); // Do not bother checking for next shiny frame
+                return PokeTradeResult.Success;
+            }
+            var seeds = Util.Z3Search.GetSeeds(ec, pid);
+            if (!seeds.Any())
+                Connection.Log("The pokemon is not a raid pokemon!");
+            else
+            {
+                var seed = seeds.FirstOrDefault();
+                Connection.Log($"Seed: {seed}");
+                Connection.Log($"Next Shiny Frame: {Util.Z3Search.GetNextShinyFrame(seed, out var type)}");
+                var shinytype = type == 1 ? "Star" : "Square";
+                Connection.Log($"Shiny Type: {shinytype}");
+            }
 
             return PokeTradeResult.Success;
         }

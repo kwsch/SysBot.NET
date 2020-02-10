@@ -16,10 +16,10 @@ namespace SysBot.Pokemon
         protected PokeRoutineExecutor(PokeBotConfig cfg) : base(cfg) { }
 
         public async Task Click(SwitchButton b, int delayMin, int delayMax, CancellationToken token) =>
-            await Click(b, Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
+            await Click(b, PKHeX.Core.Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
 
         public async Task SetStick(SwitchStick stick, int x, int y, int delayMin, int delayMax, CancellationToken token) =>
-            await SetStick(stick, x, y, Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
+            await SetStick(stick, x, y, PKHeX.Core.Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
 
         private static uint GetBoxSlotOffset(int box, int slot) => Box1Slot1 + (uint)(BoxFormatSlotSize * ((30 * box) + slot));
 
@@ -89,7 +89,7 @@ namespace SysBot.Pokemon
         {
             if (folder == null || !Directory.Exists(folder))
                 return;
-            File.WriteAllBytes(Path.Combine(folder, Util.CleanFileName(pk.FileName)), pk.DecryptedPartyData);
+            File.WriteAllBytes(Path.Combine(folder, PKHeX.Core.Util.CleanFileName(pk.FileName)), pk.DecryptedPartyData);
         }
 
         public async Task<SAV8SWSH> GetFakeTrainerSAV(CancellationToken token)

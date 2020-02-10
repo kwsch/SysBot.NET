@@ -11,7 +11,7 @@ namespace SysBot.Pokemon
 
         public T GetRandomPoke()
         {
-            var rnd = Util.Rand;
+            var rnd = PKHeX.Core.Util.Rand;
             var choice = rnd.Next(Count);
             return this[choice];
         }
