@@ -10,10 +10,15 @@
 
         public static T GetConfig<T>(string[] lines) where T : SwitchBotConfig, new()
         {
+            return GetConfig<T>(lines[0], int.Parse(lines[1]));
+        }
+
+        public static T GetConfig<T>(string ip, int port) where T : SwitchBotConfig, new()
+        {
             return new T
             {
-                IP = lines[0],
-                Port = int.Parse(lines[1]),
+                IP = ip,
+                Port = port,
             };
         }
     }

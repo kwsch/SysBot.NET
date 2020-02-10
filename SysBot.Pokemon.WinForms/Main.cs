@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
+using System.Linq;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 using PKHeX.Core;
@@ -36,6 +36,14 @@ namespace SysBot.WinForms
                 Hub = new PokeTradeHubConfig();
                 Hub.CreateDefaults(WorkingDirectory);
             }
+
+            var routines = (PokeRoutineType[])Enum.GetValues(typeof(PokeRoutineType));
+            var list = routines.Select(z => new ComboItem(z.ToString(), (int)z)).ToArray();
+            CB_Routine.DisplayMember = nameof(ComboItem.Text);
+            CB_Routine.ValueMember = nameof(ComboItem.Value);
+            CB_Routine.DataSource = list;
+            TB_IP.ValidatingType = typeof(System.Net.IPAddress);
+            CB_Routine.SelectedValue = nameof(PokeRoutineType.LinkTrade); // default option
         }
 
         private BotEnvironmentConfig GetCurrentConfiguration()
@@ -79,39 +87,22 @@ namespace SysBot.WinForms
             B_New.Enabled = true;
             B_Delete.Enabled = true;
         }
-    }
 
-    public sealed class BotEnvironmentConfig
-    {
-        public PokeTradeHubConfig Hub { get; set; } = new PokeTradeHubConfig();
-        public PokeBotConfig[] Bots { get; set; } = Array.Empty<PokeBotConfig>();
-    }
-
-    public sealed class BotEnvironment
-    {
-        public readonly PokeTradeHub<PK8> Hub = new PokeTradeHub<PK8>();
-        private CancellationTokenSource Source = new CancellationTokenSource();
-        public List<SwitchBotConfig> Bots = new List<SwitchBotConfig>();
-
-        public bool CanStart => Hub.Bots.Count != 0;
-        public bool CanStop => IsRunning;
-        public bool IsRunning { get; private set; }
-
-        public void Start(BotEnvironmentConfig cfg)
+        private void B_New_Click(object sender, EventArgs e)
         {
-            Hub.Config = cfg.Hub;
-            foreach (var bot in cfg.Bots)
-            {
-
-            }
-            Source = new CancellationTokenSource();
-            IsRunning = true;
+            var cfg = CreateNewBotConfig();
+            Bots.Add(cfg);
         }
 
-        public void Stop()
+        private PokeBotConfig CreateNewBotConfig()
         {
-            Source.Cancel();
-            IsRunning = false;
+            var type = (PokeRoutineType)WinFormsUtil.GetIndex(CB_Routine);
+            var ip = TB_IP.Text;
+            var port = (int)NUD_Port.Value;
+
+            var cfg = SwitchBotConfig.GetConfig<PokeBotConfig>(ip, port);
+            cfg.NextRoutineType = type;
+            return cfg;
         }
     }
 }
