@@ -260,6 +260,8 @@ namespace SysBot.Pokemon
             if (Dump && !string.IsNullOrEmpty(DumpFolder))
                 DumpPokemon(DumpFolder, await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false));
 
+            await Task.Delay(10_000, token).ConfigureAwait(false);
+
             return PokeTradeResult.Success;
         }
 
