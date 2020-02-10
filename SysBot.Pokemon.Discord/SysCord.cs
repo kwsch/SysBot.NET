@@ -24,7 +24,6 @@ namespace SysBot.Pokemon.Discord
 
         // Keep the CommandService and DI container around for use with commands.
         // These two types require you install the Discord.Net.Commands package.
-        public const char _prefix = '$';
         private readonly CommandService _commands;
         private readonly IServiceProvider _services;
 
@@ -141,7 +140,7 @@ namespace SysBot.Pokemon.Discord
 
             // Create a number to track where the prefix ends and the command begins
             int pos = 0;
-            if (msg.HasCharPrefix(_prefix, ref pos))
+            if (msg.HasStringPrefix(Hub.Config.DiscordCommandPrefix, ref pos))
             {
                 bool handled = await TryHandleCommandAsync(msg, pos).ConfigureAwait(false);
                 if (handled)

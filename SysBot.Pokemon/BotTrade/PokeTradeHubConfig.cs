@@ -64,6 +64,9 @@ namespace SysBot.Pokemon
         [Category(Integration), Description("Discord Bot: Login Token")]
         public string DiscordToken { get; set; } = string.Empty;
 
+        [Category(Integration), Description("Discord Bot: Command Prefix")]
+        public string DiscordCommandPrefix { get; set; } = "$";
+
         [Category(Integration), Description("Discord Bot: Users with this role are allowed to enter the trade queue.")]
         public string DiscordRoleCanTrade { get; set; } = "DISABLED";
 
