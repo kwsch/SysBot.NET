@@ -356,6 +356,7 @@ namespace SysBot.Pokemon
             await ExitTrade(token);
             var ec = pk.EncryptionConstant;
             var pid = pk.PID;
+            var IVs = pk.IVs.Length == 0 ? GetBlankIVTemplate() : PKX.ReorderSpeedLast((int[])pk.IVs.Clone());
             if (pk.IsShiny)
             {
                 Connection.Log("The pokemon is already shiny!"); // Do not bother checking for next shiny frame
@@ -366,8 +367,15 @@ namespace SysBot.Pokemon
                 Connection.Log("The pokemon is not a raid pokemon!");
             else
             {
-                var seed = seeds.FirstOrDefault();
-                Connection.Log($"Seed: {seed}");
+                var validSeed = Util.Z3Search.FindFirstSeed(seeds, IVs, out var seed);
+
+                if (!validSeed)
+                {
+                    Connection.Log("No valid seed found!");
+                    return PokeTradeResult.Success;
+                }
+
+                Connection.Log($"Seed: {seed:X16}");
                 Connection.Log($"Next Shiny Frame: {Util.Z3Search.GetNextShinyFrame(seed, out var type)}");
                 var shinytype = type == 1 ? "Star" : "Square";
                 Connection.Log($"Shiny Type: {shinytype}");

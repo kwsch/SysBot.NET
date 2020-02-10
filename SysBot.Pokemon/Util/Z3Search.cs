@@ -118,5 +118,55 @@ namespace SysBot.Pokemon.Util
                 rng.Reset(seed);
             }
         }
+
+        public static bool IsMatch(ulong seed, int[] ivs, int fixed_ivs)
+        {
+            var rng = new XOROSHIRO(seed);
+            rng.NextInt(); // EC
+            rng.NextInt(); // TID
+            rng.NextInt(); // PID
+            int[] check_ivs = { -1, -1, -1, -1, -1, -1 };
+            for (int i = 0; i < fixed_ivs; i++)
+            {
+                uint slot;
+                do
+                {
+                    slot = (uint)rng.NextInt(6);
+                } while (check_ivs[slot] != -1);
+
+                if (ivs[slot] != 31)
+                    return false;
+
+                check_ivs[slot] = 31;
+            }
+            for (int i = 0; i < 6; i++)
+            {
+                if (check_ivs[i] != -1)
+                    continue; // already verified?
+
+                uint iv = (uint)rng.NextInt(32);
+                if (iv != ivs[i])
+                    return false;
+            }
+            return true;
+        }
+
+        public static bool FindFirstSeed(IEnumerable<ulong> potential_seeds, int[] ivs, out ulong finalSeed)
+        {
+            foreach (ulong seed in potential_seeds)
+            {
+                // Verify the IVs; at most 5 can match
+                for (int i = 1; i <= 5; i++) // fixed IV count
+                {
+                    if (!IsMatch(seed, ivs, i))
+                        continue;
+                    finalSeed = seed;
+                    return true;
+                }
+            }
+
+            finalSeed = 0;
+            return false;
+        }
     }
 }
