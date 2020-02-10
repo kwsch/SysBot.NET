@@ -141,6 +141,25 @@ namespace SysBot.Pokemon
             }
         }
 
+        public async Task ExitTrade(CancellationToken token)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
+            }
+        }
+
+        public async Task ResetTradePosition(CancellationToken token)
+        {
+            await Click(Y, 1_000, token).ConfigureAwait(false);
+            for (int i = 0; i < 5; i++)
+                await Click(A, 1_000, token).ConfigureAwait(false);
+            await Click(B, 1_000, token).ConfigureAwait(false);
+            await Click(B, 1_000, token).ConfigureAwait(false);
+        }
+
         public async Task<bool> IsEggReady(SwordShieldDaycare daycare, CancellationToken token)
         {
             var ofs = GetDaycareOffset(daycare);

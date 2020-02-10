@@ -121,10 +121,10 @@ namespace SysBot.Pokemon
             // Loading Screen
             await Task.Delay(2_000, token).ConfigureAwait(false);
 
-            Connection.Log("Entering Link Trade Code...");
             var code = poke.Code;
             if (code < 0)
                 code = Hub.Config.GetRandomTradeCode();
+            Connection.Log($"Entering Link Trade Code: {code} ...");
             await EnterTradeCode(code, token).ConfigureAwait(false);
 
             // Wait for Barrier to trigger all bots simultaneously.
@@ -151,7 +151,10 @@ namespace SysBot.Pokemon
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
             if (!partnerFound)
+            {
+                await ResetTradePosition(token);
                 return PokeTradeResult.NoTrainerFound;
+            }
 
             // Potential Trainer Found!
 
@@ -165,10 +168,13 @@ namespace SysBot.Pokemon
             // Wait for User Input...
             var pk = await ReadUntilPresent(ShownTradeDataOffset, 25_000, 1_000, token).ConfigureAwait(false);
             if (pk == null)
+            {
+                await ExitTrade(token);
                 return PokeTradeResult.TrainerTooSlow;
+            }
 
             await Click(A, 3_000, token).ConfigureAwait(false);
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 5; i++)
                 await Click(A, 1_500, token).ConfigureAwait(false);
 
             // Wait 30 Seconds until Trade is finished...
@@ -179,12 +185,7 @@ namespace SysBot.Pokemon
 
             await Task.Delay(1_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
 
-            for (int i = 0; i < 10; i++)
-            {
-                await Click(B, 1_000, token).ConfigureAwait(false);
-                await Click(B, 1_000, token).ConfigureAwait(false);
-                await Click(A, 1_000, token).ConfigureAwait(false);
-            }
+            await ExitTrade(token);
 
             for (int i = 0; i < 3; i++)
                 await Click(A, 1_000, token).ConfigureAwait(false);
