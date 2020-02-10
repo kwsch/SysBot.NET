@@ -143,10 +143,19 @@ namespace SysBot.Pokemon.WinForms
         {
             var indexes = LV_Bots.SelectedIndices;
             var items = indexes.Cast<int>().OrderByDescending(z => z);
+
+            bool removed = false;
             foreach (var item in items)
             {
                 Bots.RemoveAt(item);
                 LV_Bots.Items.RemoveAt(item);
+                removed = true;
+            }
+
+            if (!removed)
+            {
+                WinFormsUtil.Error("No bots removed.", "Ensure you've selected at least one IP address to remove.");
+                return;
             }
 
             if (Bots.Count == 0)
