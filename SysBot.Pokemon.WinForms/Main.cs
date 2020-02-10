@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 using PKHeX.Core;
+using SysBot.Base;
 using SysBot.Pokemon;
 
 namespace SysBot.WinForms
@@ -41,6 +42,8 @@ namespace SysBot.WinForms
             CB_Routine.DisplayMember = nameof(ComboItem.Text);
             CB_Routine.ValueMember = nameof(ComboItem.Value);
             CB_Routine.DataSource = list;
+            TB_IP.ValidatingType = typeof(System.Net.IPAddress);
+            CB_Routine.SelectedValue = nameof(PokeRoutineType.LinkTrade); // default option
         }
 
         private BotEnvironmentConfig GetCurrentConfiguration()
@@ -87,7 +90,19 @@ namespace SysBot.WinForms
 
         private void B_New_Click(object sender, EventArgs e)
         {
-            var type = CB_Routine.SelectedValue;
+            var cfg = CreateNewBotConfig();
+            Bots.Add(cfg);
+        }
+
+        private PokeBotConfig CreateNewBotConfig()
+        {
+            var type = (PokeRoutineType)WinFormsUtil.GetIndex(CB_Routine);
+            var ip = TB_IP.Text;
+            var port = (int)NUD_Port.Value;
+
+            var cfg = SwitchBotConfig.GetConfig<PokeBotConfig>(ip, port);
+            cfg.NextRoutineType = type;
+            return cfg;
         }
     }
 }

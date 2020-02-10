@@ -19,6 +19,7 @@ namespace SysBot.WinForms
         public void Start(BotEnvironmentConfig cfg)
         {
             Hub.Config = cfg.Hub;
+            Hub.CompletedTrades = cfg.Hub.CompletedTrades;
             foreach (var bot in cfg.Bots)
             {
 

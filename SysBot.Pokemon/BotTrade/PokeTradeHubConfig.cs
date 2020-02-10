@@ -32,6 +32,12 @@ namespace SysBot.Pokemon
         public int MaxTradeCode { get; set; } = 8199;
 
         /// <summary>
+        /// Amount of Trades that have been completed.
+        /// </summary>
+        [Category(TradeCode), Description("Completed Trades.")]
+        public uint CompletedTrades { get; set; } = 0;
+
+        /// <summary>
         /// Gets a random trade code based on the range settings.
         /// </summary>
         public int GetRandomTradeCode() => Util.Rand.Next(MinTradeCode, MaxTradeCode + 1);

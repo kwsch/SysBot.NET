@@ -19,9 +19,15 @@ namespace SysBot.Pokemon
         public PokeTradeHubConfig Config { get; set; } = new PokeTradeHubConfig();
 
         #region Trade Tracking
-        private int completedTrades;
-        public int CompletedTrades => completedTrades;
-        public void AddCompletedTrade() => Interlocked.Increment(ref completedTrades);
+
+        public int CompletedTrades;
+
+        public void AddCompletedTrade()
+        {
+            Interlocked.Increment(ref CompletedTrades);
+            Config.CompletedTrades = CompletedTrades;
+        }
+
         #endregion
 
         #region Barrier Synchronization
