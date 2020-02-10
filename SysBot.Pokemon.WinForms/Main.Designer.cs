@@ -30,7 +30,7 @@ namespace SysBot.Pokemon.WinForms
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem(new string[] {
             "192.168.001.001",
             "6000",
             "LinkCode"}, -1);
@@ -90,7 +90,7 @@ namespace SysBot.Pokemon.WinForms
             this.LV_Bots.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LV_Bots.HideSelection = false;
             this.LV_Bots.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem1});
+            listViewItem2});
             this.LV_Bots.Location = new System.Drawing.Point(3, 29);
             this.LV_Bots.Name = "LV_Bots";
             this.LV_Bots.Size = new System.Drawing.Size(511, 183);
@@ -226,10 +226,8 @@ namespace SysBot.Pokemon.WinForms
             // RTB_Logs
             // 
             this.RTB_Logs.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.RTB_Logs.Enabled = false;
             this.RTB_Logs.Location = new System.Drawing.Point(0, 0);
             this.RTB_Logs.Name = "RTB_Logs";
-            this.RTB_Logs.ReadOnly = true;
             this.RTB_Logs.Size = new System.Drawing.Size(517, 215);
             this.RTB_Logs.TabIndex = 0;
             this.RTB_Logs.Text = "";
