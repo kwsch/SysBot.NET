@@ -70,7 +70,11 @@ namespace SysBot.Pokemon
             while (!token.IsCancellationRequested)
             {
                 await Task.Delay(1_000, token).ConfigureAwait(false);
-                if (Bots.All(z => z.Config.CurrentRoutineType != PokeRoutineType.LinkTrade) || Queue.Count != 0)
+                if (Queue.Count != 0)
+                    continue;
+                if (Bots.All(z => z.Config.CurrentRoutineType != PokeRoutineType.LinkTrade))
+                    continue;
+                if (!Config.DistributeWhileIdle)
                     continue;
 
                 var random = Pool.GetRandomPoke();

@@ -49,5 +49,11 @@ namespace System.Collections.Concurrent
                 return true;
             }
         }
+
+        public T[] ToArray()
+        {
+            lock (_syncLock)
+                return _list.ToArray();
+        }
     }
 }

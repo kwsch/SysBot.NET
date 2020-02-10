@@ -41,6 +41,7 @@ namespace SysBot.Pokemon.WinForms
             this.CH_IP = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.CH_Port = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.CH_Name = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.CH_State = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.TC_Main = new System.Windows.Forms.TabControl();
             this.Tab_Bots = new System.Windows.Forms.TabPage();
             this.TB_IP = new System.Windows.Forms.TextBox();
@@ -52,7 +53,6 @@ namespace SysBot.Pokemon.WinForms
             this.RTB_Logs = new System.Windows.Forms.RichTextBox();
             this.B_Stop = new System.Windows.Forms.Button();
             this.B_Start = new System.Windows.Forms.Button();
-            this.CH_State = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.TC_Main.SuspendLayout();
             this.Tab_Bots.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.NUD_Port)).BeginInit();
@@ -114,6 +114,11 @@ namespace SysBot.Pokemon.WinForms
             // 
             this.CH_Name.Text = "Name";
             this.CH_Name.Width = 80;
+            // 
+            // CH_State
+            // 
+            this.CH_State.Text = "State";
+            this.CH_State.Width = 130;
             // 
             // TC_Main
             // 
@@ -196,6 +201,7 @@ namespace SysBot.Pokemon.WinForms
             this.PG_Hub.Dock = System.Windows.Forms.DockStyle.Fill;
             this.PG_Hub.Location = new System.Drawing.Point(3, 3);
             this.PG_Hub.Name = "PG_Hub";
+            this.PG_Hub.PropertySort = System.Windows.Forms.PropertySort.Categorized;
             this.PG_Hub.Size = new System.Drawing.Size(402, 209);
             this.PG_Hub.TabIndex = 0;
             // 
@@ -241,11 +247,6 @@ namespace SysBot.Pokemon.WinForms
             this.B_Start.Text = "Start";
             this.B_Start.UseVisualStyleBackColor = true;
             this.B_Start.Click += new System.EventHandler(this.B_Start_Click);
-            // 
-            // CH_State
-            // 
-            this.CH_State.Text = "State";
-            this.CH_State.Width = 130;
             // 
             // Main
             // 

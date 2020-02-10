@@ -84,7 +84,6 @@ namespace SysBot.Pokemon
             return sav;
         }
 
-
         public static void DumpPokemon(string? folder, PKM pk)
         {
             if (folder == null || !Directory.Exists(folder))

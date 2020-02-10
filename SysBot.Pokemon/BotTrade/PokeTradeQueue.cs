@@ -27,5 +27,13 @@ namespace SysBot.Pokemon
             priority = kvp.Key;
             return result;
         }
+
+        public bool TryPeek(out PokeTradeDetail<TPoke> detail, out uint priority)
+        {
+            var result = Queue.TryPeek(out var kvp);
+            detail = kvp.Value;
+            priority = kvp.Key;
+            return result;
+        }
     }
 }

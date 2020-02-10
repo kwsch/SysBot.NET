@@ -83,7 +83,11 @@ namespace SysBot.Pokemon
                 await EnsureConnectedToYCom(token).ConfigureAwait(false);
                 var result = await PerformLinkCodeTrade(sav, poke, token).ConfigureAwait(false);
                 if (result != PokeTradeResult.Success) // requeue
-                    Hub.Queue.Enqueue(poke, priority);
+                {
+                    poke.TradeCanceled(this, result);
+                    if (result == PokeTradeResult.Aborted)
+                        Hub.Queue.Enqueue(poke, priority);
+                }
             }
 
             ExitLinkTradeRoutine();

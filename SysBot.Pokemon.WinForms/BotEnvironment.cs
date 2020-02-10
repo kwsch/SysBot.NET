@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
 using SysBot.Base;
+using SysBot.Pokemon.Discord;
 using LogLevel = NLog.LogLevel;
 
 namespace SysBot.Pokemon.WinForms
@@ -40,11 +41,22 @@ namespace SysBot.Pokemon.WinForms
 
         private List<Task> CreateBotTasks(CancellationToken token)
         {
-            var tasks = Bots.Select(b => b.RunAsync(token)).ToList();
+            var tasks = new List<Task>();
+            if (!string.IsNullOrWhiteSpace(Hub.Config.DiscordToken))
+                AddDiscordBot(tasks, Hub.Config.DiscordToken, token);
+
+            tasks.AddRange(Bots.Select(b => b.RunAsync(token)));
             bool hasTradeBot = Bots.Any(z => z is PokeTradeBot);
             if (hasTradeBot)
                 AddTradeBotMonitors(tasks, token);
             return tasks;
+        }
+
+        private void AddDiscordBot(ICollection<Task> tasks, string apiToken, CancellationToken token)
+        {
+            var bot = new SysCord(Hub);
+            var task = bot.MainAsync(apiToken, token);
+            tasks.Add(task);
         }
 
         private void AddTradeBotMonitors(ICollection<Task> tasks, CancellationToken token)

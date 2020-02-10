@@ -28,6 +28,7 @@ namespace SysBot.Pokemon
 
         public void TradeInitialize(PokeRoutineExecutor routine) => Notifier.TradeInitialize(routine, this);
         public void TradeSearching(PokeRoutineExecutor routine) => Notifier.TradeSearching(routine, this);
+        public void TradeCanceled(PokeRoutineExecutor routine, PokeTradeResult msg) => Notifier.TradeCanceled(routine, this, msg);
 
         public void TradeFinished(PokeRoutineExecutor routine)
         {

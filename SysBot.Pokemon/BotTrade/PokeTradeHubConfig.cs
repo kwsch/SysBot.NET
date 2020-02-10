@@ -8,6 +8,7 @@ namespace SysBot.Pokemon
         private const string FeatureToggle = nameof(FeatureToggle);
         private const string Files = nameof(Files);
         private const string TradeCode = nameof(TradeCode);
+        private const string Integration = nameof(Integration);
 
         #region Toggles
         [Category(FeatureToggle), Description("Destination folder: where all received PKM files are dumped to.")]
@@ -57,6 +58,17 @@ namespace SysBot.Pokemon
         /// Gets a random trade code based on the range settings.
         /// </summary>
         public int GetRandomTradeCode() => PKHeX.Core.Util.Rand.Next(MinTradeCode, MaxTradeCode + 1);
+        #endregion
+
+        #region Integration
+        [Category(Integration), Description("Discord Bot: Login Token")]
+        public string DiscordToken { get; set; } = string.Empty;
+
+        [Category(Integration), Description("Discord Bot: Users with this role are allowed to enter the trade queue.")]
+        public string DiscordRoleCanTrade { get; set; } = "DISABLED";
+
+        [Category(Integration), Description("Discord Bot: Users with this role are allowed to bypass command restrictions.")]
+        public string DiscordRoleSudo { get; set; } = "DISABLED";
         #endregion
 
         public void CreateDefaults(string path)
