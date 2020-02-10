@@ -14,7 +14,7 @@ namespace SysBot.Pokemon.WinForms
     {
         private readonly PokeTradeHub<PK8> Hub = new PokeTradeHub<PK8>();
         private readonly CancellationTokenSource Source = new CancellationTokenSource();
-        private readonly List<PokeRoutineExecutor> Bots = new List<PokeRoutineExecutor>();
+        public readonly List<PokeRoutineExecutor> Bots = new List<PokeRoutineExecutor>();
 
         public bool CanStart => Hub.Bots.Count != 0;
         public bool CanStop => IsRunning;

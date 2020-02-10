@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
@@ -16,10 +15,10 @@ namespace SysBot.Pokemon
         protected PokeRoutineExecutor(PokeBotConfig cfg) : base(cfg) { }
 
         public async Task Click(SwitchButton b, int delayMin, int delayMax, CancellationToken token) =>
-            await Click(b, PKHeX.Core.Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
+            await Click(b, Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
 
         public async Task SetStick(SwitchStick stick, int x, int y, int delayMin, int delayMax, CancellationToken token) =>
-            await SetStick(stick, x, y, PKHeX.Core.Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
+            await SetStick(stick, x, y, Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
 
         private static uint GetBoxSlotOffset(int box, int slot) => Box1Slot1 + (uint)(BoxFormatSlotSize * ((30 * box) + slot));
 
@@ -90,7 +89,7 @@ namespace SysBot.Pokemon
         {
             if (folder == null || !Directory.Exists(folder))
                 return;
-            File.WriteAllBytes(Path.Combine(folder, PKHeX.Core.Util.CleanFileName(pk.FileName)), pk.DecryptedPartyData);
+            File.WriteAllBytes(Path.Combine(folder, Util.CleanFileName(pk.FileName)), pk.DecryptedPartyData);
         }
 
         public async Task<SAV8SWSH> GetFakeTrainerSAV(CancellationToken token)
@@ -124,14 +123,14 @@ namespace SysBot.Pokemon
 
         public async Task<bool> CheckTradePartnerName(string Name, CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(TradePartnerNameOffset, 26, token);
-            return StringConverter.GetString7(data, 0, 26) == Name;
+            var name = await GetTradePartnerName(token).ConfigureAwait(false);
+            return name == Name;
         }
 
         public async Task<string> GetTradePartnerName(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(TradePartnerNameOffset, 26, token);
-            return StringConverter.GetString7(data,0,26);
+            var data = await Connection.ReadBytesAsync(TradePartnerNameOffset, 26, token).ConfigureAwait(false);
+            return StringConverter.GetString7(data, 0, 26);
         }
 
         public async Task<bool> IsGameConnectedToYCom(CancellationToken token)

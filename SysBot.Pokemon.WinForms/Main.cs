@@ -53,17 +53,26 @@ namespace SysBot.Pokemon.WinForms
 
         private void AppendLog(string message, string identity)
         {
-            var line = $"[{DateTime.Now.ToString("HH:mm:ss")}] - {identity}: {message}{Environment.NewLine}";
+            var line = $"[{DateTime.Now:HH:mm:ss}] - {identity}: {message}{Environment.NewLine}";
             if (InvokeRequired)
-            {
-                Invoke((MethodInvoker)delegate { RTB_Logs.AppendText(line); });
-                Invoke((MethodInvoker)delegate { RTB_Logs.ScrollToCaret(); });
-            }
+                Invoke((MethodInvoker)(() => UpdateLog(line)));
             else
-            {
-                RTB_Logs.AppendText(line);
-                RTB_Logs.ScrollToCaret();
-            }
+                UpdateLog(line);
+        }
+
+        private void UpdateLog(string line)
+        {
+            RTB_Logs.AppendText(line);
+            RTB_Logs.ScrollToCaret();
+
+            var bot = RunningEnvironment?.Bots.Find(z => line.Contains(z.Connection.Name));
+            if (bot == null)
+                return;
+
+            var index = RunningEnvironment!.Bots.IndexOf(bot);
+            var start = line.IndexOf(bot.Connection.Name, StringComparison.Ordinal);
+            var substring = line.Substring(start).Trim();
+            LV_Bots.Items[index].SubItems[2].Text = substring;
         }
 
         private BotEnvironmentConfig GetCurrentConfiguration()
@@ -90,10 +99,10 @@ namespace SysBot.Pokemon.WinForms
             B_Stop.Enabled = true;
             B_New.Enabled = false;
             B_Delete.Enabled = false;
+            RunningEnvironment = env;
             LogUtil.Log(LogLevel.Info, "Starting", "Form");
             env.Start(cfg);
             Tab_Logs.Select();
-            RunningEnvironment = env;
         }
 
         private void B_Stop_Click(object sender, EventArgs e)
@@ -130,7 +139,7 @@ namespace SysBot.Pokemon.WinForms
                 return false;
             Bots.Add(cfg);
 
-            var row = new[] { cfg.IP, cfg.Port.ToString(), cfg.NextRoutineType.ToString() };
+            var row = new[] { cfg.IP, cfg.Port.ToString(), cfg.NextRoutineType.ToString(), "Idle" };
             var lvi = new ListViewItem(row);
             LV_Bots.Items.Add(lvi);
 
@@ -143,10 +152,19 @@ namespace SysBot.Pokemon.WinForms
         {
             var indexes = LV_Bots.SelectedIndices;
             var items = indexes.Cast<int>().OrderByDescending(z => z);
+
+            bool removed = false;
             foreach (var item in items)
             {
                 Bots.RemoveAt(item);
                 LV_Bots.Items.RemoveAt(item);
+                removed = true;
+            }
+
+            if (!removed)
+            {
+                WinFormsUtil.Error("No bots removed.", "Ensure you've selected at least one IP address to remove.");
+                return;
             }
 
             if (Bots.Count == 0)

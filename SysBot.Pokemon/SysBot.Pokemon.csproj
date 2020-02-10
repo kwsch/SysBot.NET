@@ -1,19 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net48</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net47</TargetFrameworks>
     <LangVersion>8</LangVersion>
     <Nullable>enable</Nullable>
+    <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
 
+  <!-- this group contains references that are not platform specific -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.Z3.x64" Version="4.8.7" />
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="PKHeX.Core" Version="20.2.9" />
+    <ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />
+  <!-- x64 specific references -->
+  <ItemGroup Condition=" '$(Platform)' == 'x64' ">
+    <PackageReference Include="Microsoft.Z3.x64" Version="4.8.7" />
+  </ItemGroup>
+
+  <!-- x86 specific references -->
+  <ItemGroup Condition=" '$(Platform)' == 'x86' ">
+    <PackageReference Include="Microsoft.Z3.x86" Version="4.8.7" />
   </ItemGroup>
 
 </Project>
