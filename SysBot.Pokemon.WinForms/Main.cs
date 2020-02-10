@@ -53,17 +53,17 @@ namespace SysBot.Pokemon.WinForms
 
         private void AppendLog(string message, string identity)
         {
-            var line = $"[{DateTime.Now.ToString("HH:mm:ss")}] - {identity}: {message}{Environment.NewLine}";
+            var line = $"[{DateTime.Now:HH:mm:ss}] - {identity}: {message}{Environment.NewLine}";
             if (InvokeRequired)
-            {
-                Invoke((MethodInvoker)delegate { RTB_Logs.AppendText(line); });
-                Invoke((MethodInvoker)delegate { RTB_Logs.ScrollToCaret(); });
-            }
+                Invoke((MethodInvoker)(() => UpdateLog(line)));
             else
-            {
-                RTB_Logs.AppendText(line);
-                RTB_Logs.ScrollToCaret();
-            }
+                UpdateLog(line);
+        }
+
+        private void UpdateLog(string line)
+        {
+            RTB_Logs.AppendText(line);
+            RTB_Logs.ScrollToCaret();
         }
 
         private BotEnvironmentConfig GetCurrentConfiguration()
