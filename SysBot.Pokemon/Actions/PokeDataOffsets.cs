@@ -42,15 +42,13 @@ namespace SysBot.Pokemon
         public const int BoxFormatSlotSize = 0x158;
         public const int TrainerDataLength = 0x110;
 
-
         #region ScreenDetection
         public const uint ScreenStateOffset = 0x1074b8;
         public static uint Overworld; // Also Loading in some cases  
-        public static uint BoxView => Overworld+1;
-        public static uint DuringTrade => Overworld+6; 
+        public static uint BoxView => Overworld + 1;
+        public static uint DuringTrade => Overworld + 6;
         public static uint TradeEvo => Overworld + 2;
         #endregion
-
 
         public static uint GetDaycareOffset(SwordShieldDaycare daycare)
         {
