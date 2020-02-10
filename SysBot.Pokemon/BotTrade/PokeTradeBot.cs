@@ -219,7 +219,9 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.NoTrainerFound;
             }
             else
-                Connection.Log("Trade was successfull");
+            {
+                Connection.Log("Trade was successful.");
+            }
 
             // Trade was Successful!
             poke.TradeFinished(this);
