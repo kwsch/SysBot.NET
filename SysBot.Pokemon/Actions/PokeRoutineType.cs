@@ -6,7 +6,7 @@
         Reserved,
         LinkTrade,
         SurpriseTrade,
-        EggFetch,
         DuduBot,
+        EggFetch,
     }
 }
