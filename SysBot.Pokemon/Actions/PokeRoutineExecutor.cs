@@ -124,13 +124,13 @@ namespace SysBot.Pokemon
         public async Task<bool> CheckTradePartnerName(string Name, CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(TradePartnerNameOffset, 26, token);
-            return Encoding.Unicode.GetString(data).Trim('\0') == Name;
+            return StringConverter.GetString7(data, 0, 26) == Name;
         }
 
         public async Task<bool> CheckIfTradePartnerIsFound(string Name, CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(TradePartnerNameOffset, 26, token);
-            return string.IsNullOrEmpty(Encoding.Unicode.GetString(data).Trim('\0'));
+            return string.IsNullOrEmpty(StringConverter.GetString7(data,0,26));
         }
 
         public async Task<bool> IsGameConnectedToYCom(CancellationToken token)
