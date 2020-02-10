@@ -203,6 +203,8 @@ namespace SysBot.Pokemon
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
 
+            if(await ReadBoxPokemon(0,0,token) != pkm) { Connection.Log("Trade was successfully!"); }
+
             // Trade was Successful!
             poke.TradeFinished(this);
             Connection.Log("Trade complete!");
