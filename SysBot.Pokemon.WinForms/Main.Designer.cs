@@ -38,20 +38,20 @@ namespace SysBot.WinForms
             this.CH_Port = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.TC_Main = new System.Windows.Forms.TabControl();
             this.Tab_Bots = new System.Windows.Forms.TabPage();
+            this.CB_Routine = new System.Windows.Forms.ComboBox();
+            this.NUD_Port = new System.Windows.Forms.NumericUpDown();
+            this.TB_IP = new System.Windows.Forms.MaskedTextBox();
             this.B_Stop = new System.Windows.Forms.Button();
             this.B_Start = new System.Windows.Forms.Button();
             this.Tab_Hub = new System.Windows.Forms.TabPage();
             this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
             this.Tab_Logs = new System.Windows.Forms.TabPage();
             this.RTB_Logs = new System.Windows.Forms.RichTextBox();
-            this.TB_IP = new System.Windows.Forms.MaskedTextBox();
-            this.NUD_Port = new System.Windows.Forms.NumericUpDown();
-            this.CB_Routine = new System.Windows.Forms.ComboBox();
             this.TC_Main.SuspendLayout();
             this.Tab_Bots.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.NUD_Port)).BeginInit();
             this.Tab_Hub.SuspendLayout();
             this.Tab_Logs.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.NUD_Port)).BeginInit();
             this.SuspendLayout();
             // 
             // B_New
@@ -62,6 +62,7 @@ namespace SysBot.WinForms
             this.B_New.TabIndex = 0;
             this.B_New.Text = "New";
             this.B_New.UseVisualStyleBackColor = true;
+            this.B_New.Click += new System.EventHandler(this.B_New_Click);
             // 
             // B_Delete
             // 
@@ -129,6 +130,45 @@ namespace SysBot.WinForms
             this.Tab_Bots.Text = "Bots";
             this.Tab_Bots.UseVisualStyleBackColor = true;
             // 
+            // CB_Routine
+            // 
+            this.CB_Routine.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CB_Routine.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CB_Routine.FormattingEnabled = true;
+            this.CB_Routine.Location = new System.Drawing.Point(300, 5);
+            this.CB_Routine.Name = "CB_Routine";
+            this.CB_Routine.Size = new System.Drawing.Size(103, 21);
+            this.CB_Routine.TabIndex = 7;
+            // 
+            // NUD_Port
+            // 
+            this.NUD_Port.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.NUD_Port.Location = new System.Drawing.Point(236, 6);
+            this.NUD_Port.Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
+            this.NUD_Port.Name = "NUD_Port";
+            this.NUD_Port.Size = new System.Drawing.Size(58, 20);
+            this.NUD_Port.TabIndex = 6;
+            this.NUD_Port.Value = new decimal(new int[] {
+            6000,
+            0,
+            0,
+            0});
+            // 
+            // TB_IP
+            // 
+            this.TB_IP.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TB_IP.Location = new System.Drawing.Point(115, 5);
+            this.TB_IP.Mask = "000.000.000.000";
+            this.TB_IP.Name = "TB_IP";
+            this.TB_IP.Size = new System.Drawing.Size(115, 20);
+            this.TB_IP.TabIndex = 5;
+            this.TB_IP.Text = "192168001001";
+            // 
             // B_Stop
             // 
             this.B_Stop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -159,7 +199,7 @@ namespace SysBot.WinForms
             this.Tab_Hub.Location = new System.Drawing.Point(4, 22);
             this.Tab_Hub.Name = "Tab_Hub";
             this.Tab_Hub.Padding = new System.Windows.Forms.Padding(3);
-            this.Tab_Hub.Size = new System.Drawing.Size(406, 173);
+            this.Tab_Hub.Size = new System.Drawing.Size(517, 215);
             this.Tab_Hub.TabIndex = 2;
             this.Tab_Hub.Text = "Hub";
             this.Tab_Hub.UseVisualStyleBackColor = true;
@@ -169,7 +209,7 @@ namespace SysBot.WinForms
             this.propertyGrid1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.propertyGrid1.Location = new System.Drawing.Point(3, 3);
             this.propertyGrid1.Name = "propertyGrid1";
-            this.propertyGrid1.Size = new System.Drawing.Size(400, 167);
+            this.propertyGrid1.Size = new System.Drawing.Size(511, 209);
             this.propertyGrid1.TabIndex = 0;
             // 
             // Tab_Logs
@@ -177,7 +217,7 @@ namespace SysBot.WinForms
             this.Tab_Logs.Controls.Add(this.RTB_Logs);
             this.Tab_Logs.Location = new System.Drawing.Point(4, 22);
             this.Tab_Logs.Name = "Tab_Logs";
-            this.Tab_Logs.Size = new System.Drawing.Size(406, 173);
+            this.Tab_Logs.Size = new System.Drawing.Size(517, 215);
             this.Tab_Logs.TabIndex = 1;
             this.Tab_Logs.Text = "Logs";
             this.Tab_Logs.UseVisualStyleBackColor = true;
@@ -189,48 +229,9 @@ namespace SysBot.WinForms
             this.RTB_Logs.Location = new System.Drawing.Point(0, 0);
             this.RTB_Logs.Name = "RTB_Logs";
             this.RTB_Logs.ReadOnly = true;
-            this.RTB_Logs.Size = new System.Drawing.Size(406, 173);
+            this.RTB_Logs.Size = new System.Drawing.Size(517, 215);
             this.RTB_Logs.TabIndex = 0;
             this.RTB_Logs.Text = "";
-            // 
-            // TB_IP
-            // 
-            this.TB_IP.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TB_IP.Location = new System.Drawing.Point(115, 5);
-            this.TB_IP.Mask = "000.000.000.000";
-            this.TB_IP.Name = "TB_IP";
-            this.TB_IP.Size = new System.Drawing.Size(115, 20);
-            this.TB_IP.TabIndex = 5;
-            this.TB_IP.Text = "192168001001";
-            // 
-            // NUD_Port
-            // 
-            this.NUD_Port.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.NUD_Port.Location = new System.Drawing.Point(236, 6);
-            this.NUD_Port.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-            this.NUD_Port.Name = "NUD_Port";
-            this.NUD_Port.Size = new System.Drawing.Size(58, 20);
-            this.NUD_Port.TabIndex = 6;
-            this.NUD_Port.Value = new decimal(new int[] {
-            6000,
-            0,
-            0,
-            0});
-            // 
-            // CB_Routine
-            // 
-            this.CB_Routine.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CB_Routine.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CB_Routine.FormattingEnabled = true;
-            this.CB_Routine.Location = new System.Drawing.Point(300, 5);
-            this.CB_Routine.Name = "CB_Routine";
-            this.CB_Routine.Size = new System.Drawing.Size(103, 21);
-            this.CB_Routine.TabIndex = 7;
             // 
             // Main
             // 
@@ -248,9 +249,9 @@ namespace SysBot.WinForms
             this.TC_Main.ResumeLayout(false);
             this.Tab_Bots.ResumeLayout(false);
             this.Tab_Bots.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.NUD_Port)).EndInit();
             this.Tab_Hub.ResumeLayout(false);
             this.Tab_Logs.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.NUD_Port)).EndInit();
             this.ResumeLayout(false);
 
         }
