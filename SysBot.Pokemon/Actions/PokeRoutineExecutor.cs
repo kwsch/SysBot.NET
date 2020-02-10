@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
@@ -118,6 +119,12 @@ namespace SysBot.Pokemon
                 Connection.Log("Reconnecting to Y-Com...");
                 await ReconnectToYCom(token).ConfigureAwait(false);
             }
+        }
+
+        public async Task<bool> CheckTradePartnerName(string Name, CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(TradePartnerNameOffset, 26, token);
+            return Encoding.Unicode.GetString(data).Trim('\0') == Name;
         }
 
         public async Task<bool> IsGameConnectedToYCom(CancellationToken token)
