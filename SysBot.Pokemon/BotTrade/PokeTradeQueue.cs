@@ -35,5 +35,8 @@ namespace SysBot.Pokemon
             priority = kvp.Key;
             return result;
         }
+
+        public void Clear() => Queue.Clear();
+        public int Remove(PokeTradeDetail<TPoke> detail) => Queue.Remove(detail);
     }
 }

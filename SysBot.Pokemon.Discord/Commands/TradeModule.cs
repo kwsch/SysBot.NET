@@ -11,7 +11,36 @@ namespace SysBot.Pokemon.Discord
 {
     public class TradeModule : ModuleBase<SocketCommandContext>
     {
-        private static readonly HashSet<ulong> UsersInQueue = new HashSet<ulong>();
+        private static readonly object _sync = new object();
+        private static readonly List<TradeEntry<PK8>> UsersInQueue = new List<TradeEntry<PK8>>();
+
+        [Command("tradeClear")]
+        public async Task ClearTradeAsync()
+        {
+            string msg;
+            lock (_sync)
+                msg = ClearTrade();
+            await ReplyAsync(msg).ConfigureAwait(false);
+        }
+
+        [Command("tradeClearAll")]
+        public async Task ClearAllTradesAsync()
+        {
+            var cfg = SysCordInstance.Self.Hub.Config;
+            var sudo = GetHasRole(cfg.DiscordRoleCanTrade);
+            if (!sudo)
+            {
+                await ReplyAsync("You can't use this command.").ConfigureAwait(false);
+                return;
+            }
+
+            lock (_sync)
+            {
+                SysCordInstance.Self.Hub.Queue.Clear();
+                UsersInQueue.Clear();
+            }
+            await ReplyAsync("Cleared all in the queue.").ConfigureAwait(false);
+        }
 
         [Command("trade")]
         [Summary("Makes the bot trade you the provided PKM by adding it to the pool.")]
@@ -54,26 +83,68 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
+            var result = AddToTradeQueue(code, trainerName, sudo, pk8, out var msg);
+            await ReplyAsync(msg).ConfigureAwait(false);
+            if (result)
+                await Context.Message.DeleteAsync(RequestOptions.Default).ConfigureAwait(false);
+        }
+
+        private string ClearTrade()
+        {
+            var cfg = SysCordInstance.Self.Hub.Config;
+            var sudo = GetHasRole(cfg.DiscordRoleCanTrade);
+            var allowed = sudo || GetHasRole(cfg.DiscordRoleCanTrade);
+            if (!allowed)
+                return "Sorry, you are not permitted to use this command!";
+
             var userID = Context.User.Id;
-            if (UsersInQueue.Contains(userID) && !sudo)
+            var details = UsersInQueue.Where(z => z.User == userID).ToArray();
+            if (details.Length == 0)
+                return "Sorry, you are not currently in the queue.";
+
+            int removedCount = 0;
+            foreach (var detail in details)
             {
-                await ReplyAsync("Sorry, you are already in the queue.").ConfigureAwait(false);
-                return;
+                int removed = SysCordInstance.Self.Hub.Queue.Remove(detail.Trade);
+                if (removed != 0)
+                    UsersInQueue.Remove(detail);
+                removedCount += removed;
             }
-            UsersInQueue.Add(userID);
 
-            var tmp = new PokeTradeTrainerInfo(trainerName);
-            var notifier = new DiscordTradeNotifier<PK8>(pk8, tmp, code, Context);
-            var detail = new PokeTradeDetail<PK8>(pk8, tmp, notifier, code: code);
-            var priority = sudo ? PokeTradeQueue<PK8>.Tier1 : PokeTradeQueue<PK8>.TierFree;
-            SysCordInstance.Self.Hub.Queue.Enqueue(detail, priority);
+            if (removedCount != details.Length)
+                return "Looks like you're currently being processed! Unable to remove from queue.";
 
-            await Context.Message.DeleteAsync(RequestOptions.Default).ConfigureAwait(false);
+            return "Removed you from the queue.";
+        }
 
-            await ReplyAsync($"Added ${Context.User.Mention} to the queue. Your current position is: {SysCordInstance.Self.Hub.Queue.Count}")
-                .ConfigureAwait(false);
+        private bool AddToTradeQueue(int code, string trainerName, bool sudo, PK8 pk8, out string msg)
+        {
+            var userID = Context.User.Id;
+            lock (_sync)
+            {
+                if (UsersInQueue.Any(z => z.User == userID) && !sudo)
+                {
+                    msg = "Sorry, you are already in the queue.";
+                    return false;
+                }
 
-            notifier.OnFinish = () => UsersInQueue.Remove(userID);
+                var tmp = new PokeTradeTrainerInfo(trainerName);
+                var notifier = new DiscordTradeNotifier<PK8>(pk8, tmp, code, Context);
+                var detail = new PokeTradeDetail<PK8>(pk8, tmp, notifier, code: code);
+                var priority = sudo ? PokeTradeQueue<PK8>.Tier1 : PokeTradeQueue<PK8>.TierFree;
+                SysCordInstance.Self.Hub.Queue.Enqueue(detail, priority);
+
+                var trade = new TradeEntry<PK8>(detail, userID);
+                UsersInQueue.Add(trade);
+                notifier.OnFinish = () =>
+                {
+                    lock (_sync)
+                        UsersInQueue.Remove(trade);
+                };
+            }
+
+            msg = $"Added ${Context.User.Mention} to the queue. Your current position is: {SysCordInstance.Self.Hub.Queue.Count}";
+            return true;
         }
 
         [Command("trade")]
@@ -87,9 +158,21 @@ namespace SysBot.Pokemon.Discord
             var guild = Context.Guild;
             var role = guild.Roles.First(x => x.Name == RequiredRole);
 
-            var igu = (SocketGuildUser) Context.User;
+            var igu = (SocketGuildUser)Context.User;
             bool hasRole = igu.Roles.Contains(role);
             return hasRole;
+        }
+
+        private sealed class TradeEntry<T> where T : PKM
+        {
+            public readonly ulong User;
+            public readonly PokeTradeDetail<T> Trade;
+
+            public TradeEntry(PokeTradeDetail<T> trade, ulong user)
+            {
+                Trade = trade;
+                User = user;
+            }
         }
 
         private class DiscordTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM
