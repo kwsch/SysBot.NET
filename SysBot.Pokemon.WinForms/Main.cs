@@ -55,9 +55,15 @@ namespace SysBot.Pokemon.WinForms
         {
             var line = $"{identity}: {message}{Environment.NewLine}";
             if (InvokeRequired)
+            {
                 Invoke((MethodInvoker)delegate { RTB_Logs.AppendText(line); });
+                Invoke((MethodInvoker)delegate { RTB_Logs.ScrollToCaret(); });
+            }
             else
+            {
                 RTB_Logs.AppendText(line);
+                RTB_Logs.ScrollToCaret();
+            }
         }
 
         private BotEnvironmentConfig GetCurrentConfiguration()
