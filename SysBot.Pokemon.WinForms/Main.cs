@@ -53,7 +53,7 @@ namespace SysBot.Pokemon.WinForms
 
         private void AppendLog(string message, string identity)
         {
-            var line = $"{identity}: {message}{Environment.NewLine}";
+            var line = $"[{DateTime.Now.ToString("HH:mm:ss")}] - {identity}: {message}{Environment.NewLine}";
             if (InvokeRequired)
             {
                 Invoke((MethodInvoker)delegate { RTB_Logs.AppendText(line); });
