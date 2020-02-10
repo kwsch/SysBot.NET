@@ -22,14 +22,20 @@ namespace SysBot.Pokemon.WinForms
 
         public void Start(BotEnvironmentConfig cfg)
         {
-            Hub.Config = cfg.Hub;
-            Hub.CompletedTrades = cfg.Hub.CompletedTrades;
-            CreateBots(cfg);
+            InitializeHubSettings(cfg.Hub);
+            CreateBots(cfg.Bots);
 
             var token = Source.Token;
             var tasks = CreateBotTasks(token);
             Task.Run(() => Task.WhenAll(tasks), token);
             IsRunning = true;
+        }
+
+        private void InitializeHubSettings(PokeTradeHubConfig cfg)
+        {
+            Hub.Config = cfg;
+            Hub.CompletedTrades = cfg.CompletedTrades;
+            Hub.UseBarrier = cfg.SynchronizeLinkTradeBots;
         }
 
         private List<Task> CreateBotTasks(CancellationToken token)
@@ -64,11 +70,11 @@ namespace SysBot.Pokemon.WinForms
             }
         }
 
-        private void CreateBots(BotEnvironmentConfig cfg)
+        private void CreateBots(IEnumerable<PokeBotConfig> bots)
         {
-            foreach (var c in cfg.Bots)
+            foreach (var cfg in bots)
             {
-                var bot = GetBotFromConfig(c);
+                var bot = GetBotFromConfig(cfg);
                 if (bot is IDumper d)
                 {
                     d.Dump = Hub.Config.Dump;
