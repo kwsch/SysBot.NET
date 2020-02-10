@@ -5,7 +5,7 @@ using System.Linq;
 namespace System.Collections.Concurrent
 {
     [DebuggerDisplay("Count={" + nameof(Count) + "}")]
-    public class FlexBotList<T>
+    public class ConcurrentPool<T>
     {
         private readonly object _syncLock = new object();
         private readonly List<T> _list = new List<T>();

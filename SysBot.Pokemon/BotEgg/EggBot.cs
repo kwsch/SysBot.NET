@@ -2,20 +2,28 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using SysBot.Base;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Base.SwitchStick;
 
 namespace SysBot.Pokemon
 {
-    public class EggBot : PokeRoutineExecutor
+    public class EggBot : PokeRoutineExecutor, IDumper
     {
-        public string? DumpFolder { get; set; }
+        /// <summary>
+        /// Folder to dump received trade data to.
+        /// </summary>
+        /// <remarks>If null, will skip dumping.</remarks>
+        public string DumpFolder { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Determines if it should dump received trade data.
+        /// </summary>
+        /// <remarks>If false, will skip dumping.</remarks>
+        public bool Dump { get; set; } = false;
 
         private const SwordShieldDaycare Location = SwordShieldDaycare.Route5;
 
-        public EggBot(string ip, int port) : base(ip, port) { }
-        public EggBot(SwitchBotConfig cfg) : this(cfg.IP, cfg.Port) { }
+        public EggBot(PokeBotConfig cfg) : base(cfg) { }
 
         private int encounterCount;
 
@@ -76,7 +84,9 @@ namespace SysBot.Pokemon
                 }
 
                 Connection.Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
-                DumpPokemon(DumpFolder, pk);
+
+                if (Dump && !string.IsNullOrEmpty(DumpFolder))
+                    DumpPokemon(DumpFolder, pk);
 
                 encounterCount++;
                 if (!StopCondition(pk))

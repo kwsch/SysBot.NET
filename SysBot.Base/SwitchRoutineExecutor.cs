@@ -6,10 +6,16 @@ namespace SysBot.Base
     /// <summary>
     /// Commands a Bot to a perform a routine asynchronously.
     /// </summary>
-    public abstract class SwitchRoutineExecutor
+    public abstract class SwitchRoutineExecutor<T> where T : SwitchBotConfig
     {
         public readonly SwitchConnectionAsync Connection;
-        protected SwitchRoutineExecutor(string ip, int port) => Connection = new SwitchConnectionAsync(ip, port);
+        public readonly T Config;
+
+        protected SwitchRoutineExecutor(T cfg)
+        {
+            Config = cfg;
+            Connection = new SwitchConnectionAsync(cfg.IP, cfg.Port);
+        }
 
         /// <summary>
         /// Connects to the console, then runs the bot.

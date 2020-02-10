@@ -1,10 +1,11 @@
 ﻿namespace SysBot.Pokemon
 {
-    public enum PokeTradeRoutine
+    public enum PokeRoutineType
     {
         Idle,
+        Reserved,
         LinkTrade,
         SurpriseTrade,
-        Reserved,
+        EggFetch,
     }
 }

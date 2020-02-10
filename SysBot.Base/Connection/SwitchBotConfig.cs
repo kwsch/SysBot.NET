@@ -3,17 +3,18 @@
     /// <summary>
     /// Stored config of a bot
     /// </summary>
-    public class SwitchBotConfig
+    public abstract class SwitchBotConfig
     {
-        public readonly string IP;
-        public readonly int Port;
-        public readonly string[] Lines;
+        public string IP { get; set; } = string.Empty;
+        public int Port { get; set; } = 6000;
 
-        public SwitchBotConfig(string[] lines)
+        public static T GetConfig<T>(string[] lines) where T : SwitchBotConfig, new()
         {
-            IP = lines[0];
-            Port = int.Parse(lines[1]);
-            Lines = lines;
+            return new T
+            {
+                IP = lines[0],
+                Port = int.Parse(lines[1]),
+            };
         }
     }
 }

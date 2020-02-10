@@ -2,13 +2,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
-using SysBot.Base;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
-    public class PokeTradeBot : PokeRoutineExecutor
+    public class PokeTradeBot : PokeRoutineExecutor, IDumper
     {
         private readonly PokeTradeHub<PK8> Hub;
 
@@ -16,21 +15,23 @@ namespace SysBot.Pokemon
         /// Folder to dump received trade data to.
         /// </summary>
         /// <remarks>If null, will skip dumping.</remarks>
-        public string? DumpFolder { get; set; }
+        public string DumpFolder { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Determines if it should dump received trade data.
+        /// </summary>
+        /// <remarks>If false, will skip dumping.</remarks>
+        public bool Dump { get; set; } = true;
 
         /// <summary>
         /// Synchronized start for multiple bots.
         /// </summary>
         public bool ShouldWaitAtBarrier { get; private set; }
 
-        public PokeTradeBot(PokeTradeHub<PK8> hub, string ip, int port) : base(ip, port) => Hub = hub;
-        public PokeTradeBot(PokeTradeHub<PK8> hub, SwitchBotConfig cfg) : this(hub, cfg.IP, cfg.Port) { }
+        public PokeTradeBot(PokeTradeHub<PK8> hub, PokeBotConfig cfg) : base(cfg) => Hub = hub;
 
         private const int InjectBox = 0;
         private const int InjectSlot = 0;
-
-        public PokeTradeRoutine CurrentRoutine { get; private set; }
-        public PokeTradeRoutine NextRoutine { get; set; }
 
         protected override async Task MainLoop(CancellationToken token)
         {
@@ -38,11 +39,11 @@ namespace SysBot.Pokemon
             Hub.Bots.Add(this);
             while (!token.IsCancellationRequested)
             {
-                CurrentRoutine = NextRoutine;
-                var task = CurrentRoutine switch
+                Config.IterateNextRoutine();
+                var task = Config.CurrentRoutineType switch
                 {
-                    PokeTradeRoutine.LinkTrade => DoLinkTrades(sav, token),
-                    PokeTradeRoutine.SurpriseTrade => DoSurpriseTrades(sav, token),
+                    PokeRoutineType.LinkTrade => DoLinkTrades(sav, token),
+                    PokeRoutineType.SurpriseTrade => DoSurpriseTrades(sav, token),
                     _ => DoNothing(token),
                 };
                 await task.ConfigureAwait(false);
@@ -53,7 +54,7 @@ namespace SysBot.Pokemon
         private async Task DoNothing(CancellationToken token)
         {
             bool waiting = false;
-            while (!token.IsCancellationRequested && NextRoutine == PokeTradeRoutine.Idle)
+            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.Idle)
             {
                 if (!waiting)
                     Connection.Log("No task assigned. Waiting for new task assignment.");
@@ -65,7 +66,7 @@ namespace SysBot.Pokemon
         private async Task DoLinkTrades(SAV8SWSH sav, CancellationToken token)
         {
             bool waiting = false;
-            while (!token.IsCancellationRequested && NextRoutine == PokeTradeRoutine.LinkTrade)
+            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.LinkTrade)
             {
                 Connection.Log("Starting next Link Code trade. Getting data...");
                 if (!Hub.Queue.TryDequeue(out var poke, out var priority))
@@ -89,7 +90,7 @@ namespace SysBot.Pokemon
 
         private async Task DoSurpriseTrades(SAV8SWSH sav, CancellationToken token)
         {
-            while (!token.IsCancellationRequested && NextRoutine == PokeTradeRoutine.SurpriseTrade)
+            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.SurpriseTrade)
             {
                 var pkm = Hub.Pool.GetRandomPoke();
                 await EnsureConnectedToYCom(token).ConfigureAwait(false);
@@ -123,7 +124,7 @@ namespace SysBot.Pokemon
             Connection.Log("Entering Link Trade Code...");
             var code = poke.Code;
             if (code < 0)
-                code = Hub.GetRandomTradeCode();
+                code = Hub.Config.GetRandomTradeCode();
             await EnterTradeCode(code, token).ConfigureAwait(false);
 
             // Wait for Barrier to trigger all bots simultaneously.
@@ -202,7 +203,7 @@ namespace SysBot.Pokemon
             poke.TradeFinished(this);
             Connection.Log("Trade complete!");
             Hub.AddCompletedTrade();
-            if (DumpFolder != null)
+            if (Dump && !string.IsNullOrEmpty(DumpFolder))
                 DumpPokemon(DumpFolder, await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false));
 
             return PokeTradeResult.Success;
@@ -255,7 +256,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Aborted;
 
             Connection.Log("Trade complete!");
-            if (DumpFolder != null)
+            if (Dump && !string.IsNullOrEmpty(DumpFolder))
                 DumpPokemon(DumpFolder, await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false));
 
             return PokeTradeResult.Success;

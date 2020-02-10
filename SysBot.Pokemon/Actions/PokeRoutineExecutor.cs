@@ -10,9 +10,9 @@ using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
-    public abstract class PokeRoutineExecutor : SwitchRoutineExecutor
+    public abstract class PokeRoutineExecutor : SwitchRoutineExecutor<PokeBotConfig>
     {
-        protected PokeRoutineExecutor(string ip, int port) : base(ip, port) { }
+        protected PokeRoutineExecutor(PokeBotConfig cfg) : base(cfg) { }
 
         public async Task Click(SwitchButton b, int delayMin, int delayMax, CancellationToken token) =>
             await Click(b, Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
@@ -86,7 +86,7 @@ namespace SysBot.Pokemon
 
         public static void DumpPokemon(string? folder, PKM pk)
         {
-            if (folder == null)
+            if (folder == null || !Directory.Exists(folder))
                 return;
             File.WriteAllBytes(Path.Combine(folder, Util.CleanFileName(pk.FileName)), pk.DecryptedPartyData);
         }

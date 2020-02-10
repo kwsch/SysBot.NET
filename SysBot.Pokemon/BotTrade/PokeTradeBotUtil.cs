@@ -1,7 +1,7 @@
-﻿using System.IO;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
+using SysBot.Base;
 
 namespace SysBot.Pokemon
 {
@@ -15,12 +15,12 @@ namespace SysBot.Pokemon
         /// </summary>
         /// <param name="lines">Lines to initialize with</param>
         /// <param name="queue">Queue to consume from; added to from another thread.</param>
-        /// <param name="routine">Task the Trade Bot will perform</param>
+        /// <param name="routineType">Task the Trade Bot will perform</param>
         /// <param name="token">Token to indicate cancellation.</param>
-        public static async Task RunBotAsync(string[] lines, PokeTradeHub<PK8> queue, PokeTradeRoutine routine, CancellationToken token)
+        public static async Task RunBotAsync(string[] lines, PokeTradeHub<PK8> queue, PokeRoutineType routineType, CancellationToken token)
         {
             var bot = CreateNewPokeTradeBot(lines, queue);
-            bot.NextRoutine = routine;
+            bot.Config.NextRoutineType = routineType;
             await bot.RunAsync(token).ConfigureAwait(false);
         }
 
@@ -31,12 +31,8 @@ namespace SysBot.Pokemon
         /// <param name="hub"></param>
         public static PokeTradeBot CreateNewPokeTradeBot(string[] lines, PokeTradeHub<PK8> hub)
         {
-            var cfg = new PokeTradeBotConfig(lines);
-
-            var bot = new PokeTradeBot(hub, cfg);
-            if (cfg.DumpFolder != null && Directory.Exists(cfg.DumpFolder))
-                bot.DumpFolder = cfg.DumpFolder;
-            return bot;
+            var cfg = SwitchBotConfig.GetConfig<PokeBotConfig>(lines);
+            return new PokeTradeBot(hub, cfg);
         }
     }
 }

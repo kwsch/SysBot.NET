@@ -5,9 +5,8 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
-using SysBot.Pokemon;
 
-namespace SysBot.ConsoleApp
+namespace SysBot.Pokemon.ConsoleApp
 {
     internal static class Program
     {
@@ -78,13 +77,13 @@ namespace SysBot.ConsoleApp
             return botType switch
             {
                 2 => DoShinyEggFinder(configs),
-                1 => DoTradeHubMulti(PokeTradeRoutine.LinkTrade, configs),
-                0 => DoTradeHubMulti(PokeTradeRoutine.SurpriseTrade, configs),
-                _ => DoTradeHubMulti(PokeTradeRoutine.Idle, configs),
+                1 => DoTradeHubMulti(PokeRoutineType.LinkTrade, configs),
+                0 => DoTradeHubMulti(PokeRoutineType.SurpriseTrade, configs),
+                _ => DoTradeHubMulti(PokeRoutineType.Idle, configs),
             };
         }
 
-        private static async Task DoTradeHubMulti(PokeTradeRoutine initialRoutine = PokeTradeRoutine.Idle, params string[][] lines)
+        private static async Task DoTradeHubMulti(PokeRoutineType initialRoutineType = PokeRoutineType.Idle, params string[][] lines)
         {
             // Default Bot: Code Trade bots. See associated files.
             var token = CancellationToken.None;
@@ -97,14 +96,15 @@ namespace SysBot.ConsoleApp
             const string hubcfg = "hub.txt";
             if (File.Exists(hubcfg))
             {
+                Console.WriteLine($"{hubcfg} found. Updating hub settings");
                 var txt = File.ReadAllLines(hubcfg);
-                hub.MinTradeCode = int.Parse(txt[0]);
-                hub.MaxTradeCode = int.Parse(txt[1]);
+                hub.Config.MinTradeCode = int.Parse(txt[0]);
+                hub.Config.MaxTradeCode = int.Parse(txt[1]);
             }
 
             Task[] threads = new Task[lines.Length + 1]; // hub as last thread
             for (int i = 0; i < lines.Length; i++)
-                threads[i] = PokeTradeBotUtil.RunBotAsync(lines[i], hub, initialRoutine, token);
+                threads[i] = PokeTradeBotUtil.RunBotAsync(lines[i], hub, initialRoutineType, token);
             threads[threads.Length - 1] = hub.MonitorTradeQueueAddIfEmpty(hubRandomPath, token);
 
             await Task.WhenAll(threads).ConfigureAwait(false);

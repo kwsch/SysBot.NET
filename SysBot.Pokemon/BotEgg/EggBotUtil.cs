@@ -1,6 +1,6 @@
-﻿using System.IO;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using SysBot.Base;
 
 namespace SysBot.Pokemon
 {
@@ -23,12 +23,8 @@ namespace SysBot.Pokemon
         /// <param name="lines">Lines to initialize with</param>
         public static EggBot CreateNewEggBot(string[] lines)
         {
-            var cfg = new EggBotConfig(lines);
-
-            var bot = new EggBot(cfg);
-            if (cfg.DumpFolder != null && Directory.Exists(cfg.DumpFolder))
-                bot.DumpFolder = cfg.DumpFolder;
-            return bot;
+            var cfg = SwitchBotConfig.GetConfig<PokeBotConfig>(lines);
+            return new EggBot(cfg);
         }
     }
 }

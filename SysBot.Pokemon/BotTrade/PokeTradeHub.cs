@@ -16,27 +16,12 @@ namespace SysBot.Pokemon
     {
         public static readonly PokeTradeLogNotifier<T> LogNotifier = new PokeTradeLogNotifier<T>();
 
+        public PokeTradeHubConfig Config { get; set; } = new PokeTradeHubConfig();
+
         #region Trade Tracking
         private int completedTrades;
         public int CompletedTrades => completedTrades;
         public void AddCompletedTrade() => Interlocked.Increment(ref completedTrades);
-        #endregion
-
-        #region Trade Codes
-        /// <summary>
-        /// Minimum trade code to be yielded.
-        /// </summary>
-        public int MinTradeCode = 8180;
-
-        /// <summary>
-        /// Maximum trade code to be yielded.
-        /// </summary>
-        public int MaxTradeCode = 8199;
-
-        /// <summary>
-        /// Gets a random trade code based on the range settings.
-        /// </summary>
-        public int GetRandomTradeCode() => Util.Rand.Next(MinTradeCode, MaxTradeCode + 1);
         #endregion
 
         #region Barrier Synchronization
@@ -62,7 +47,7 @@ namespace SysBot.Pokemon
         #region Distribution Queue
         public readonly PokeTradeQueue<T> Queue = new PokeTradeQueue<T>();
         public readonly PokemonPool<T> Pool = new PokemonPool<T>();
-        public readonly FlexBotList<PokeTradeBot> Bots = new FlexBotList<PokeTradeBot>();
+        public readonly ConcurrentPool<PokeTradeBot> Bots = new ConcurrentPool<PokeTradeBot>();
 
         /// <summary>
         /// Spins up a loop that adds a random <see cref="T"/> to the <see cref="Queue"/> if nothing is in it.
@@ -79,7 +64,7 @@ namespace SysBot.Pokemon
             while (!token.IsCancellationRequested)
             {
                 await Task.Delay(1_000, token).ConfigureAwait(false);
-                if (Bots.All(z => z.CurrentRoutine != PokeTradeRoutine.LinkTrade) || Queue.Count != 0)
+                if (Bots.All(z => z.Config.CurrentRoutineType != PokeRoutineType.LinkTrade) || Queue.Count != 0)
                     continue;
 
                 var random = Pool.GetRandomPoke();
