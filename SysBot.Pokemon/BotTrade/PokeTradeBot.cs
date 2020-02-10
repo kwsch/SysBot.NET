@@ -160,6 +160,9 @@ namespace SysBot.Pokemon
 
             // Select Pokemon
             // pkm already injected to b1s1
+            var trainerName = await Connection.ReadBytesAsync(TradePartnerNameOffset, 26, token);
+            var tradingPartner = StringConverter.GetString7(trainerName, 0, 26);
+            Connection.Log($"Found Trading Partner: {tradingPartner} ...");
             await Task.Delay(300, token).ConfigureAwait(false);
 
             await Click(A, 2_000, token).ConfigureAwait(false);

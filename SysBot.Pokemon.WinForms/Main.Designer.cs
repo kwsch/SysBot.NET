@@ -30,7 +30,7 @@ namespace SysBot.Pokemon.WinForms
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem(new string[] {
             "192.168.001.001",
             "6000",
             "LinkCode"}, -1);
@@ -62,19 +62,19 @@ namespace SysBot.Pokemon.WinForms
             // 
             this.B_New.Location = new System.Drawing.Point(3, 5);
             this.B_New.Name = "B_New";
-            this.B_New.Size = new System.Drawing.Size(50, 20);
+            this.B_New.Size = new System.Drawing.Size(54, 20);
             this.B_New.TabIndex = 0;
-            this.B_New.Text = "New";
+            this.B_New.Text = "Add";
             this.B_New.UseVisualStyleBackColor = true;
             this.B_New.Click += new System.EventHandler(this.B_New_Click);
             // 
             // B_Delete
             // 
-            this.B_Delete.Location = new System.Drawing.Point(59, 5);
+            this.B_Delete.Location = new System.Drawing.Point(57, 5);
             this.B_Delete.Name = "B_Delete";
-            this.B_Delete.Size = new System.Drawing.Size(50, 20);
+            this.B_Delete.Size = new System.Drawing.Size(56, 20);
             this.B_Delete.TabIndex = 1;
-            this.B_Delete.Text = "Delete";
+            this.B_Delete.Text = "Remove";
             this.B_Delete.UseVisualStyleBackColor = true;
             this.B_Delete.Click += new System.EventHandler(this.B_Delete_Click);
             // 
@@ -90,7 +90,7 @@ namespace SysBot.Pokemon.WinForms
             this.LV_Bots.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LV_Bots.HideSelection = false;
             this.LV_Bots.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem2});
+            listViewItem4});
             this.LV_Bots.Location = new System.Drawing.Point(3, 29);
             this.LV_Bots.Name = "LV_Bots";
             this.LV_Bots.Size = new System.Drawing.Size(511, 183);
