@@ -45,7 +45,6 @@ namespace SysBot.Pokemon.WinForms
             CB_Routine.DisplayMember = nameof(ComboItem.Text);
             CB_Routine.ValueMember = nameof(ComboItem.Value);
             CB_Routine.DataSource = list;
-            TB_IP.ValidatingType = typeof(System.Net.IPAddress);
             CB_Routine.SelectedIndex = 2; // default option
         }
 

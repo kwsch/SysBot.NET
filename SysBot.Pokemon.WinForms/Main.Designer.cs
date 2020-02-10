@@ -37,20 +37,20 @@ namespace SysBot.Pokemon.WinForms
             this.B_New = new System.Windows.Forms.Button();
             this.B_Delete = new System.Windows.Forms.Button();
             this.LV_Bots = new System.Windows.Forms.ListView();
-            this.CH_Name = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.CH_IP = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.CH_Port = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.CH_Name = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.TC_Main = new System.Windows.Forms.TabControl();
             this.Tab_Bots = new System.Windows.Forms.TabPage();
             this.CB_Routine = new System.Windows.Forms.ComboBox();
             this.NUD_Port = new System.Windows.Forms.NumericUpDown();
-            this.TB_IP = new System.Windows.Forms.MaskedTextBox();
             this.B_Stop = new System.Windows.Forms.Button();
             this.B_Start = new System.Windows.Forms.Button();
             this.Tab_Hub = new System.Windows.Forms.TabPage();
             this.PG_Hub = new System.Windows.Forms.PropertyGrid();
             this.Tab_Logs = new System.Windows.Forms.TabPage();
             this.RTB_Logs = new System.Windows.Forms.RichTextBox();
+            this.TB_IP = new System.Windows.Forms.TextBox();
             this.TC_Main.SuspendLayout();
             this.Tab_Bots.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.NUD_Port)).BeginInit();
@@ -98,11 +98,6 @@ namespace SysBot.Pokemon.WinForms
             this.LV_Bots.UseCompatibleStateImageBehavior = false;
             this.LV_Bots.View = System.Windows.Forms.View.Details;
             // 
-            // CH_Name
-            // 
-            this.CH_Name.Text = "Name";
-            this.CH_Name.Width = 150;
-            // 
             // CH_IP
             // 
             this.CH_IP.Text = "IP";
@@ -111,6 +106,11 @@ namespace SysBot.Pokemon.WinForms
             // CH_Port
             // 
             this.CH_Port.Text = "Port";
+            // 
+            // CH_Name
+            // 
+            this.CH_Name.Text = "Name";
+            this.CH_Name.Width = 150;
             // 
             // TC_Main
             // 
@@ -126,9 +126,9 @@ namespace SysBot.Pokemon.WinForms
             // 
             // Tab_Bots
             // 
+            this.Tab_Bots.Controls.Add(this.TB_IP);
             this.Tab_Bots.Controls.Add(this.CB_Routine);
             this.Tab_Bots.Controls.Add(this.NUD_Port);
-            this.Tab_Bots.Controls.Add(this.TB_IP);
             this.Tab_Bots.Controls.Add(this.B_Stop);
             this.Tab_Bots.Controls.Add(this.B_Start);
             this.Tab_Bots.Controls.Add(this.B_New);
@@ -170,16 +170,6 @@ namespace SysBot.Pokemon.WinForms
             0,
             0});
             // 
-            // TB_IP
-            // 
-            this.TB_IP.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TB_IP.Location = new System.Drawing.Point(115, 5);
-            this.TB_IP.Mask = "000.000.000.000";
-            this.TB_IP.Name = "TB_IP";
-            this.TB_IP.Size = new System.Drawing.Size(115, 20);
-            this.TB_IP.TabIndex = 5;
-            this.TB_IP.Text = "192168001001";
-            // 
             // B_Stop
             // 
             this.B_Stop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -215,7 +205,7 @@ namespace SysBot.Pokemon.WinForms
             this.Tab_Hub.Text = "Hub";
             this.Tab_Hub.UseVisualStyleBackColor = true;
             // 
-            // propertyGrid1
+            // PG_Hub
             // 
             this.PG_Hub.Dock = System.Windows.Forms.DockStyle.Fill;
             this.PG_Hub.Location = new System.Drawing.Point(3, 3);
@@ -243,6 +233,15 @@ namespace SysBot.Pokemon.WinForms
             this.RTB_Logs.Size = new System.Drawing.Size(517, 215);
             this.RTB_Logs.TabIndex = 0;
             this.RTB_Logs.Text = "";
+            // 
+            // TB_IP
+            // 
+            this.TB_IP.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TB_IP.Location = new System.Drawing.Point(115, 5);
+            this.TB_IP.Name = "TB_IP";
+            this.TB_IP.Size = new System.Drawing.Size(115, 20);
+            this.TB_IP.TabIndex = 8;
+            this.TB_IP.Text = "192.168.001.001";
             // 
             // Main
             // 
@@ -283,9 +282,9 @@ namespace SysBot.Pokemon.WinForms
         private System.Windows.Forms.PropertyGrid PG_Hub;
         private System.Windows.Forms.Button B_Stop;
         private System.Windows.Forms.Button B_Start;
-        private System.Windows.Forms.MaskedTextBox TB_IP;
         private System.Windows.Forms.NumericUpDown NUD_Port;
         private System.Windows.Forms.ComboBox CB_Routine;
+        private System.Windows.Forms.TextBox TB_IP;
     }
 }
 
