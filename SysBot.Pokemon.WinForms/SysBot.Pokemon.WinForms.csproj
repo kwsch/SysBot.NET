@@ -11,7 +11,7 @@
     <Description>Nintendo Switch Pokémon Bot Manager</Description>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <StartupObject>SysBot.Pokemon.WinForms.Program</StartupObject>
-    <AssemblyName>SysBot.Pokemon.WinForms</AssemblyName>
+    <AssemblyName>SysBot</AssemblyName>
     <LangVersion>8</LangVersion>
     <Version>01.00.00</Version>
     <Nullable>enable</Nullable>
