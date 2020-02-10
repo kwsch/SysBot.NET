@@ -14,11 +14,14 @@ namespace SysBot.Pokemon
         [Category(FeatureToggle), Description("Destination folder: where all received PKM files are dumped to.")]
         public bool Dump { get; set; }
 
-        [Category(FeatureToggle), Description("Link Trade: Distributes PKM files when idle.")]
+        [Category(FeatureToggle), Description("Link Trade: Distributes PKM files when idle from the DistributeFolder.")]
         public bool DistributeWhileIdle { get; set; } = true;
 
-        [Category(FeatureToggle), Description("Link Trade: Enables trading priority files.")]
+        [Category(FeatureToggle), Description("Link Trade: Enables trading priority files sourced from the priority folder.")]
         public bool MonitorForPriorityTrades { get; set; }
+
+        [Category(FeatureToggle), Description("Link Trade: Using multiple bots -- all bots will confirm their trade code at the same time.")]
+        public bool SynchronizeLinkTradeBots { get; set; } = true;
         #endregion
 
         #region Folders
