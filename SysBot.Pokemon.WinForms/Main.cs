@@ -107,11 +107,21 @@ namespace SysBot.Pokemon.WinForms
         private void B_New_Click(object sender, EventArgs e)
         {
             var cfg = CreateNewBotConfig();
-            AddBot(cfg);
+            if (!AddBot(cfg))
+            {
+                WinFormsUtil.Alert("Unable to add bot; ensure details are valid and not duplicate with an already existing bot.");
+                return;
+            }
+            System.Media.SystemSounds.Asterisk.Play();
         }
 
-        private void AddBot(PokeBotConfig cfg)
+        private bool AddBot(PokeBotConfig cfg)
         {
+            if (!cfg.IsValidIP())
+                return false;
+            var ip = cfg.GetAddress();
+            if (Bots.Any(z => z.GetAddress().Equals(ip)))
+                return false;
             Bots.Add(cfg);
 
             var row = new[] { cfg.IP, cfg.Port.ToString(), cfg.NextRoutineType.ToString() };
@@ -120,7 +130,7 @@ namespace SysBot.Pokemon.WinForms
 
             B_Start.Enabled = true;
             B_Delete.Enabled = true;
-            System.Media.SystemSounds.Asterisk.Play();
+            return true;
         }
 
         private void B_Delete_Click(object sender, EventArgs e)

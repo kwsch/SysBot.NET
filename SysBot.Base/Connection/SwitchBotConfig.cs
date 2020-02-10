@@ -1,4 +1,6 @@
-﻿namespace SysBot.Base
+﻿using System.Net;
+
+namespace SysBot.Base
 {
     /// <summary>
     /// Stored config of a bot
@@ -7,6 +9,9 @@
     {
         public string IP { get; set; } = string.Empty;
         public int Port { get; set; } = 6000;
+
+        public bool IsValidIP() => IPAddress.TryParse(IP, out _);
+        public IPAddress GetAddress() => IPAddress.Parse(IP);
 
         public static T GetConfig<T>(string[] lines) where T : SwitchBotConfig, new()
         {
