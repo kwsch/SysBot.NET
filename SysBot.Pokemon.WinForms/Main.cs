@@ -100,7 +100,7 @@ namespace SysBot.Pokemon.WinForms
         {
             Bots.Add(cfg);
 
-            var row = new[] {cfg.IP, cfg.Port.ToString(), cfg.NextRoutineType.ToString()};
+            var row = new[] { cfg.IP, cfg.Port.ToString(), cfg.NextRoutineType.ToString() };
             var lvi = new ListViewItem(row);
             LV_Bots.Items.Add(lvi);
 

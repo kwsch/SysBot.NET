@@ -30,11 +30,16 @@ namespace SysBot.Pokemon.WinForms
             IsRunning = true;
         }
 
-        private List<Task> CreateBotTasks(CancellationToken token)
+        private async Task<List<Task>> CreateBotTasks(CancellationToken token)
         {
-            var tasks = Bots.Select(z => z.RunAsync(token)).ToList();
-            bool tradeBot = Bots.Any(z => z is PokeTradeBot);
-            if (tradeBot)
+            var tasks = new List<Task>();
+            foreach (var b in Bots)
+            {
+                var task = b.RunAsync(token);
+                tasks.Add(task);
+            }
+            bool hasTradeBot = Bots.Any(z => z is PokeTradeBot);
+            if (hasTradeBot)
                 AddTradeBotMonitors(tasks, token);
             return tasks;
         }
@@ -46,14 +51,16 @@ namespace SysBot.Pokemon.WinForms
                 var path = Hub.Config.DistributeFolder;
                 if (!Directory.Exists(path))
                     throw new DirectoryNotFoundException(nameof(path));
-                tasks.Add(Hub.MonitorTradeQueueAddIfEmpty(path, token));
+                var task = Hub.MonitorTradeQueueAddIfEmpty(path, token);
+                tasks.Add(task);
             }
             if (Hub.Config.MonitorForPriorityTrades)
             {
                 var path = Hub.Config.PriorityFolder;
                 if (!Directory.Exists(path))
                     throw new DirectoryNotFoundException(nameof(path));
-                tasks.Add(Hub.MonitorFolderAddPriority(path, PokeTradeHub<PK8>.LogNotifier, token));
+                var task = Hub.MonitorFolderAddPriority(path, PokeTradeHub<PK8>.LogNotifier, token);
+                tasks.Add(task);
             }
         }
 
