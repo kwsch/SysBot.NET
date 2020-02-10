@@ -64,6 +64,15 @@ namespace SysBot.Pokemon.WinForms
         {
             RTB_Logs.AppendText(line);
             RTB_Logs.ScrollToCaret();
+
+            var bot = RunningEnvironment?.Bots.Find(z => line.Contains(z.Connection.Name));
+            if (bot == null)
+                return;
+
+            var index = RunningEnvironment!.Bots.IndexOf(bot);
+            var start = line.IndexOf(bot.Connection.Name, StringComparison.Ordinal);
+            var substring = line.Substring(start).Trim();
+            LV_Bots.Items[index].SubItems[2].Text = substring;
         }
 
         private BotEnvironmentConfig GetCurrentConfiguration()
@@ -90,10 +99,10 @@ namespace SysBot.Pokemon.WinForms
             B_Stop.Enabled = true;
             B_New.Enabled = false;
             B_Delete.Enabled = false;
+            RunningEnvironment = env;
             LogUtil.Log(LogLevel.Info, "Starting", "Form");
             env.Start(cfg);
             Tab_Logs.Select();
-            RunningEnvironment = env;
         }
 
         private void B_Stop_Click(object sender, EventArgs e)
@@ -130,7 +139,7 @@ namespace SysBot.Pokemon.WinForms
                 return false;
             Bots.Add(cfg);
 
-            var row = new[] { cfg.IP, cfg.Port.ToString(), cfg.NextRoutineType.ToString() };
+            var row = new[] { cfg.IP, cfg.Port.ToString(), cfg.NextRoutineType.ToString(), "Idle" };
             var lvi = new ListViewItem(row);
             LV_Bots.Items.Add(lvi);
 

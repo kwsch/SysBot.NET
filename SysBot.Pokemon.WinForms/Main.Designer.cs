@@ -33,7 +33,8 @@ namespace SysBot.Pokemon.WinForms
             System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
             "192.168.001.001",
             "6000",
-            "LinkCode"}, -1);
+            "LinkCode",
+            "Idle"}, -1);
             this.B_New = new System.Windows.Forms.Button();
             this.B_Delete = new System.Windows.Forms.Button();
             this.LV_Bots = new System.Windows.Forms.ListView();
@@ -51,6 +52,7 @@ namespace SysBot.Pokemon.WinForms
             this.RTB_Logs = new System.Windows.Forms.RichTextBox();
             this.B_Stop = new System.Windows.Forms.Button();
             this.B_Start = new System.Windows.Forms.Button();
+            this.CH_State = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.TC_Main.SuspendLayout();
             this.Tab_Bots.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.NUD_Port)).BeginInit();
@@ -86,7 +88,8 @@ namespace SysBot.Pokemon.WinForms
             this.LV_Bots.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.CH_IP,
             this.CH_Port,
-            this.CH_Name});
+            this.CH_Name,
+            this.CH_State});
             this.LV_Bots.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LV_Bots.HideSelection = false;
             this.LV_Bots.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
@@ -110,7 +113,7 @@ namespace SysBot.Pokemon.WinForms
             // CH_Name
             // 
             this.CH_Name.Text = "Name";
-            this.CH_Name.Width = 150;
+            this.CH_Name.Width = 80;
             // 
             // TC_Main
             // 
@@ -183,7 +186,7 @@ namespace SysBot.Pokemon.WinForms
             this.Tab_Hub.Location = new System.Drawing.Point(4, 22);
             this.Tab_Hub.Name = "Tab_Hub";
             this.Tab_Hub.Padding = new System.Windows.Forms.Padding(3);
-            this.Tab_Hub.Size = new System.Drawing.Size(517, 215);
+            this.Tab_Hub.Size = new System.Drawing.Size(408, 215);
             this.Tab_Hub.TabIndex = 2;
             this.Tab_Hub.Text = "Hub";
             this.Tab_Hub.UseVisualStyleBackColor = true;
@@ -193,7 +196,7 @@ namespace SysBot.Pokemon.WinForms
             this.PG_Hub.Dock = System.Windows.Forms.DockStyle.Fill;
             this.PG_Hub.Location = new System.Drawing.Point(3, 3);
             this.PG_Hub.Name = "PG_Hub";
-            this.PG_Hub.Size = new System.Drawing.Size(511, 209);
+            this.PG_Hub.Size = new System.Drawing.Size(402, 209);
             this.PG_Hub.TabIndex = 0;
             // 
             // Tab_Logs
@@ -201,7 +204,7 @@ namespace SysBot.Pokemon.WinForms
             this.Tab_Logs.Controls.Add(this.RTB_Logs);
             this.Tab_Logs.Location = new System.Drawing.Point(4, 22);
             this.Tab_Logs.Name = "Tab_Logs";
-            this.Tab_Logs.Size = new System.Drawing.Size(517, 215);
+            this.Tab_Logs.Size = new System.Drawing.Size(408, 215);
             this.Tab_Logs.TabIndex = 1;
             this.Tab_Logs.Text = "Logs";
             this.Tab_Logs.UseVisualStyleBackColor = true;
@@ -211,7 +214,7 @@ namespace SysBot.Pokemon.WinForms
             this.RTB_Logs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.RTB_Logs.Location = new System.Drawing.Point(0, 0);
             this.RTB_Logs.Name = "RTB_Logs";
-            this.RTB_Logs.Size = new System.Drawing.Size(517, 215);
+            this.RTB_Logs.Size = new System.Drawing.Size(408, 215);
             this.RTB_Logs.TabIndex = 0;
             this.RTB_Logs.Text = "";
             // 
@@ -238,6 +241,11 @@ namespace SysBot.Pokemon.WinForms
             this.B_Start.Text = "Start";
             this.B_Start.UseVisualStyleBackColor = true;
             this.B_Start.Click += new System.EventHandler(this.B_Start_Click);
+            // 
+            // CH_State
+            // 
+            this.CH_State.Text = "State";
+            this.CH_State.Width = 130;
             // 
             // Main
             // 
@@ -283,6 +291,7 @@ namespace SysBot.Pokemon.WinForms
         private System.Windows.Forms.NumericUpDown NUD_Port;
         private System.Windows.Forms.ComboBox CB_Routine;
         private System.Windows.Forms.TextBox TB_IP;
+        private System.Windows.Forms.ColumnHeader CH_State;
     }
 }
 
