@@ -31,9 +31,9 @@ namespace SysBot.Pokemon.WinForms
         private void InitializeComponent()
         {
             System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
-            "",
             "192.168.001.001",
-            ""}, -1);
+            "6000",
+            "LinkCode"}, -1);
             this.B_New = new System.Windows.Forms.Button();
             this.B_Delete = new System.Windows.Forms.Button();
             this.LV_Bots = new System.Windows.Forms.ListView();
@@ -84,9 +84,9 @@ namespace SysBot.Pokemon.WinForms
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LV_Bots.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.CH_Name,
             this.CH_IP,
-            this.CH_Port});
+            this.CH_Port,
+            this.CH_Name});
             this.LV_Bots.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LV_Bots.HideSelection = false;
             this.LV_Bots.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
@@ -96,6 +96,7 @@ namespace SysBot.Pokemon.WinForms
             this.LV_Bots.Size = new System.Drawing.Size(511, 183);
             this.LV_Bots.TabIndex = 2;
             this.LV_Bots.UseCompatibleStateImageBehavior = false;
+            this.LV_Bots.View = System.Windows.Forms.View.Details;
             // 
             // CH_Name
             // 
@@ -105,6 +106,7 @@ namespace SysBot.Pokemon.WinForms
             // CH_IP
             // 
             this.CH_IP.Text = "IP";
+            this.CH_IP.Width = 120;
             // 
             // CH_Port
             // 

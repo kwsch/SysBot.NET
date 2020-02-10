@@ -22,13 +22,14 @@ namespace SysBot.Pokemon.WinForms
         {
             InitializeComponent();
             MinimumSize = Size;
+            LV_Bots.Items.Clear();
 
             if (File.Exists(ConfigPath))
             {
                 var lines = File.ReadAllText(ConfigPath);
                 var cfg = JsonConvert.DeserializeObject<BotEnvironmentConfig>(lines);
-                Bots.AddRange(cfg.Bots);
-                Hub = cfg.Hub;
+                foreach (var c in cfg.Bots)
+                    AddBot(c);
             }
             else
             {
@@ -90,9 +91,14 @@ namespace SysBot.Pokemon.WinForms
         private void B_New_Click(object sender, EventArgs e)
         {
             var cfg = CreateNewBotConfig();
+            AddBot(cfg);
+        }
+
+        private void AddBot(PokeBotConfig cfg)
+        {
             Bots.Add(cfg);
 
-            var row = new[] { cfg.IP, cfg.Port.ToString(), cfg.NextRoutineType.ToString() };
+            var row = new[] {cfg.IP, cfg.Port.ToString(), cfg.NextRoutineType.ToString()};
             var lvi = new ListViewItem(row);
             LV_Bots.Items.Add(lvi);
 
