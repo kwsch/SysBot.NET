@@ -30,7 +30,7 @@ namespace SysBot.Pokemon.WinForms
             IsRunning = true;
         }
 
-        private async Task<List<Task>> CreateBotTasks(CancellationToken token)
+        private List<Task> CreateBotTasks(CancellationToken token)
         {
             var tasks = new List<Task>();
             foreach (var b in Bots)
