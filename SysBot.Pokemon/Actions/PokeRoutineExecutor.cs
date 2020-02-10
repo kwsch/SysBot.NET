@@ -85,6 +85,7 @@ namespace SysBot.Pokemon
             return sav;
         }
 
+
         public static void DumpPokemon(string? folder, PKM pk)
         {
             if (folder == null || !Directory.Exists(folder))
@@ -190,6 +191,33 @@ namespace SysBot.Pokemon
             var ofs = GetDaycareOffset(daycare);
             await Connection.WriteBytesAsync(data, ofs, token).ConfigureAwait(false);
         }
+
+        public async Task SetupScreenDetection(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(ScreenStateOffset, 2, token).ConfigureAwait(false);
+            uint StartValue = BitConverter.ToUInt16(data, 0);
+            Overworld = StartValue;
+        }
+
+        public async Task<bool> CheckScreenState(uint expectedScreen, CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(ScreenStateOffset, 2, token).ConfigureAwait(false);
+            return BitConverter.ToUInt16(data, 0) == expectedScreen;
+        }
+
+        /*
+        public async Task GetScreenState(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(ScreenStateOffset,4, token).ConfigureAwait(false);
+
+            uint State = BitConverter.ToUInt16(data, 0);
+
+            if(State == Overworld) { Connection.Log("Overworld "); }
+            else if (State == BoxView) { Connection.Log("Box is Open"); }
+            else if (State == DuringTrade) { Connection.Log("Trade Animation"); }
+            else if (State == TradeEvo) { Connection.Log("Trade Evolution"); }
+        }
+        */
 
         public async Task<SlotQualityCheck> GetBoxSlotQuality(int box, int slot, CancellationToken token)
         {

@@ -111,6 +111,10 @@ namespace SysBot.Pokemon
 
         private async Task<PokeTradeResult> PerformLinkCodeTrade(SAV8SWSH sav, PokeTradeDetail<PK8> poke, CancellationToken token)
         {
+            /*
+             * TODO Add Screen Detection checks.
+             *await SetupScreenDetection(token);
+            */
             poke.TradeInitialize(this);
             // Update Barrier Settings
             ShouldWaitAtBarrier = UpdateBarrier(Hub.Barrier, poke.IsRandomCode, ShouldWaitAtBarrier);
