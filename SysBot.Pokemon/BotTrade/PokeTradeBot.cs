@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
@@ -149,7 +148,7 @@ namespace SysBot.Pokemon
                 await Click(A, 2_000, token).ConfigureAwait(false);
 
             poke.TradeSearching(this);
-            await Task.Delay(PKHeX.Core.Util.Rand.Next(100, 1000), token).ConfigureAwait(false);
+            await Task.Delay(Util.Rand.Next(100, 1000), token).ConfigureAwait(false);
 
             await Click(A, 1_000, token).ConfigureAwait(false);
 
@@ -163,7 +162,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Aborted;
             if (!partnerFound)
             {
-                await ResetTradePosition(token);
+                await ResetTradePosition(token).ConfigureAwait(false);
                 return PokeTradeResult.NoTrainerFound;
             }
 
@@ -182,7 +181,7 @@ namespace SysBot.Pokemon
             var pk = await ReadUntilPresent(ShownTradeDataOffset, 25_000, 1_000, token).ConfigureAwait(false);
             if (pk == null)
             {
-                await ExitTrade(token);
+                await ExitTrade(token).ConfigureAwait(false);
                 return PokeTradeResult.TrainerTooSlow;
             }
 
@@ -191,14 +190,14 @@ namespace SysBot.Pokemon
                 await Click(A, 1_500, token).ConfigureAwait(false);
 
             // Wait 30 Seconds until Trade is finished...
-            await Task.Delay(30_000 + PKHeX.Core.Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
+            await Task.Delay(30_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
 
             // Pokemon has probably arrived, bypass Trade Evolution...
             await Click(Y, 1_000, token).ConfigureAwait(false);
 
-            await Task.Delay(1_000 + PKHeX.Core.Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
+            await Task.Delay(1_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
 
-            await ExitTrade(token);
+            await ExitTrade(token).ConfigureAwait(false);
 
             for (int i = 0; i < 3; i++)
                 await Click(A, 1_000, token).ConfigureAwait(false);
@@ -213,10 +212,10 @@ namespace SysBot.Pokemon
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
 
-            if (await ReadBoxPokemon(0, 0, token) == pkm)
+            if (await ReadBoxPokemon(0, 0, token).ConfigureAwait(false) == pkm)
             {
                 Connection.Log("Trade failed, return to Overworld!");
-                await ResetTradePosition(token);
+                await ResetTradePosition(token).ConfigureAwait(false);
                 return PokeTradeResult.NoTrainerFound;
             }
             else
@@ -320,7 +319,7 @@ namespace SysBot.Pokemon
                 await Click(A, 2_000, token).ConfigureAwait(false);
 
             Connection.Log("Searching for a trade partner");
-            await Task.Delay(PKHeX.Core.Util.Rand.Next(100, 1000), token).ConfigureAwait(false);
+            await Task.Delay(Util.Rand.Next(100, 1000), token).ConfigureAwait(false);
 
             await Click(A, 1_000, token).ConfigureAwait(false);
 
@@ -334,7 +333,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Aborted;
             if (!partnerFound)
             {
-                await ResetTradePosition(token);
+                await ResetTradePosition(token).ConfigureAwait(false);
                 return PokeTradeResult.NoTrainerFound;
             }
 
@@ -349,11 +348,11 @@ namespace SysBot.Pokemon
             var pk = await ReadUntilPresent(ShownTradeDataOffset, 25_000, 1_000, token).ConfigureAwait(false);
             if (pk == null)
             {
-                await ExitTrade(token);
+                await ExitTrade(token).ConfigureAwait(false);
                 return PokeTradeResult.TrainerTooSlow;
             }
 
-            await ExitTrade(token);
+            await ExitTrade(token).ConfigureAwait(false);
             var ec = pk.EncryptionConstant;
             var pid = pk.PID;
             var IVs = pk.IVs.Length == 0 ? GetBlankIVTemplate() : PKX.ReorderSpeedLast((int[])pk.IVs.Clone());
@@ -362,23 +361,22 @@ namespace SysBot.Pokemon
                 Connection.Log("The pokemon is already shiny!"); // Do not bother checking for next shiny frame
                 return PokeTradeResult.Success;
             }
-            var seeds = Util.Z3Search.GetSeeds(ec, pid);
-            if (!seeds.Any())
-                Connection.Log("The pokemon is not a raid pokemon!");
-            else
+
+            var match = Z3Search.GetFirstSeed(ec, pid, IVs, out var seed);
+            switch (match)
             {
-                var validSeed = Util.Z3Search.FindFirstSeed(seeds, IVs, out var seed);
-
-                if (!validSeed)
-                {
+                case Z3SearchResult.SeedNone:
+                    Connection.Log("The pokemon is not a raid pokemon!");
+                    break;
+                case Z3SearchResult.SeedMismatch:
                     Connection.Log("No valid seed found!");
-                    return PokeTradeResult.Success;
-                }
-
-                Connection.Log($"Seed: {seed:X16}");
-                Connection.Log($"Next Shiny Frame: {Util.Z3Search.GetNextShinyFrame(seed, out var type)}");
-                var shinytype = type == 1 ? "Star" : "Square";
-                Connection.Log($"Shiny Type: {shinytype}");
+                    break;
+                default:
+                    Connection.Log($"Seed: {seed:X16}");
+                    Connection.Log($"Next Shiny Frame: {Z3Search.GetNextShinyFrame(seed, out var type)}");
+                    var shinytype = type == 1 ? "Star" : "Square";
+                    Connection.Log($"Shiny Type: {shinytype}");
+                    break;
             }
 
             return PokeTradeResult.Success;

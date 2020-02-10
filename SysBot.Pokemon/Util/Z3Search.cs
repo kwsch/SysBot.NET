@@ -1,11 +1,39 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.Z3;
+using PKHeX.Core;
 
-namespace SysBot.Pokemon.Util
+namespace SysBot.Pokemon
 {
     public static class Z3Search
     {
+        public static Z3SearchResult GetFirstSeed(uint ec, uint pid, int[] ivs, out ulong result)
+        {
+            var seeds = GetSeeds(ec, pid);
+            bool hasClosest = false;
+            ulong closest = 0;
+            foreach (var seed in seeds)
+            {
+                result = seed;
+                // Verify the IVs; at most 5 can match
+                for (int i = 1; i <= 5; i++) // fixed IV count
+                {
+                    if (IsMatch(seed, ivs, i))
+                        return Z3SearchResult.Success;
+                }
+                hasClosest = true;
+                closest = seed;
+            }
+
+            if (hasClosest)
+            {
+                result = closest;
+                return Z3SearchResult.SeedMismatch;
+            }
+            result = 0;
+            return Z3SearchResult.SeedNone;
+        }
+
         public static IEnumerable<ulong> GetSeeds(uint ec, uint pid)
         {
             foreach (var seed in FindPotentialSeeds(ec, pid, false))
@@ -34,7 +62,7 @@ namespace SysBot.Pokemon.Util
         private static BoolExpr CreateModel(Context ctx, uint ec, uint pid, bool shiny, out BitVecExpr s0)
         {
             s0 = ctx.MkBVConst("s0", 64);
-            BitVecExpr s1 = ctx.MkBV(XOROSHIRO.XOROSHIRO_CONST, 64);
+            BitVecExpr s1 = ctx.MkBV(Xoroshiro128Plus.XOROSHIRO_CONST, 64);
 
             var and_val = ctx.MkBV(0xFFFFFFFF, 64);
             var and_val16 = ctx.MkBV(0xFFFF, 64);
@@ -102,7 +130,7 @@ namespace SysBot.Pokemon.Util
 
         public static int GetNextShinyFrame(ulong seed, out uint type)
         {
-            XOROSHIRO rng = new XOROSHIRO(seed);
+            var rng = new Xoroshiro128Plus(seed);
             for (int i = 0; ; i++)
             {
                 uint _ = (uint)rng.NextInt(0xFFFFFFFF); // EC
@@ -113,15 +141,15 @@ namespace SysBot.Pokemon.Util
                     return i;
 
                 // Get the next seed, and reset for the next iteration
-                rng.Reset(seed);
+                rng = new Xoroshiro128Plus(seed);
                 seed = rng.Next();
-                rng.Reset(seed);
+                rng = new Xoroshiro128Plus(seed);
             }
         }
 
         public static bool IsMatch(ulong seed, int[] ivs, int fixed_ivs)
         {
-            var rng = new XOROSHIRO(seed);
+            var rng = new Xoroshiro128Plus(seed);
             rng.NextInt(); // EC
             rng.NextInt(); // TID
             rng.NextInt(); // PID
