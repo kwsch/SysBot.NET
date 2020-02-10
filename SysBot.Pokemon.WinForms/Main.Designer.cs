@@ -48,7 +48,7 @@ namespace SysBot.Pokemon.WinForms
             this.B_Stop = new System.Windows.Forms.Button();
             this.B_Start = new System.Windows.Forms.Button();
             this.Tab_Hub = new System.Windows.Forms.TabPage();
-            this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
+            this.PG_Hub = new System.Windows.Forms.PropertyGrid();
             this.Tab_Logs = new System.Windows.Forms.TabPage();
             this.RTB_Logs = new System.Windows.Forms.RichTextBox();
             this.TC_Main.SuspendLayout();
@@ -206,7 +206,7 @@ namespace SysBot.Pokemon.WinForms
             // 
             // Tab_Hub
             // 
-            this.Tab_Hub.Controls.Add(this.propertyGrid1);
+            this.Tab_Hub.Controls.Add(this.PG_Hub);
             this.Tab_Hub.Location = new System.Drawing.Point(4, 22);
             this.Tab_Hub.Name = "Tab_Hub";
             this.Tab_Hub.Padding = new System.Windows.Forms.Padding(3);
@@ -217,11 +217,11 @@ namespace SysBot.Pokemon.WinForms
             // 
             // propertyGrid1
             // 
-            this.propertyGrid1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.propertyGrid1.Location = new System.Drawing.Point(3, 3);
-            this.propertyGrid1.Name = "propertyGrid1";
-            this.propertyGrid1.Size = new System.Drawing.Size(511, 209);
-            this.propertyGrid1.TabIndex = 0;
+            this.PG_Hub.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.PG_Hub.Location = new System.Drawing.Point(3, 3);
+            this.PG_Hub.Name = "PG_Hub";
+            this.PG_Hub.Size = new System.Drawing.Size(511, 209);
+            this.PG_Hub.TabIndex = 0;
             // 
             // Tab_Logs
             // 
@@ -280,7 +280,7 @@ namespace SysBot.Pokemon.WinForms
         private System.Windows.Forms.TabPage Tab_Logs;
         private System.Windows.Forms.RichTextBox RTB_Logs;
         private System.Windows.Forms.TabPage Tab_Hub;
-        private System.Windows.Forms.PropertyGrid propertyGrid1;
+        private System.Windows.Forms.PropertyGrid PG_Hub;
         private System.Windows.Forms.Button B_Stop;
         private System.Windows.Forms.Button B_Start;
         private System.Windows.Forms.MaskedTextBox TB_IP;

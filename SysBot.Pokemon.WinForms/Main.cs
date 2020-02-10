@@ -30,12 +30,15 @@ namespace SysBot.Pokemon.WinForms
                 var cfg = JsonConvert.DeserializeObject<BotEnvironmentConfig>(lines);
                 foreach (var c in cfg.Bots)
                     AddBot(c);
+                Hub = cfg.Hub;
             }
             else
             {
                 Hub = new PokeTradeHubConfig();
                 Hub.CreateDefaults(WorkingDirectory);
             }
+
+            PG_Hub.SelectedObject = Hub;
 
             var routines = (PokeRoutineType[])Enum.GetValues(typeof(PokeRoutineType));
             var list = routines.Select(z => new ComboItem(z.ToString(), (int)z)).ToArray();
