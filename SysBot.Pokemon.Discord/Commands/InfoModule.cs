@@ -30,9 +30,8 @@ namespace SysBot.Pokemon.Discord
                 Description = detail,
             };
 
-            var invite = $"https://discordapp.com/oauth2/authorize?client_id={app.Id}&permissions=0&scope=bot";
             builder.AddField("Info",
-                $"- [Source Code]({repo}) | [Invite URL]({invite})\n" +
+                $"- [Source Code]({repo})\n" +
                 $"- {Format.Bold("Author")}: {app.Owner} ({app.Owner.Id})\n" +
                 $"- {Format.Bold("Library")}: Discord.Net ({DiscordConfig.Version})\n" +
                 $"- {Format.Bold("Uptime")}: {GetUptime()}\n" +
