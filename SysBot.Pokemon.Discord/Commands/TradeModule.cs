@@ -156,7 +156,7 @@ namespace SysBot.Pokemon.Discord
                 };
             }
 
-            msg = $"Added ${Context.User.Mention} to the queue. Your current position is: {SysCordInstance.Self.Hub.Queue.Count}";
+            msg = $"Added {Context.User.Mention} to the queue. Your current position is: {SysCordInstance.Self.Hub.Queue.Count}";
             return true;
         }
 
