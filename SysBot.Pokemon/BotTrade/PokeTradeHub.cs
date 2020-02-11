@@ -12,7 +12,7 @@ namespace SysBot.Pokemon
     /// Centralizes logic for trade bot coordination.
     /// </summary>
     /// <typeparam name="T">Type of <see cref="PKM"/> to distribute.</typeparam>
-    public class PokeTradeHub<T> where T : PKM
+    public class PokeTradeHub<T> where T : PKM, new()
     {
         public static readonly PokeTradeLogNotifier<T> LogNotifier = new PokeTradeLogNotifier<T>();
 
@@ -62,7 +62,7 @@ namespace SysBot.Pokemon
         /// <param name="token">Thread cancellation</param>
         public async Task MonitorTradeQueueAddIfEmpty(string path, CancellationToken token)
         {
-            var blank = (T)Activator.CreateInstance(typeof(T));
+            var blank = new T();
             Pool.ExpectedSize = blank.SIZE_PARTY;
             Pool.LoadFolder(path);
 
@@ -91,7 +91,7 @@ namespace SysBot.Pokemon
         /// <param name="token">Thread cancellation</param>
         public async Task MonitorFolderAddPriority(string path, IPokeTradeNotifier<T> notifier, CancellationToken token)
         {
-            var blank = (T)Activator.CreateInstance(typeof(T));
+            var blank = new T();
             var size = blank.SIZE_PARTY;
 
             string queued = Path.Combine(path, "queued");
