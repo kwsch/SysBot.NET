@@ -155,9 +155,12 @@ namespace SysBot.Pokemon
 
         public async Task ExitTrade(CancellationToken token)
         {
+            // When exiting the trade, we press B to pop up the Leave menu.
+            // To force the text to load as soon as possible, we press B twice (in quick succession).
+            // Then we say YES to leave.
             for (int i = 0; i < 10; i++)
             {
-                await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(B, 0_250, token).ConfigureAwait(false); // small delay so that next B can force-finish text.
                 await Click(B, 1_000, token).ConfigureAwait(false);
                 await Click(A, 1_000, token).ConfigureAwait(false);
             }
