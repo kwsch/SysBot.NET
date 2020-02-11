@@ -156,7 +156,7 @@ namespace SysBot.Pokemon.Discord
                 };
             }
 
-            msg = $"Added ${Context.User.Mention} to the queue. Your current position is: {SysCordInstance.Self.Hub.Queue.Count}";
+            msg = $"Added {Context.User.Mention} to the queue. Your current position is: {SysCordInstance.Self.Hub.Queue.Count}";
             return true;
         }
 
@@ -213,7 +213,7 @@ namespace SysBot.Pokemon.Discord
             {
                 var name = Info.TrainerName;
                 var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", ({name})";
-                Context.User.SendMessageAsync($"I'm searching for you, {trainer}! Your code is {Code:0000}.").ConfigureAwait(false);
+                Context.User.SendMessageAsync($"I'm searching for you{trainer}! Your code is {Code:0000}.").ConfigureAwait(false);
             }
 
             public void TradeCanceled(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeResult msg)
