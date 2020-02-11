@@ -153,11 +153,14 @@ namespace SysBot.Pokemon
             }
         }
 
-        public async Task ExitTrade(CancellationToken token)
+        public async Task ExitTrade(uint overworld, CancellationToken token)
         {
-            for (int i = 0; i < 5; i++)
-                await Click(B, 800, token).ConfigureAwait(false);
-            await Click(A, 250, token).ConfigureAwait(false);
+            while (!await CheckScreenState(overworld, token).ConfigureAwait(false))
+            {
+                await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
+            }
         }
 
         public async Task ResetTradePosition(CancellationToken token)
@@ -187,11 +190,12 @@ namespace SysBot.Pokemon
             await Connection.WriteBytesAsync(data, ofs, token).ConfigureAwait(false);
         }
 
-        public async Task SetupScreenDetection(CancellationToken token)
+        public async Task<uint> SetupScreenDetection(CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(ScreenStateOffset, 2, token).ConfigureAwait(false);
             uint StartValue = BitConverter.ToUInt16(data, 0);
             Overworld = StartValue;
+            return Overworld;
         }
 
         public async Task<bool> CheckScreenState(uint expectedScreen, CancellationToken token)

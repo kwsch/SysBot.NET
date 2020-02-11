@@ -121,6 +121,7 @@ namespace SysBot.Pokemon
              *await SetupScreenDetection(token);
             */
             await Task.Delay(5_000, token).ConfigureAwait(false);
+            var _ = await SetupScreenDetection(token).ConfigureAwait(false);
             poke.TradeInitialize(this);
             // Update Barrier Settings
             ShouldWaitAtBarrier = UpdateBarrier(Hub.Barrier, poke.IsRandomCode, ShouldWaitAtBarrier);
@@ -192,7 +193,7 @@ namespace SysBot.Pokemon
             var pk = await ReadUntilPresent(ShownTradeDataOffset, 25_000, 1_000, token).ConfigureAwait(false);
             if (pk == null)
             {
-                await ExitTrade(token).ConfigureAwait(false);
+                await ExitTrade(Overworld, token).ConfigureAwait(false);
                 return PokeTradeResult.TrainerTooSlow;
             }
 
@@ -208,7 +209,7 @@ namespace SysBot.Pokemon
 
             await Task.Delay(1_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
 
-            await ExitTrade(token).ConfigureAwait(false);
+            await ExitTrade(Overworld, token).ConfigureAwait(false);
 
             for (int i = 0; i < 3; i++)
                 await Click(A, 1_000, token).ConfigureAwait(false);
@@ -365,11 +366,11 @@ namespace SysBot.Pokemon
             var pk = await ReadUntilPresent(ShownTradeDataOffset, 25_000, 1_000, token).ConfigureAwait(false);
             if (pk == null)
             {
-                await ExitTrade(token).ConfigureAwait(false);
+                await ExitTrade(Overworld, token).ConfigureAwait(false);
                 return PokeTradeResult.TrainerTooSlow;
             }
 
-            await ExitTrade(token).ConfigureAwait(false);
+            await ExitTrade(Overworld, token).ConfigureAwait(false);
             var ec = pk.EncryptionConstant;
             var pid = pk.PID;
             var IVs = pk.IVs.Length == 0 ? GetBlankIVTemplate() : PKX.ReorderSpeedLast((int[])pk.IVs.Clone());
