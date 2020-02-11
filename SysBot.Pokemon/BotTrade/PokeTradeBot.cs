@@ -69,7 +69,9 @@ namespace SysBot.Pokemon
             bool waiting = false;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.LinkTrade)
             {
-                Connection.Log("Starting next Link Code trade. Getting data...");
+                if (!waiting)
+                    Connection.Log("Starting next Link Code trade. Getting data...");
+
                 if (!Hub.Queue.TryDequeue(out var poke, out var priority))
                 {
                     if (!waiting)
