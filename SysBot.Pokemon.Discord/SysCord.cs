@@ -20,7 +20,7 @@ namespace SysBot.Pokemon.Discord
     public sealed class SysCord
     {
         private readonly DiscordSocketClient _client;
-        internal readonly PokeTradeHub<PK8> Hub;
+        public PokeTradeHub<PK8> Hub;
 
         // Keep the CommandService and DI container around for use with commands.
         // These two types require you install the Discord.Net.Commands package.

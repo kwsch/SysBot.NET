@@ -43,7 +43,7 @@ namespace SysBot.Pokemon.WinForms
         {
             var tasks = new List<Task>();
             if (!string.IsNullOrWhiteSpace(Hub.Config.DiscordToken))
-                AddDiscordBot(tasks, Hub.Config.DiscordToken, token);
+                AddDiscordBot(Hub.Config.DiscordToken);
 
             tasks.AddRange(Bots.Select(b => b.RunAsync(token)));
             bool hasTradeBot = Bots.Any(z => z is PokeTradeBot);
@@ -52,11 +52,15 @@ namespace SysBot.Pokemon.WinForms
             return tasks;
         }
 
-        private void AddDiscordBot(ICollection<Task> tasks, string apiToken, CancellationToken token)
+        private void AddDiscordBot(string apiToken)
         {
+            if (SysCordInstance.Self != null)
+            {
+                SysCordInstance.Self.Hub = Hub;
+                return;
+            }
             var bot = new SysCord(Hub);
-            var task = bot.MainAsync(apiToken, token);
-            tasks.Add(task);
+            Task.Run(() => bot.MainAsync(apiToken, CancellationToken.None));
         }
 
         private void AddTradeBotMonitors(ICollection<Task> tasks, CancellationToken token)
