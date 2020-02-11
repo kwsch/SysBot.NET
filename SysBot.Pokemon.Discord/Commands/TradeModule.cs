@@ -15,6 +15,8 @@ namespace SysBot.Pokemon.Discord
         private static readonly object _sync = new object();
         private static readonly List<TradeEntry<PK8>> UsersInQueue = new List<TradeEntry<PK8>>();
 
+        static TradeModule() => AutoLegalityExtensions.EnsureInitialized();
+
         [Command("tradeStatus")]
         public async Task GetTradePosition()
         {
@@ -90,7 +92,7 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            await AddTradeToQueue(code, trainerName, pk8, sudo);
+            await AddTradeToQueue(code, trainerName, pk8, sudo).ConfigureAwait(false);
         }
 
         [Command("trade")]

@@ -9,7 +9,19 @@ namespace SysBot.Pokemon.Discord
 {
     public static class AutoLegalityExtensions
     {
-        static AutoLegalityExtensions()
+        private static bool Initialized;
+
+        static AutoLegalityExtensions() => EnsureInitialized();
+
+        public static void EnsureInitialized()
+        {
+            if (Initialized)
+                return;
+            Initialized = true;
+            InitializeAutoLegality();
+        }
+
+        private static void InitializeAutoLegality()
         {
             Task.Run(() =>
             {
