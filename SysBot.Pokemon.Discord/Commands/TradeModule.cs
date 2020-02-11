@@ -40,7 +40,7 @@ namespace SysBot.Pokemon.Discord
         public async Task ClearAllTradesAsync()
         {
             var cfg = SysCordInstance.Self.Hub.Config;
-            var sudo = GetHasRole(cfg.DiscordRoleCanTrade);
+            var sudo = GetHasRole(cfg.DiscordRoleSudo);
             if (!sudo)
             {
                 await ReplyAsync("You can't use this command.").ConfigureAwait(false);
@@ -105,7 +105,7 @@ namespace SysBot.Pokemon.Discord
         private string ClearTrade()
         {
             var cfg = SysCordInstance.Self.Hub.Config;
-            var sudo = GetHasRole(cfg.DiscordRoleCanTrade);
+            var sudo = GetHasRole(cfg.DiscordRoleSudo);
             var allowed = sudo || GetHasRole(cfg.DiscordRoleCanTrade);
             if (!allowed)
                 return "Sorry, you are not permitted to use this command!";
