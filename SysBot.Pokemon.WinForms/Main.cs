@@ -139,8 +139,10 @@ namespace SysBot.Pokemon.WinForms
             if (!cfg.IsValidIP())
                 return false;
             var ip = cfg.GetAddress();
-            if (Bots.Any(z => z.GetAddress().Equals(ip)))
-                return false;
+            var match = Bots.FindIndex(z => z.GetAddress().Equals(ip));
+            if (match >= 0)
+                RemoveBotsAtIndexes(new[] { match });
+
             Bots.Add(cfg);
 
             var row = new[] { cfg.IP, cfg.Port.ToString(), cfg.NextRoutineType.ToString(), "Idle" };
@@ -157,14 +159,7 @@ namespace SysBot.Pokemon.WinForms
             var indexes = LV_Bots.SelectedIndices;
             var items = indexes.Cast<int>().OrderByDescending(z => z);
 
-            bool removed = false;
-            foreach (var item in items)
-            {
-                Bots.RemoveAt(item);
-                LV_Bots.Items.RemoveAt(item);
-                removed = true;
-            }
-
+            var removed = RemoveBotsAtIndexes(items);
             if (!removed)
             {
                 WinFormsUtil.Error("No bots removed.", "Ensure you've selected at least one IP address to remove.");
@@ -180,6 +175,19 @@ namespace SysBot.Pokemon.WinForms
             System.Media.SystemSounds.Asterisk.Play();
         }
 
+        private bool RemoveBotsAtIndexes(IEnumerable<int> items)
+        {
+            bool removed = false;
+            foreach (var item in items)
+            {
+                Bots.RemoveAt(item);
+                LV_Bots.Items.RemoveAt(item);
+                removed = true;
+            }
+
+            return removed;
+        }
+
         private PokeBotConfig CreateNewBotConfig()
         {
             var type = (PokeRoutineType)WinFormsUtil.GetIndex(CB_Routine);
@@ -189,6 +197,18 @@ namespace SysBot.Pokemon.WinForms
             var cfg = SwitchBotConfig.GetConfig<PokeBotConfig>(ip, port);
             cfg.NextRoutineType = type;
             return cfg;
+        }
+
+        private void LV_Bots_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var lv = (ListView)sender;
+            var index = lv.SelectedIndices.OfType<int>().FirstOrDefault();
+            if (index >= Bots.Count)
+                return;
+            var cfg = Bots[index];
+            TB_IP.Text = cfg.IP;
+            NUD_Port.Text = cfg.Port.ToString();
+            CB_Routine.SelectedIndex = CB_Routine.Items.OfType<ComboItem>().ToList().FindIndex(z => (int)cfg.NextRoutineType == z.Value);
         }
     }
 }

@@ -4,7 +4,9 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using PKHeX.Core;
+using SysBot.Base;
 
 namespace SysBot.Pokemon
 {
@@ -46,7 +48,7 @@ namespace SysBot.Pokemon
         /// </summary>
         private static void ReleaseBarrier(Barrier b)
         {
-            Console.WriteLine($"{b.ParticipantCount} bots released.");
+            LogUtil.Log(LogLevel.Info, $"{b.ParticipantCount} bots released.", "Barrier");
         }
         #endregion
 
@@ -64,7 +66,10 @@ namespace SysBot.Pokemon
         {
             var blank = new T();
             Pool.ExpectedSize = blank.SIZE_PARTY;
-            Pool.LoadFolder(path);
+            if (!Pool.LoadFolder(path))
+            {
+                LogUtil.Log(LogLevel.Error, "Nothing found in pool folder!", "Hub");
+            }
 
             var trainer = new PokeTradeTrainerInfo("Random");
             while (!token.IsCancellationRequested)
@@ -75,6 +80,9 @@ namespace SysBot.Pokemon
                 if (Bots.All(z => z.Config.CurrentRoutineType != PokeRoutineType.LinkTrade))
                     continue;
                 if (!Config.DistributeWhileIdle)
+                    continue;
+
+                if (Pool.Count == 0)
                     continue;
 
                 var random = Pool.GetRandomPoke();

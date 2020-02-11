@@ -100,6 +100,7 @@ namespace SysBot.Pokemon.WinForms
             this.LV_Bots.TabIndex = 2;
             this.LV_Bots.UseCompatibleStateImageBehavior = false;
             this.LV_Bots.View = System.Windows.Forms.View.Details;
+            this.LV_Bots.SelectedIndexChanged += new System.EventHandler(this.LV_Bots_SelectedIndexChanged);
             // 
             // CH_IP
             // 
