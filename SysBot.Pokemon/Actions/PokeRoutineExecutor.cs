@@ -222,9 +222,7 @@ namespace SysBot.Pokemon
 
         public async Task<bool> IsMenuOpen(CancellationToken token)
         {
-            Connection.Log("test");
             var data = await Connection.ReadBytesAsync(MenuOffset, 4,token).ConfigureAwait(false);
-            Connection.Log(BitConverter.ToUInt32(data, 0).ToString("X"));
             return BitConverter.ToUInt32(data,0) == MenuOpen;
         }
 
