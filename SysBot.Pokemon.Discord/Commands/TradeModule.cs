@@ -60,7 +60,7 @@ namespace SysBot.Pokemon.Discord
         public async Task TradeAsync([Summary("Trade Code")]int code, [Remainder][Summary("Trainer Name to trade to.")]string trainerName)
         {
             var cfg = SysCordInstance.Self.Hub.Config;
-            var sudo = GetHasRole(cfg.DiscordRoleCanTrade);
+            var sudo = GetHasRole(cfg.DiscordRoleSudo);
             var allowed = sudo || GetHasRole(cfg.DiscordRoleCanTrade);
 
             if (!allowed)
