@@ -38,5 +38,6 @@ namespace SysBot.Pokemon
 
         public void Clear() => Queue.Clear();
         public int Remove(PokeTradeDetail<TPoke> detail) => Queue.Remove(detail);
+        public int IndexOf(PokeTradeDetail<TPoke> detail) => Queue.IndexOf(detail);
     }
 }

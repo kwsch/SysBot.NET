@@ -358,5 +358,14 @@ namespace System.Collections.Concurrent
                 return items.RemoveAll(z => z.Value!.Equals(detail));
             }
         }
+
+        public int IndexOf(TValue detail)
+        {
+            lock (_syncLock)
+            {
+                var items = _minHeap.Items;
+                return items.FindIndex(z => z.Value!.Equals(detail));
+            }
+        }
     }
 }

@@ -14,6 +14,19 @@ namespace SysBot.Pokemon.Discord
         private static readonly object _sync = new object();
         private static readonly List<TradeEntry<PK8>> UsersInQueue = new List<TradeEntry<PK8>>();
 
+        [Command("tradeStatus")]
+        public async Task GetTradePosition()
+        {
+            string msg;
+            lock (_sync)
+            {
+                var uid = Context.User.Id;
+                var index = UsersInQueue.FindIndex(z => z.User == uid);
+                msg = index < 0 ? "You are not in the queue." : $"You are in the queue! Position: {index + 1}, Receiving: {(Species)UsersInQueue[index].Trade.TradeData.Species}";
+            }
+            await ReplyAsync(msg).ConfigureAwait(false);
+        }
+
         [Command("tradeClear")]
         public async Task ClearTradeAsync()
         {
