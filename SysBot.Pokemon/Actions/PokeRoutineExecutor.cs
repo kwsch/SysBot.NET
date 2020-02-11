@@ -155,11 +155,13 @@ namespace SysBot.Pokemon
 
         public async Task ExitTrade(uint overworld, CancellationToken token)
         {
-            while (!await CheckScreenState(overworld, token).ConfigureAwait(false))
+            var count = 0;
+            while (!await CheckScreenState(overworld, token).ConfigureAwait(false) || count > 9)
             {
                 await Click(B, 1_000, token).ConfigureAwait(false);
                 await Click(B, 1_000, token).ConfigureAwait(false);
                 await Click(A, 1_000, token).ConfigureAwait(false);
+                count++;
             }
         }
 
