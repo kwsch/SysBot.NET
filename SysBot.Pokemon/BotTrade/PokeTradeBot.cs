@@ -246,7 +246,7 @@ namespace SysBot.Pokemon
             }
 
             // Trade was Successful!
-            poke.TradeFinished(this, pkm);
+            poke.TradeFinished(this, pk);
             Connection.Log("Trade complete!");
             Hub.AddCompletedTrade();
             if (Dump && !string.IsNullOrEmpty(DumpFolder))
