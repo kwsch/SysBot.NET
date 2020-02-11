@@ -220,6 +220,7 @@ namespace SysBot.Pokemon.WinForms
             this.RTB_Logs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.RTB_Logs.Location = new System.Drawing.Point(0, 0);
             this.RTB_Logs.Name = "RTB_Logs";
+            this.RTB_Logs.ReadOnly = true;
             this.RTB_Logs.Size = new System.Drawing.Size(408, 215);
             this.RTB_Logs.TabIndex = 0;
             this.RTB_Logs.Text = "";

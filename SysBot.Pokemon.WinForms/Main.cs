@@ -62,6 +62,10 @@ namespace SysBot.Pokemon.WinForms
 
         private void UpdateLog(string line)
         {
+            // ghetto truncate
+            if (RTB_Logs.Lines.Length > 99_999)
+                RTB_Logs.Lines = RTB_Logs.Lines.Skip(25_0000).ToArray();
+
             RTB_Logs.AppendText(line);
             RTB_Logs.ScrollToCaret();
 
