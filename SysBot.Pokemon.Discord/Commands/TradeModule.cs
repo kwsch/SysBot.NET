@@ -6,6 +6,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using PKHeX.Core;
+using PKHeX.Core.AutoMod;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -89,6 +90,38 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
+            await AddTradeToQueue(code, trainerName, pk8, sudo);
+        }
+
+        [Command("trade")]
+        [Summary("Makes the bot trade you the provided Showdown Set by adding it to the pool.")]
+        public async Task TradeAsync([Summary("Showdown Set")][Remainder]string content)
+        {
+            const int gen = 8;
+            content = ReusableActions.StripCodeBlock(content);
+            var set = new ShowdownSet(content);
+            var sav = TrainerSettings.GetSavedTrainerData(gen);
+
+            var pkm = sav.GetLegalFromSet(set, out var result);
+            var la = new LegalityAnalysis(pkm);
+            var spec = GameInfo.Strings.Species[set.Species];
+            var msg = la.Valid
+                ? $"Here's your ({result}) legalized PKM for {spec}!"
+                : $"Oops! I wasn't able to create something from that. Here's my best attempt for that {spec}!";
+
+            if (!la.Valid || !(pkm is PK8 pk8))
+            {
+                await ReplyAsync(msg).ConfigureAwait(false);
+                return;
+            }
+
+            var code = Util.Rand.Next(0, 9999);
+            var sudo = GetHasRole(SysCordInstance.Self.Hub.Config.DiscordRoleSudo);
+            await AddTradeToQueue(code, Context.User.Username, pk8, sudo).ConfigureAwait(false);
+        }
+
+        private async Task AddTradeToQueue(int code, string trainerName, PK8 pk8, bool sudo)
+        {
             var la = new LegalityAnalysis(pk8);
             if (!la.Valid)
             {
