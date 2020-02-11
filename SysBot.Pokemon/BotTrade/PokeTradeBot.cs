@@ -120,6 +120,17 @@ namespace SysBot.Pokemon
              * TODO Add Screen Detection checks.
              *await SetupScreenDetection(token);
             */
+
+            while(true)
+            {
+                bool result = await IsMenuOpen(token).ConfigureAwait(false);
+                if (result)
+                    Connection.Log("Menu is Open");
+                else
+                    Connection.Log("Menu isn't Open");
+                await Task.Delay(250);
+            }
+
             await Task.Delay(5_000, token).ConfigureAwait(false);
             var _ = await SetupScreenDetection(token).ConfigureAwait(false);
             poke.TradeInitialize(this);

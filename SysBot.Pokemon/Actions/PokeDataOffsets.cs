@@ -43,6 +43,12 @@ namespace SysBot.Pokemon
         public const int TrainerDataLength = 0x110;
 
         #region ScreenDetection
+
+        /* Y-COM Menu/ X Menu Detection */
+        public const uint MenuOffset = 0x00000036;
+        public const uint MenuOpen = 0x7DC80000;
+        public const uint MenuClosed = 0xBBE00000;
+
         public const uint ScreenStateOffset = 0x1074b8;
         public static uint Overworld; // Also Loading in some cases  
         public static uint BoxView => Overworld + 1;

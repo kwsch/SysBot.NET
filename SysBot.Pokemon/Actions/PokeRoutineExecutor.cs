@@ -220,6 +220,14 @@ namespace SysBot.Pokemon
             Connection.Log(status);
         }
 
+        public async Task<bool> IsMenuOpen(CancellationToken token)
+        {
+            Connection.Log("test");
+            var data = await Connection.ReadBytesAsync(MenuOffset, 4,token).ConfigureAwait(false);
+            Connection.Log(BitConverter.ToUInt32(data, 0).ToString("X"));
+            return BitConverter.ToUInt32(data,0) == MenuOpen;
+        }
+
         public async Task<SlotQualityCheck> GetBoxSlotQuality(int box, int slot, CancellationToken token)
         {
             var result = await ReadBoxPokemon(box, slot, token).ConfigureAwait(false);
