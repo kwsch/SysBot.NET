@@ -169,7 +169,9 @@ namespace SysBot.Pokemon.Discord
         private bool GetHasRole(string RequiredRole)
         {
             var guild = Context.Guild;
-            var role = guild.Roles.First(x => x.Name == RequiredRole);
+            var role = guild.Roles.FirstOrDefault(x => x.Name == RequiredRole);
+            if (role == default)
+                return false;
 
             var igu = (SocketGuildUser)Context.User;
             bool hasRole = igu.Roles.Contains(role);
