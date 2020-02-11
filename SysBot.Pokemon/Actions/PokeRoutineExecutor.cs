@@ -142,7 +142,16 @@ namespace SysBot.Pokemon
         public async Task ReconnectToYCom(CancellationToken token)
         {
             // Press B in case a Error Message is Present
-            await Click(B, 1000, token).ConfigureAwait(false);
+            await Click(B, 2000, token).ConfigureAwait(false);
+
+            // Return to Overworld
+            if(await IsMenuOpen(token).ConfigureAwait(false))
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    await Click(B, 1000, token).ConfigureAwait(false);
+                }
+            }
 
             await Click(Y, 1000, token).ConfigureAwait(false);
             await Click(PLUS, 15_000, token).ConfigureAwait(false);
