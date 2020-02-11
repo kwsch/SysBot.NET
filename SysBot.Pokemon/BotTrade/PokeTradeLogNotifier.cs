@@ -21,9 +21,10 @@ namespace SysBot.Pokemon
             LogUtil.Log(LogLevel.Info, $"Canceling trade with {info.Trainer.TrainerName}, because {msg}.", routine.Connection.Name);
         }
 
-        public void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
+        public void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result)
         {
             LogUtil.Log(LogLevel.Info, $"Finished trade for {info.Trainer.TrainerName}, sending {(Species)info.TradeData.Species}", routine.Connection.Name);
+            LogUtil.Log(LogLevel.Info, $"Received: {(Species)result.Species}.", routine.Connection.Name);
         }
     }
 }

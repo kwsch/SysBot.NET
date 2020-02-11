@@ -10,11 +10,18 @@ namespace SysBot.Pokemon.Discord
 {
     public static class ReusableActions
     {
-        public static async Task SendPKMAsync(this ISocketMessageChannel channel, PKM pkm, string msg = "")
+        public static async Task SendPKMAsync(this IMessageChannel channel, PKM pkm, string msg = "")
         {
             var tmp = Path.Combine(Path.GetTempPath(), Util.CleanFileName(pkm.FileName));
             File.WriteAllBytes(tmp, pkm.DecryptedPartyData);
             await channel.SendFileAsync(tmp, msg).ConfigureAwait(false);
+            File.Delete(tmp);
+        }
+        public static async Task SendPKMAsync(this IUser user, PKM pkm, string msg = "")
+        {
+            var tmp = Path.Combine(Path.GetTempPath(), Util.CleanFileName(pkm.FileName));
+            File.WriteAllBytes(tmp, pkm.DecryptedPartyData);
+            await user.SendFileAsync(tmp, msg).ConfigureAwait(false);
             File.Delete(tmp);
         }
 

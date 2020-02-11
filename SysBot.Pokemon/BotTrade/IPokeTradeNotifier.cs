@@ -7,6 +7,6 @@ namespace SysBot.Pokemon
         void TradeInitialize(PokeRoutineExecutor routine, PokeTradeDetail<T> info);
         void TradeSearching(PokeRoutineExecutor routine, PokeTradeDetail<T> info);
         void TradeCanceled(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeResult msg);
-        void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info);
+        void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result);
     }
 }
