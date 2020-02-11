@@ -120,6 +120,7 @@ namespace SysBot.Pokemon
              * TODO Add Screen Detection checks.
              *await SetupScreenDetection(token);
             */
+            await Task.Delay(5_000, token).ConfigureAwait(false);
             poke.TradeInitialize(this);
             // Update Barrier Settings
             ShouldWaitAtBarrier = UpdateBarrier(Hub.Barrier, poke.IsRandomCode, ShouldWaitAtBarrier);
@@ -240,11 +241,14 @@ namespace SysBot.Pokemon
             if (Dump && !string.IsNullOrEmpty(DumpFolder))
                 DumpPokemon(DumpFolder, await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false));
 
+            await Task.Delay(5_000, token).ConfigureAwait(false);
+
             return PokeTradeResult.Success;
         }
 
         private async Task<PokeTradeResult> PerformSurpriseTrade(SAV8SWSH sav, PK8 pkm, CancellationToken token)
         {
+            await Task.Delay(5_000, token).ConfigureAwait(false);
             // Inject to b1s1
             Connection.Log("Starting next Surprise Trade. Getting data...");
             await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
@@ -293,13 +297,14 @@ namespace SysBot.Pokemon
             if (Dump && !string.IsNullOrEmpty(DumpFolder))
                 DumpPokemon(DumpFolder, await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false));
 
-            await Task.Delay(10_000, token).ConfigureAwait(false);
+            await Task.Delay(5_000, token).ConfigureAwait(false);
 
             return PokeTradeResult.Success;
         }
 
         private async Task<PokeTradeResult> PerformDuduTrade(CancellationToken token)
         {
+            await Task.Delay(5_000, token).ConfigureAwait(false);
             Connection.Log("Starting next Dudu Bot Trade. Getting data...");
             Connection.Log("Open Y-COM Menu");
             await Click(Y, 1_000, token).ConfigureAwait(false);
@@ -390,6 +395,8 @@ namespace SysBot.Pokemon
                     Connection.Log($"Shiny Type: {shinytype}");
                     break;
             }
+
+            await Task.Delay(5_000, token).ConfigureAwait(false);
 
             return PokeTradeResult.Success;
         }
