@@ -172,6 +172,8 @@ namespace SysBot.Pokemon
                 await Click(A, 1_000, token).ConfigureAwait(false);
                 count++;
             }
+            if (count == 10)
+                Connection.Log("Warning: Screen state offset while exiting trade did not work. Forcing exit!");
         }
 
         public async Task ResetTradePosition(CancellationToken token)

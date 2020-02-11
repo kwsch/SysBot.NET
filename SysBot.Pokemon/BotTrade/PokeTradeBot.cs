@@ -204,6 +204,14 @@ namespace SysBot.Pokemon
 
             // Wait 30 Seconds until Trade is finished...
             await Task.Delay(30_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
+            var delay_count = 0;
+            while (!await IsMenuOpen(token).ConfigureAwait(false) && delay_count < 5)
+            {
+                await Task.Delay(3_000, token).ConfigureAwait(false);
+                delay_count++;
+            }
+            if (delay_count == 5)
+                Connection.Log("Warning: Menu offset did not work!");
 
             // Pokemon has probably arrived, bypass Trade Evolution...
             await Click(Y, 1_000, token).ConfigureAwait(false);
@@ -211,6 +219,7 @@ namespace SysBot.Pokemon
             await Task.Delay(1_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
 
             await ExitTrade(Overworld, token).ConfigureAwait(false);
+            Connection.Log("Exited Trade!");
 
             for (int i = 0; i < 3; i++)
                 await Click(A, 1_000, token).ConfigureAwait(false);
