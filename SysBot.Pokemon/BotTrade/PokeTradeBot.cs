@@ -308,9 +308,9 @@ namespace SysBot.Pokemon
             var TrainerName = await GetTradePartnerName(TradeMethod.SupriseTrade, token).ConfigureAwait(false);
             var SuprisePoke = await ReadSupriseTradePokemon(token).ConfigureAwait(false);
 
-            Connection.Log($"Found Suprise Trade Partner: {TrainerName} , Pokemon: {SpeciesName.GetSpeciesName(SuprisePoke.Species, 4)}");
+            Connection.Log($"Found Surprise Trade Partner: {TrainerName} , Pokemon: {(Species)SuprisePoke.Species}");
 
-            /* It writes the pkmn before the Message apears, so we wait some Seconds or spam Y, up to 15 Seconds?? */
+            /* It writes the pkm before the Message appears, so we wait some Seconds or spam Y, up to 15 Seconds?? */
             //await Task.Delay(15_000, token).ConfigureAwait(false);
 
             for (int i = 0; i < 15; i++)
