@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
@@ -183,7 +185,7 @@ namespace SysBot.Pokemon
 
             // Select Pokemon
             // pkm already injected to b1s1
-            var TrainerName = await GetTradePartnerName(token).ConfigureAwait(false);
+            var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade,token).ConfigureAwait(false);
             Connection.Log($"Found Trading Partner: {TrainerName} ...");
             await Task.Delay(300, token).ConfigureAwait(false);
 
@@ -293,8 +295,30 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Aborted;
 
             // Time we wait for a trade
-            await Task.Delay(45_000, token).ConfigureAwait(false);
-            await Click(Y, 0_700, token).ConfigureAwait(false);
+
+            var partnerFound = await ReadUntilChanged(SupriseTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_SLOT, 60_000, 2_000, token).ConfigureAwait(false);
+
+            if (token.IsCancellationRequested)
+                return PokeTradeResult.Aborted;
+
+            if (!partnerFound)
+            {
+                await ResetTradePosition(token).ConfigureAwait(false);
+                return PokeTradeResult.NoTrainerFound;
+            }
+
+            var TrainerName = await GetTradePartnerName(TradeMethod.SupriseTrade, token).ConfigureAwait(false);
+            var SuprisePoke = await ReadSupriseTradePokemon(token).ConfigureAwait(false);
+
+            Connection.Log($"Found Suprise Trade Partner: {TrainerName} , Pokemon: {SpeciesName.GetSpeciesName(SuprisePoke.Species,4)}");
+
+            /* It writes the pkmn before the Message apears, so we wait some Seconds or spam Y, up to 15 Seconds?? */
+            //await Task.Delay(15_000, token).ConfigureAwait(false);
+
+            for (int i = 0; i < 15; i++)
+            {
+                await Click(Y, 1_000, token).ConfigureAwait(false);
+            }
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
@@ -369,7 +393,7 @@ namespace SysBot.Pokemon
 
             // Select Pokemon
             // pkm already injected to b1s1
-            var TrainerName = await GetTradePartnerName(token).ConfigureAwait(false);
+            var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade,token).ConfigureAwait(false);
             Connection.Log($"Found Trading Partner: {TrainerName} ...");
 
             // Wait for User Input...

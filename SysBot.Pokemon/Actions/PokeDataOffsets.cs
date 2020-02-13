@@ -8,8 +8,11 @@ namespace SysBot.Pokemon
         public const uint TrainerDataOffset = 0x42935E48;
         public const uint ShownTradeDataOffset = 0x2E32206A;
         public const uint TradePartnerNameOffset = 0xAC84173C;
-
         public const uint IsConnected = 0x2f865c78;
+
+        /* Suprise Trade Offsets */
+        public const uint SupriseTradePartnerPokemonOffset = 0x429344d0;
+        public const uint SupriseTradePartnerNameOffset = 0x42934638;
 
         /* Route 5 Daycare */
         //public const uint DayCareSlot_1_WildArea_Present = 0x429e4EA8;
@@ -55,6 +58,16 @@ namespace SysBot.Pokemon
         public static uint DuringTrade => Overworld + 6;
         public static uint TradeEvo => Overworld + 2;
         #endregion
+
+        public static uint GetTrainerNameOffset(TradeMethod tradeMethod)
+        {
+            return tradeMethod switch
+            {
+                TradeMethod.LinkTrade => TradePartnerNameOffset,
+                TradeMethod.SupriseTrade => SupriseTradePartnerNameOffset,
+                _ => throw new ArgumentException(nameof(tradeMethod)),
+            };
+        }
 
         public static uint GetDaycareOffset(SwordShieldDaycare daycare)
         {

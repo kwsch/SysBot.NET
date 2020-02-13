@@ -28,6 +28,12 @@ namespace SysBot.Pokemon
             return new PK8(data);
         }
 
+        public async Task<PK8> ReadSupriseTradePokemon(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(SupriseTradePartnerPokemonOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
+            return new PK8(data);
+        }
+
         public async Task SetBoxPokemon(PK8 pkm, int box, int slot, CancellationToken token, SAV8? sav = null)
         {
             if (sav != null)
@@ -120,15 +126,16 @@ namespace SysBot.Pokemon
             }
         }
 
-        public async Task<bool> CheckTradePartnerName(string Name, CancellationToken token)
+        public async Task<bool> CheckTradePartnerName(TradeMethod tradeMethod,string Name, CancellationToken token)
         {
-            var name = await GetTradePartnerName(token).ConfigureAwait(false);
+            var name = await GetTradePartnerName(tradeMethod, token).ConfigureAwait(false);
             return name == Name;
         }
 
-        public async Task<string> GetTradePartnerName(CancellationToken token)
+        public async Task<string> GetTradePartnerName(TradeMethod tradeMethod, CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(TradePartnerNameOffset, 26, token).ConfigureAwait(false);
+            var ofs = GetTrainerNameOffset(tradeMethod);
+            var data = await Connection.ReadBytesAsync(ofs, 26, token).ConfigureAwait(false);
             return StringConverter.GetString7(data, 0, 26);
         }
 
