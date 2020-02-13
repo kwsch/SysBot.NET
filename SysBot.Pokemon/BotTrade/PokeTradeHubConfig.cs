@@ -80,7 +80,7 @@ namespace SysBot.Pokemon
         public string GeneratePathSaveFiles { get; set; } = string.Empty;
 
         [Category(Legality), Description("Legality: Default Trainer Name for PKM files that can't originate from the provided SaveFiles.")]
-        public string GenerateOT { get; set; }
+        public string GenerateOT { get; set; } = "SysBot.NET";
 
         [Category(Legality), Description("Legality: Default 16 Bit Trainer ID (TID) for PKM files that can't originate from the provided SaveFiles.")]
         public int GenerateTID16 { get; set; }

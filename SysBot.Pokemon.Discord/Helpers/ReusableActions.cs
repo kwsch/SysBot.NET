@@ -17,6 +17,7 @@ namespace SysBot.Pokemon.Discord
             await channel.SendFileAsync(tmp, msg).ConfigureAwait(false);
             File.Delete(tmp);
         }
+
         public static async Task SendPKMAsync(this IUser user, PKM pkm, string msg = "")
         {
             var tmp = Path.Combine(Path.GetTempPath(), Util.CleanFileName(pkm.FileName));
