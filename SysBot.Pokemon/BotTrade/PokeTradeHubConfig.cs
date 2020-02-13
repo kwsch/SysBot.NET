@@ -9,6 +9,7 @@ namespace SysBot.Pokemon
         private const string Files = nameof(Files);
         private const string TradeCode = nameof(TradeCode);
         private const string Integration = nameof(Integration);
+        private const string Legality = nameof(Legality);
 
         #region Toggles
         [Category(FeatureToggle), Description("Destination folder: where all received PKM files are dumped to.")]
@@ -72,6 +73,23 @@ namespace SysBot.Pokemon
 
         [Category(Integration), Description("Discord Bot: Users with this role are allowed to bypass command restrictions.")]
         public string DiscordRoleSudo { get; set; } = "DISABLED";
+        #endregion
+
+        #region Legality
+        [Category(Legality), Description("Legality: Regenerated PKM files will attempt to be sourced from games using trainer data info from these saves.")]
+        public string GeneratePathSaveFiles { get; set; } = string.Empty;
+
+        [Category(Legality), Description("Legality: Default Trainer Name for PKM files that can't originate from the provided SaveFiles.")]
+        public string GenerateOT { get; set; }
+
+        [Category(Legality), Description("Legality: Default 16 Bit Trainer ID (TID) for PKM files that can't originate from the provided SaveFiles.")]
+        public int GenerateTID16 { get; set; }
+
+        [Category(Legality), Description("Legality: Default 16 Bit Secret ID (SID) for PKM files that can't originate from the provided SaveFiles.")]
+        public int GenerateSID16 { get; set; }
+
+        [Category(Legality), Description("Legality: Default Language for PKM files that can't originate from the provided SaveFiles.")]
+        public int GenerateLanguage { get; set; }
         #endregion
 
         public void CreateDefaults(string path)

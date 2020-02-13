@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -23,26 +24,53 @@ namespace SysBot.Pokemon.Discord
 
         private static void InitializeAutoLegality()
         {
-            Task.Run(() =>
-            {
-                var lang = Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName.Substring(0, 2);
-                Util.SetLocalization(typeof(LegalityCheckStrings), lang);
-                Util.SetLocalization(typeof(MessageStrings), lang);
-                RibbonStrings.ResetDictionary(GameInfo.Strings.ribbons);
-            });
+            Task.Run(InitializeCoreStrings);
+            InitializeTrainerDatabase();
 
+            // Legalizer.AllowBruteForce = false;
+        }
+
+        private static void InitializeTrainerDatabase()
+        {
             // Seed the Trainer Database with enough fake save files so that we return a generation sensitive format when needed.
+            var cfg = SysCordInstance.Self.Hub.Config;
+            string OT = cfg.GenerateOT;
+            int TID = cfg.GenerateTID16;
+            int SID = cfg.GenerateSID16;
+            int lang = cfg.GenerateLanguage;
+
+            var externalSource = cfg.GeneratePathSaveFiles;
+            if (!string.IsNullOrWhiteSpace(externalSource) && Directory.Exists(externalSource))
+                TrainerSettings.LoadTrainerDatabaseFromPath(externalSource);
+
+            SaveFile GetFallbackBlank(int generation)
+            {
+                var blankSav = SaveUtil.GetBlankSAV(generation, OT);
+                blankSav.Language = lang;
+                blankSav.TID = TID;
+                blankSav.SID = SID;
+                blankSav.OT = OT;
+                return blankSav;
+            }
+
             for (int i = 1; i < PKX.Generation; i++)
             {
-                const string OT = "PKHeX-D";
-                var blankSAV = SaveUtil.GetBlankSAV(i, OT);
-                TrainerSettings.Register(blankSAV);
+                var fallback = GetFallbackBlank(i);
+                var exist = TrainerSettings.GetSavedTrainerData(i, fallback);
+                if (exist == fallback)
+                    TrainerSettings.Register(fallback);
             }
 
             var trainer = TrainerSettings.GetSavedTrainerData(7);
             PKMConverter.SetPrimaryTrainer(trainer);
+        }
 
-            // Legalizer.AllowBruteForce = false;
+        private static void InitializeCoreStrings()
+        {
+            var lang = Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName.Substring(0, 2);
+            Util.SetLocalization(typeof(LegalityCheckStrings), lang);
+            Util.SetLocalization(typeof(MessageStrings), lang);
+            RibbonStrings.ResetDictionary(GameInfo.Strings.ribbons);
 
             // Update Legality Analysis strings
             LegalityAnalysis.MoveStrings = GameInfo.Strings.movelist;
