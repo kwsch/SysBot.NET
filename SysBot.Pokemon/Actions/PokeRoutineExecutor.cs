@@ -20,7 +20,7 @@ namespace SysBot.Pokemon
         public async Task SetStick(SwitchStick stick, int x, int y, int delayMin, int delayMax, CancellationToken token) =>
             await SetStick(stick, x, y, Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
 
-        private static uint GetBoxSlotOffset(int box, int slot) => Box1Slot1 + (uint)(BoxFormatSlotSize * ((30 * box) + slot));
+        private static uint GetBoxSlotOffset(int box, int slot) => BoxStartOffset + (uint)(BoxFormatSlotSize * ((30 * box) + slot));
 
         public async Task<PK8> ReadPokemon(uint offset, CancellationToken token, int size = BoxFormatSlotSize)
         {
@@ -142,7 +142,7 @@ namespace SysBot.Pokemon
         public async Task<bool> IsGameConnectedToYCom(CancellationToken token)
         {
             // Reads the Y-Com Flag is the Game is connected Online
-            var data = await Connection.ReadBytesAsync(IsConnected, 1, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(IsConnectedOffset, 1, token).ConfigureAwait(false);
             return data[0] == 1;
         }
 

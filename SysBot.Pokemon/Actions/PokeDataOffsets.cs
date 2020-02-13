@@ -4,11 +4,14 @@ namespace SysBot.Pokemon
 {
     public static class PokeDataOffsets
     {
-        public const uint Box1Slot1 = 0x4293D8B0;
+        public const uint BoxStartOffset = 0x4293D8B0;
         public const uint TrainerDataOffset = 0x42935E48;
-        public const uint ShownTradeDataOffset = 0x2E32206A;
-        public const uint TradePartnerNameOffset = 0xAC84173C;
-        public const uint IsConnected = 0x2f865c78;
+
+        public const uint IsConnectedOffset = 0x2f865c78;
+
+        /* Link Trade Offsets */
+        public const uint LinkTradePartnerPokemonOffset = 0x2E32206A;
+        public const uint LinkTradePartnerNameOffset = 0xAC84173C;
 
         /* Suprise Trade Offsets */
         public const uint SupriseTradePartnerPokemonOffset = 0x429344d0;
@@ -63,7 +66,7 @@ namespace SysBot.Pokemon
         {
             return tradeMethod switch
             {
-                TradeMethod.LinkTrade => TradePartnerNameOffset,
+                TradeMethod.LinkTrade => LinkTradePartnerNameOffset,
                 TradeMethod.SupriseTrade => SupriseTradePartnerNameOffset,
                 _ => throw new ArgumentException(nameof(tradeMethod)),
             };
