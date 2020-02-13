@@ -1,6 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
@@ -185,7 +183,7 @@ namespace SysBot.Pokemon
 
             // Select Pokemon
             // pkm already injected to b1s1
-            var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade,token).ConfigureAwait(false);
+            var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
             Connection.Log($"Found Trading Partner: {TrainerName} ...");
             await Task.Delay(300, token).ConfigureAwait(false);
 
@@ -310,7 +308,7 @@ namespace SysBot.Pokemon
             var TrainerName = await GetTradePartnerName(TradeMethod.SupriseTrade, token).ConfigureAwait(false);
             var SuprisePoke = await ReadSupriseTradePokemon(token).ConfigureAwait(false);
 
-            Connection.Log($"Found Suprise Trade Partner: {TrainerName} , Pokemon: {SpeciesName.GetSpeciesName(SuprisePoke.Species,4)}");
+            Connection.Log($"Found Suprise Trade Partner: {TrainerName} , Pokemon: {SpeciesName.GetSpeciesName(SuprisePoke.Species, 4)}");
 
             /* It writes the pkmn before the Message apears, so we wait some Seconds or spam Y, up to 15 Seconds?? */
             //await Task.Delay(15_000, token).ConfigureAwait(false);
@@ -393,7 +391,7 @@ namespace SysBot.Pokemon
 
             // Select Pokemon
             // pkm already injected to b1s1
-            var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade,token).ConfigureAwait(false);
+            var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
             Connection.Log($"Found Trading Partner: {TrainerName} ...");
 
             // Wait for User Input...

@@ -126,7 +126,7 @@ namespace SysBot.Pokemon
             }
         }
 
-        public async Task<bool> CheckTradePartnerName(TradeMethod tradeMethod,string Name, CancellationToken token)
+        public async Task<bool> CheckTradePartnerName(TradeMethod tradeMethod, string Name, CancellationToken token)
         {
             var name = await GetTradePartnerName(tradeMethod, token).ConfigureAwait(false);
             return name == Name;
@@ -152,7 +152,7 @@ namespace SysBot.Pokemon
             await Click(B, 2000, token).ConfigureAwait(false);
 
             // Return to Overworld
-            if(await IsMenuOpen(token).ConfigureAwait(false))
+            if (await IsMenuOpen(token).ConfigureAwait(false))
             {
                 for (int i = 0; i < 5; i++)
                 {
@@ -226,7 +226,7 @@ namespace SysBot.Pokemon
 
         public async Task GetScreenState(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(ScreenStateOffset,4, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(ScreenStateOffset, 4, token).ConfigureAwait(false);
             uint State = BitConverter.ToUInt16(data, 0);
 
             var status = "No Status";
@@ -240,8 +240,8 @@ namespace SysBot.Pokemon
 
         public async Task<bool> IsMenuOpen(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(MenuOffset, 4,token).ConfigureAwait(false);
-            return BitConverter.ToUInt32(data,0) == MenuOpen;
+            var data = await Connection.ReadBytesAsync(MenuOffset, 4, token).ConfigureAwait(false);
+            return BitConverter.ToUInt32(data, 0) == MenuOpen;
         }
 
         public async Task<SlotQualityCheck> GetBoxSlotQuality(int box, int slot, CancellationToken token)
