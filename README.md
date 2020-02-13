@@ -17,5 +17,10 @@ Supported Pokémon Sword/Shield Bots:
 - Simple GUI Launcher for spinning up Pokémon bots.
 - Is currently set up to spin up Pokémon bots (as described above). Refer to the Wiki for details on how to use.
 
+## SysBot.Pokemon.Discord:
+- Discord interface for remotely interacting with the WinForms GUI.
+- Provide a discord login token and the Roles that are allowed to interact with your bots.
+- Commands are provided to manage & join the distribution queue.
+
 ## SysBot.Tests:
 - Unit Tests for ensuring logic behaves as intended :)
