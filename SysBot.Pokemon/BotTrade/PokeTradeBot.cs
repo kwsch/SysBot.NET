@@ -204,7 +204,7 @@ namespace SysBot.Pokemon
             // Wait 30 Seconds until Trade is finished...
             await Task.Delay(30_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
             var delay_count = 0;
-            while (!await IsCorrentScreen(CurrentScreen_Box,token).ConfigureAwait(false) && delay_count < 5)
+            while (!await IsCorrentScreen(CurrentScreen_Box, token).ConfigureAwait(false) && delay_count < 5)
             {
                 await Task.Delay(3_000, token).ConfigureAwait(false);
                 delay_count++;
@@ -348,10 +348,19 @@ namespace SysBot.Pokemon
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
 
+            int TradeAttemp = 0;
             while (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 // In case of a Trade Evolution we Spam A until we're back in the Overworld.
                 await Click(A, 1000, token).ConfigureAwait(false);
+
+                // If it takes to long we abort (stuck somewhere)
+                if (TradeAttemp > 100)
+                {
+                    await ResetTradePosition(token).ConfigureAwait(false);
+                    break;
+                }
+                TradeAttemp++;
             }
 
             if (token.IsCancellationRequested)
