@@ -203,6 +203,8 @@ namespace SysBot.Pokemon.Discord
 
         private bool GetHasRole(string RequiredRole)
         {
+            if (RequiredRole == "@everyone")
+                return true;
             var guild = Context.Guild;
             var role = guild.Roles.FirstOrDefault(x => x.Name == RequiredRole);
             if (role == default)
