@@ -405,11 +405,24 @@ namespace SysBot.Pokemon
 
         private async Task<PokeTradeResult> PerformDuduTrade(PokeTradeDetail<PK8> detail, CancellationToken token)
         {
-            detail.TradeInitialize(this);
+            detail.SendNotification(this, $"Initializing trade with you {detail.Trainer.TrainerName}, Your code is: {detail.Code} ...");
             await Task.Delay(5_000, token).ConfigureAwait(false);
             Connection.Log("Starting next Dudu Bot Trade. Getting data...");
+
+            if (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            {
+                await ExitTrade(true, token).ConfigureAwait(false);
+                return PokeTradeResult.Recover;
+            }
+
             Connection.Log("Open Y-COM Menu");
             await Click(Y, 1_000, token).ConfigureAwait(false);
+
+            if (!await IsCorrentScreen(CurrentScreen_YMenu, token).ConfigureAwait(false))
+            {
+                await ExitTrade(true, token).ConfigureAwait(false);
+                return PokeTradeResult.Recover;
+            }
 
             Connection.Log("Select Link Trade");
             await Click(A, 1_000, token).ConfigureAwait(false);
@@ -444,6 +457,12 @@ namespace SysBot.Pokemon
 
             await Click(A, 1_000, token).ConfigureAwait(false);
 
+            if (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            {
+                await ExitTrade(true, token).ConfigureAwait(false);
+                return PokeTradeResult.Recover;
+            }
+
             // Clear the shown data offset.
             await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
 
@@ -464,6 +483,13 @@ namespace SysBot.Pokemon
             // pkm already injected to b1s1
             var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
             Connection.Log($"Found Trading Partner: {TrainerName} ...");
+            await Task.Delay(300, token).ConfigureAwait(false);
+
+            if (!await IsCorrentScreen(CurrentScreen_Box, token).ConfigureAwait(false))
+            {
+                await ExitTrade(true, token).ConfigureAwait(false);
+                return PokeTradeResult.Recover;
+            }
 
             // Wait for User Input...
             var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 25_000, 1_000, token).ConfigureAwait(false);
