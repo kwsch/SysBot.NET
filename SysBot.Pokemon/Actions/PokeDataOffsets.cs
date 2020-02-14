@@ -15,7 +15,17 @@ namespace SysBot.Pokemon
 
         /* Suprise Trade Offsets */
         public const uint SupriseTradePartnerPokemonOffset = 0x429344d0;
+  
+        public const uint SupriseTradeLockSlot = 0x4293462c;
+        public const uint SupriseTradeLockBox = 0x42934628;
+
+        public const uint SupriseTradeSearchOffset = 0x42934634;
+        public const uint SupriseTradeSearch_Empty = 0x00000000;
+        public const uint SupriseTradeSearch_Searching = 0x01000000;
+        public const uint SupriseTradeSearch_Found = 0x0200012C;
+
         public const uint SupriseTradePartnerNameOffset = 0x42934638;
+
 
         /* Route 5 Daycare */
         //public const uint DayCareSlot_1_WildArea_Present = 0x429e4EA8;
@@ -61,7 +71,10 @@ namespace SysBot.Pokemon
         public const uint CurrentScreen_Overworld = 0xFFFF5127;
 
         public const uint CurrentScreen_Box = 0xFF00D59B;
-        public const uint CurrentScreen_YMenu = 0xFFFF7984;
+        public const uint CurrentScreen_Box_WaitingForOffer = 0xC800B483;
+        public const uint CurrentScreen_Box_ConfirmOffer = 0xFF00B483;
+
+        public const uint CurrentScreen_YMenu = 0xFFFF7987;
         #endregion
 
         public static uint GetTrainerNameOffset(TradeMethod tradeMethod)

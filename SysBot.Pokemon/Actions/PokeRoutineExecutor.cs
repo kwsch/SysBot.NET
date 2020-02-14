@@ -76,7 +76,7 @@ namespace SysBot.Pokemon
                 if (!result.SequenceEqual(original))
                     return true;
                 await Task.Delay(waitInterval, token).ConfigureAwait(false);
-                msWaited += waitInterval;
+                msWaited += waitInterval + 120;
             }
             return false;
         }
@@ -169,9 +169,11 @@ namespace SysBot.Pokemon
             }
         }
 
-        public async Task ExitTrade(CancellationToken token)
+        public async Task ExitTrade(bool UnExpected, CancellationToken token)
         {
+            if(UnExpected)
             Connection.Log("Unexpected Behavior, Recover Position");
+
             while (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 await Click(B, 1_000, token).ConfigureAwait(false);
