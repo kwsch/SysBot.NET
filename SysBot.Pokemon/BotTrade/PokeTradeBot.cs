@@ -145,12 +145,6 @@ namespace SysBot.Pokemon
             Connection.Log("Open Y-COM Menu");
             await Click(Y, 1_500, token).ConfigureAwait(false);
 
-            if (!await IsCorrentScreen(CurrentScreen_YMenu, token).ConfigureAwait(false))
-            {
-                await ExitTrade(true, token).ConfigureAwait(false);
-                return PokeTradeResult.Recover;
-            }
-
             Connection.Log("Select Link Trade");
             await Click(A, 1_000, token).ConfigureAwait(false);
 
@@ -416,13 +410,7 @@ namespace SysBot.Pokemon
             }
 
             Connection.Log("Open Y-COM Menu");
-            await Click(Y, 1_000, token).ConfigureAwait(false);
-
-            if (!await IsCorrentScreen(CurrentScreen_YMenu, token).ConfigureAwait(false))
-            {
-                await ExitTrade(true, token).ConfigureAwait(false);
-                return PokeTradeResult.Recover;
-            }
+            await Click(Y, 1_500, token).ConfigureAwait(false);
 
             Connection.Log("Select Link Trade");
             await Click(A, 1_000, token).ConfigureAwait(false);
