@@ -122,7 +122,6 @@ namespace SysBot.Pokemon
             */
 
             await Task.Delay(5_000, token).ConfigureAwait(false);
-            var _ = await SetupScreenDetection(token).ConfigureAwait(false);
             poke.TradeInitialize(this);
             // Update Barrier Settings
             ShouldWaitAtBarrier = UpdateBarrier(Hub.Barrier, poke.IsRandomCode, ShouldWaitAtBarrier);
@@ -194,7 +193,7 @@ namespace SysBot.Pokemon
             var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 25_000, 1_000, token).ConfigureAwait(false);
             if (pk == null)
             {
-                await ExitTrade(Overworld, token).ConfigureAwait(false);
+                await ExitTrade(token).ConfigureAwait(false);
                 return PokeTradeResult.TrainerTooSlow;
             }
 
@@ -205,7 +204,7 @@ namespace SysBot.Pokemon
             // Wait 30 Seconds until Trade is finished...
             await Task.Delay(30_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
             var delay_count = 0;
-            while (!await IsMenuOpen(token).ConfigureAwait(false) && delay_count < 5)
+            while (!await IsCorrentScreen(CurrentScreen_Box,token).ConfigureAwait(false) && delay_count < 5)
             {
                 await Task.Delay(3_000, token).ConfigureAwait(false);
                 delay_count++;
@@ -218,7 +217,7 @@ namespace SysBot.Pokemon
 
             await Task.Delay(1_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
 
-            await ExitTrade(Overworld, token).ConfigureAwait(false);
+            await ExitTrade(token).ConfigureAwait(false);
             Connection.Log("Exited Trade!");
 
             for (int i = 0; i < 3; i++)
@@ -259,13 +258,26 @@ namespace SysBot.Pokemon
 
         private async Task<PokeTradeResult> PerformSurpriseTrade(SAV8SWSH sav, PK8 pkm, CancellationToken token)
         {
+
             await Task.Delay(5_000, token).ConfigureAwait(false);
             // Inject to b1s1
             Connection.Log("Starting next Surprise Trade. Getting data...");
             await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
 
+            if (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            {
+                await ExitTrade(token).ConfigureAwait(false);
+                return PokeTradeResult.Recover;
+            }
+
             Connection.Log("Open Y-COM Menu");
-            await Click(Y, 1_000, token).ConfigureAwait(false);
+            await Click(Y, 1_500, token).ConfigureAwait(false);
+
+            if (!await IsCorrentScreen(CurrentScreen_YMenu, token).ConfigureAwait(false))
+            {
+                await ExitTrade(token).ConfigureAwait(false);
+                return PokeTradeResult.Recover;
+            }
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
@@ -276,6 +288,12 @@ namespace SysBot.Pokemon
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
+
+            if (!await IsCorrentScreen(CurrentScreen_Box, token).ConfigureAwait(false))
+            {
+                await ExitTrade(token).ConfigureAwait(false);
+                return PokeTradeResult.Recover;
+            }
 
             Connection.Log("Select Pokemon");
             // Box 1 Slot 1
@@ -291,6 +309,16 @@ namespace SysBot.Pokemon
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
+
+            await Task.Delay(2_000, token).ConfigureAwait(false);
+
+            if (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            {
+                await ExitTrade(token).ConfigureAwait(false);
+                return PokeTradeResult.Recover;
+            }
+
+            Connection.Log("Waiting for Suprise Trade Partner...");
 
             // Time we wait for a trade
 
@@ -311,7 +339,6 @@ namespace SysBot.Pokemon
             Connection.Log($"Found Surprise Trade Partner: {TrainerName} , Pokemon: {(Species)SuprisePoke.Species}");
 
             /* It writes the pkm before the Message appears, so we wait some Seconds or spam Y, up to 15 Seconds?? */
-            //await Task.Delay(15_000, token).ConfigureAwait(false);
 
             for (int i = 0; i < 15; i++)
             {
@@ -321,12 +348,20 @@ namespace SysBot.Pokemon
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
 
-            await WaitForSurpriseTradeToFinish(token).ConfigureAwait(false);
+            while (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            {
+                // In case of a Trade Evolution we Spam A until we're back in the Overworld.
+                await Click(A, 1000, token).ConfigureAwait(false);
+            }
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
 
-            Connection.Log("Trade complete!");
+            if (await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+                Connection.Log("Trade complete!");
+            else
+                await ExitTrade(token);
+
             if (Dump && !string.IsNullOrEmpty(DumpFolder))
                 DumpPokemon(DumpFolder, await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false));
 
@@ -398,11 +433,11 @@ namespace SysBot.Pokemon
             var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 25_000, 1_000, token).ConfigureAwait(false);
             if (pk == null)
             {
-                await ExitTrade(Overworld, token).ConfigureAwait(false);
+                await ExitTrade(token).ConfigureAwait(false);
                 return PokeTradeResult.TrainerTooSlow;
             }
 
-            await ExitTrade(Overworld, token).ConfigureAwait(false);
+            await ExitTrade(token).ConfigureAwait(false);
             var ec = pk.EncryptionConstant;
             var pid = pk.PID;
             var IVs = pk.IVs.Length == 0 ? GetBlankIVTemplate() : PKX.ReorderSpeedLast((int[])pk.IVs.Clone());
@@ -432,13 +467,6 @@ namespace SysBot.Pokemon
             await Task.Delay(5_000, token).ConfigureAwait(false);
 
             return PokeTradeResult.Success;
-        }
-
-        private async Task WaitForSurpriseTradeToFinish(CancellationToken token)
-        {
-            // Spam A Button in Case of Trade Evolution/Moves Learning/Dex
-            for (int i = 0; i < 20; i++)
-                await Click(A, 1_000, token).ConfigureAwait(false);
         }
 
         private void ExitLinkTradeRoutine()

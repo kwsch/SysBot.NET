@@ -49,17 +49,19 @@ namespace SysBot.Pokemon
         public const int TrainerDataLength = 0x110;
 
         #region ScreenDetection
-
-        /* Y-COM Menu/ X Menu Detection */
+        /*
+         * Not used for now, might be used someday
         public const uint MenuOffset = 0x00000036;
         public const uint MenuOpen = 0x7DC80000;
         public const uint MenuClosed = 0xBBE00000;
+        */
 
-        public const uint ScreenStateOffset = 0x1074b8;
-        public static uint Overworld; // Also Loading in some cases  
-        public static uint BoxView => Overworld + 1;
-        public static uint DuringTrade => Overworld + 6;
-        public static uint TradeEvo => Overworld + 2;
+        public const uint CurrentScreenOffset = 0x68dcbc90;
+
+        public const uint CurrentScreen_Overworld = 0xFFFF5127;
+
+        public const uint CurrentScreen_Box = 0xFF00D59B;
+        public const uint CurrentScreen_YMenu = 0xFFFF7984;
         #endregion
 
         public static uint GetTrainerNameOffset(TradeMethod tradeMethod)

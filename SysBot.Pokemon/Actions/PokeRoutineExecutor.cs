@@ -152,11 +152,11 @@ namespace SysBot.Pokemon
             await Click(B, 2000, token).ConfigureAwait(false);
 
             // Return to Overworld
-            if (await IsMenuOpen(token).ConfigureAwait(false))
+            if (!await IsCorrentScreen(CurrentScreen_Overworld,token).ConfigureAwait(false))
             {
                 for (int i = 0; i < 5; i++)
                 {
-                    await Click(B, 1000, token).ConfigureAwait(false);
+                    await Click(B, 500, token).ConfigureAwait(false);
                 }
             }
 
@@ -169,22 +169,20 @@ namespace SysBot.Pokemon
             }
         }
 
-        public async Task ExitTrade(uint overworld, CancellationToken token)
+        public async Task ExitTrade(CancellationToken token)
         {
-            var count = 0;
-            while (!await CheckScreenState(overworld, token).ConfigureAwait(false) && count < 9)
+            Connection.Log("Unexpected Behavior, Recover Position");
+            while (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 await Click(B, 1_000, token).ConfigureAwait(false);
                 await Click(B, 1_000, token).ConfigureAwait(false);
                 await Click(A, 1_000, token).ConfigureAwait(false);
-                count++;
             }
-            if (count == 10)
-                Connection.Log("Warning: Screen state offset while exiting trade did not work. Forcing exit!");
         }
 
         public async Task ResetTradePosition(CancellationToken token)
         {
+            Connection.Log("Reset Bot Position.");
             await Click(Y, 1_000, token).ConfigureAwait(false);
             for (int i = 0; i < 5; i++)
                 await Click(A, 1_000, token).ConfigureAwait(false);
@@ -210,38 +208,16 @@ namespace SysBot.Pokemon
             await Connection.WriteBytesAsync(data, ofs, token).ConfigureAwait(false);
         }
 
-        public async Task<uint> SetupScreenDetection(CancellationToken token)
+        public async Task<bool> IsCorrentScreen(uint expectedScreen, CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(ScreenStateOffset, 2, token).ConfigureAwait(false);
-            uint StartValue = BitConverter.ToUInt16(data, 0);
-            Overworld = StartValue;
-            return Overworld;
+            var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
+            return BitConverter.ToUInt32(data, 0) == expectedScreen;
         }
 
-        public async Task<bool> CheckScreenState(uint expectedScreen, CancellationToken token)
+        public async Task<uint> GetCurrentScreen(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(ScreenStateOffset, 2, token).ConfigureAwait(false);
-            return BitConverter.ToUInt16(data, 0) == expectedScreen;
-        }
-
-        public async Task GetScreenState(CancellationToken token)
-        {
-            var data = await Connection.ReadBytesAsync(ScreenStateOffset, 4, token).ConfigureAwait(false);
-            uint State = BitConverter.ToUInt16(data, 0);
-
-            var status = "No Status";
-            if (State == Overworld) status = "Overworld";
-            if (State == BoxView) status = "Viewing the box";
-            if (State == TradeEvo) status = "In a Trade Evolution";
-            if (State == DuringTrade) status = "Trading";
-
-            Connection.Log(status);
-        }
-
-        public async Task<bool> IsMenuOpen(CancellationToken token)
-        {
-            var data = await Connection.ReadBytesAsync(MenuOffset, 4, token).ConfigureAwait(false);
-            return BitConverter.ToUInt32(data, 0) == MenuOpen;
+            var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
+            return BitConverter.ToUInt32(data, 0);
         }
 
         public async Task<SlotQualityCheck> GetBoxSlotQuality(int box, int slot, CancellationToken token)
