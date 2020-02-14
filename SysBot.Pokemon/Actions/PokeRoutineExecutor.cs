@@ -152,7 +152,7 @@ namespace SysBot.Pokemon
             await Click(B, 2000, token).ConfigureAwait(false);
 
             // Return to Overworld
-            if (!await IsCorrentScreen(CurrentScreen_Overworld,token).ConfigureAwait(false))
+            if (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 for (int i = 0; i < 5; i++)
                 {
@@ -171,8 +171,8 @@ namespace SysBot.Pokemon
 
         public async Task ExitTrade(bool UnExpected, CancellationToken token)
         {
-            if(UnExpected)
-            Connection.Log("Unexpected Behavior, Recover Position");
+            if (UnExpected)
+                Connection.Log("Unexpected Behavior, Recover Position");
 
             while (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {

@@ -15,7 +15,7 @@ namespace SysBot.Pokemon
 
         /* Suprise Trade Offsets */
         public const uint SupriseTradePartnerPokemonOffset = 0x429344d0;
-  
+
         public const uint SupriseTradeLockSlot = 0x4293462c;
         public const uint SupriseTradeLockBox = 0x42934628;
 
@@ -25,7 +25,6 @@ namespace SysBot.Pokemon
         public const uint SupriseTradeSearch_Found = 0x0200012C;
 
         public const uint SupriseTradePartnerNameOffset = 0x42934638;
-
 
         /* Route 5 Daycare */
         //public const uint DayCareSlot_1_WildArea_Present = 0x429e4EA8;

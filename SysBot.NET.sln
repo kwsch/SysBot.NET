@@ -10,9 +10,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SysBot.Tests", "SysBot.Tests\SysBot.Tests.csproj", "{1D51AD25-4C03-49D3-8074-7D092168CB20}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{02DCB75C-452F-4E70-B7AF-C37729B10699}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SysBot.Pokemon.WinForms", "SysBot.Pokemon.WinForms\SysBot.Pokemon.WinForms.csproj", "{886B1440-B333-4095-8E44-D71D043D20A9}"
 EndProject

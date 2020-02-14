@@ -148,7 +148,7 @@ namespace SysBot.Pokemon.Discord
 
         private async Task AddSeedCheckToQueue(int code, string trainer, bool sudo)
         {
-            var result = AddToTradeQueue(code, trainer, sudo, new PK8(),  out var msg);
+            var result = AddToTradeQueue(code, trainer, sudo, new PK8(), out var msg);
             await ReplyAsync(msg).ConfigureAwait(false);
             if (result)
                 await Context.Message.DeleteAsync(RequestOptions.Default).ConfigureAwait(false);
@@ -280,12 +280,8 @@ namespace SysBot.Pokemon.Discord
 
             public void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result)
             {
-                if (Data.Species > 0)
-                    Context.User.SendMessageAsync($"Trade has been finished. Enjoy your {(Species) Data.Species}!")
-                        .ConfigureAwait(false);
-                else
-                    Context.User.SendMessageAsync($"Trade has been finished. Enjoy your Pokemon!")
-                        .ConfigureAwait(false);
+                var message = Data.Species != 0 ? $"Trade has been finished. Enjoy your {(Species)Data.Species}!" : "Trade has been finished. Enjoy your Pokemon!";
+                Context.User.SendMessageAsync(message).ConfigureAwait(false);
                 Context.User.SendPKMAsync(result, "Here's what you traded me!").ConfigureAwait(false);
                 OnFinish!();
             }
