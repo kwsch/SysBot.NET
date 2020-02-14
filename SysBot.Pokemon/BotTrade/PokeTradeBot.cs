@@ -95,6 +95,29 @@ namespace SysBot.Pokemon
             ExitLinkTradeRoutine();
         }
 
+        private async Task DoDuduTrades(CancellationToken token)
+        {
+            bool waiting = false;
+            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.DuduBot)
+            {
+                if (!waiting)
+                    Connection.Log("Starting next seed check...");
+
+                if (!Hub.Queue.TryDequeue(out var detail, out var priority))
+                {
+                    if (!waiting)
+                        Connection.Log("Nothing to check, waiting for new users...");
+                    waiting = true;
+                    await Task.Delay(1_000, token).ConfigureAwait(false);
+                    continue;
+                }
+
+                waiting = false;
+                await EnsureConnectedToYCom(token).ConfigureAwait(false);
+                var _ = await PerformDuduTrade(detail, token).ConfigureAwait(false);
+            }
+        }
+
         private async Task DoSurpriseTrades(SAV8SWSH sav, CancellationToken token)
         {
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.SurpriseTrade)
@@ -102,15 +125,6 @@ namespace SysBot.Pokemon
                 var pkm = Hub.Pool.GetRandomPoke();
                 await EnsureConnectedToYCom(token).ConfigureAwait(false);
                 var _ = await PerformSurpriseTrade(sav, pkm, token).ConfigureAwait(false);
-            }
-        }
-
-        private async Task DoDuduTrades(CancellationToken token)
-        {
-            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.DuduBot)
-            {
-                await EnsureConnectedToYCom(token).ConfigureAwait(false);
-                var _ = await PerformDuduTrade(token).ConfigureAwait(false);
             }
         }
 
@@ -389,8 +403,9 @@ namespace SysBot.Pokemon
             return PokeTradeResult.Success;
         }
 
-        private async Task<PokeTradeResult> PerformDuduTrade(CancellationToken token)
+        private async Task<PokeTradeResult> PerformDuduTrade(PokeTradeDetail<PK8> detail, CancellationToken token)
         {
+            detail.TradeInitialize(this);
             await Task.Delay(5_000, token).ConfigureAwait(false);
             Connection.Log("Starting next Dudu Bot Trade. Getting data...");
             Connection.Log("Open Y-COM Menu");
@@ -408,7 +423,9 @@ namespace SysBot.Pokemon
             // Loading Screen
             await Task.Delay(2_000, token).ConfigureAwait(false);
 
-            var code = Hub.Config.GetRandomTradeCode();
+            var code = detail.Code;
+            if (code < 0)
+                code = Hub.Config.GetRandomTradeCode();
             Connection.Log($"Entering Link Trade Code: {code} ...");
             await EnterTradeCode(code, token).ConfigureAwait(false);
 
@@ -422,7 +439,7 @@ namespace SysBot.Pokemon
             for (int i = 0; i < 4; i++)
                 await Click(A, 2_000, token).ConfigureAwait(false);
 
-            Connection.Log("Searching for a trade partner");
+            detail.TradeSearching(this);
             await Task.Delay(Util.Rand.Next(100, 1000), token).ConfigureAwait(false);
 
             await Click(A, 1_000, token).ConfigureAwait(false);
@@ -470,18 +487,20 @@ namespace SysBot.Pokemon
             switch (match)
             {
                 case Z3SearchResult.SeedNone:
-                    Connection.Log("The pokemon is not a raid pokemon!");
+                    detail.SendNotification(this, "The pokemon is not a raid pokemon!");
                     break;
                 case Z3SearchResult.SeedMismatch:
-                    Connection.Log("No valid seed found!");
+                    detail.SendNotification(this, "No valid seed found!");
                     break;
                 default:
-                    Connection.Log($"Seed: {seed:X16}");
-                    Connection.Log($"Next Shiny Frame: {Z3Search.GetNextShinyFrame(seed, out var type)}");
+                    detail.SendNotification(this, $"Seed: {seed:X16}");
+                    detail.SendNotification(this, $"Next Shiny Frame: {Z3Search.GetNextShinyFrame(seed, out var type)}");
                     var shinytype = type == 1 ? "Star" : "Square";
-                    Connection.Log($"Shiny Type: {shinytype}");
+                    detail.SendNotification(this, $"Shiny Type: {shinytype}");
                     break;
             }
+
+            detail.TradeFinished(this, pk);
 
             await Task.Delay(5_000, token).ConfigureAwait(false);
 

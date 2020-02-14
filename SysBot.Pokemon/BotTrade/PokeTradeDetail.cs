@@ -37,6 +37,8 @@ namespace SysBot.Pokemon
             RelocateProcessedFile(routine);
         }
 
+        public void SendNotification(PokeRoutineExecutor routine, string message) => Notifier.SendNotification(routine, this, message);
+
         private void RelocateProcessedFile(PokeRoutineExecutor completedBy)
         {
             if (SourcePath == null || !Directory.Exists(Path.GetDirectoryName(SourcePath)) || !File.Exists(SourcePath))

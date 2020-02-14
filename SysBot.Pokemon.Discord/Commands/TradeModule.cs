@@ -122,6 +122,15 @@ namespace SysBot.Pokemon.Discord
             await AddTradeToQueue(code, Context.User.Username, pk8, sudo).ConfigureAwait(false);
         }
 
+        [Command("seedcheck")]
+        [Summary("Checks the seed for a pokemon.")]
+        public async Task SeedCheckAsync()
+        {
+            var code = Util.Rand.Next(0, 9999);
+            var sudo = GetHasRole(SysCordInstance.Self.Hub.Config.DiscordRoleSudo);
+            await AddSeedCheckToQueue(code, Context.User.Username, sudo).ConfigureAwait(false);
+        }
+
         private async Task AddTradeToQueue(int code, string trainerName, PK8 pk8, bool sudo)
         {
             var la = new LegalityAnalysis(pk8);
@@ -132,6 +141,14 @@ namespace SysBot.Pokemon.Discord
             }
 
             var result = AddToTradeQueue(code, trainerName, sudo, pk8, out var msg);
+            await ReplyAsync(msg).ConfigureAwait(false);
+            if (result)
+                await Context.Message.DeleteAsync(RequestOptions.Default).ConfigureAwait(false);
+        }
+
+        private async Task AddSeedCheckToQueue(int code, string trainer, bool sudo)
+        {
+            var result = AddToTradeQueue(code, trainer, sudo, new PK8(),  out var msg);
             await ReplyAsync(msg).ConfigureAwait(false);
             if (result)
                 await Context.Message.DeleteAsync(RequestOptions.Default).ConfigureAwait(false);
@@ -266,6 +283,11 @@ namespace SysBot.Pokemon.Discord
                 Context.User.SendMessageAsync($"Trade has been finished. Enjoy your {(Species)Data.Species}!").ConfigureAwait(false);
                 Context.User.SendPKMAsync(result, "Here's what you traded me!").ConfigureAwait(false);
                 OnFinish!();
+            }
+
+            public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, string message)
+            {
+                Context.User.SendMessageAsync(message).ConfigureAwait(false);
             }
         }
     }
