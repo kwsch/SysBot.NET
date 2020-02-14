@@ -50,16 +50,10 @@ namespace SysBot.Base
 
         public async Task<int> SendAsync(byte[] buffer, CancellationToken token) => await Task.Run(() => Connection.Send(buffer), token).ConfigureAwait(false);
 
-        private const int BaseDelay = 50;
-        private const int DelayFactor = 256;
-
         public async Task<byte[]> ReadBytesAsync(uint offset, int length, CancellationToken token)
         {
             var cmd = SwitchCommand.Peek(offset, length);
             await SendAsync(cmd, token).ConfigureAwait(false);
-
-            // give it time to push data back
-            await Task.Delay(BaseDelay, token).ConfigureAwait(false);
 
             var buffer = new byte[(length * 2) + 1];
             var _ = Read(buffer);
@@ -70,9 +64,6 @@ namespace SysBot.Base
         {
             var cmd = SwitchCommand.Poke(offset, data);
             await SendAsync(cmd, token).ConfigureAwait(false);
-
-            // give it time to push data back
-            await Task.Delay((data.Length / DelayFactor) + BaseDelay, token).ConfigureAwait(false);
         }
     }
 }
