@@ -105,7 +105,7 @@ namespace SysBot.Pokemon
             bool waiting = false;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.DuduBot)
             {
-                if (!Hub.Dudu.TryDequeue(out var detail, out var _))
+                if (!Hub.Dudu.TryDequeue(out var detail, out var priority))
                 {
                     if (!waiting)
                         Connection.Log("Nothing to check, waiting for new users...");
@@ -117,7 +117,19 @@ namespace SysBot.Pokemon
                 waiting = false;
                 Connection.Log("Starting next seed check...");
                 await EnsureConnectedToYCom(token).ConfigureAwait(false);
-                var _ = await PerformDuduTrade(detail, token).ConfigureAwait(false);
+                var result = await PerformDuduTrade(detail, token).ConfigureAwait(false);
+                if (result != PokeTradeResult.Success) // requeue
+                {
+                    if (result == PokeTradeResult.Aborted)
+                    {
+                        Hub.Dudu.Enqueue(detail, priority);
+                        detail.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
+                    }
+                    else
+                    {
+                        detail.TradeCanceled(this, result);
+                    }
+                }
             }
         }
 
@@ -382,7 +394,7 @@ namespace SysBot.Pokemon
 
         private async Task<PokeTradeResult> PerformDuduTrade(PokeTradeDetail<PK8> detail, CancellationToken token)
         {
-            detail.SendNotification(this, $"Initializing trade with you {detail.Trainer.TrainerName}, Your code is: {detail.Code} ...");
+            detail.TradeInitialize(this);
             await Task.Delay(5_000, token).ConfigureAwait(false);
             Connection.Log("Starting next Dudu Bot Trade. Getting data...");
 
