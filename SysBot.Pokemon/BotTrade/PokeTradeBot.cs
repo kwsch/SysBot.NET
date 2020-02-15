@@ -247,6 +247,8 @@ namespace SysBot.Pokemon
                 delay_count++;
                 if (delay_count >= 50)
                     break;
+                if (await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false)) // In case we are in a Trade Evolution/PokeDex Entry and the Trade Partner quits we land on the Overworld
+                    break;
             }
 
             await Task.Delay(1_000 + Util.Rand.Next(0_700, 1_000), token).ConfigureAwait(false);
@@ -298,11 +300,13 @@ namespace SysBot.Pokemon
             Connection.Log("Open Y-COM Menu");
             await Click(Y, 1_500, token).ConfigureAwait(false);
 
+            /*
             if (!await IsCorrentScreen(CurrentScreen_YMenu, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.Recover;
             }
+            */
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
@@ -334,7 +338,7 @@ namespace SysBot.Pokemon
 
             // Clear the Surprise Trade slot locks! We'll skip the trade animation and reuse the slot on later loops.
             // Write 8 bytes of FF to set both Int32's to -1. Regular locks are [Box32][Slot32]
-            await Connection.WriteBytesAsync(BitConverter.GetBytes(ulong.MaxValue), SupriseTradeLockBox, token).ConfigureAwait(false);
+            await RemoveSlotLock(token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;

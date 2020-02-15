@@ -111,10 +111,16 @@ namespace SysBot.Pokemon
             var keys = TradeUtil.GetPresses(code);
             foreach (var key in keys)
             {
-                var delay = key == A ? 1_500 : 0_500;
+                var delay = key == A ? 1_000 : 0_800;
                 await Click(key, delay, token).ConfigureAwait(false);
             }
             // Confirm Code outside of this method (allow synchronization)
+        }
+
+        public async Task RemoveSlotLock(CancellationToken token)
+        {
+            await Connection.WriteBytesAsync(BitConverter.GetBytes(ulong.MaxValue), SupriseTradeLockBox, token).ConfigureAwait(false);
+            await Connection.WriteBytesAsync(BitConverter.GetBytes(ulong.MaxValue), SupriseTradeLockSlot, token).ConfigureAwait(false);
         }
 
         public async Task EnsureConnectedToYCom(CancellationToken token)

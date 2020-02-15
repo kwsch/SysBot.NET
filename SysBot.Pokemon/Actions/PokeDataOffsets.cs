@@ -73,7 +73,7 @@ namespace SysBot.Pokemon
         public const uint CurrentScreen_Box_WaitingForOffer = 0xC800B483;
         public const uint CurrentScreen_Box_ConfirmOffer = 0xFF00B483;
 
-        public const uint CurrentScreen_YMenu = 0xFFFF7987;
+        //public const uint CurrentScreen_YMenu = 0xFFFF7983;
         #endregion
 
         public static uint GetTrainerNameOffset(TradeMethod tradeMethod)
