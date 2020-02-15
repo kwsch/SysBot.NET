@@ -44,7 +44,7 @@ namespace SysBot.Pokemon.Discord
             });
 
             var nextD = hub.Dudu.TryPeek(out var detailD, out _);
-            var nextMsgD = nextD ? $"{detailD.Trainer.TrainerName} - {detailD.TradeData.Nickname}" : "None!";
+            var nextMsgD = nextD ? $"{detailD.Trainer.TrainerName}" : "None!";
             var countD = hub.Dudu.Count;
             builder.AddField(x =>
             {

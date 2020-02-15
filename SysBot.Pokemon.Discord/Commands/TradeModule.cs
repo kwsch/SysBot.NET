@@ -45,6 +45,30 @@ namespace SysBot.Pokemon.Discord
             await ReplyAsync(msg).ConfigureAwait(false);
         }
 
+        [Command("tradeList")]
+        [Alias("tl")]
+        public async Task GetTradeList()
+        {
+            var hub = SysCordInstance.Self.Hub;
+            var cfg = hub.Config;
+            var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
+            if (!sudo)
+            {
+                await ReplyAsync("You can't use this command.").ConfigureAwait(false);
+                return;
+            }
+
+            string msg;
+            lock (_sync)
+            {
+                var queued = UsersInQueue.GroupBy(z => z.Type);
+                var list = queued.Select(z => z.SelectMany(x =>
+                    $"{x.Type}: {x.Trade.Trainer.TrainerName} ({x.Name}), {(Species) x.Trade.TradeData.Species}"));
+                msg = string.Join("\n", list);
+            }
+            await ReplyAsync(msg).ConfigureAwait(false);
+        }
+
         [Command("tradeClear")]
         [Alias("tc")]
         public async Task ClearTradeAsync()
@@ -228,6 +252,7 @@ namespace SysBot.Pokemon.Discord
         private bool AddToTradeQueue(int code, string trainerName, bool sudo, PK8 pk8, PokeRoutineType type, out string msg)
         {
             var userID = Context.User.Id;
+            var name = Context.User.Username;
             lock (_sync)
             {
                 if (UsersInQueue.Any(z => z.User == userID) && !sudo)
@@ -244,7 +269,7 @@ namespace SysBot.Pokemon.Discord
                 queue.Enqueue(detail, priority);
                 msg = $"Added {Context.User.Mention} to the queue. Your current position is: {queue.Count}";
 
-                var trade = new TradeEntry<PK8>(detail, userID, type);
+                var trade = new TradeEntry<PK8>(detail, userID, type, name);
                 UsersInQueue.Add(trade);
                 notifier.OnFinish = () =>
                 {
