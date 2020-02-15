@@ -47,12 +47,19 @@ namespace SysBot.Pokemon.Discord
             await channel.SendPKMAsShowdownSetAsync(pkm).ConfigureAwait(false);
         }
 
-        public static bool GetHasRole(this SocketCommandContext Context, string RequiredRole)
+        public static bool GetIsSudo(this SocketCommandContext Context)
         {
             var cfg = SysCordInstance.Self.Hub.Config;
-            if (RequiredRole == "@everyone")
+            if (cfg.AllowGlobalSudo && cfg.GlobalSudoList.Contains(Context.User.Id.ToString()))
                 return true;
-            if (cfg.AllowGlobalSudo && cfg.GlobalSudoList.Contains(Context.User.Id.ToString()) && RequiredRole == cfg.DiscordRoleSudo)
+            return Context.GetHasRole(cfg.DiscordRoleSudo);
+        }
+
+        private const string ALLOW_ALL = "@everyone";
+
+        public static bool GetHasRole(this SocketCommandContext Context, string RequiredRole)
+        {
+            if (RequiredRole == ALLOW_ALL)
                 return true;
             var guild = Context.Guild;
             var role = guild.Roles.FirstOrDefault(x => x.Name == RequiredRole);

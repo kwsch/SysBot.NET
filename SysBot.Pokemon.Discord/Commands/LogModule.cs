@@ -15,9 +15,7 @@ namespace SysBot.Pokemon.Discord
         [Summary("Makes the bot log to the channel.")]
         public async Task AddLogAsync()
         {
-            var me = SysCordInstance.Self;
-            var hub = me.Hub;
-            if (!Context.GetHasRole(hub.Config.DiscordRoleSudo))
+            if (!Context.GetIsSudo())
             {
                 await ReplyAsync("You are not permitted to use this command.").ConfigureAwait(false);
                 return;
@@ -45,9 +43,7 @@ namespace SysBot.Pokemon.Discord
         [Summary("Dumps the logging settings.")]
         public async Task DumpLogInfoAsync()
         {
-            var me = SysCordInstance.Self;
-            var hub = me.Hub;
-            if (!Context.GetHasRole(hub.Config.DiscordRoleSudo))
+            if (!Context.GetIsSudo())
             {
                 await ReplyAsync("You are not permitted to use this command.").ConfigureAwait(false);
                 return;
@@ -61,9 +57,7 @@ namespace SysBot.Pokemon.Discord
         [Summary("Clears the logging settings.")]
         public async Task ClearLogsAsync()
         {
-            var me = SysCordInstance.Self;
-            var hub = me.Hub;
-            if (!Context.GetHasRole(hub.Config.DiscordRoleSudo))
+            if (!Context.GetIsSudo())
             {
                 await ReplyAsync("You are not permitted to use this command.").ConfigureAwait(false);
                 return;

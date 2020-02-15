@@ -20,7 +20,7 @@ namespace SysBot.Pokemon.Discord
         [Command("tradeStatus")]
         [Alias("ts")]
         [Summary("Prints the user's status in the trade queues.")]
-        public async Task GetTradePosition()
+        public async Task GetTradePositionAsync()
         {
             string msg;
             lock (_sync)
@@ -51,12 +51,9 @@ namespace SysBot.Pokemon.Discord
         [Command("tradeList")]
         [Alias("tl")]
         [Summary("Prints the users in the trade queues.")]
-        public async Task GetTradeList()
+        public async Task GetTradeListAsync()
         {
-            var hub = SysCordInstance.Self.Hub;
-            var cfg = hub.Config;
-            var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
-            if (!sudo)
+            if (!Context.GetIsSudo())
             {
                 await ReplyAsync("You can't use this command.").ConfigureAwait(false);
                 return;
@@ -97,9 +94,7 @@ namespace SysBot.Pokemon.Discord
         public async Task ClearAllTradesAsync()
         {
             var hub = SysCordInstance.Self.Hub;
-            var cfg = hub.Config;
-            var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
-            if (!sudo)
+            if (!Context.GetIsSudo())
             {
                 await ReplyAsync("You can't use this command.").ConfigureAwait(false);
                 return;
@@ -117,12 +112,9 @@ namespace SysBot.Pokemon.Discord
         [Command("tradeToggle")]
         [Alias("tt")]
         [Summary("Toggles on/off the ability to join the trade queue.")]
-        public async Task ToggleQueueTrade()
+        public async Task ToggleQueueTradeAsync()
         {
-            var hub = SysCordInstance.Self.Hub;
-            var cfg = hub.Config;
-            var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
-            if (!sudo)
+            if (!Context.GetIsSudo())
             {
                 await ReplyAsync("You can't use this command.").ConfigureAwait(false);
                 return;
@@ -141,7 +133,7 @@ namespace SysBot.Pokemon.Discord
         public async Task TradeAsync([Summary("Trade Code")]int code, [Remainder][Summary("Trainer Name to trade to.")]string trainerName)
         {
             var cfg = SysCordInstance.Self.Hub.Config;
-            var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
+            var sudo = Context.GetIsSudo();
             var allowed = sudo || (Context.GetHasRole(cfg.DiscordRoleCanTrade) && CanQueue);
             if (!allowed)
             {
@@ -169,7 +161,7 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            await AddTradeToQueue(code, trainerName, pk8, sudo).ConfigureAwait(false);
+            await AddTradeToQueueAsync(code, trainerName, pk8, sudo).ConfigureAwait(false);
         }
 
         [Command("trade")]
@@ -207,7 +199,7 @@ namespace SysBot.Pokemon.Discord
             pk8.ResetPartyStats();
 
             var code = Util.Rand.Next(0, 9999);
-            await AddTradeToQueue(code, Context.User.Username, pk8, sudo).ConfigureAwait(false);
+            await AddTradeToQueueAsync(code, Context.User.Username, pk8, sudo).ConfigureAwait(false);
         }
 
         [Command("seedcheck")]
@@ -225,10 +217,10 @@ namespace SysBot.Pokemon.Discord
             }
 
             var code = Util.Rand.Next(0, 9999);
-            await AddSeedCheckToQueue(code, Context.User.Username, sudo).ConfigureAwait(false);
+            await AddSeedCheckToQueueAsync(code, Context.User.Username, sudo).ConfigureAwait(false);
         }
 
-        private async Task AddTradeToQueue(int code, string trainerName, PK8 pk8, bool sudo)
+        private async Task AddTradeToQueueAsync(int code, string trainerName, PK8 pk8, bool sudo)
         {
             var la = new LegalityAnalysis(pk8);
             if (!la.Valid)
@@ -243,7 +235,7 @@ namespace SysBot.Pokemon.Discord
                 await Context.Message.DeleteAsync(RequestOptions.Default).ConfigureAwait(false);
         }
 
-        private async Task AddSeedCheckToQueue(int code, string trainer, bool sudo)
+        private async Task AddSeedCheckToQueueAsync(int code, string trainer, bool sudo)
         {
             var result = AddToTradeQueue(code, trainer, sudo, new PK8(), PokeRoutineType.DuduBot, out var msg);
             await ReplyAsync(msg).ConfigureAwait(false);

@@ -11,7 +11,7 @@ namespace SysBot.Pokemon.Discord
         {
             var me = SysCordInstance.Self;
             var hub = me.Hub;
-            if (!Context.GetHasRole(hub.Config.DiscordRoleSudo))
+            if (!Context.GetIsSudo())
             {
                 await ReplyAsync("You are not permitted to use this command.").ConfigureAwait(false);
                 return;
