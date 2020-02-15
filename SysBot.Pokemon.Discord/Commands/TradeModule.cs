@@ -17,6 +17,14 @@ namespace SysBot.Pokemon.Discord
 
         static TradeModule() => AutoLegalityExtensions.EnsureInitialized();
 
+        private const uint MaxTradeCode = 9999;
+
+        private static int GetRandomTradeCode()
+        {
+            var cfg = SysCordInstance.Self.Hub.Config;
+            return Util.Rand.Next(cfg.MinTradeCode, cfg.MaxTradeCode + 1);
+        }
+
         [Command("tradeStatus")]
         [Alias("ts")]
         [Summary("Prints the user's status in the trade queues.")]
@@ -141,7 +149,7 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            if ((uint)code > 9999)
+            if ((uint)code > MaxTradeCode)
             {
                 await ReplyAsync("Trade code should be 0000-9999!").ConfigureAwait(false);
                 return;
@@ -198,12 +206,43 @@ namespace SysBot.Pokemon.Discord
 
             pk8.ResetPartyStats();
 
-            var code = Util.Rand.Next(0, 9999);
+            var code = GetRandomTradeCode();
             await AddTradeToQueueAsync(code, Context.User.Username, pk8, sudo).ConfigureAwait(false);
         }
 
+        [Command("trade")]
+        [Alias("t")]
+        [Summary("Makes the bot trade you the attached file by adding it to the pool.")]
+        public async Task TradeAsync()
+        {
+            var code = GetRandomTradeCode();
+            await TradeAsync(code, Context.User.Username).ConfigureAwait(false);
+        }
+
         [Command("seedcheck")]
-        [Alias("dudu", "d")]
+        [Alias("dudu", "d", "sc")]
+        [Summary("Checks the seed for a pokemon.")]
+        public async Task SeedCheckAsync(int code)
+        {
+            var cfg = SysCordInstance.Self.Hub.Config;
+            var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
+            var allowed = sudo || (Context.GetHasRole(cfg.DiscordRoleCanDudu) && CanQueue);
+            if (!allowed)
+            {
+                await ReplyAsync("Sorry, you are not permitted to use this command!").ConfigureAwait(false);
+                return;
+            }
+
+            if ((uint)code > MaxTradeCode)
+            {
+                await ReplyAsync("Trade code should be 0000-9999!").ConfigureAwait(false);
+                return;
+            }
+            await AddSeedCheckToQueueAsync(code, Context.User.Username, sudo).ConfigureAwait(false);
+        }
+
+        [Command("seedcheck")]
+        [Alias("dudu", "d", "sc")]
         [Summary("Checks the seed for a pokemon.")]
         public async Task SeedCheckAsync()
         {
@@ -216,7 +255,7 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            var code = Util.Rand.Next(0, 9999);
+            var code = GetRandomTradeCode();
             await AddSeedCheckToQueueAsync(code, Context.User.Username, sudo).ConfigureAwait(false);
         }
 
@@ -317,12 +356,6 @@ namespace SysBot.Pokemon.Discord
                 PokeRoutineType.DuduBot => hub.Dudu,
                 _ => hub.Queue,
             };
-        }
-
-        [Command("trade")]
-        public async Task TradeAsync()
-        {
-            await TradeAsync(Util.Rand.Next(0, 9999), string.Empty).ConfigureAwait(false);
         }
     }
 }
