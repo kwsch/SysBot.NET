@@ -16,7 +16,7 @@ namespace SysBot.Pokemon
             return this[choice];
         }
 
-        public bool LoadFolder(string path)
+        public bool LoadFolder(string path, bool resetTracker)
         {
             if (!Directory.Exists(path))
                 return false;
@@ -38,6 +38,9 @@ namespace SysBot.Pokemon
                     Console.WriteLine("SKIPPED: Provided pk8 has a special ribbon and can't be Surprise Traded: " + dest.FileName);
                     continue;
                 }
+
+                if (resetTracker)
+                    pk8.Tracker = 0;
 
                 Add(dest);
                 loadedAny = true;

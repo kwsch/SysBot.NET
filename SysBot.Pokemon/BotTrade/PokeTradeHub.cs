@@ -77,7 +77,7 @@ namespace SysBot.Pokemon
         {
             var blank = new T();
             Pool.ExpectedSize = blank.SIZE_PARTY;
-            if (!Pool.LoadFolder(path))
+            if (!Pool.LoadFolder(path, Config.ResetHOMETracker))
             {
                 LogUtil.Log(LogLevel.Error, "Nothing found in pool folder!", "Hub");
             }

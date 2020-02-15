@@ -328,6 +328,9 @@ namespace SysBot.Pokemon.Discord
                     return false;
                 }
 
+                if (SysCordInstance.Self.Hub.Config.ResetHOMETracker)
+                    pk8.Tracker = 0;
+
                 var tmp = new PokeTradeTrainerInfo(trainerName);
                 var notifier = new DiscordTradeNotifier<PK8>(pk8, tmp, code, Context);
                 var detail = new PokeTradeDetail<PK8>(pk8, tmp, notifier, code: code);

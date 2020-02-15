@@ -108,6 +108,9 @@ namespace SysBot.Pokemon
 
         [Category(Legality), Description("Legality: Default Language for PKM files that can't originate from any of the provided SaveFiles.")]
         public int GenerateLanguage { get; set; }
+
+        [Category(Legality), Description("Legality: Zero out HOME tracker regardless of current tracker value. Applies to user requested PKM files as well.")]
+        public bool ResetHOMETracker { get; set; } = true;
         #endregion
 
         public void CreateDefaults(string path)
