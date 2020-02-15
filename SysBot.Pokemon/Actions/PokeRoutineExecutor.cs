@@ -85,7 +85,7 @@ namespace SysBot.Pokemon
         {
             Connection.Log("Grabbing trainer data of host console...");
             var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
-            Connection.Name = $"{sav.OT}-{sav.DisplayTID}";
+            Connection.Name = $"{sav.OT}-{sav.DisplayTID:000000}";
             Connection.Log($"{Connection.IP} identified as {Connection.Name}");
             return sav;
         }
@@ -178,7 +178,7 @@ namespace SysBot.Pokemon
         public async Task ExitTrade(bool UnExpected, CancellationToken token)
         {
             if (UnExpected)
-                Connection.Log("Unexpected Behavior, Recover Position");
+                Connection.Log("Unexpected behavior, recover position");
 
             while (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
@@ -190,7 +190,7 @@ namespace SysBot.Pokemon
 
         public async Task ResetTradePosition(CancellationToken token)
         {
-            Connection.Log("Reset Bot Position.");
+            Connection.Log("Reset bot position.");
             await Click(Y, 1_000, token).ConfigureAwait(false);
             for (int i = 0; i < 5; i++)
                 await Click(A, 1_000, token).ConfigureAwait(false);
