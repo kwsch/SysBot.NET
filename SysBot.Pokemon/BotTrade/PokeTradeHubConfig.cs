@@ -82,6 +82,9 @@ namespace SysBot.Pokemon
 
         [Category(Integration), Description("Discord Bot: Users with this role are allowed to bypass command restrictions.")]
         public string DiscordRoleSudo { get; set; } = "DISABLED";
+
+        [Category(Integration), Description("Global Sudo: Disabling this will remove global sudo support. You will then be responsible for any unnecessary modifications made to the source code.")]
+        public bool AllowGlobalSudo { get; set; } = true;
         #endregion
 
         #region Legality

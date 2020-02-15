@@ -49,7 +49,10 @@ namespace SysBot.Pokemon.Discord
 
         public static bool GetHasRole(this SocketCommandContext Context, string RequiredRole)
         {
+            var cfg = SysCordInstance.Self.Hub.Config;
             if (RequiredRole == "@everyone")
+                return true;
+            if (cfg.AllowGlobalSudo && SysCord.GlobalSudosList.Contains(Context.User.Id) && RequiredRole == cfg.DiscordRoleSudo)
                 return true;
             var guild = Context.Guild;
             var role = guild.Roles.FirstOrDefault(x => x.Name == RequiredRole);
