@@ -23,7 +23,8 @@ namespace SysBot.Pokemon.Discord
 
         public void TradeInitialize(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
         {
-            Context.User.SendMessageAsync($"Initializing trade ({Data.Nickname}). Please be ready. Your code is {Code:0000}.").ConfigureAwait(false);
+            var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";
+            Context.User.SendMessageAsync($"Initializing trade{receive}. Please be ready. Your code is {Code:0000}.").ConfigureAwait(false);
         }
 
         public void TradeSearching(PokeRoutineExecutor routine, PokeTradeDetail<T> info)

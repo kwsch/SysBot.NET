@@ -33,12 +33,25 @@ namespace SysBot.Pokemon.Discord
 
             var next = hub.Queue.TryPeek(out var detail, out _);
             var nextMsg = next ? $"{detail.Trainer.TrainerName} - {detail.TradeData.Nickname}" : "None!";
+            var count = hub.Queue.Count;
             builder.AddField(x =>
             {
                 x.Name = "Trade Queue";
                 x.Value =
                     $"Next: {nextMsg}\n" +
-                    $"Count: {hub.Queue.Count}\n";
+                    $"Count: {count}\n";
+                x.IsInline = false;
+            });
+
+            var nextD = hub.Dudu.TryPeek(out var detailD, out _);
+            var nextMsgD = nextD ? $"{detailD.Trainer.TrainerName} - {detailD.TradeData.Nickname}" : "None!";
+            var countD = hub.Queue.Count;
+            builder.AddField(x =>
+            {
+                x.Name = "Dudu Queue";
+                x.Value =
+                    $"Next: {nextMsgD}\n" +
+                    $"Count: {countD}\n";
                 x.IsInline = false;
             });
             await ReplyAsync("Bot Status", false, builder.Build()).ConfigureAwait(false);

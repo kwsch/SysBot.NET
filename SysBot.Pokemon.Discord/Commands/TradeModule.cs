@@ -23,7 +23,23 @@ namespace SysBot.Pokemon.Discord
             {
                 var uid = Context.User.Id;
                 var index = UsersInQueue.FindIndex(z => z.User == uid);
-                msg = index < 0 ? "You are not in the queue." : $"You are in the queue! Position: {index + 1}, Receiving: {(Species)UsersInQueue[index].Trade.TradeData.Species}";
+                if (index < 0)
+                {
+                    msg = "You are not in the queue.";
+                }
+                else
+                {
+                    var entry = UsersInQueue[index];
+                    var actualIndex = 1;
+                    for (int i = 0; i < index; i++)
+                    {
+                        if (UsersInQueue[i].Type == entry.Type)
+                            actualIndex++;
+                    }
+                    msg = entry.Type == PokeRoutineType.DuduBot
+                        ? $"You are in the Dudu queue! Position: {actualIndex}"
+                        : $"You are in the Trade queue! Position: {actualIndex}, Receiving: {(Species)entry.Trade.TradeData.Species}";
+                }
             }
             await ReplyAsync(msg).ConfigureAwait(false);
         }
@@ -227,7 +243,7 @@ namespace SysBot.Pokemon.Discord
                 };
                 queue.Enqueue(detail, priority);
 
-                var trade = new TradeEntry<PK8>(detail, userID);
+                var trade = new TradeEntry<PK8>(detail, userID, type);
                 UsersInQueue.Add(trade);
                 notifier.OnFinish = () =>
                 {
