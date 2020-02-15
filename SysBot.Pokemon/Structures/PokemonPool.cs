@@ -33,9 +33,9 @@ namespace SysBot.Pokemon
                     Console.WriteLine("SKIPPED: Provided pk8 is not valid: " + dest.FileName);
                     continue;
                 }
-                if (pk8.RibbonClassic)
+                if (pk8.RibbonClassic || pk8.RibbonPremier || pk8.RibbonBirthday)
                 {
-                    Console.WriteLine("SKIPPED: Provided pk8 has a classic ribbon and can't be Surprise Traded: " + dest.FileName);
+                    Console.WriteLine("SKIPPED: Provided pk8 has a special ribbon and can't be Surprise Traded: " + dest.FileName);
                     continue;
                 }
 
