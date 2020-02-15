@@ -16,6 +16,7 @@ namespace SysBot.Pokemon.Discord
         static TradeModule() => AutoLegalityExtensions.EnsureInitialized();
 
         [Command("tradeStatus")]
+        [Alias("ts")]
         public async Task GetTradePosition()
         {
             string msg;
@@ -45,6 +46,7 @@ namespace SysBot.Pokemon.Discord
         }
 
         [Command("tradeClear")]
+        [Alias("tc")]
         public async Task ClearTradeAsync()
         {
             string msg;
@@ -54,6 +56,7 @@ namespace SysBot.Pokemon.Discord
         }
 
         [Command("tradeClearAll")]
+        [Alias("tca")]
         public async Task ClearAllTradesAsync()
         {
             var hub = SysCordInstance.Self.Hub;
@@ -75,6 +78,7 @@ namespace SysBot.Pokemon.Discord
         }
 
         [Command("trade")]
+        [Alias("t")]
         [Summary("Makes the bot trade you the provided PKM by adding it to the pool.")]
         public async Task TradeAsync([Summary("Trade Code")]int code, [Remainder][Summary("Trainer Name to trade to.")]string trainerName)
         {
@@ -111,6 +115,7 @@ namespace SysBot.Pokemon.Discord
         }
 
         [Command("trade")]
+        [Alias("t")]
         [Summary("Makes the bot trade you the provided Showdown Set by adding it to the pool.")]
         public async Task TradeAsync([Summary("Showdown Set")][Remainder]string content)
         {
@@ -146,6 +151,7 @@ namespace SysBot.Pokemon.Discord
         }
 
         [Command("seedcheck")]
+        [Alias("dudu", "d")]
         [Summary("Checks the seed for a pokemon.")]
         public async Task SeedCheckAsync()
         {
@@ -234,14 +240,9 @@ namespace SysBot.Pokemon.Discord
                 var notifier = new DiscordTradeNotifier<PK8>(pk8, tmp, code, Context);
                 var detail = new PokeTradeDetail<PK8>(pk8, tmp, notifier, code: code);
                 var priority = sudo ? PokeTradeQueue<PK8>.Tier1 : PokeTradeQueue<PK8>.TierFree;
-
-                var hub = SysCordInstance.Self.Hub;
-                var queue = type switch
-                {
-                    PokeRoutineType.DuduBot => hub.Dudu,
-                    _ => hub.Queue,
-                };
+                var queue = GetHub(type);
                 queue.Enqueue(detail, priority);
+                msg = $"Added {Context.User.Mention} to the queue. Your current position is: {queue.Count}";
 
                 var trade = new TradeEntry<PK8>(detail, userID, type);
                 UsersInQueue.Add(trade);
@@ -252,8 +253,17 @@ namespace SysBot.Pokemon.Discord
                 };
             }
 
-            msg = $"Added {Context.User.Mention} to the queue. Your current position is: {SysCordInstance.Self.Hub.Queue.Count}";
             return true;
+        }
+
+        private static PokeTradeQueue<PK8> GetHub(PokeRoutineType type)
+        {
+            var hub = SysCordInstance.Self.Hub;
+            return type switch
+            {
+                PokeRoutineType.DuduBot => hub.Dudu,
+                _ => hub.Queue,
+            };
         }
 
         [Command("trade")]
