@@ -228,6 +228,8 @@ namespace SysBot.Pokemon
             await Click(A, 2_000, token).ConfigureAwait(false);
             await Click(A, 2_000, token).ConfigureAwait(false);
 
+            detail.SendNotification(this, $"Found Trading Partner: {TrainerName}.  Waiting for a Pokemon ...");
+
             // Wait for User Input...
             var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 25_000, 1_000, token).ConfigureAwait(false);
             if (pk == null)
@@ -490,7 +492,9 @@ namespace SysBot.Pokemon
             var IVs = pk.IVs.Length == 0 ? GetBlankIVTemplate() : PKX.ReorderSpeedLast((int[])pk.IVs.Clone());
             if (pk.IsShiny)
             {
-                Connection.Log("The pokemon is already shiny!"); // Do not bother checking for next shiny frame
+                Connection.Log("The Pokemon is already shiny!"); // Do not bother checking for next shiny frame
+                detail.SendNotification(this, "This Pokemon is already shiny! Raid seed calculation was not done.");
+                detail.TradeFinished(this, pk);
                 return PokeTradeResult.Success;
             }
 
@@ -498,7 +502,7 @@ namespace SysBot.Pokemon
             switch (match)
             {
                 case Z3SearchResult.SeedNone:
-                    detail.SendNotification(this, "The pokemon is not a raid pokemon!");
+                    detail.SendNotification(this, "The Pokemon is not a raid Pokemon!");
                     break;
                 case Z3SearchResult.SeedMismatch:
                     detail.SendNotification(this, "No valid seed found!");
