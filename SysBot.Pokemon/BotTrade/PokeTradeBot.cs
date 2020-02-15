@@ -157,7 +157,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Recover;
             }
 
-            Connection.Log("Open Y-COM Menu");
+            Connection.Log("Open Y-Comm Menu");
             await Click(Y, 1_500, token).ConfigureAwait(false);
 
             Connection.Log("Select Link Trade");
@@ -228,7 +228,7 @@ namespace SysBot.Pokemon
             await Click(A, 2_000, token).ConfigureAwait(false);
             await Click(A, 2_000, token).ConfigureAwait(false);
 
-            detail.SendNotification(this, $"Found Trading Partner: {TrainerName}.  Waiting for a Pokemon ...");
+            poke.SendNotification(this, $"Found Trading Partner: {TrainerName}. Waiting for a Pokemon ...");
 
             // Wait for User Input...
             var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 25_000, 1_000, token).ConfigureAwait(false);
@@ -299,7 +299,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Recover;
             }
 
-            Connection.Log("Open Y-COM Menu");
+            Connection.Log("Open Y-Comm Menu");
             await Click(Y, 1_500, token).ConfigureAwait(false);
 
             /*
@@ -408,7 +408,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Recover;
             }
 
-            Connection.Log("Open Y-COM Menu");
+            Connection.Log("Open Y-Comm Menu");
             await Click(Y, 1_500, token).ConfigureAwait(false);
 
             Connection.Log("Select Link Trade");
@@ -477,6 +477,8 @@ namespace SysBot.Pokemon
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.Recover;
             }
+
+            detail.SendNotification(this, $"Found Trading Partner: {TrainerName}. Waiting for a Pokemon ...");
 
             // Wait for User Input...
             var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 25_000, 1_000, token).ConfigureAwait(false);
