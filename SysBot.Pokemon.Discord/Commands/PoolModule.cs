@@ -11,6 +11,12 @@ namespace SysBot.Pokemon.Discord
         {
             var me = SysCordInstance.Self;
             var hub = me.Hub;
+            if (!Context.GetHasRole(hub.Config.DiscordRoleSudo))
+            {
+                await ReplyAsync("You are not permitted to use this command.").ConfigureAwait(false);
+                return;
+            }
+
             var pool = hub.Pool.LoadFolder(hub.Config.DistributeFolder);
             if (!pool)
                 await ReplyAsync($"Failed to reload from folder.").ConfigureAwait(false);

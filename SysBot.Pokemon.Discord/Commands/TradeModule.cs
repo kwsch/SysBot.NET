@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using PKHeX.Core;
 using PKHeX.Core.AutoMod;
 
@@ -43,7 +42,7 @@ namespace SysBot.Pokemon.Discord
         public async Task ClearAllTradesAsync()
         {
             var cfg = SysCordInstance.Self.Hub.Config;
-            var sudo = GetHasRole(cfg.DiscordRoleSudo);
+            var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
             if (!sudo)
             {
                 await ReplyAsync("You can't use this command.").ConfigureAwait(false);
@@ -63,8 +62,8 @@ namespace SysBot.Pokemon.Discord
         public async Task TradeAsync([Summary("Trade Code")]int code, [Remainder][Summary("Trainer Name to trade to.")]string trainerName)
         {
             var cfg = SysCordInstance.Self.Hub.Config;
-            var sudo = GetHasRole(cfg.DiscordRoleSudo);
-            var allowed = sudo || GetHasRole(cfg.DiscordRoleCanTrade);
+            var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
+            var allowed = sudo || Context.GetHasRole(cfg.DiscordRoleCanTrade);
 
             if (!allowed)
             {
@@ -118,7 +117,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             var code = Util.Rand.Next(0, 9999);
-            var sudo = GetHasRole(SysCordInstance.Self.Hub.Config.DiscordRoleSudo);
+            var sudo = Context.GetHasRole(SysCordInstance.Self.Hub.Config.DiscordRoleSudo);
             await AddTradeToQueue(code, Context.User.Username, pk8, sudo).ConfigureAwait(false);
         }
 
@@ -127,7 +126,7 @@ namespace SysBot.Pokemon.Discord
         public async Task SeedCheckAsync()
         {
             var code = Util.Rand.Next(0, 9999);
-            var sudo = GetHasRole(SysCordInstance.Self.Hub.Config.DiscordRoleSudo);
+            var sudo = Context.GetHasRole(SysCordInstance.Self.Hub.Config.DiscordRoleSudo);
             await AddSeedCheckToQueue(code, Context.User.Username, sudo).ConfigureAwait(false);
         }
 
@@ -157,8 +156,8 @@ namespace SysBot.Pokemon.Discord
         private string ClearTrade()
         {
             var cfg = SysCordInstance.Self.Hub.Config;
-            var sudo = GetHasRole(cfg.DiscordRoleSudo);
-            var allowed = sudo || GetHasRole(cfg.DiscordRoleCanTrade);
+            var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
+            var allowed = sudo || Context.GetHasRole(cfg.DiscordRoleCanTrade);
             if (!allowed)
                 return "Sorry, you are not permitted to use this command!";
 
@@ -216,20 +215,6 @@ namespace SysBot.Pokemon.Discord
         public async Task TradeAsync()
         {
             await TradeAsync(Util.Rand.Next(0, 9999), string.Empty).ConfigureAwait(false);
-        }
-
-        private bool GetHasRole(string RequiredRole)
-        {
-            if (RequiredRole == "@everyone")
-                return true;
-            var guild = Context.Guild;
-            var role = guild.Roles.FirstOrDefault(x => x.Name == RequiredRole);
-            if (role == default)
-                return false;
-
-            var igu = (SocketGuildUser)Context.User;
-            bool hasRole = igu.Roles.Contains(role);
-            return hasRole;
         }
 
         private sealed class TradeEntry<T> where T : PKM

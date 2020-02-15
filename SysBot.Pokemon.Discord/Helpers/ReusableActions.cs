@@ -1,6 +1,8 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using PKHeX.Core;
 using Image = System.Drawing.Image;
@@ -43,6 +45,20 @@ namespace SysBot.Pokemon.Discord
 
             var pkm = result.Data!;
             await channel.SendPKMAsShowdownSetAsync(pkm).ConfigureAwait(false);
+        }
+
+        public static bool GetHasRole(this SocketCommandContext Context, string RequiredRole)
+        {
+            if (RequiredRole == "@everyone")
+                return true;
+            var guild = Context.Guild;
+            var role = guild.Roles.FirstOrDefault(x => x.Name == RequiredRole);
+            if (role == default)
+                return false;
+
+            var igu = (SocketGuildUser)Context.User;
+            bool hasRole = igu.Roles.Contains(role);
+            return hasRole;
         }
 
         public static async Task SendPKMAsShowdownSetAsync(this ISocketMessageChannel channel, PKM pkm)
