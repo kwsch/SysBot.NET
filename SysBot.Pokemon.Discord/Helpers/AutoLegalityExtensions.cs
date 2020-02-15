@@ -25,6 +25,7 @@ namespace SysBot.Pokemon.Discord
         private static void InitializeAutoLegality()
         {
             Task.Run(InitializeCoreStrings);
+            Task.Run(() => EncounterEvent.RefreshMGDB());
             InitializeTrainerDatabase();
 
             // Legalizer.AllowBruteForce = false;
