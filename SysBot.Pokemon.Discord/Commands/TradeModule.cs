@@ -40,7 +40,8 @@ namespace SysBot.Pokemon.Discord
         [Command("tradeClearAll")]
         public async Task ClearAllTradesAsync()
         {
-            var cfg = SysCordInstance.Self.Hub.Config;
+            var hub = SysCordInstance.Self.Hub;
+            var cfg = hub.Config;
             var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
             if (!sudo)
             {
@@ -50,7 +51,8 @@ namespace SysBot.Pokemon.Discord
 
             lock (_sync)
             {
-                SysCordInstance.Self.Hub.Queue.Clear();
+                hub.Queue.Clear();
+                hub.Dudu.Clear();
                 UsersInQueue.Clear();
             }
             await ReplyAsync("Cleared all in the queue.").ConfigureAwait(false);
@@ -133,7 +135,7 @@ namespace SysBot.Pokemon.Discord
         {
             var cfg = SysCordInstance.Self.Hub.Config;
             var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
-            var allowed = sudo || Context.GetHasRole(cfg.DiscordRoleCanTrade);
+            var allowed = sudo || Context.GetHasRole(cfg.DiscordRoleCanDudu);
             if (!allowed)
             {
                 await ReplyAsync("Sorry, you are not permitted to use this command!").ConfigureAwait(false);
@@ -169,9 +171,10 @@ namespace SysBot.Pokemon.Discord
 
         private string ClearTrade()
         {
-            var cfg = SysCordInstance.Self.Hub.Config;
+            var hub = SysCordInstance.Self.Hub;
+            var cfg = hub.Config;
             var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
-            var allowed = sudo || Context.GetHasRole(cfg.DiscordRoleCanTrade);
+            var allowed = sudo || Context.GetHasRole(cfg.DiscordRoleCanTrade) || Context.GetHasRole(cfg.DiscordRoleCanDudu);
             if (!allowed)
                 return "Sorry, you are not permitted to use this command!";
 
@@ -183,7 +186,12 @@ namespace SysBot.Pokemon.Discord
             int removedCount = 0;
             foreach (var detail in details)
             {
-                int removed = SysCordInstance.Self.Hub.Queue.Remove(detail.Trade);
+                int removed = hub.Queue.Remove(detail.Trade);
+                if (removed != 0)
+                    UsersInQueue.Remove(detail);
+                removedCount += removed;
+
+                removed = hub.Dudu.Remove(detail.Trade);
                 if (removed != 0)
                     UsersInQueue.Remove(detail);
                 removedCount += removed;

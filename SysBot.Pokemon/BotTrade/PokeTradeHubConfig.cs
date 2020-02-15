@@ -77,6 +77,9 @@ namespace SysBot.Pokemon
         [Category(Integration), Description("Discord Bot: Users with this role are allowed to enter the trade queue.")]
         public string DiscordRoleCanTrade { get; set; } = "DISABLED";
 
+        [Category(Integration), Description("Discord Bot: Users with this role are allowed to enter the Dudu queue.")]
+        public string DiscordRoleCanDudu { get; set; } = "DISABLED";
+
         [Category(Integration), Description("Discord Bot: Users with this role are allowed to bypass command restrictions.")]
         public string DiscordRoleSudo { get; set; } = "DISABLED";
         #endregion
