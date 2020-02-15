@@ -23,6 +23,12 @@ namespace SysBot.Pokemon
 
         [Category(FeatureToggle), Description("Link Trade: Using multiple bots -- all bots will confirm their trade code at the same time.")]
         public bool SynchronizeLinkTradeBots { get; set; } = true;
+
+        [Category(Legality), Description("Link Trade: Using multiple bots -- once all bots are ready to confirm trade code, the Hub will wait X milliseconds before releasing all bots.")]
+        public int SynchronizeLinkTradeBotsDelay { get; set; }
+
+        [Category(Legality), Description("Link Trade: Using multiple bots -- how long (Seconds) a bot will wait for synchronization before continuing anyways.")]
+        public double SynchronizeLinkTradeBotsTimeout { get; set; } = 60;
         #endregion
 
         #region Folders

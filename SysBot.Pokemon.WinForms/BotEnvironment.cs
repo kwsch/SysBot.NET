@@ -36,7 +36,6 @@ namespace SysBot.Pokemon.WinForms
         {
             Hub.Config = cfg;
             Hub.CompletedTrades = cfg.CompletedTrades;
-            Hub.UseBarrier = cfg.SynchronizeLinkTradeBots;
         }
 
         private List<Task> CreateBotTasks(CancellationToken token)

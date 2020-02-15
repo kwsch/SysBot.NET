@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -16,6 +17,13 @@ namespace SysBot.Pokemon
     /// <typeparam name="T">Type of <see cref="PKM"/> to distribute.</typeparam>
     public class PokeTradeHub<T> where T : PKM, new()
     {
+        public PokeTradeHub()
+        {
+            Barrier = new Barrier(0, ReleaseBarrier);
+            BarrierReleasingActions.Add(() =>
+                LogUtil.Log(LogLevel.Info, $"{Barrier.ParticipantCount} bots released.", "Barrier"));
+        }
+
         public static readonly PokeTradeLogNotifier<T> LogNotifier = new PokeTradeLogNotifier<T>();
 
         public PokeTradeHubConfig Config { get; set; } = new PokeTradeHubConfig();
@@ -36,19 +44,21 @@ namespace SysBot.Pokemon
         /// <summary>
         /// Blocks bots from proceeding until all participating bots are waiting at the same step.
         /// </summary>
-        public readonly Barrier Barrier = new Barrier(0, ReleaseBarrier);
+        public readonly Barrier Barrier;
 
-        /// <summary>
-        /// Toggle to use the <see cref="Barrier"/> during bot operation.
-        /// </summary>
-        public bool UseBarrier = true;
-
+        public readonly List<Action> BarrierReleasingActions = new List<Action>();
+        
         /// <summary>
         /// When the Barrier releases the bots, this method is executed before the bots continue execution.
         /// </summary>
-        private static void ReleaseBarrier(Barrier b)
+        private void ReleaseBarrier(Barrier b)
         {
-            LogUtil.Log(LogLevel.Info, $"{b.ParticipantCount} bots released.", "Barrier");
+            foreach (var action in BarrierReleasingActions)
+                action();
+
+            var ms = Config.SynchronizeLinkTradeBotsDelay;
+            if (ms != 0)
+                Thread.Sleep(ms);
         }
         #endregion
 

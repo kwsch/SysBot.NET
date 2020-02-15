@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
+using PKHeX.Core.Searching;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Pokemon.PokeDataOffsets;
 
@@ -164,8 +165,8 @@ namespace SysBot.Pokemon
             await EnterTradeCode(code, token).ConfigureAwait(false);
 
             // Wait for Barrier to trigger all bots simultaneously.
-            if (ShouldWaitAtBarrier && Hub.UseBarrier)
-                Hub.Barrier.SignalAndWait(TimeSpan.FromSeconds(60), token);
+            if (ShouldWaitAtBarrier && Hub.Config.SynchronizeLinkTradeBots)
+                Hub.Barrier.SignalAndWait(TimeSpan.FromSeconds(Hub.Config.SynchronizeLinkTradeBotsTimeout), token);
             await Click(PLUS, 1_000, token).ConfigureAwait(false);
 
             // Start a Link Trade, in case of Empty Slot/Egg/Bad Pokemon we press sometimes B to return to the Overworld and skip this Slot.
@@ -174,7 +175,7 @@ namespace SysBot.Pokemon
                 await Click(A, 2_000, token).ConfigureAwait(false);
 
             poke.TradeSearching(this);
-            await Task.Delay(Util.Rand.Next(100, 1000), token).ConfigureAwait(false);
+            await Task.Delay(Util.Rand.Next(0_350, 0_750), token).ConfigureAwait(false);
 
             await Click(A, 1_000, token).ConfigureAwait(false);
 
@@ -188,7 +189,7 @@ namespace SysBot.Pokemon
             await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
 
             // Wait 40 Seconds for Trainer...
-            var partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, 40_000, 2_000, token).ConfigureAwait(false);
+            var partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, 40_000, 0_200, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
@@ -202,7 +203,7 @@ namespace SysBot.Pokemon
             // pkm already injected to b1s1
             var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
             Connection.Log($"Found Trading Partner: {TrainerName} ...");
-            await Task.Delay(300, token).ConfigureAwait(false);
+            await Task.Delay(0_300, token).ConfigureAwait(false);
 
             if (!await IsCorrentScreen(CurrentScreen_Box, token).ConfigureAwait(false))
             {
@@ -234,7 +235,7 @@ namespace SysBot.Pokemon
                     break;
             }
 
-            await Task.Delay(1_000 + Util.Rand.Next(500, 5000), token).ConfigureAwait(false);
+            await Task.Delay(1_000 + Util.Rand.Next(0_700, 1_000), token).ConfigureAwait(false);
 
             await ExitTrade(false, token).ConfigureAwait(false);
             Connection.Log("Exited Trade!");
@@ -242,23 +243,22 @@ namespace SysBot.Pokemon
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
 
-            if (await ReadBoxPokemon(0, 0, token).ConfigureAwait(false) == pkm)
-            {
-                Connection.Log("Trade failed, return to Overworld!");
-                await ResetTradePosition(token).ConfigureAwait(false);
-                return PokeTradeResult.NoTrainerFound;
-            }
-            else
-            {
-                Connection.Log("Trade was successful.");
-            }
-
             // Trade was Successful!
-            poke.TradeFinished(this, pk);
+            var traded = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
+            if (SearchUtil.HashByDetails(traded) == SearchUtil.HashByDetails(pk))
+                Connection.Log("User traded the initially shown file.");
+            else if (SearchUtil.HashByDetails(traded) != SearchUtil.HashByDetails(pkm))
+                Connection.Log("User did not complete the trade.");
+            else
+                Connection.Log("Recipient changed the traded Pokémon after initially showing another.");
+
+            poke.TradeFinished(this, traded);
             Connection.Log("Trade complete!");
             Hub.AddCompletedTrade();
             if (Dump && !string.IsNullOrEmpty(DumpFolder))
-                DumpPokemon(DumpFolder, await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false));
+            {
+                DumpPokemon(DumpFolder, traded);
+            }
 
             return PokeTradeResult.Success;
         }
@@ -412,7 +412,7 @@ namespace SysBot.Pokemon
             await EnterTradeCode(code, token).ConfigureAwait(false);
 
             // Wait for Barrier to trigger all bots simultaneously.
-            if (ShouldWaitAtBarrier && Hub.UseBarrier)
+            if (ShouldWaitAtBarrier && Hub.Config.SynchronizeLinkTradeBots)
                 Hub.Barrier.SignalAndWait(TimeSpan.FromSeconds(60), token);
             await Click(PLUS, 0_100, token).ConfigureAwait(false);
 
