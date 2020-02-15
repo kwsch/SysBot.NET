@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.IO;
+// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
 namespace SysBot.Pokemon
 {
@@ -12,22 +13,22 @@ namespace SysBot.Pokemon
         private const string Legality = nameof(Legality);
 
         #region Toggles
-        [Category(FeatureToggle), Description("Destination folder: where all received PKM files are dumped to.")]
+        [Category(FeatureToggle), Description("When enabled, dumps any received PKM files (trade results) to the DumpFolder.")]
         public bool Dump { get; set; }
 
-        [Category(FeatureToggle), Description("Link Trade: Distributes PKM files when idle from the DistributeFolder.")]
+        [Category(FeatureToggle), Description("When enabled, idle LinkTrade bots will randomly distribute PKM files from the DistributeFolder.")]
         public bool DistributeWhileIdle { get; set; } = true;
 
-        [Category(FeatureToggle), Description("Link Trade: Enables trading priority files sourced from the priority folder.")]
+        [Category(FeatureToggle), Description("Link Trade: Enables trading priority files sourced from the priority folder. This is not necessary if an integration service (e.g. Discord) is adding to the queue from the same executable process.")]
         public bool MonitorForPriorityTrades { get; set; }
 
-        [Category(FeatureToggle), Description("Link Trade: Using multiple bots -- all bots will confirm their trade code at the same time.")]
+        [Category(FeatureToggle), Description("Link Trade: Using multiple distribution bots -- all bots will confirm their trade code at the same time.")]
         public bool SynchronizeLinkTradeBots { get; set; } = true;
 
-        [Category(Legality), Description("Link Trade: Using multiple bots -- once all bots are ready to confirm trade code, the Hub will wait X milliseconds before releasing all bots.")]
+        [Category(Legality), Description("Link Trade: Using multiple distribution bots -- once all bots are ready to confirm trade code, the Hub will wait X milliseconds before releasing all bots.")]
         public int SynchronizeLinkTradeBotsDelay { get; set; }
 
-        [Category(Legality), Description("Link Trade: Using multiple bots -- how long (Seconds) a bot will wait for synchronization before continuing anyways.")]
+        [Category(Legality), Description("Link Trade: Using multiple distribution bots -- how long (Seconds) a bot will wait for synchronization before continuing anyways.")]
         public double SynchronizeLinkTradeBotsTimeout { get; set; } = 60;
         #endregion
 
@@ -38,7 +39,7 @@ namespace SysBot.Pokemon
         [Category(Files), Description("Destination folder: where all received PKM files are dumped to.")]
         public string DumpFolder { get; set; } = string.Empty;
 
-        [Category(Files), Description("Link Trade: where priority PKM details to distribute are selected from.")]
+        [Category(Files), Description("Link Trade: where priority PKM details to distribute are selected from. This is not necessary if an integration service (e.g. Discord) is adding to the queue from the same executable process.")]
         public string PriorityFolder { get; set; } = string.Empty;
         #endregion
 
@@ -68,22 +69,24 @@ namespace SysBot.Pokemon
         #endregion
 
         #region Integration
-        [Category(Integration), Description("Discord Bot: Login Token")]
+        private const string DefaultDisable = "DISABLE";
+
+        [Category(Integration), Description("Discord Bot: Bot Login Token")]
         public string DiscordToken { get; set; } = string.Empty;
 
-        [Category(Integration), Description("Discord Bot: Command Prefix")]
+        [Category(Integration), Description("Discord Bot: Bot Command Prefix")]
         public string DiscordCommandPrefix { get; set; } = "$";
 
-        [Category(Integration), Description("Discord Bot: Users with this role are allowed to enter the trade queue.")]
-        public string DiscordRoleCanTrade { get; set; } = "DISABLED";
+        [Category(Integration), Description("Discord Bot: Users with this role are allowed to enter the Trade queue.")]
+        public string DiscordRoleCanTrade { get; set; } = DefaultDisable;
 
         [Category(Integration), Description("Discord Bot: Users with this role are allowed to enter the Dudu queue.")]
-        public string DiscordRoleCanDudu { get; set; } = "DISABLED";
+        public string DiscordRoleCanDudu { get; set; } = DefaultDisable;
 
         [Category(Integration), Description("Discord Bot: Users with this role are allowed to bypass command restrictions.")]
-        public string DiscordRoleSudo { get; set; } = "DISABLED";
+        public string DiscordRoleSudo { get; set; } = DefaultDisable;
 
-        [Category(Integration), Description("Global Sudo: Disabling this will remove global sudo support. You will then be responsible for any unnecessary modifications made to the source code.")]
+        [Category(Integration), Description("Global Sudo: Disabling this will remove global sudo support.")]
         public bool AllowGlobalSudo { get; set; } = true;
 
         [Category(Integration), Description("Global Sudo List: Comma separated Discord user IDs that will have sudo access to the Bot Hub.")]
@@ -94,16 +97,16 @@ namespace SysBot.Pokemon
         [Category(Legality), Description("Legality: Regenerated PKM files will attempt to be sourced from games using trainer data info from these saves.")]
         public string GeneratePathSaveFiles { get; set; } = string.Empty;
 
-        [Category(Legality), Description("Legality: Default Trainer Name for PKM files that can't originate from the provided SaveFiles.")]
+        [Category(Legality), Description("Legality: Default Trainer Name for PKM files that can't originate from any of the provided SaveFiles.")]
         public string GenerateOT { get; set; } = "SysBot.NET";
 
-        [Category(Legality), Description("Legality: Default 16 Bit Trainer ID (TID) for PKM files that can't originate from the provided SaveFiles.")]
+        [Category(Legality), Description("Legality: Default 16 Bit Trainer ID (TID) for PKM files that can't originate from any of the provided SaveFiles.")]
         public int GenerateTID16 { get; set; }
 
-        [Category(Legality), Description("Legality: Default 16 Bit Secret ID (SID) for PKM files that can't originate from the provided SaveFiles.")]
+        [Category(Legality), Description("Legality: Default 16 Bit Secret ID (SID) for PKM files that can't originate from any of the provided SaveFiles.")]
         public int GenerateSID16 { get; set; }
 
-        [Category(Legality), Description("Legality: Default Language for PKM files that can't originate from the provided SaveFiles.")]
+        [Category(Legality), Description("Legality: Default Language for PKM files that can't originate from any of the provided SaveFiles.")]
         public int GenerateLanguage { get; set; }
         #endregion
 
