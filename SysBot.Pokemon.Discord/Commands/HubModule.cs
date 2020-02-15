@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 using PKHeX.Core;
 
@@ -15,19 +16,32 @@ namespace SysBot.Pokemon.Discord
             var me = SysCordInstance.Self;
             var hub = me.Hub;
 
+            var builder = new EmbedBuilder
+            {
+                Color = Color.Gold,
+            };
+            builder.AddField(x =>
+            {
+                x.Name = "Summary";
+                x.Value =
+                    $"Bot Count: {hub.Bots.Count}\n" +
+                    $"Bot State: {SummarizeBots(hub)}\n" +
+                    $"Completed Trades: {hub.Config.CompletedTrades}\n" +
+                    $"Pool Count: {hub.Pool.Count}\n";
+                x.IsInline = false;
+            });
+
             var next = hub.Queue.TryPeek(out var detail, out _);
             var nextMsg = next ? $"{detail.Trainer.TrainerName} - {detail.TradeData.Nickname}" : "None!";
-
-            var botMsg = SummarizeBots(hub);
-
-            var msg =
-                $"Bot Count: {hub.Bots.Count}\n" +
-                $"Bot State: {botMsg}\n" +
-                $"Completed Trades: {hub.Config.CompletedTrades}\n" +
-                $"Pool Count: {hub.Pool.Count}\n" +
-                $"Trade Queue Count: {hub.Queue.Count}\n" +
-                $"Trade Queue Next: {nextMsg}";
-            await ReplyAsync(msg).ConfigureAwait(false);
+            builder.AddField(x =>
+            {
+                x.Name = "Trade Queue";
+                x.Value =
+                    $"Next: {nextMsg}\n" +
+                    $"Count: {hub.Queue.Count}\n";
+                x.IsInline = false;
+            });
+            await ReplyAsync("Bot Status", false, builder.Build()).ConfigureAwait(false);
         }
 
         private static string SummarizeBots(PokeTradeHub<PK8> hub)
