@@ -28,9 +28,14 @@ namespace SysBot.Pokemon
 
             foreach (var dest in matchPKM)
             {
-                if (dest.Species == 0 || !new LegalityAnalysis(dest).Valid)
+                if (dest.Species == 0 || !new LegalityAnalysis(dest).Valid || !(dest is PK8 pk8))
                 {
-                    Console.WriteLine("Provided pk8 is not valid: " + dest.FileName);
+                    Console.WriteLine("SKIPPED: Provided pk8 is not valid: " + dest.FileName);
+                    continue;
+                }
+                if (pk8.RibbonClassic)
+                {
+                    Console.WriteLine("SKIPPED: Provided pk8 has a classic ribbon and can't be Surprise Traded: " + dest.FileName);
                     continue;
                 }
 
