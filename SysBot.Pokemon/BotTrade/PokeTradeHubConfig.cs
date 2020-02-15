@@ -85,6 +85,9 @@ namespace SysBot.Pokemon
 
         [Category(Integration), Description("Global Sudo: Disabling this will remove global sudo support. You will then be responsible for any unnecessary modifications made to the source code.")]
         public bool AllowGlobalSudo { get; set; } = true;
+
+        [Category(Integration), Description("Global Sudo List: Comma separated Discord user IDs that will have sudo access to the Bot Hub.")]
+        public string GlobalSudoList { get; set; } = string.Empty;
         #endregion
 
         #region Legality

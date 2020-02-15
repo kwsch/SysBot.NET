@@ -22,12 +22,6 @@ namespace SysBot.Pokemon.Discord
     {
         private readonly DiscordSocketClient _client;
         public PokeTradeHub<PK8> Hub;
-        public static List<ulong> GlobalSudosList = new List<ulong>()
-        {
-            257894541833666561, // Chris White#1337
-            135204578986557440, // thecommondude#8240
-            102990669018050560, // Kurt#6024
-        };
 
         // Keep the CommandService and DI container around for use with commands.
         // These two types require you install the Discord.Net.Commands package.
