@@ -61,10 +61,17 @@ namespace SysBot.Pokemon.Discord
             string msg;
             lock (_sync)
             {
-                var queued = UsersInQueue.GroupBy(z => z.Type);
-                var list = queued.Select(z => z.SelectMany(x =>
-                    $"{x.Type}: {x.Trade.Trainer.TrainerName} ({x.Name}), {(Species) x.Trade.TradeData.Species}"));
-                msg = string.Join("\n", list);
+                if (UsersInQueue.Count == 0)
+                {
+                    msg = "Nobody in any queue.";
+                }
+                else
+                {
+                    var queued = UsersInQueue.GroupBy(z => z.Type);
+                    var list = queued.SelectMany(z => z.Select(x =>
+                        $"{x.Type}: {x.Trade.Trainer.TrainerName} ({x.Name}), {(Species) x.Trade.TradeData.Species}"));
+                    msg = string.Join("\n", list);
+                }
             }
             await ReplyAsync(msg).ConfigureAwait(false);
         }
