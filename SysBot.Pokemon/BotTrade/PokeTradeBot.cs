@@ -70,9 +70,6 @@ namespace SysBot.Pokemon
             bool waiting = false;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.LinkTrade)
             {
-                if (!waiting)
-                    Connection.Log("Starting next Link Code trade. Getting data...");
-
                 if (!Hub.Queue.TryDequeue(out var poke, out var priority))
                 {
                     if (!waiting)
@@ -83,13 +80,20 @@ namespace SysBot.Pokemon
                 }
 
                 waiting = false;
+                Connection.Log("Starting next Link Code trade. Getting data...");
                 await EnsureConnectedToYCom(token).ConfigureAwait(false);
                 var result = await PerformLinkCodeTrade(sav, poke, token).ConfigureAwait(false);
                 if (result != PokeTradeResult.Success) // requeue
                 {
-                    poke.TradeCanceled(this, result);
                     if (result == PokeTradeResult.Aborted)
+                    {
                         Hub.Queue.Enqueue(poke, priority);
+                        poke.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
+                    }
+                    else
+                    {
+                        poke.TradeCanceled(this, result);
+                    }
                 }
             }
 
@@ -101,9 +105,6 @@ namespace SysBot.Pokemon
             bool waiting = false;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.DuduBot)
             {
-                if (!waiting)
-                    Connection.Log("Starting next seed check...");
-
                 if (!Hub.Dudu.TryDequeue(out var detail, out var _))
                 {
                     if (!waiting)
@@ -114,6 +115,7 @@ namespace SysBot.Pokemon
                 }
 
                 waiting = false;
+                Connection.Log("Starting next seed check...");
                 await EnsureConnectedToYCom(token).ConfigureAwait(false);
                 var _ = await PerformDuduTrade(detail, token).ConfigureAwait(false);
             }
