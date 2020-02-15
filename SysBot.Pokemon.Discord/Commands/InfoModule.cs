@@ -32,7 +32,7 @@ namespace SysBot.Pokemon.Discord
 
             builder.AddField("Info",
                 $"- [Source Code]({repo})\n" +
-                $"- {Format.Bold("Author")}: {app.Owner} ({app.Owner.Id})\n" +
+                $"- {Format.Bold("Owner")}: {app.Owner} ({app.Owner.Id})\n" +
                 $"- {Format.Bold("Library")}: Discord.Net ({DiscordConfig.Version})\n" +
                 $"- {Format.Bold("Uptime")}: {GetUptime()}\n" +
                 $"- {Format.Bold("Runtime")}: {RuntimeInformation.FrameworkDescription} {RuntimeInformation.ProcessArchitecture} " +
