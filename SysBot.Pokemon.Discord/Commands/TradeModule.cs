@@ -153,7 +153,7 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            var result = AddToTradeQueue(code, trainerName, sudo, pk8, out var msg);
+            var result = AddToTradeQueue(code, trainerName, sudo, pk8, PokeRoutineType.LinkTrade, out var msg);
             await ReplyAsync(msg).ConfigureAwait(false);
             if (result)
                 await Context.Message.DeleteAsync(RequestOptions.Default).ConfigureAwait(false);
@@ -161,7 +161,7 @@ namespace SysBot.Pokemon.Discord
 
         private async Task AddSeedCheckToQueue(int code, string trainer, bool sudo)
         {
-            var result = AddToTradeQueue(code, trainer, sudo, new PK8(), out var msg);
+            var result = AddToTradeQueue(code, trainer, sudo, new PK8(), PokeRoutineType.DuduBot, out var msg);
             await ReplyAsync(msg).ConfigureAwait(false);
             if (result)
                 await Context.Message.DeleteAsync(RequestOptions.Default).ConfigureAwait(false);
@@ -195,7 +195,7 @@ namespace SysBot.Pokemon.Discord
             return "Removed you from the queue.";
         }
 
-        private bool AddToTradeQueue(int code, string trainerName, bool sudo, PK8 pk8, out string msg)
+        private bool AddToTradeQueue(int code, string trainerName, bool sudo, PK8 pk8, PokeRoutineType type, out string msg)
         {
             var userID = Context.User.Id;
             lock (_sync)
@@ -210,7 +210,14 @@ namespace SysBot.Pokemon.Discord
                 var notifier = new DiscordTradeNotifier<PK8>(pk8, tmp, code, Context);
                 var detail = new PokeTradeDetail<PK8>(pk8, tmp, notifier, code: code);
                 var priority = sudo ? PokeTradeQueue<PK8>.Tier1 : PokeTradeQueue<PK8>.TierFree;
-                SysCordInstance.Self.Hub.Queue.Enqueue(detail, priority);
+
+                var hub = SysCordInstance.Self.Hub;
+                var queue = type switch
+                {
+                    PokeRoutineType.DuduBot => hub.Dudu,
+                    _ => hub.Queue,
+                };
+                queue.Enqueue(detail, priority);
 
                 var trade = new TradeEntry<PK8>(detail, userID);
                 UsersInQueue.Add(trade);

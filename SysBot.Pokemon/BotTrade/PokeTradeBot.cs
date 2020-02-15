@@ -104,7 +104,7 @@ namespace SysBot.Pokemon
                 if (!waiting)
                     Connection.Log("Starting next seed check...");
 
-                if (!Hub.Queue.TryDequeue(out var detail, out var _))
+                if (!Hub.Dudu.TryDequeue(out var detail, out var _))
                 {
                     if (!waiting)
                         Connection.Log("Nothing to check, waiting for new users...");

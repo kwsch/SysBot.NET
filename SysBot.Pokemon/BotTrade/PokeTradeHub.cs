@@ -64,6 +64,7 @@ namespace SysBot.Pokemon
 
         #region Distribution Queue
         public readonly PokeTradeQueue<T> Queue = new PokeTradeQueue<T>();
+        public readonly PokeTradeQueue<T> Dudu = new PokeTradeQueue<T>();
         public readonly PokemonPool<T> Pool = new PokemonPool<T>();
         public readonly ConcurrentPool<PokeTradeBot> Bots = new ConcurrentPool<PokeTradeBot>();
 
