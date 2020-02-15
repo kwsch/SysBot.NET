@@ -87,8 +87,8 @@ namespace SysBot.Pokemon
                 {
                     if (result == PokeTradeResult.Aborted)
                     {
-                        Hub.Queue.Enqueue(poke, priority);
                         poke.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
+                        Hub.Queue.Enqueue(poke, Math.Min(priority, PokeTradeQueue<PK8>.Tier2));
                     }
                     else
                     {
@@ -122,8 +122,8 @@ namespace SysBot.Pokemon
                 {
                     if (result == PokeTradeResult.Aborted)
                     {
-                        Hub.Dudu.Enqueue(detail, priority);
                         detail.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
+                        Hub.Dudu.Enqueue(detail, Math.Min(priority, PokeTradeQueue<PK8>.Tier2));
                     }
                     else
                     {
