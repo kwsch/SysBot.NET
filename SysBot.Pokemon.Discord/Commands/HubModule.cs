@@ -45,7 +45,7 @@ namespace SysBot.Pokemon.Discord
 
             var nextD = hub.Dudu.TryPeek(out var detailD, out _);
             var nextMsgD = nextD ? $"{detailD.Trainer.TrainerName} - {detailD.TradeData.Nickname}" : "None!";
-            var countD = hub.Queue.Count;
+            var countD = hub.Dudu.Count;
             builder.AddField(x =>
             {
                 x.Name = "Dudu Queue";
