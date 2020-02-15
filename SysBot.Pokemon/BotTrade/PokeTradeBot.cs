@@ -115,7 +115,7 @@ namespace SysBot.Pokemon
                 }
 
                 waiting = false;
-                Connection.Log("Starting next seed check...");
+                Connection.Log("Starting next Dudu Bot Trade. Getting data...");
                 await EnsureConnectedToYCom(token).ConfigureAwait(false);
                 var result = await PerformDuduTrade(detail, token).ConfigureAwait(false);
                 if (result != PokeTradeResult.Success) // requeue
@@ -395,8 +395,6 @@ namespace SysBot.Pokemon
         private async Task<PokeTradeResult> PerformDuduTrade(PokeTradeDetail<PK8> detail, CancellationToken token)
         {
             detail.TradeInitialize(this);
-            await Task.Delay(5_000, token).ConfigureAwait(false);
-            Connection.Log("Starting next Dudu Bot Trade. Getting data...");
 
             if (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
