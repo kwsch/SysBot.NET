@@ -170,6 +170,8 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
+            pk8.ResetPartyStats();
+
             var code = Util.Rand.Next(0, 9999);
             await AddTradeToQueue(code, Context.User.Username, pk8, sudo).ConfigureAwait(false);
         }
