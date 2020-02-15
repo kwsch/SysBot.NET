@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -64,7 +63,6 @@ namespace SysBot.Pokemon.Discord
             var cfg = SysCordInstance.Self.Hub.Config;
             var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
             var allowed = sudo || Context.GetHasRole(cfg.DiscordRoleCanTrade);
-
             if (!allowed)
             {
                 await ReplyAsync("Sorry, you are not permitted to use this command!").ConfigureAwait(false);
@@ -98,6 +96,15 @@ namespace SysBot.Pokemon.Discord
         [Summary("Makes the bot trade you the provided Showdown Set by adding it to the pool.")]
         public async Task TradeAsync([Summary("Showdown Set")][Remainder]string content)
         {
+            var cfg = SysCordInstance.Self.Hub.Config;
+            var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
+            var allowed = sudo || Context.GetHasRole(cfg.DiscordRoleCanTrade);
+            if (!allowed)
+            {
+                await ReplyAsync("Sorry, you are not permitted to use this command!").ConfigureAwait(false);
+                return;
+            }
+
             const int gen = 8;
             content = ReusableActions.StripCodeBlock(content);
             var set = new ShowdownSet(content);
@@ -117,7 +124,6 @@ namespace SysBot.Pokemon.Discord
             }
 
             var code = Util.Rand.Next(0, 9999);
-            var sudo = Context.GetHasRole(SysCordInstance.Self.Hub.Config.DiscordRoleSudo);
             await AddTradeToQueue(code, Context.User.Username, pk8, sudo).ConfigureAwait(false);
         }
 
@@ -125,8 +131,16 @@ namespace SysBot.Pokemon.Discord
         [Summary("Checks the seed for a pokemon.")]
         public async Task SeedCheckAsync()
         {
+            var cfg = SysCordInstance.Self.Hub.Config;
+            var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
+            var allowed = sudo || Context.GetHasRole(cfg.DiscordRoleCanTrade);
+            if (!allowed)
+            {
+                await ReplyAsync("Sorry, you are not permitted to use this command!").ConfigureAwait(false);
+                return;
+            }
+
             var code = Util.Rand.Next(0, 9999);
-            var sudo = Context.GetHasRole(SysCordInstance.Self.Hub.Config.DiscordRoleSudo);
             await AddSeedCheckToQueue(code, Context.User.Username, sudo).ConfigureAwait(false);
         }
 
@@ -215,66 +229,6 @@ namespace SysBot.Pokemon.Discord
         public async Task TradeAsync()
         {
             await TradeAsync(Util.Rand.Next(0, 9999), string.Empty).ConfigureAwait(false);
-        }
-
-        private sealed class TradeEntry<T> where T : PKM
-        {
-            public readonly ulong User;
-            public readonly PokeTradeDetail<T> Trade;
-
-            public TradeEntry(PokeTradeDetail<T> trade, ulong user)
-            {
-                Trade = trade;
-                User = user;
-            }
-        }
-
-        private class DiscordTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM
-        {
-            private T Data { get; }
-            private PokeTradeTrainerInfo Info { get; }
-            private int Code { get; }
-            private SocketCommandContext Context { get; }
-            public Action? OnFinish { private get; set; }
-
-            public DiscordTradeNotifier(T data, PokeTradeTrainerInfo info, int code, SocketCommandContext context)
-            {
-                Data = data;
-                Info = info;
-                Code = code;
-                Context = context;
-            }
-
-            public void TradeInitialize(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
-            {
-                Context.User.SendMessageAsync($"Initializing trade ({Data.Nickname}). Please be ready. Your code is {Code:0000}.").ConfigureAwait(false);
-            }
-
-            public void TradeSearching(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
-            {
-                var name = Info.TrainerName;
-                var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", ({name})";
-                Context.User.SendMessageAsync($"I'm searching for you{trainer}! Your code is {Code:0000}.").ConfigureAwait(false);
-            }
-
-            public void TradeCanceled(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeResult msg)
-            {
-                Context.User.SendMessageAsync($"Trade has been canceled: {msg}").ConfigureAwait(false);
-                OnFinish!();
-            }
-
-            public void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result)
-            {
-                var message = Data.Species != 0 ? $"Trade has been finished. Enjoy your {(Species)Data.Species}!" : "Trade has been finished. Enjoy your Pokemon!";
-                Context.User.SendMessageAsync(message).ConfigureAwait(false);
-                Context.User.SendPKMAsync(result, "Here's what you traded me!").ConfigureAwait(false);
-                OnFinish!();
-            }
-
-            public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, string message)
-            {
-                Context.User.SendMessageAsync(message).ConfigureAwait(false);
-            }
         }
     }
 }
