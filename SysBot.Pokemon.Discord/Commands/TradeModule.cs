@@ -13,10 +13,13 @@ namespace SysBot.Pokemon.Discord
         private static readonly object _sync = new object();
         private static readonly List<TradeEntry<PK8>> UsersInQueue = new List<TradeEntry<PK8>>();
 
+        private static bool CanQueue = true;
+
         static TradeModule() => AutoLegalityExtensions.EnsureInitialized();
 
         [Command("tradeStatus")]
         [Alias("ts")]
+        [Summary("Prints the user's status in the trade queues.")]
         public async Task GetTradePosition()
         {
             string msg;
@@ -47,6 +50,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("tradeList")]
         [Alias("tl")]
+        [Summary("Prints the users in the trade queues.")]
         public async Task GetTradeList()
         {
             var hub = SysCordInstance.Self.Hub;
@@ -78,6 +82,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("tradeClear")]
         [Alias("tc")]
+        [Summary("Clears the user from the trade queues. Will not remove a user if they are being processed.")]
         public async Task ClearTradeAsync()
         {
             string msg;
@@ -88,6 +93,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("tradeClearAll")]
         [Alias("tca")]
+        [Summary("Clears all users from the trade queues.")]
         public async Task ClearAllTradesAsync()
         {
             var hub = SysCordInstance.Self.Hub;
@@ -108,6 +114,27 @@ namespace SysBot.Pokemon.Discord
             await ReplyAsync("Cleared all in the queue.").ConfigureAwait(false);
         }
 
+        [Command("tradeToggle")]
+        [Alias("tt")]
+        [Summary("Toggles on/off the ability to join the trade queue.")]
+        public async Task ToggleQueueTrade()
+        {
+            var hub = SysCordInstance.Self.Hub;
+            var cfg = hub.Config;
+            var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
+            if (!sudo)
+            {
+                await ReplyAsync("You can't use this command.").ConfigureAwait(false);
+                return;
+            }
+
+            lock (_sync)
+            {
+                CanQueue ^= true;
+            }
+            await ReplyAsync($"CanQueue has been set to: {CanQueue}").ConfigureAwait(false);
+        }
+
         [Command("trade")]
         [Alias("t")]
         [Summary("Makes the bot trade you the provided PKM by adding it to the pool.")]
@@ -115,7 +142,7 @@ namespace SysBot.Pokemon.Discord
         {
             var cfg = SysCordInstance.Self.Hub.Config;
             var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
-            var allowed = sudo || Context.GetHasRole(cfg.DiscordRoleCanTrade);
+            var allowed = sudo || (Context.GetHasRole(cfg.DiscordRoleCanTrade) && CanQueue);
             if (!allowed)
             {
                 await ReplyAsync("Sorry, you are not permitted to use this command!").ConfigureAwait(false);
@@ -152,7 +179,7 @@ namespace SysBot.Pokemon.Discord
         {
             var cfg = SysCordInstance.Self.Hub.Config;
             var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
-            var allowed = sudo || Context.GetHasRole(cfg.DiscordRoleCanTrade);
+            var allowed = sudo || (Context.GetHasRole(cfg.DiscordRoleCanTrade) && CanQueue);
             if (!allowed)
             {
                 await ReplyAsync("Sorry, you are not permitted to use this command!").ConfigureAwait(false);
@@ -190,7 +217,7 @@ namespace SysBot.Pokemon.Discord
         {
             var cfg = SysCordInstance.Self.Hub.Config;
             var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
-            var allowed = sudo || Context.GetHasRole(cfg.DiscordRoleCanDudu);
+            var allowed = sudo || (Context.GetHasRole(cfg.DiscordRoleCanDudu) && CanQueue);
             if (!allowed)
             {
                 await ReplyAsync("Sorry, you are not permitted to use this command!").ConfigureAwait(false);
@@ -229,7 +256,7 @@ namespace SysBot.Pokemon.Discord
             var hub = SysCordInstance.Self.Hub;
             var cfg = hub.Config;
             var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
-            var allowed = sudo || Context.GetHasRole(cfg.DiscordRoleCanTrade) || Context.GetHasRole(cfg.DiscordRoleCanDudu);
+            var allowed = sudo || (CanQueue && (Context.GetHasRole(cfg.DiscordRoleCanTrade) || Context.GetHasRole(cfg.DiscordRoleCanDudu)));
             if (!allowed)
                 return "Sorry, you are not permitted to use this command!";
 
