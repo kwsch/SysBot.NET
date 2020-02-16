@@ -17,7 +17,7 @@ namespace SysBot.Pokemon
         public async Task Click(SwitchButton b, int delayMin, int delayMax, CancellationToken token) =>
             await Click(b, Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
 
-        public async Task SetStick(SwitchStick stick, int x, int y, int delayMin, int delayMax, CancellationToken token) =>
+        public async Task SetStick(SwitchStick stick, short x, short y, int delayMin, int delayMax, CancellationToken token) =>
             await SetStick(stick, x, y, Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
 
         private static uint GetBoxSlotOffset(int box, int slot) => BoxStartOffset + (uint)(BoxFormatSlotSize * ((30 * box) + slot));

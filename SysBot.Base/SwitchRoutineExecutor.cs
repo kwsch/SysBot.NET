@@ -36,9 +36,10 @@ namespace SysBot.Base
             await Task.Delay(delay, token).ConfigureAwait(false);
         }
 
-        public async Task SetStick(SwitchStick stick, int x, int y, int delay, CancellationToken token)
+        public async Task SetStick(SwitchStick stick, short x, short y, int delay, CancellationToken token)
         {
-            await Connection.SendAsync(SwitchCommand.SetStick(stick, (short)x, (short)y), token).ConfigureAwait(false);
+            var cmd = SwitchCommand.SetStick(stick, x, y);
+            await Connection.SendAsync(cmd, token).ConfigureAwait(false);
             await Task.Delay(delay, token).ConfigureAwait(false);
         }
 
@@ -47,9 +48,10 @@ namespace SysBot.Base
             await Connection.SendAsync(SwitchCommand.DetachController(), token).ConfigureAwait(false);
         }
 
-        public async Task EchoCommands(bool Enable, CancellationToken None)
+        public async Task EchoCommands(bool value, CancellationToken token)
         {
-            await Connection.SendAsync(SwitchCommand.EchoCommands(Enable), CancellationToken.None);
+            var cmd = SwitchCommand.Configure(SwitchConfigureParameter.echoCommands, value ? 1 : 0);
+            await Connection.SendAsync(cmd, token).ConfigureAwait(false);
         }
     }
 }
