@@ -41,5 +41,10 @@ namespace SysBot.Base
             await Connection.SendAsync(SwitchCommand.SetStick(stick, (short)x, (short)y), token).ConfigureAwait(false);
             await Task.Delay(delay, token).ConfigureAwait(false);
         }
+
+        public async Task DetachController(CancellationToken token)
+        {
+            await Connection.SendAsync(SwitchCommand.DetachController(), token).ConfigureAwait(false);
+        }
     }
 }
