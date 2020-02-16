@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Z3;
 using PKHeX.Core;
@@ -51,6 +52,8 @@ namespace SysBot.Pokemon
 
             if (result.Count == 0)
                 result.Add(Z3SeedResult.None);
+            else if (result.Any(z => z.Type == Z3SearchResult.Success))
+                result.RemoveAll(z => z.Type != Z3SearchResult.Success);
             return result;
         }
 

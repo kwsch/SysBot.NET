@@ -507,8 +507,7 @@ namespace SysBot.Pokemon
             if (Hub.Config.ShowAllZ3Results)
             {
                 var matches = Z3Search.GetAllSeeds(ec, pid, IVs);
-                var ordered = matches.OrderBy(z => z.Type);
-                foreach (var match in ordered)
+                foreach (var match in matches)
                 {
                     var msg = match.ToString();
                     detail.SendNotification(this, msg);

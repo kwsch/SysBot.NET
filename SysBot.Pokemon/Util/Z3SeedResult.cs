@@ -9,13 +9,13 @@ namespace SysBot.Pokemon
 
         public readonly Z3SearchResult Type;
         public readonly ulong Seed;
-        public readonly int IVCount;
+        public readonly int FlawlessIVCount;
 
         public Z3SeedResult(Z3SearchResult type, ulong seed, int ivCount)
         {
             Type = type;
             Seed = seed;
-            IVCount = ivCount;
+            FlawlessIVCount = ivCount;
         }
 
         public override string ToString()
@@ -30,7 +30,7 @@ namespace SysBot.Pokemon
 
         private IEnumerable<string> GetLines()
         {
-            yield return $"Seed: {Seed:X16}";
+            yield return $"Seed: {Seed:X16}, IVCount: {FlawlessIVCount}";
             yield return $"Next Shiny Frame: {Z3Search.GetNextShinyFrame(Seed, out var type)}";
             var shinytype = type == 1 ? "Star" : "Square";
             yield return $"Shiny Type: {shinytype}";
