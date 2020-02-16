@@ -7,31 +7,51 @@ namespace SysBot.Pokemon
 {
     public static class Z3Search
     {
-        public static Z3SearchResult GetFirstSeed(uint ec, uint pid, int[] ivs, out ulong result)
+        public static Z3SeedResult GetFirstSeed(uint ec, uint pid, int[] ivs)
         {
             var seeds = GetSeeds(ec, pid);
             bool hasClosest = false;
             ulong closest = 0;
             foreach (var seed in seeds)
             {
-                result = seed;
                 // Verify the IVs; at most 5 can match
                 for (int i = 1; i <= 5; i++) // fixed IV count
                 {
                     if (IsMatch(seed, ivs, i))
-                        return Z3SearchResult.Success;
+                        return new Z3SeedResult(Z3SearchResult.Success, seed, i);
                 }
                 hasClosest = true;
                 closest = seed;
             }
 
             if (hasClosest)
+                return new Z3SeedResult(Z3SearchResult.SeedMismatch, closest, 0);
+            return Z3SeedResult.None;
+        }
+
+        public static IList<Z3SeedResult> GetAllSeeds(uint ec, uint pid, int[] ivs)
+        {
+            var result = new List<Z3SeedResult>();
+            var seeds = GetSeeds(ec, pid);
+            foreach (var seed in seeds)
             {
-                result = closest;
-                return Z3SearchResult.SeedMismatch;
+                // Verify the IVs; at most 5 can match
+                bool added = false;
+                for (int i = 1; i <= 5; i++) // fixed IV count
+                {
+                    if (IsMatch(seed, ivs, i))
+                    {
+                        result.Add(new Z3SeedResult(Z3SearchResult.Success, seed, i));
+                        added = true;
+                    }
+                }
+                if (!added)
+                    result.Add(new Z3SeedResult(Z3SearchResult.SeedMismatch, seed, 0));
             }
-            result = 0;
-            return Z3SearchResult.SeedNone;
+
+            if (result.Count == 0)
+                result.Add(Z3SeedResult.None);
+            return result;
         }
 
         public static IEnumerable<ulong> GetSeeds(uint ec, uint pid)
@@ -177,24 +197,6 @@ namespace SysBot.Pokemon
                     return false;
             }
             return true;
-        }
-
-        public static bool FindFirstSeed(IEnumerable<ulong> potential_seeds, int[] ivs, out ulong finalSeed)
-        {
-            foreach (ulong seed in potential_seeds)
-            {
-                // Verify the IVs; at most 5 can match
-                for (int i = 1; i <= 5; i++) // fixed IV count
-                {
-                    if (!IsMatch(seed, ivs, i))
-                        continue;
-                    finalSeed = seed;
-                    return true;
-                }
-            }
-
-            finalSeed = 0;
-            return false;
         }
     }
 }

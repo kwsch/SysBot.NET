@@ -503,22 +503,9 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Success;
             }
 
-            var match = Z3Search.GetFirstSeed(ec, pid, IVs, out var seed);
-            switch (match)
-            {
-                case Z3SearchResult.SeedNone:
-                    detail.SendNotification(this, "The Pokemon is not a raid Pokemon!");
-                    break;
-                case Z3SearchResult.SeedMismatch:
-                    detail.SendNotification(this, "No valid seed found!");
-                    break;
-                default:
-                    detail.SendNotification(this, $"Seed: {seed:X16}");
-                    detail.SendNotification(this, $"Next Shiny Frame: {Z3Search.GetNextShinyFrame(seed, out var type)}");
-                    var shinytype = type == 1 ? "Star" : "Square";
-                    detail.SendNotification(this, $"Shiny Type: {shinytype}");
-                    break;
-            }
+            var match = Z3Search.GetFirstSeed(ec, pid, IVs);
+            var msg = match.ToString();
+            detail.SendNotification(this, msg);
 
             detail.TradeFinished(this, pk);
 
