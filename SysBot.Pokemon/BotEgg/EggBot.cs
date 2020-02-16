@@ -47,6 +47,7 @@ namespace SysBot.Pokemon
             {
                 // Walk a step left, then right => check if egg was generated on this attempt.
                 // Repeat until an egg is generated.
+                int attempts = 0;
                 while (true)
                 {
                     await SetEggStepCounter(Location, token).ConfigureAwait(false);
@@ -62,6 +63,10 @@ namespace SysBot.Pokemon
                     bool checkEgg = await IsEggReady(Location, token).ConfigureAwait(false);
                     if (checkEgg)
                         break;
+
+                    attempts++;
+                    if (attempts % 10 == 0)
+                        Connection.Log($"Tried {attempts} times, still no egg.");
                 }
 
                 Connection.Log("Egg available! Clearing destination slot.");
