@@ -223,7 +223,7 @@ namespace SysBot.Pokemon
             // pkm already injected to b1s1
             var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
             Connection.Log($"Found Trading Partner: {TrainerName} ...");
-            await Task.Delay(0_300, token).ConfigureAwait(false);
+            await Task.Delay(0_800, token).ConfigureAwait(false); // necessary delay to get to the box properly
 
             if (!await IsCorrentScreen(CurrentScreen_Box, token).ConfigureAwait(false))
             {
