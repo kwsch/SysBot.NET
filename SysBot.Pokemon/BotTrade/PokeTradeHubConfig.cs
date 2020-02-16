@@ -22,6 +22,9 @@ namespace SysBot.Pokemon
         [Category(FeatureToggle), Description("When enabled, the DistributionFolder will yield randomly rather than in the same sequence.")]
         public bool DistributeShuffled { get; set; }
 
+        [Category(FeatureToggle), Description("When enabled, Dudu checks will return all possible seed results instead of the first valid match.")]
+        public bool ShowAllZ3Results { get; set; }
+
         [Category(FeatureToggle), Description("Link Trade: Enables trading priority files sourced from the priority folder. This is not necessary if an integration service (e.g. Discord) is adding to the queue from the same executable process.")]
         public bool MonitorForPriorityTrades { get; set; }
 

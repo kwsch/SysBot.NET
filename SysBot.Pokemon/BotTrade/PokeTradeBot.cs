@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
@@ -503,9 +504,22 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Success;
             }
 
-            var match = Z3Search.GetFirstSeed(ec, pid, IVs);
-            var msg = match.ToString();
-            detail.SendNotification(this, msg);
+            if (Hub.Config.ShowAllZ3Results)
+            {
+                var matches = Z3Search.GetAllSeeds(ec, pid, IVs);
+                var ordered = matches.OrderBy(z => z.Type);
+                foreach (var match in ordered)
+                {
+                    var msg = match.ToString();
+                    detail.SendNotification(this, msg);
+                }
+            }
+            else
+            {
+                var match = Z3Search.GetFirstSeed(ec, pid, IVs);
+                var msg = match.ToString();
+                detail.SendNotification(this, msg);
+            }
 
             detail.TradeFinished(this, pk);
 
