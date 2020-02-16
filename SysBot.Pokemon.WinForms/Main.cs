@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 using NLog;
@@ -98,6 +99,12 @@ namespace SysBot.Pokemon.WinForms
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (RunningEnvironment?.IsRunning == true)
+            {
+                RunningEnvironment.Stop();
+                Thread.Sleep(100); // wait for things to abort?
+            }
+
             var cfg = GetCurrentConfiguration();
             var lines = JsonConvert.SerializeObject(cfg);
             File.WriteAllText(ConfigPath, lines);

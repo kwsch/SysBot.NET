@@ -100,6 +100,9 @@ namespace SysBot.Pokemon
                 Connection.Log("Result found!");
                 break;
             }
+
+            // If aborting the sequence, we might have the stick set at some position. Clear it just in case.
+            await SetStick(LEFT, 0, 0, 0, CancellationToken.None).ConfigureAwait(false); // reset
         }
     }
 }
