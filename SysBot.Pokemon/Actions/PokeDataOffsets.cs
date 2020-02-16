@@ -86,7 +86,16 @@ namespace SysBot.Pokemon
             };
         }
 
-        public static uint GetDaycareOffset(SwordShieldDaycare daycare)
+        public static uint GetDaycareStepCounterOffset(SwordShieldDaycare daycare)
+        {
+            return daycare switch
+            {
+                SwordShieldDaycare.WildArea => DayCare_Wildarea_Step_Counter,
+                SwordShieldDaycare.Route5 => DayCare_Route5_Step_Counter,
+                _ => throw new ArgumentException(nameof(daycare)),
+            };
+        }
+        public static uint GetDaycareEggIsReadyOffset(SwordShieldDaycare daycare)
         {
             return daycare switch
             {
