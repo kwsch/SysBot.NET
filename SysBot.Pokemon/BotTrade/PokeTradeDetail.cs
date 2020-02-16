@@ -6,7 +6,7 @@ using SysBot.Base;
 
 namespace SysBot.Pokemon
 {
-    public class PokeTradeDetail<TPoke> : IEquatable<PokeTradeDetail<TPoke>> where TPoke : PKM
+    public class PokeTradeDetail<TPoke> : IEquatable<PokeTradeDetail<TPoke>> where TPoke : PKM, new()
     {
         public readonly int Code;
         public readonly TPoke TradeData;

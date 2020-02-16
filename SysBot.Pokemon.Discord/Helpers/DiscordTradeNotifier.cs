@@ -5,7 +5,7 @@ using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord
 {
-    public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM
+    public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new()
     {
         private T Data { get; }
         private PokeTradeTrainerInfo Info { get; }

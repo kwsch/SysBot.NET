@@ -1,10 +1,11 @@
-﻿using NLog;
+﻿using System;
+using NLog;
 using PKHeX.Core;
 using SysBot.Base;
 
 namespace SysBot.Pokemon
 {
-    public class PokeTradeLogNotifier<T> : IPokeTradeNotifier<T> where T : PKM
+    public class PokeTradeLogNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new()
     {
         public void TradeInitialize(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
         {
@@ -31,5 +32,7 @@ namespace SysBot.Pokemon
         {
             LogUtil.Log(LogLevel.Info, message, routine.Connection.Name);
         }
+
+        public Action? OnFinish { get; set; }
     }
 }

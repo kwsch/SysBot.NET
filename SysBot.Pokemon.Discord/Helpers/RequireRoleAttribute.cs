@@ -6,7 +6,7 @@ using Discord.WebSocket;
 
 namespace SysBot.Pokemon.Discord
 {
-    public class RequireRoleAttribute : PreconditionAttribute
+    public sealed class RequireRoleAttribute : PreconditionAttribute
     {
         // Create a field to store the specified name
         private readonly string _name;

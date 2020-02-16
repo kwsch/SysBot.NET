@@ -17,9 +17,8 @@ namespace SysBot.Pokemon.Discord
 
             var me = SysCordInstance.Self;
             var hub = me.Hub;
-            var cfg = hub.Config;
 
-            var pool = hub.Pool.LoadFolder(cfg.DistributeFolder, cfg.ResetHOMETracker);
+            var pool = hub.Pool.Reload();
             if (!pool)
                 await ReplyAsync($"Failed to reload from folder.").ConfigureAwait(false);
             else

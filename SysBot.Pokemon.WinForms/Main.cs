@@ -28,7 +28,7 @@ namespace SysBot.Pokemon.WinForms
             if (File.Exists(ConfigPath))
             {
                 var lines = File.ReadAllText(ConfigPath);
-                var cfg = JsonConvert.DeserializeObject<BotEnvironmentConfig>(lines);
+                var cfg = JsonConvert.DeserializeObject<ProgramConfig>(lines);
                 foreach (var c in cfg.Bots)
                     AddBot(c);
                 Hub = cfg.Hub;
@@ -79,9 +79,9 @@ namespace SysBot.Pokemon.WinForms
             LV_Bots.Items[index].SubItems[3].Text = substring;
         }
 
-        private BotEnvironmentConfig GetCurrentConfiguration()
+        private ProgramConfig GetCurrentConfiguration()
         {
-            return new BotEnvironmentConfig
+            return new ProgramConfig
             {
                 Bots = Bots.ToArray(),
                 Hub = Hub,
@@ -98,7 +98,7 @@ namespace SysBot.Pokemon.WinForms
         private void B_Start_Click(object sender, EventArgs e)
         {
             var cfg = GetCurrentConfiguration();
-            var env = new BotEnvironment();
+            var env = new BotEnvironmentImpl(Hub);
             B_Start.Enabled = false;
             B_Stop.Enabled = true;
             B_New.Enabled = false;

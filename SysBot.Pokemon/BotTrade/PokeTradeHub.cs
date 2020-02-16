@@ -17,8 +17,10 @@ namespace SysBot.Pokemon
     /// <typeparam name="T">Type of <see cref="PKM"/> to distribute.</typeparam>
     public class PokeTradeHub<T> where T : PKM, new()
     {
-        public PokeTradeHub()
+        public PokeTradeHub(PokeTradeHubConfig config)
         {
+            Config = config;
+            Pool = new PokemonPool<T>(config);
             Barrier = new Barrier(0, ReleaseBarrier);
             BarrierReleasingActions.Add(() =>
                 LogUtil.Log(LogLevel.Info, $"{Barrier.ParticipantCount} bots released.", "Barrier"));
@@ -26,7 +28,12 @@ namespace SysBot.Pokemon
 
         public static readonly PokeTradeLogNotifier<T> LogNotifier = new PokeTradeLogNotifier<T>();
 
-        public PokeTradeHubConfig Config { get; set; } = new PokeTradeHubConfig();
+        public readonly PokeTradeHubConfig Config;
+
+        public void Initialize()
+        {
+            CompletedTrades = Config.CompletedTrades;
+        }
 
         #region Trade Tracking
 
@@ -37,7 +44,6 @@ namespace SysBot.Pokemon
             Interlocked.Increment(ref CompletedTrades);
             Config.CompletedTrades = CompletedTrades;
         }
-
         #endregion
 
         #region Barrier Synchronization
@@ -47,7 +53,7 @@ namespace SysBot.Pokemon
         public readonly Barrier Barrier;
 
         public readonly List<Action> BarrierReleasingActions = new List<Action>();
-        
+
         /// <summary>
         /// When the Barrier releases the bots, this method is executed before the bots continue execution.
         /// </summary>
@@ -65,8 +71,17 @@ namespace SysBot.Pokemon
         #region Distribution Queue
         public readonly PokeTradeQueue<T> Queue = new PokeTradeQueue<T>();
         public readonly PokeTradeQueue<T> Dudu = new PokeTradeQueue<T>();
-        public readonly PokemonPool<T> Pool = new PokemonPool<T>();
+        public readonly PokemonPool<T> Pool;
         public readonly ConcurrentPool<PokeTradeBot> Bots = new ConcurrentPool<PokeTradeBot>();
+
+        public PokeTradeQueue<T> GetQueue(PokeRoutineType type)
+        {
+            return type switch
+            {
+                PokeRoutineType.DuduBot => Dudu,
+                _ => Queue,
+            };
+        }
 
         /// <summary>
         /// Spins up a loop that adds a random <see cref="T"/> to the <see cref="Queue"/> if nothing is in it.
@@ -77,10 +92,8 @@ namespace SysBot.Pokemon
         {
             var blank = new T();
             Pool.ExpectedSize = blank.SIZE_PARTY;
-            if (!Pool.LoadFolder(path, Config.ResetHOMETracker))
-            {
+            if (!Pool.LoadFolder(path))
                 LogUtil.Log(LogLevel.Error, "Nothing found in pool folder!", "Hub");
-            }
 
             var trainer = new PokeTradeTrainerInfo("Random");
             while (!token.IsCancellationRequested)

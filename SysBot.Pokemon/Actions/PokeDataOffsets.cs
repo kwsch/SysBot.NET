@@ -95,6 +95,7 @@ namespace SysBot.Pokemon
                 _ => throw new ArgumentException(nameof(daycare)),
             };
         }
+
         public static uint GetDaycareEggIsReadyOffset(SwordShieldDaycare daycare)
         {
             return daycare switch

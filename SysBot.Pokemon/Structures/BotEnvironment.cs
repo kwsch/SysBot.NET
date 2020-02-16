@@ -6,25 +6,25 @@ using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
 using SysBot.Base;
-using SysBot.Pokemon.Discord;
 using LogLevel = NLog.LogLevel;
 
-namespace SysBot.Pokemon.WinForms
+namespace SysBot.Pokemon
 {
-    public sealed class BotEnvironment
+    public abstract class BotEnvironment
     {
-        private readonly PokeTradeHub<PK8> Hub = new PokeTradeHub<PK8>();
+        protected readonly PokeTradeHub<PK8> Hub;
         private readonly CancellationTokenSource Source = new CancellationTokenSource();
         public readonly List<PokeRoutineExecutor> Bots = new List<PokeRoutineExecutor>();
-
         public bool CanStart => Hub.Bots.Count != 0;
         public bool CanStop => IsRunning;
         public bool IsRunning { get; private set; }
 
-        public void Start(BotEnvironmentConfig cfg)
+        protected BotEnvironment(PokeTradeHubConfig config) => Hub = new PokeTradeHub<PK8>(config);
+
+        public void Start(BotList cfg)
         {
-            InitializeHubSettings(cfg.Hub);
             CreateBots(cfg.Bots);
+            Hub.Initialize();
 
             var token = Source.Token;
             var tasks = CreateBotTasks(token);
@@ -32,17 +32,10 @@ namespace SysBot.Pokemon.WinForms
             IsRunning = true;
         }
 
-        private void InitializeHubSettings(PokeTradeHubConfig cfg)
-        {
-            Hub.Config = cfg;
-            Hub.CompletedTrades = cfg.CompletedTrades;
-        }
-
         private List<Task> CreateBotTasks(CancellationToken token)
         {
             var tasks = new List<Task>();
-            if (!string.IsNullOrWhiteSpace(Hub.Config.DiscordToken))
-                AddDiscordBot(Hub.Config.DiscordToken);
+            AddIntegrations();
 
             tasks.AddRange(Bots.Select(b => b.RunAsync(token)));
             bool hasTradeBot = Bots.Any(z => z is PokeTradeBot);
@@ -51,16 +44,7 @@ namespace SysBot.Pokemon.WinForms
             return tasks;
         }
 
-        private void AddDiscordBot(string apiToken)
-        {
-            if (SysCordInstance.Self != null)
-            {
-                SysCordInstance.Self.Hub = Hub;
-                return;
-            }
-            var bot = new SysCord(Hub);
-            Task.Run(() => bot.MainAsync(apiToken, CancellationToken.None));
-        }
+        protected virtual void AddIntegrations() { }
 
         private void AddTradeBotMonitors(ICollection<Task> tasks, CancellationToken token)
         {

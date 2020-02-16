@@ -4,7 +4,7 @@ using System.IO;
 
 namespace SysBot.Pokemon
 {
-    public sealed class PokeTradeHubConfig : IDumper
+    public sealed class PokeTradeHubConfig : IDumper, IPoolSettings
     {
         private const string FeatureToggle = nameof(FeatureToggle);
         private const string Files = nameof(Files);
@@ -18,6 +18,9 @@ namespace SysBot.Pokemon
 
         [Category(FeatureToggle), Description("When enabled, idle LinkTrade bots will randomly distribute PKM files from the DistributeFolder.")]
         public bool DistributeWhileIdle { get; set; } = true;
+
+        [Category(FeatureToggle), Description("When enabled, the DistributionFolder will yield randomly rather than in the same sequence.")]
+        public bool DistributeShuffled { get; set; }
 
         [Category(FeatureToggle), Description("Link Trade: Enables trading priority files sourced from the priority folder. This is not necessary if an integration service (e.g. Discord) is adding to the queue from the same executable process.")]
         public bool MonitorForPriorityTrades { get; set; }
@@ -111,6 +114,7 @@ namespace SysBot.Pokemon
 
         [Category(Legality), Description("Legality: Zero out HOME tracker regardless of current tracker value. Applies to user requested PKM files as well.")]
         public bool ResetHOMETracker { get; set; } = true;
+
         #endregion
 
         public void CreateDefaults(string path)

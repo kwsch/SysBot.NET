@@ -9,15 +9,34 @@ namespace SysBot.Pokemon
     {
         public int ExpectedSize = 344;
 
-        public T GetRandomPoke()
+        private int Counter;
+
+        public readonly IPoolSettings Settings;
+
+        public PokemonPool(IPoolSettings settings)
         {
-            var rnd = Util.Rand;
-            var choice = rnd.Next(Count);
-            return this[choice];
+            Settings = settings;
         }
 
-        public bool LoadFolder(string path, bool resetTracker)
+        public bool Randomized => Settings.DistributeShuffled;
+
+        public T GetRandomPoke()
         {
+            var choice = this[Counter];
+            Counter = (Counter + 1) % Count;
+            if (Counter == 0 && Randomized)
+                Util.Shuffle(this);
+            return choice;
+        }
+
+        public bool Reload()
+        {
+            return LoadFolder(Settings.DistributeFolder);
+        }
+
+        public bool LoadFolder(string path)
+        {
+            Clear();
             if (!Directory.Exists(path))
                 return false;
 
@@ -39,7 +58,7 @@ namespace SysBot.Pokemon
                     continue;
                 }
 
-                if (resetTracker)
+                if (Settings.ResetHOMETracker)
                     pk8.Tracker = 0;
 
                 Add(dest);

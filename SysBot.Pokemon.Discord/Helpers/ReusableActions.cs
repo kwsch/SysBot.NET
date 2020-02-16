@@ -47,13 +47,14 @@ namespace SysBot.Pokemon.Discord
             await channel.SendPKMAsShowdownSetAsync(pkm).ConfigureAwait(false);
         }
 
-        public static bool GetIsSudo(this SocketCommandContext Context)
+        public static bool GetIsSudo(this SocketCommandContext Context, PokeTradeHubConfig cfg)
         {
-            var cfg = SysCordInstance.Self.Hub.Config;
             if (cfg.AllowGlobalSudo && cfg.GlobalSudoList.Contains(Context.User.Id.ToString()))
                 return true;
             return Context.GetHasRole(cfg.DiscordRoleSudo);
         }
+
+        public static bool GetIsSudo(this SocketCommandContext Context) => Context.GetIsSudo(SysCordInstance.Self.Hub.Config);
 
         private const string ALLOW_ALL = "@everyone";
 

@@ -5,7 +5,7 @@ using PKHeX.Core;
 namespace SysBot.Pokemon
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "RCS1158:Static member in generic type should use a type parameter.", Justification = "<Pending>")]
-    public class PokeTradeQueue<TPoke> where TPoke : PKM
+    public class PokeTradeQueue<TPoke> where TPoke : PKM, new()
     {
         public const uint Tier1 = 1;
         public const uint Tier2 = 2;

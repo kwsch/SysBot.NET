@@ -1,8 +1,8 @@
 ﻿using PKHeX.Core;
 
-namespace SysBot.Pokemon.Discord
+namespace SysBot.Pokemon
 {
-    public sealed class TradeEntry<T> where T : PKM
+    public sealed class TradeEntry<T> where T : PKM, new()
     {
         public readonly ulong User;
         public readonly string Name;
@@ -15,6 +15,13 @@ namespace SysBot.Pokemon.Discord
             User = user;
             Type = type;
             Name = name;
+        }
+
+        public bool Equals(ulong uid, PokeRoutineType type = 0)
+        {
+            if (User != uid)
+                return false;
+            return type == 0 || type == Type;
         }
     }
 }

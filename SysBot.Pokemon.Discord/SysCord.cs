@@ -61,11 +61,13 @@ namespace SysBot.Pokemon.Discord
 
             // Setup your DI container.
             _services = ConfigureServices();
+
+            TradeModule.Info.Hub = Hub;
         }
 
         // If any services require the client, or the CommandService, or something else you keep on hand,
         // pass them as parameters into this method as needed.
-        // If this method is getting pretty long, you can seperate it out into another file using partials.
+        // If this method is getting pretty long, you can separate it out into another file using partials.
         private static IServiceProvider ConfigureServices()
         {
             var map = new ServiceCollection();//.AddSingleton(new SomeServiceClass());
