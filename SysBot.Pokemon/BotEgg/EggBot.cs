@@ -97,7 +97,7 @@ namespace SysBot.Pokemon
                 if (!StopCondition(pk))
                     continue;
 
-                Connection.Log("Result found!");
+                Connection.Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
                 break;
             }
 
