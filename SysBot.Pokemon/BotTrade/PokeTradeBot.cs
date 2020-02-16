@@ -296,6 +296,7 @@ namespace SysBot.Pokemon
             // 4. Repeat
 
             // Inject to b1s1
+
             Connection.Log("Starting next Surprise Trade. Getting data...");
             await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
 
@@ -338,10 +339,6 @@ namespace SysBot.Pokemon
             for (int i = 0; i < 3; i++)
                 await Click(A, 0_700, token).ConfigureAwait(false);
 
-            // Clear the Surprise Trade slot locks! We'll skip the trade animation and reuse the slot on later loops.
-            // Write 8 bytes of FF to set both Int32's to -1. Regular locks are [Box32][Slot32]
-            await RemoveSlotLock(token).ConfigureAwait(false);
-
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
 
@@ -369,7 +366,7 @@ namespace SysBot.Pokemon
             }
 
             // Let the game flush the results and de-register from the online surprise trade queue.
-            await Task.Delay(6_000, token).ConfigureAwait(false);
+            await Task.Delay(7_000, token).ConfigureAwait(false);
 
             var TrainerName = await GetTradePartnerName(TradeMethod.SupriseTrade, token).ConfigureAwait(false);
             var SuprisePoke = await ReadSupriseTradePokemon(token).ConfigureAwait(false);
@@ -378,11 +375,17 @@ namespace SysBot.Pokemon
 
             // Clear out the received trade data; we want to skip the trade animation.
             // The box slot locks have been removed prior to searching.
+
             await Connection.WriteBytesAsync(BitConverter.GetBytes(SupriseTradeSearch_Empty), SupriseTradeSearchOffset, token).ConfigureAwait(false);
             await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, SupriseTradePartnerPokemonOffset, token).ConfigureAwait(false);
 
             // Let the game recognize our modifications before finishing this loop.
-            await Task.Delay(7_000, token).ConfigureAwait(false);
+            await Task.Delay(5_000, token).ConfigureAwait(false);
+
+            // Clear the Surprise Trade slot locks! We'll skip the trade animation and reuse the slot on later loops.
+            // Write 8 bytes of FF to set both Int32's to -1. Regular locks are [Box32][Slot32]
+
+            await Connection.WriteBytesAsync(BitConverter.GetBytes(ulong.MaxValue), SupriseTradeLockBox, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;

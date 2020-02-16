@@ -117,12 +117,6 @@ namespace SysBot.Pokemon
             // Confirm Code outside of this method (allow synchronization)
         }
 
-        public async Task RemoveSlotLock(CancellationToken token)
-        {
-            await Connection.WriteBytesAsync(BitConverter.GetBytes(ulong.MaxValue), SupriseTradeLockBox, token).ConfigureAwait(false);
-            await Connection.WriteBytesAsync(BitConverter.GetBytes(ulong.MaxValue), SupriseTradeLockSlot, token).ConfigureAwait(false);
-        }
-
         public async Task EnsureConnectedToYCom(CancellationToken token)
         {
             if (!await IsGameConnectedToYCom(token).ConfigureAwait(false))
