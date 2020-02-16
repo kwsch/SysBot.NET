@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using PKHeX.Core;
 using SysBot.Pokemon.Discord;
 
 namespace SysBot.Pokemon
@@ -9,9 +10,8 @@ namespace SysBot.Pokemon
     /// </summary>
     public class BotEnvironmentImpl : BotEnvironment
     {
-        public BotEnvironmentImpl(PokeTradeHubConfig config) : base(config)
-        {
-        }
+        public BotEnvironmentImpl(PokeTradeHub<PK8> hub) : base(hub) { }
+        public BotEnvironmentImpl(PokeTradeHubConfig config) : base(config) { }
 
         protected override void AddIntegrations()
         {

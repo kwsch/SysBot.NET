@@ -15,7 +15,7 @@ namespace SysBot.Pokemon.WinForms
         private static readonly string WorkingDirectory = Application.StartupPath;
         private static readonly string ConfigPath = Path.Combine(WorkingDirectory, "config.json");
         private readonly List<PokeBotConfig> Bots = new List<PokeBotConfig>();
-        private readonly PokeTradeHubConfig Hub;
+        private readonly PokeTradeHub<PK8> Hub;
 
         private BotEnvironment? RunningEnvironment;
 
@@ -25,21 +25,8 @@ namespace SysBot.Pokemon.WinForms
             MinimumSize = Size;
             LV_Bots.Items.Clear();
 
-            if (File.Exists(ConfigPath))
-            {
-                var lines = File.ReadAllText(ConfigPath);
-                var cfg = JsonConvert.DeserializeObject<ProgramConfig>(lines);
-                foreach (var c in cfg.Bots)
-                    AddBot(c);
-                Hub = cfg.Hub;
-            }
-            else
-            {
-                Hub = new PokeTradeHubConfig();
-                Hub.CreateDefaults(WorkingDirectory);
-            }
-
-            PG_Hub.SelectedObject = Hub;
+            Hub = GetInitialHub();
+            PG_Hub.SelectedObject = Hub.Config;
 
             var routines = (PokeRoutineType[])Enum.GetValues(typeof(PokeRoutineType));
             var list = routines.Select(z => new ComboItem(z.ToString(), (int)z)).ToArray();
@@ -49,6 +36,27 @@ namespace SysBot.Pokemon.WinForms
             CB_Routine.SelectedIndex = 2; // default option
 
             LogUtil.Forwarders.Add(AppendLog);
+        }
+
+        private PokeTradeHub<PK8> GetInitialHub()
+        {
+            PokeTradeHubConfig cfg;
+
+            if (File.Exists(ConfigPath))
+            {
+                var lines = File.ReadAllText(ConfigPath);
+                var prog = JsonConvert.DeserializeObject<ProgramConfig>(lines);
+                foreach (var c in prog.Bots)
+                    AddBot(c);
+                cfg = prog.Hub;
+            }
+            else
+            {
+                cfg = new PokeTradeHubConfig();
+                cfg.CreateDefaults(WorkingDirectory);
+            }
+
+            return new PokeTradeHub<PK8>(cfg);
         }
 
         private void AppendLog(string message, string identity)
@@ -84,7 +92,7 @@ namespace SysBot.Pokemon.WinForms
             return new ProgramConfig
             {
                 Bots = Bots.ToArray(),
-                Hub = Hub,
+                Hub = Hub.Config,
             };
         }
 

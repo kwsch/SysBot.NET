@@ -19,6 +19,7 @@ namespace SysBot.Pokemon
         public bool CanStop => IsRunning;
         public bool IsRunning { get; private set; }
 
+        protected BotEnvironment(PokeTradeHub<PK8> hub) => Hub = hub;
         protected BotEnvironment(PokeTradeHubConfig config) => Hub = new PokeTradeHub<PK8>(config);
 
         public void Start(BotList cfg)
