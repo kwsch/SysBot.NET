@@ -203,7 +203,7 @@ namespace SysBot.Pokemon
             var ofs = GetDaycareOffset(daycare);
             // Read a single byte of the Daycare metadata to check the IsEggReady flag.
             var data = await Connection.ReadBytesAsync(ofs, 1, token).ConfigureAwait(false);
-            return data[0] == 1;
+            return data[0] == 180;
         }
 
         public async Task SetEggStepCounter(SwordShieldDaycare daycare, CancellationToken token)
