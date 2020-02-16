@@ -164,7 +164,7 @@ namespace SysBot.Pokemon
             }
 
             Connection.Log("Open Y-Comm Menu");
-            await Click(Y, 1_500, token).ConfigureAwait(false);
+            await Click(Y, 2_000, token).ConfigureAwait(false);
 
             Connection.Log("Select Link Trade");
             await Click(A, 1_000, token).ConfigureAwait(false);
@@ -197,7 +197,7 @@ namespace SysBot.Pokemon
             poke.TradeSearching(this);
             await Task.Delay(Util.Rand.Next(0_350, 0_750), token).ConfigureAwait(false);
 
-            await Click(A, 1_000, token).ConfigureAwait(false);
+            await Click(A, 2_000, token).ConfigureAwait(false);
 
             if (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
@@ -223,7 +223,7 @@ namespace SysBot.Pokemon
             // pkm already injected to b1s1
             var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
             Connection.Log($"Found Trading Partner: {TrainerName} ...");
-            await Task.Delay(0_800, token).ConfigureAwait(false); // necessary delay to get to the box properly
+            await Task.Delay(1_500, token).ConfigureAwait(false); // necessary delay to get to the box properly
 
             if (!await IsCorrentScreen(CurrentScreen_Box, token).ConfigureAwait(false))
             {
@@ -306,25 +306,19 @@ namespace SysBot.Pokemon
             }
 
             Connection.Log("Open Y-Comm Menu");
-            await Click(Y, 1_500, token).ConfigureAwait(false);
-
-            /*
-            if (!await IsCorrentScreen(CurrentScreen_YMenu, token).ConfigureAwait(false))
-            {
-                await ExitTrade(true, token).ConfigureAwait(false);
-                return PokeTradeResult.Recover;
-            }
-            */
+            await Click(Y, 2_000, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
 
             Connection.Log("Select Surprise Trade");
-            await Click(DDOWN, 0_100, token).ConfigureAwait(false);
+            await Click(DDOWN, 0_500, token).ConfigureAwait(false);
             await Click(A, 4_000, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
+
+            await Task.Delay(2_000, token).ConfigureAwait(false);
 
             if (!await IsCorrentScreen(CurrentScreen_Box, token).ConfigureAwait(false))
             {
@@ -352,7 +346,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Aborted;
 
             // Let Surprise Trade be sent out before checking if we're back to the Overworld.
-            await Task.Delay(2_000, token).ConfigureAwait(false);
+            await Task.Delay(3_000, token).ConfigureAwait(false);
 
             if (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
@@ -388,7 +382,7 @@ namespace SysBot.Pokemon
             await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, SupriseTradePartnerPokemonOffset, token).ConfigureAwait(false);
 
             // Let the game recognize our modifications before finishing this loop.
-            await Task.Delay(3_000, token).ConfigureAwait(false);
+            await Task.Delay(7_000, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
