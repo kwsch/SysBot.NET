@@ -36,6 +36,7 @@ namespace SysBot.Pokemon
 
         protected override async Task MainLoop(CancellationToken token)
         {
+            await EchoCommands(false, token).ConfigureAwait(false);
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
             Hub.Bots.Add(this);
             while (!token.IsCancellationRequested)

@@ -34,6 +34,7 @@ namespace SysBot.Pokemon
 
         protected override async Task MainLoop(CancellationToken token)
         {
+            await EchoCommands(false, token).ConfigureAwait(false);
             await IdentifyTrainer(token).ConfigureAwait(false);
 
             var existing = await GetBoxSlotQuality(InjectBox, InjectSlot, token).ConfigureAwait(false);

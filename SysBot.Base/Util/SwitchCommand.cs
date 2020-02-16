@@ -18,6 +18,13 @@ namespace SysBot.Base
         public static byte[] DetachController() => Encode("detachController");
 
         /// <summary>
+        /// Enable or Disable the Echo Command Callback
+        /// </summary>
+        /// <param name="Enable"></param>
+        /// <returns></returns>
+        public static byte[] EchoCommands(bool Enable) => Encode($"echoCommands {Enable}");
+
+        /// <summary>
         /// Configures the sys-botbase parameter to the specified value.
         /// </summary>
         /// <returns>Encoded command bytes</returns>

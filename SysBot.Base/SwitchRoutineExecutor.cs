@@ -46,5 +46,10 @@ namespace SysBot.Base
         {
             await Connection.SendAsync(SwitchCommand.DetachController(), token).ConfigureAwait(false);
         }
+
+        public async Task EchoCommands(bool Enable, CancellationToken None)
+        {
+            await Connection.SendAsync(SwitchCommand.EchoCommands(Enable), CancellationToken.None);
+        }
     }
 }
