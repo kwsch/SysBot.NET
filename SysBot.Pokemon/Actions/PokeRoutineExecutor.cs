@@ -197,7 +197,6 @@ namespace SysBot.Pokemon
             var ofs = GetDaycareEggIsReadyOffset(daycare);
             // Read a single byte of the Daycare metadata to check the IsEggReady flag.
             var data = await Connection.ReadBytesAsync(ofs, 1, token).ConfigureAwait(false);
-            Connection.Log(data[0].ToString());
             return data[0] == 1;
         }
 
