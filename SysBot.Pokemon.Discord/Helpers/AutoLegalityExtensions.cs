@@ -27,8 +27,16 @@ namespace SysBot.Pokemon.Discord
             Task.Run(InitializeCoreStrings);
             Task.Run(() => EncounterEvent.RefreshMGDB());
             InitializeTrainerDatabase();
+            InitializeSettings();
 
             // Legalizer.AllowBruteForce = false;
+        }
+
+        private static void InitializeSettings()
+        {
+            var cfg = SysCordInstance.Self.Hub.Config;
+            APILegality.SetAllLegalRibbons = cfg.SetAllLegalRibbons;
+            APILegality.SetMatchingBalls = cfg.SetMatchingBalls;
         }
 
         private static void InitializeTrainerDatabase()
