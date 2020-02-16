@@ -67,19 +67,22 @@ namespace SysBot.Pokemon
 
         private async Task DoLinkTrades(SAV8SWSH sav, CancellationToken token)
         {
-            bool waiting = false;
+            int waitCounter = 0;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.LinkTrade)
             {
                 if (!Hub.Queue.TryDequeue(out var poke, out var priority))
                 {
-                    if (!waiting)
+                    if (waitCounter == 0)
                         Connection.Log("Nothing to send in the queue! Waiting for new trade data.");
-                    waiting = true;
-                    await Task.Delay(1_000, token).ConfigureAwait(false);
+                    waitCounter++;
+                    if (waitCounter % 10 == 0)
+                        await Click(B, 1_000, token).ConfigureAwait(false);
+                    else
+                        await Task.Delay(1_000, token).ConfigureAwait(false);
                     continue;
                 }
 
-                waiting = false;
+                waitCounter = 0;
                 Connection.Log("Starting next Link Code trade. Getting data...");
                 await EnsureConnectedToYCom(token).ConfigureAwait(false);
                 var result = await PerformLinkCodeTrade(sav, poke, token).ConfigureAwait(false);
@@ -102,19 +105,22 @@ namespace SysBot.Pokemon
 
         private async Task DoDuduTrades(CancellationToken token)
         {
-            bool waiting = false;
+            int waitCounter = 0;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.DuduBot)
             {
                 if (!Hub.Dudu.TryDequeue(out var detail, out var priority))
                 {
-                    if (!waiting)
+                    if (waitCounter == 0)
                         Connection.Log("Nothing to check, waiting for new users...");
-                    waiting = true;
-                    await Task.Delay(1_000, token).ConfigureAwait(false);
+                    waitCounter++;
+                    if (waitCounter % 10 == 0)
+                        await Click(B, 1_000, token).ConfigureAwait(false);
+                    else
+                        await Task.Delay(1_000, token).ConfigureAwait(false);
                     continue;
                 }
 
-                waiting = false;
+                waitCounter = 0;
                 Connection.Log("Starting next Dudu Bot Trade. Getting data...");
                 await EnsureConnectedToYCom(token).ConfigureAwait(false);
                 var result = await PerformDuduTrade(detail, token).ConfigureAwait(false);
