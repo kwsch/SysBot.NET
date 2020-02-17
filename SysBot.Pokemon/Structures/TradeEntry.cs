@@ -23,5 +23,7 @@ namespace SysBot.Pokemon
                 return false;
             return type == 0 || type == Type;
         }
+
+        public override string ToString() => $"{Username} {UserID:D19} - {Type}";
     }
 }

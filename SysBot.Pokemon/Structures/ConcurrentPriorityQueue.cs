@@ -12,7 +12,7 @@ namespace System.Collections.Concurrent
     public class ConcurrentPriorityQueue<TKey, TValue> : IProducerConsumerCollection<KeyValuePair<TKey, TValue>> where TKey : IComparable<TKey> where TValue : IEquatable<TValue>
     {
         private readonly object _syncLock = new object();
-        private readonly MinBinaryHeap _minHeap = new MinBinaryHeap();
+        private readonly MinQueue Queue = new MinQueue();
 
         /// <summary>Initializes a new instance of the ConcurrentPriorityQueue class.</summary>
         public ConcurrentPriorityQueue() { }
@@ -25,7 +25,7 @@ namespace System.Collections.Concurrent
                 throw new ArgumentNullException(nameof(collection));
 
             foreach (var item in collection)
-                _minHeap.Insert(item);
+                Queue.Insert(item);
         }
 
         /// <summary>Adds the key/value pair to the priority queue.</summary>
@@ -41,7 +41,7 @@ namespace System.Collections.Concurrent
         public void Enqueue(KeyValuePair<TKey, TValue> item)
         {
             lock (_syncLock)
-                _minHeap.Insert(item);
+                Queue.Insert(item);
         }
 
         /// <summary>Attempts to remove and return the next prioritized item in the queue.</summary>
@@ -57,9 +57,9 @@ namespace System.Collections.Concurrent
             result = default;
             lock (_syncLock)
             {
-                if (_minHeap.Count == 0)
+                if (Queue.Count == 0)
                     return false;
-                result = _minHeap.Remove();
+                result = Queue.Remove();
                 return true;
             }
         }
@@ -77,15 +77,15 @@ namespace System.Collections.Concurrent
             result = default;
             lock (_syncLock)
             {
-                if (_minHeap.Count == 0)
+                if (Queue.Count == 0)
                     return false;
-                result = _minHeap.Peek();
+                result = Queue.Peek();
                 return true;
             }
         }
 
         /// <summary>Empties the queue.</summary>
-        public void Clear() { lock (_syncLock) _minHeap.Clear(); }
+        public void Clear() { lock (_syncLock) Queue.Clear(); }
 
         /// <summary>Gets whether the queue is empty.</summary>
         public bool IsEmpty => Count == 0;
@@ -93,7 +93,7 @@ namespace System.Collections.Concurrent
         /// <summary>Gets the number of elements contained in the queue.</summary>
         public int Count
         {
-            get { lock (_syncLock) return _minHeap.Count; }
+            get { lock (_syncLock) return Queue.Count; }
         }
 
         /// <summary>Copies the elements of the collection to an array, starting at a particular array index.</summary>
@@ -106,7 +106,7 @@ namespace System.Collections.Concurrent
         /// <remarks>The elements will not be copied to the array in any guaranteed order.</remarks>
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int index)
         {
-            lock (_syncLock) _minHeap.Items.CopyTo(array, index);
+            lock (_syncLock) Queue.Items.CopyTo(array, index);
         }
 
         /// <summary>Copies the elements stored in the queue to a new array.</summary>
@@ -115,18 +115,18 @@ namespace System.Collections.Concurrent
         {
             lock (_syncLock)
             {
-                var clonedHeap = new MinBinaryHeap(_minHeap);
-                var result = new KeyValuePair<TKey, TValue>[_minHeap.Count];
+                var clonedqueue = new MinQueue(Queue);
+                var result = new KeyValuePair<TKey, TValue>[Queue.Count];
                 for (int i = 0; i < result.Length; i++)
                 {
-                    result[i] = clonedHeap.Remove();
+                    result[i] = clonedqueue.Remove();
                 }
                 return result;
             }
         }
 
         /// <summary>
-        /// Searches through the <see cref="_minHeap"/> to find the first that matches the provided function.
+        /// Searches through the <see cref="Queue"/> to find the first that matches the provided function.
         /// </summary>
         /// <param name="match">Function to find a match with</param>
         /// <returns>Default empty if none matching</returns>
@@ -134,7 +134,7 @@ namespace System.Collections.Concurrent
         {
             lock (_syncLock)
             {
-                return _minHeap.Items.Find(z => match(z.Value));
+                return Queue.Items.Find(z => match(z.Value));
             }
         }
 
@@ -188,7 +188,8 @@ namespace System.Collections.Concurrent
         /// </param>
         void ICollection.CopyTo(Array array, int index)
         {
-            lock (_syncLock) ((ICollection)_minHeap.Items).CopyTo(array, index);
+            lock (_syncLock)
+                ((ICollection)Queue.Items).CopyTo(array, index);
         }
 
         /// <summary>
@@ -201,160 +202,52 @@ namespace System.Collections.Concurrent
         /// </summary>
         object ICollection.SyncRoot => _syncLock;
 
-        /// <summary>Implements a binary heap that prioritizes smaller values.</summary>
-        private sealed class MinBinaryHeap
+        /// <summary>Implements a queue that prioritizes smaller values.</summary>
+        private sealed class MinQueue
         {
-            /// <summary>Initializes an empty heap.</summary>
-            public MinBinaryHeap()
-            {
-                Items = new List<KeyValuePair<TKey, TValue>>();
-            }
-
-            /// <summary>Initializes a heap as a copy of another heap instance.</summary>
-            /// <param name="heapToCopy">The heap to copy.</param>
-            /// <remarks>Key/Value values are not deep cloned.</remarks>
-            public MinBinaryHeap(MinBinaryHeap heapToCopy)
-            {
-                Items = new List<KeyValuePair<TKey, TValue>>(heapToCopy.Items);
-            }
-
-            /// <summary>Empties the heap.</summary>
-            public void Clear() { Items.Clear(); }
-
-            /// <summary>Adds an item to the heap.</summary>
-            public void Insert(TKey key, TValue value)
-            {
-                // Create the entry based on the provided key and value
-                Insert(new KeyValuePair<TKey, TValue>(key, value));
-            }
-
-            /// <summary>Adds an item to the heap.</summary>
-            public void Insert(KeyValuePair<TKey, TValue> entry)
-            {
-                // Add the item to the list, making sure to keep track of where it was added.
-                Items.Add(entry);
-                int pos = Items.Count - 1;
-
-                // If the new item is the only item, we're done.
-                if (pos == 0) return;
-
-                // Otherwise, perform log(n) operations, walking up the tree, swapping
-                // where necessary based on key values
-                while (pos > 0)
-                {
-                    // Get the next position to check
-                    int nextPos = (pos - 1) / 2;
-
-                    // Extract the entry at the next position
-                    var toCheck = Items[nextPos];
-
-                    // Compare that entry to our new one.  If our entry has a smaller key, move it up.
-                    // Otherwise, we're done.
-                    if (entry.Key.CompareTo(toCheck.Key) >= 0)
-                        break;
-
-                    Items[pos] = toCheck;
-                    pos = nextPos;
-                }
-
-                // Make sure we put this entry back in, just in case
-                Items[pos] = entry;
-            }
-
-            /// <summary>Returns the entry at the top of the heap.</summary>
-            public KeyValuePair<TKey, TValue> Peek()
-            {
-                // Returns the first item
-                if (Items.Count == 0)
-                    throw new InvalidOperationException("The heap is empty.");
-                return Items[0];
-            }
-
-            /// <summary>Removes the entry at the top of the heap.</summary>
-            public KeyValuePair<TKey, TValue> Remove()
-            {
-                // Get the first item and save it for later (this is what will be returned).
-                if (Items.Count == 0)
-                    throw new InvalidOperationException("The heap is empty.");
-
-                var toReturn = Items[0];
-
-                // Remove the first item if there will only be 0 or 1 items left after doing so.  
-                if (Items.Count <= 2)
-                {
-                    Items.RemoveAt(0);
-                }
-                else // A reheapify will be required for the removal
-                {
-                    // Remove the first item and move the last item to the front.
-                    Items[0] = Items[Items.Count - 1];
-                    Items.RemoveAt(Items.Count - 1);
-
-                    // Start reheapify
-                    int current = 0, possibleSwap = 0;
-
-                    // Keep going until the tree is a heap
-                    while (true)
-                    {
-                        // Get the positions of the node's children
-                        int leftChildPos = (2 * current) + 1;
-                        int rightChildPos = leftChildPos + 1;
-
-                        // Should we swap with the left child?
-                        if (leftChildPos >= Items.Count)
-                            break; // if can't swap this, we're done
-
-                        {
-                            // Get the two entries to compare (node and its left child)
-                            var entry1 = Items[current];
-                            var entry2 = Items[leftChildPos];
-
-                            // If the child has a lower key than the parent, set that as a possible swap
-                            if (entry2.Key.CompareTo(entry1.Key) < 0)
-                                possibleSwap = leftChildPos;
-                        }
-
-                        // Should we swap with the right child?  Note that now we check with the possible swap
-                        // position (which might be current and might be left child).
-                        if (rightChildPos < Items.Count)
-                        {
-                            // Get the two entries to compare (node and its left child)
-                            var entry1 = Items[possibleSwap];
-                            var entry2 = Items[rightChildPos];
-
-                            // If the child has a lower key than the parent, set that as a possible swap
-                            if (entry2.Key.CompareTo(entry1.Key) < 0)
-                                possibleSwap = rightChildPos;
-                        }
-
-                        // Now swap current and possible swap if necessary
-                        if (current == possibleSwap)
-                            break; // if nothing to swap, we're done
-
-                        var temp = Items[current];
-                        Items[current] = Items[possibleSwap];
-                        Items[possibleSwap] = temp;
-
-                        // Update current to the location of the swap
-                        current = possibleSwap;
-                    }
-                }
-
-                // Return the item from the heap
-                return toReturn;
-            }
-
-            /// <summary>Gets the number of objects stored in the heap.</summary>
+            /// <summary>Gets the number of objects stored in the Queue.</summary>
             public int Count => Items.Count;
 
             public List<KeyValuePair<TKey, TValue>> Items { get; }
+
+            /// <summary>Initializes an empty queue.</summary>
+            public MinQueue() => Items = new List<KeyValuePair<TKey, TValue>>();
+
+            /// <summary>Initializes a queue as a copy of another queue instance.</summary>
+            /// <param name="queue">The queue to copy.</param>
+            /// <remarks>Key/Value values are not deep cloned.</remarks>
+            public MinQueue(MinQueue queue) => Items = new List<KeyValuePair<TKey, TValue>>(queue.Items);
+
+            /// <summary>Empties the Queue.</summary>
+            public void Clear() => Items.Clear();
+
+            /// <summary>Adds an item to the Queue.</summary>
+            public void Insert(TKey key, TValue value) => Insert(new KeyValuePair<TKey, TValue>(key, value));
+
+            /// <summary>Adds an item to the Queue.</summary>
+            public void Insert(KeyValuePair<TKey, TValue> entry)
+            {
+                var nearest = Items.FindLastIndex(z => entry.Key.CompareTo(z.Key) >= 0);
+                Items.Insert(nearest + 1, entry);
+            }
+
+            /// <summary>Returns the entry at the top of the Queue.</summary>
+            public KeyValuePair<TKey, TValue> Peek() => Items[0];
+
+            /// <summary>Removes the entry at the top of the Queue.</summary>
+            public KeyValuePair<TKey, TValue> Remove()
+            {
+                var toReturn = Items[0];
+                Items.RemoveAt(0);
+                return toReturn;
+            }
         }
 
         public int Remove(TValue detail)
         {
             lock (_syncLock)
             {
-                var items = _minHeap.Items;
+                var items = Queue.Items;
                 return items.RemoveAll(z => z.Value!.Equals(detail));
             }
         }
@@ -363,7 +256,7 @@ namespace System.Collections.Concurrent
         {
             lock (_syncLock)
             {
-                var items = _minHeap.Items;
+                var items = Queue.Items;
                 return items.FindIndex(z => z.Value!.Equals(detail));
             }
         }

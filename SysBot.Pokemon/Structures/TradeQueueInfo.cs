@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using PKHeX.Core;
 
@@ -135,6 +136,12 @@ namespace SysBot.Pokemon
         {
             var cfg = Hub.Config;
             return Util.Rand.Next(cfg.MinTradeCode, cfg.MaxTradeCode + 1);
+        }
+
+        public int Count(Func<TradeEntry<T>, bool> func)
+        {
+            lock (_sync)
+                return UsersInQueue.Count(func);
         }
     }
 
