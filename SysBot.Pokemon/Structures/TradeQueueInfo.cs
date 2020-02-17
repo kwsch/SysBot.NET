@@ -41,7 +41,7 @@ namespace SysBot.Pokemon
 
                 var queued = UsersInQueue.GroupBy(z => z.Type);
                 var list = queued.SelectMany(z => z.Select(x =>
-                    $"{x.Type}: {x.Trade.Trainer.TrainerName} ({x.Name}), {(Species)x.Trade.TradeData.Species}"));
+                    $"{x.Type}: {x.Trade.Trainer.TrainerName} ({x.Username}), {(Species)x.Trade.TradeData.Species}"));
                 return string.Join("\n", list);
             }
         }
@@ -96,7 +96,7 @@ namespace SysBot.Pokemon
         {
             lock (_sync)
             {
-                return UsersInQueue.Where(z => z.User == userID).ToArray();
+                return UsersInQueue.Where(z => z.UserID == userID).ToArray();
             }
         }
 
@@ -110,7 +110,7 @@ namespace SysBot.Pokemon
         {
             lock (_sync)
             {
-                if (UsersInQueue.Any(z => z.User == userID) && !sudo)
+                if (UsersInQueue.Any(z => z.UserID == userID) && !sudo)
                     return QueueResultAdd.AlreadyInQueue;
 
                 if (Hub.Config.ResetHOMETracker && trade.Trade.TradeData is IHomeTrack t)
@@ -122,7 +122,11 @@ namespace SysBot.Pokemon
                 queue.Enqueue(trade.Trade, priority);
                 UsersInQueue.Add(trade);
 
-                trade.Trade.Notifier.OnFinish = () => Remove(trade);
+                trade.Trade.Notifier.OnFinish = r =>
+                {
+                    r.Connection.Log($"Removing {trade.Username}'s request from the queue.");
+                    Remove(trade);
+                };
                 return QueueResultAdd.Added;
             }
         }

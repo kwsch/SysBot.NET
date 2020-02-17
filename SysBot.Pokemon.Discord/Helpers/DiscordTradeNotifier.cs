@@ -11,7 +11,7 @@ namespace SysBot.Pokemon.Discord
         private PokeTradeTrainerInfo Info { get; }
         private int Code { get; }
         private SocketCommandContext Context { get; }
-        public Action? OnFinish { private get; set; }
+        public Action<PokeRoutineExecutor>? OnFinish { private get; set; }
 
         public DiscordTradeNotifier(T data, PokeTradeTrainerInfo info, int code, SocketCommandContext context)
         {
@@ -37,7 +37,7 @@ namespace SysBot.Pokemon.Discord
         public void TradeCanceled(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeResult msg)
         {
             Context.User.SendMessageAsync($"Trade canceled: {msg}").ConfigureAwait(false);
-            OnFinish?.Invoke();
+            OnFinish?.Invoke(routine);
         }
 
         public void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result)
@@ -45,7 +45,7 @@ namespace SysBot.Pokemon.Discord
             var message = Data.Species != 0 ? $"Trade finished. Enjoy your {(Species)Data.Species}!" : "Trade finished. Enjoy your Pokemon!";
             Context.User.SendMessageAsync(message).ConfigureAwait(false);
             Context.User.SendPKMAsync(result, "Here's what you traded me!").ConfigureAwait(false);
-            OnFinish?.Invoke();
+            OnFinish?.Invoke(routine);
         }
 
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, string message)

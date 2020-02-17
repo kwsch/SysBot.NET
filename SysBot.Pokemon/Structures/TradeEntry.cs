@@ -4,22 +4,22 @@ namespace SysBot.Pokemon
 {
     public sealed class TradeEntry<T> where T : PKM, new()
     {
-        public readonly ulong User;
-        public readonly string Name;
+        public readonly ulong UserID;
+        public readonly string Username;
         public readonly PokeTradeDetail<T> Trade;
         public readonly PokeRoutineType Type;
 
-        public TradeEntry(PokeTradeDetail<T> trade, ulong user, PokeRoutineType type, string name)
+        public TradeEntry(PokeTradeDetail<T> trade, ulong userID, PokeRoutineType type, string username)
         {
             Trade = trade;
-            User = user;
+            UserID = userID;
             Type = type;
-            Name = name;
+            Username = username;
         }
 
         public bool Equals(ulong uid, PokeRoutineType type = 0)
         {
-            if (User != uid)
+            if (UserID != uid)
                 return false;
             return type == 0 || type == Type;
         }

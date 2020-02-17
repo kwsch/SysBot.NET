@@ -16,6 +16,9 @@ namespace SysBot.Pokemon
         [Category(FeatureToggle), Description("When enabled, dumps any received PKM files (trade results) to the DumpFolder.")]
         public bool Dump { get; set; }
 
+        [Category(FeatureToggle), Description("When enabled, the bot will press the B button occasionally when it is not processing anything (to avoid sleep).")]
+        public bool AntiIdle { get; set; }
+
         [Category(FeatureToggle), Description("When enabled, idle LinkTrade bots will randomly distribute PKM files from the DistributeFolder.")]
         public bool DistributeWhileIdle { get; set; } = true;
 

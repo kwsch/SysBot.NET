@@ -56,13 +56,16 @@ namespace SysBot.Pokemon
 
         private async Task DoNothing(CancellationToken token)
         {
-            bool waiting = false;
+            int waitCounter = 0;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.Idle)
             {
-                if (!waiting)
+                if (waitCounter == 0)
                     Connection.Log("No task assigned. Waiting for new task assignment.");
-                waiting = true;
-                await Task.Delay(1_000, token).ConfigureAwait(false);
+                waitCounter++;
+                if (waitCounter % 10 == 0 && Hub.Config.AntiIdle)
+                    await Click(B, 1_000, token).ConfigureAwait(false);
+                else
+                    await Task.Delay(1_000, token).ConfigureAwait(false);
             }
         }
 
@@ -76,7 +79,7 @@ namespace SysBot.Pokemon
                     if (waitCounter == 0)
                         Connection.Log("Nothing to send in the queue! Waiting for new trade data.");
                     waitCounter++;
-                    if (waitCounter % 10 == 0)
+                    if (waitCounter % 10 == 0 && Hub.Config.AntiIdle)
                         await Click(B, 1_000, token).ConfigureAwait(false);
                     else
                         await Task.Delay(1_000, token).ConfigureAwait(false);
@@ -96,6 +99,7 @@ namespace SysBot.Pokemon
                     }
                     else
                     {
+                        poke.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
                         poke.TradeCanceled(this, result);
                     }
                 }
@@ -114,7 +118,7 @@ namespace SysBot.Pokemon
                     if (waitCounter == 0)
                         Connection.Log("Nothing to check, waiting for new users...");
                     waitCounter++;
-                    if (waitCounter % 10 == 0)
+                    if (waitCounter % 10 == 0 && Hub.Config.AntiIdle)
                         await Click(B, 1_000, token).ConfigureAwait(false);
                     else
                         await Task.Delay(1_000, token).ConfigureAwait(false);
@@ -134,6 +138,7 @@ namespace SysBot.Pokemon
                     }
                     else
                     {
+                        detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
                         detail.TradeCanceled(this, result);
                     }
                 }

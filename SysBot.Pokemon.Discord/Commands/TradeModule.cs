@@ -221,7 +221,7 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            var result = AddToTradeQueue(code, trainerName, sudo, pk8, PokeRoutineType.LinkTrade, out var msg);
+            var result = AddToTradeQueue(pk8, code, trainerName, sudo, PokeRoutineType.LinkTrade, out var msg);
             await ReplyAsync(msg).ConfigureAwait(false);
             if (result)
                 await Context.Message.DeleteAsync(RequestOptions.Default).ConfigureAwait(false);
@@ -229,7 +229,7 @@ namespace SysBot.Pokemon.Discord
 
         private async Task AddSeedCheckToQueueAsync(int code, string trainer, bool sudo)
         {
-            var result = AddToTradeQueue(code, trainer, sudo, new PK8(), PokeRoutineType.DuduBot, out var msg);
+            var result = AddToTradeQueue(new PK8(), code, trainer, sudo, PokeRoutineType.DuduBot, out var msg);
             await ReplyAsync(msg).ConfigureAwait(false);
             if (result)
                 await Context.Message.DeleteAsync(RequestOptions.Default).ConfigureAwait(false);
@@ -253,15 +253,15 @@ namespace SysBot.Pokemon.Discord
             };
         }
 
-        private bool AddToTradeQueue(int code, string trainerName, bool sudo, PK8 pk8, PokeRoutineType type, out string msg)
+        private bool AddToTradeQueue(PK8 pk8, int code, string trainerName, bool sudo, PokeRoutineType type, out string msg)
         {
             var user = Context.User;
             var userID = user.Id;
             var name = user.Username;
 
-            var tmp = new PokeTradeTrainerInfo(trainerName);
-            var notifier = new DiscordTradeNotifier<PK8>(pk8, tmp, code, Context);
-            var detail = new PokeTradeDetail<PK8>(pk8, tmp, notifier, code: code);
+            var trainer = new PokeTradeTrainerInfo(trainerName);
+            var notifier = new DiscordTradeNotifier<PK8>(pk8, trainer, code, Context);
+            var detail = new PokeTradeDetail<PK8>(pk8, trainer, notifier, code: code);
             var trade = new TradeEntry<PK8>(detail, userID, type, name);
 
             var added = Info.AddToTradeQueue(trade, userID, sudo);
