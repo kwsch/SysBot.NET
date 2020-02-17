@@ -198,12 +198,13 @@ namespace SysBot.Pokemon
             // Start a Link Trade, in case of Empty Slot/Egg/Bad Pokemon we press sometimes B to return to the Overworld and skip this Slot.
             // Confirming...
             for (int i = 0; i < 4; i++)
-                await Click(A, 2_000, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
 
             poke.TradeSearching(this);
             await Task.Delay(Util.Rand.Next(0_350, 0_750), token).ConfigureAwait(false);
 
-            await Click(A, 2_000, token).ConfigureAwait(false);
+            for (int i = 0; i < 5; i++)
+                await Click(A, 0_500, token).ConfigureAwait(false);
 
             if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
@@ -446,12 +447,13 @@ namespace SysBot.Pokemon
             // Start a Link Trade, in case of Empty Slot/Egg/Bad Pokemon we press sometimes B to return to the Overworld and skip this Slot.
             // Confirming...
             for (int i = 0; i < 4; i++)
-                await Click(A, 2_000, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
 
             detail.TradeSearching(this);
             await Task.Delay(Util.Rand.Next(100, 1000), token).ConfigureAwait(false);
 
-            await Click(A, 2_000, token).ConfigureAwait(false);
+            for (int i = 0; i < 5; i++)
+                await Click(A, 0_500, token).ConfigureAwait(false);
 
             if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
