@@ -107,6 +107,7 @@ namespace SysBot.Pokemon
         {
             Source.Cancel();
             IsRunning = false;
+            Hub.Barrier.RemoveParticipants(Hub.Barrier.ParticipantCount);
         }
     }
 }

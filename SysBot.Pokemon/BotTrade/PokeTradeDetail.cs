@@ -8,12 +8,12 @@ namespace SysBot.Pokemon
 {
     public class PokeTradeDetail<TPoke> : IEquatable<PokeTradeDetail<TPoke>> where TPoke : PKM, new()
     {
-        public readonly int Code;
+        public int Code;
         public readonly TPoke TradeData;
         public readonly PokeTradeTrainerInfo Trainer;
         public readonly IPokeTradeNotifier<TPoke> Notifier;
 
-        private const int RandomCode = -1;
+        public const int RandomCode = -1;
         public bool IsRandomCode => Code == RandomCode;
 
         public string? SourcePath { get; set; }

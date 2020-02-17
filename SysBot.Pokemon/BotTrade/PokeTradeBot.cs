@@ -157,9 +157,13 @@ namespace SysBot.Pokemon
 
         private async Task<PokeTradeResult> PerformLinkCodeTrade(SAV8SWSH sav, PokeTradeDetail<PK8> poke, CancellationToken token)
         {
-            poke.TradeInitialize(this);
             // Update Barrier Settings
             ShouldWaitAtBarrier = UpdateBarrier(Hub.Barrier, poke.IsRandomCode, ShouldWaitAtBarrier);
+            var code = poke.Code;
+            if (code == PokeTradeDetail<PK8>.RandomCode)
+                poke.Code = code = Hub.Config.GetRandomTradeCode();
+            poke.TradeInitialize(this);
+
             var pkm = poke.TradeData;
             await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
 
@@ -184,9 +188,6 @@ namespace SysBot.Pokemon
             // Loading Screen
             await Task.Delay(2_000, token).ConfigureAwait(false);
 
-            var code = poke.Code;
-            if (code < 0)
-                code = Hub.Config.GetRandomTradeCode();
             Connection.Log($"Entering Link Trade Code: {code} ...");
             await EnterTradeCode(code, token).ConfigureAwait(false);
 
@@ -240,7 +241,7 @@ namespace SysBot.Pokemon
 
             for(int i = 0; i < 5; i++)
                 await Click(A, 2_000, token).ConfigureAwait(false);
-            
+
             poke.SendNotification(this, $"Found Trading Partner: {TrainerName}. Waiting for a Pokemon ...");
 
             // Wait for User Input...
@@ -410,6 +411,11 @@ namespace SysBot.Pokemon
 
         private async Task<PokeTradeResult> PerformDuduTrade(PokeTradeDetail<PK8> detail, CancellationToken token)
         {
+            // Update Barrier Settings
+            ShouldWaitAtBarrier = UpdateBarrier(Hub.Barrier, detail.IsRandomCode, ShouldWaitAtBarrier);
+            var code = detail.Code;
+            if (code == PokeTradeDetail<PK8>.RandomCode)
+                detail.Code = code = Hub.Config.GetRandomTradeCode();
             detail.TradeInitialize(this);
 
             if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
@@ -433,9 +439,6 @@ namespace SysBot.Pokemon
             // Loading Screen
             await Task.Delay(2_000, token).ConfigureAwait(false);
 
-            var code = detail.Code;
-            if (code < 0)
-                code = Hub.Config.GetRandomTradeCode();
             Connection.Log($"Entering Link Trade Code: {code} ...");
             await EnterTradeCode(code, token).ConfigureAwait(false);
 
@@ -548,16 +551,23 @@ namespace SysBot.Pokemon
         /// If it should be considered, it adds it to the barrier if it is not already added.
         /// If it should not be considered, it removes it from the barrier if not already removed.
         /// </summary>
-        private static bool UpdateBarrier(Barrier b, bool shouldWait, bool alreadyWait)
+        private bool UpdateBarrier(Barrier b, bool shouldWait, bool alreadyWait)
         {
             if (shouldWait)
             {
-                if (!alreadyWait)
-                    b.AddParticipant();
+                if (alreadyWait)
+                    return true;
+
+                b.AddParticipant();
+                Connection.Log($"Joined the Barrier. Count: {b.ParticipantCount}");
                 return true;
             }
-            if (alreadyWait)
-                b.RemoveParticipant();
+
+            if (!alreadyWait)
+                return false;
+
+            b.RemoveParticipant();
+            Connection.Log($"Left the Barrier. Count: {b.ParticipantCount}");
             return false;
         }
     }

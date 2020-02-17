@@ -132,11 +132,7 @@ namespace SysBot.Pokemon
             }
         }
 
-        public int GetRandomTradeCode()
-        {
-            var cfg = Hub.Config;
-            return Util.Rand.Next(cfg.MinTradeCode, cfg.MaxTradeCode + 1);
-        }
+        public int GetRandomTradeCode() => Hub.Config.GetRandomTradeCode();
 
         public int Count(Func<TradeEntry<T>, bool> func)
         {
