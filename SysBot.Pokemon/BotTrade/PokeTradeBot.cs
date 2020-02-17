@@ -492,11 +492,11 @@ namespace SysBot.Pokemon
             var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 25_000, 1_000, token).ConfigureAwait(false);
             if (pk == null)
             {
-                await ExitTrade(true, token).ConfigureAwait(false);
+                await ExitDuduTrade(token).ConfigureAwait(false);
                 return PokeTradeResult.TrainerTooSlow;
             }
 
-            await ExitTrade(false, token).ConfigureAwait(false);
+            await ExitDuduTrade(token).ConfigureAwait(false);
             var ec = pk.EncryptionConstant;
             var pid = pk.PID;
             var IVs = pk.IVs.Length == 0 ? GetBlankIVTemplate() : PKX.ReorderSpeedLast((int[])pk.IVs.Clone());

@@ -176,9 +176,17 @@ namespace SysBot.Pokemon
 
             while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
-                // Dudubot doesn't show anything, so it can skip the first B press.
-                if (Config.CurrentRoutineType != PokeRoutineType.DuduBot)
-                    await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
+            }
+        }
+
+        public async Task ExitDuduTrade(CancellationToken token)
+        {
+            // Dudubot doesn't show anything, so it can skip the first B press.
+            while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            {
                 await Click(B, 1_000, token).ConfigureAwait(false);
                 await Click(A, 1_000, token).ConfigureAwait(false);
             }
