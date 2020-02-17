@@ -152,7 +152,7 @@ namespace SysBot.Pokemon
             await Click(B, 2000, token).ConfigureAwait(false);
 
             // Return to Overworld
-            if (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 for (int i = 0; i < 5; i++)
                 {
@@ -174,7 +174,7 @@ namespace SysBot.Pokemon
             if (UnExpected)
                 Connection.Log("Unexpected behavior, recover position");
 
-            while (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 await Click(B, 1_000, token).ConfigureAwait(false);
                 await Click(B, 1_000, token).ConfigureAwait(false);
@@ -210,7 +210,7 @@ namespace SysBot.Pokemon
             await Connection.WriteBytesAsync(data, ofs, token).ConfigureAwait(false);
         }
 
-        public async Task<bool> IsCorrentScreen(uint expectedScreen, CancellationToken token)
+        public async Task<bool> IsCorrectScreen(uint expectedScreen, CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
             return BitConverter.ToUInt32(data, 0) == expectedScreen;
