@@ -215,7 +215,7 @@ namespace SysBot.Pokemon
             await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
 
             // Wait 40 Seconds for Trainer...
-            var partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, 40_000, 0_200, token).ConfigureAwait(false);
+            var partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, 90_000, 0_200, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
@@ -237,9 +237,9 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Recover;
             }
 
-            await Click(A, 2_000, token).ConfigureAwait(false);
-            await Click(A, 2_000, token).ConfigureAwait(false);
-
+            for(int i = 0; i < 5; i++)
+                await Click(A, 2_000, token).ConfigureAwait(false);
+            
             poke.SendNotification(this, $"Found Trading Partner: {TrainerName}. Waiting for a Pokemon ...");
 
             // Wait for User Input...
@@ -463,7 +463,7 @@ namespace SysBot.Pokemon
             await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
 
             // Wait 40 Seconds for Trainer...
-            var partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, 40_000, 2_000, token).ConfigureAwait(false);
+            var partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, 90_000, 2_000, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
