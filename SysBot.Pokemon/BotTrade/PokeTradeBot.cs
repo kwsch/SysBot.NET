@@ -163,7 +163,7 @@ namespace SysBot.Pokemon
             var pkm = poke.TradeData;
             await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
 
-            if (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.Recover;
@@ -205,7 +205,7 @@ namespace SysBot.Pokemon
 
             await Click(A, 2_000, token).ConfigureAwait(false);
 
-            if (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.Recover;
@@ -231,7 +231,7 @@ namespace SysBot.Pokemon
             Connection.Log($"Found Trading Partner: {TrainerName} ...");
             await Task.Delay(1_500, token).ConfigureAwait(false); // necessary delay to get to the box properly
 
-            if (!await IsCorrentScreen(CurrentScreen_Box, token).ConfigureAwait(false))
+            if (!await IsCorrectScreen(CurrentScreen_Box, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.Recover;
@@ -255,13 +255,13 @@ namespace SysBot.Pokemon
                 await Click(A, 1_500, token).ConfigureAwait(false);
 
             var delay_count = 0;
-            while (!await IsCorrentScreen(CurrentScreen_Box, token).ConfigureAwait(false))
+            while (!await IsCorrectScreen(CurrentScreen_Box, token).ConfigureAwait(false))
             {
                 await Click(A, 3_000, token).ConfigureAwait(false);
                 delay_count++;
                 if (delay_count >= 50)
                     break;
-                if (await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false)) // In case we are in a Trade Evolution/PokeDex Entry and the Trade Partner quits we land on the Overworld
+                if (await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false)) // In case we are in a Trade Evolution/PokeDex Entry and the Trade Partner quits we land on the Overworld
                     break;
             }
 
@@ -306,7 +306,7 @@ namespace SysBot.Pokemon
             Connection.Log("Starting next Surprise Trade. Getting data...");
             await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
 
-            if (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.Recover;
@@ -327,7 +327,7 @@ namespace SysBot.Pokemon
 
             await Task.Delay(2_000, token).ConfigureAwait(false);
 
-            if (!await IsCorrentScreen(CurrentScreen_Box, token).ConfigureAwait(false))
+            if (!await IsCorrectScreen(CurrentScreen_Box, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.Recover;
@@ -351,7 +351,7 @@ namespace SysBot.Pokemon
             // Let Surprise Trade be sent out before checking if we're back to the Overworld.
             await Task.Delay(3_000, token).ConfigureAwait(false);
 
-            if (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.Recover;
@@ -396,7 +396,7 @@ namespace SysBot.Pokemon
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
 
-            if (await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            if (await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
                 Connection.Log("Trade complete!");
             else
                 await ExitTrade(true, token).ConfigureAwait(false);
@@ -411,14 +411,14 @@ namespace SysBot.Pokemon
         {
             detail.TradeInitialize(this);
 
-            if (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.Recover;
             }
 
             Connection.Log("Open Y-Comm Menu");
-            await Click(Y, 1_500, token).ConfigureAwait(false);
+            await Click(Y, 2_000, token).ConfigureAwait(false);
 
             Connection.Log("Select Link Trade");
             await Click(A, 1_000, token).ConfigureAwait(false);
@@ -451,9 +451,9 @@ namespace SysBot.Pokemon
             detail.TradeSearching(this);
             await Task.Delay(Util.Rand.Next(100, 1000), token).ConfigureAwait(false);
 
-            await Click(A, 1_000, token).ConfigureAwait(false);
+            await Click(A, 2_000, token).ConfigureAwait(false);
 
-            if (!await IsCorrentScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.Recover;
@@ -476,12 +476,11 @@ namespace SysBot.Pokemon
             // Potential Trainer Found!
 
             // Select Pokemon
-            // pkm already injected to b1s1
             var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
             Connection.Log($"Found Trading Partner: {TrainerName} ...");
-            await Task.Delay(300, token).ConfigureAwait(false);
+            await Task.Delay(1_000, token).ConfigureAwait(false);
 
-            if (!await IsCorrentScreen(CurrentScreen_Box, token).ConfigureAwait(false))
+            if (!await IsCorrectScreen(CurrentScreen_Box, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.Recover;
