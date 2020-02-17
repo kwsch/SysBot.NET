@@ -111,7 +111,7 @@ namespace SysBot.Pokemon
             var keys = TradeUtil.GetPresses(code);
             foreach (var key in keys)
             {
-                var delay = key == A ? 1_000 : 0_800;
+                var delay = 0_500;//= key == A ? 1_000 : 0_500;
                 await Click(key, delay, token).ConfigureAwait(false);
             }
             // Confirm Code outside of this method (allow synchronization)
@@ -174,8 +174,13 @@ namespace SysBot.Pokemon
             if (UnExpected)
                 Connection.Log("Unexpected behavior, recover position");
 
+            int attemps = 0;
             while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
+                attemps++;
+                if (attemps >= 15)
+                    break;
+
                 await Click(B, 1_000, token).ConfigureAwait(false);
                 await Click(B, 1_000, token).ConfigureAwait(false);
                 await Click(A, 1_000, token).ConfigureAwait(false);
@@ -185,8 +190,13 @@ namespace SysBot.Pokemon
         public async Task ExitDuduTrade(CancellationToken token)
         {
             // Dudubot doesn't show anything, so it can skip the first B press.
+            int attemps = 0;
             while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
+                attemps++;
+                if (attemps >= 15)
+                    break;
+
                 await Click(B, 1_000, token).ConfigureAwait(false);
                 await Click(A, 1_000, token).ConfigureAwait(false);
             }
