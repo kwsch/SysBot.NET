@@ -107,7 +107,12 @@ namespace SysBot.Pokemon
         {
             Source.Cancel();
             IsRunning = false;
-            Hub.Barrier.RemoveParticipants(Hub.Barrier.ParticipantCount);
+
+            // bots currently don't de-register
+            Thread.Sleep(100);
+            int count = Hub.Barrier.ParticipantCount;
+            if (count != 0)
+                Hub.Barrier.RemoveParticipants(count);
         }
     }
 }
