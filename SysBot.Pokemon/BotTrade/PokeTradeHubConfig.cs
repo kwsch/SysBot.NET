@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using System.IO;
+using PKHeX.Core;
+
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
 namespace SysBot.Pokemon
@@ -69,7 +71,7 @@ namespace SysBot.Pokemon
         /// <summary>
         /// Gets a random trade code based on the range settings.
         /// </summary>
-        public int GetRandomTradeCode() => PKHeX.Core.Util.Rand.Next(MinTradeCode, MaxTradeCode + 1);
+        public int GetRandomTradeCode() => Util.Rand.Next(MinTradeCode, MaxTradeCode + 1);
         #endregion
 
         #region Counts
@@ -115,20 +117,20 @@ namespace SysBot.Pokemon
         #endregion
 
         #region Legality
-        [Category(Legality), Description("Legality: Regenerated PKM files will attempt to be sourced from games using trainer data info from these saves.")]
-        public string GeneratePathSaveFiles { get; set; } = string.Empty;
+        [Category(Legality), Description("Legality: Regenerated PKM files will attempt to be sourced from games using trainer data info from these PKM Files.")]
+        public string GeneratePathTrainerInfo { get; set; } = string.Empty;
 
         [Category(Legality), Description("Legality: Default Trainer Name for PKM files that can't originate from any of the provided SaveFiles.")]
-        public string GenerateOT { get; set; } = "SysBot.NET";
+        public string GenerateOT { get; set; } = "SysBot";
 
         [Category(Legality), Description("Legality: Default 16 Bit Trainer ID (TID) for PKM files that can't originate from any of the provided SaveFiles.")]
-        public int GenerateTID16 { get; set; }
+        public int GenerateTID16 { get; set; } = 12345;
 
         [Category(Legality), Description("Legality: Default 16 Bit Secret ID (SID) for PKM files that can't originate from any of the provided SaveFiles.")]
-        public int GenerateSID16 { get; set; }
+        public int GenerateSID16 { get; set; } = 54321;
 
         [Category(Legality), Description("Legality: Default Language for PKM files that can't originate from any of the provided SaveFiles.")]
-        public int GenerateLanguage { get; set; }
+        public LanguageID GenerateLanguage { get; set; } = LanguageID.English;
 
         [Category(Legality), Description("Legality: Set all possible ribbons for any generated Pokémon.")]
         public bool SetAllLegalRibbons { get; set; }

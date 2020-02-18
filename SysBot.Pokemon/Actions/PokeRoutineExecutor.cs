@@ -111,7 +111,7 @@ namespace SysBot.Pokemon
             var keys = TradeUtil.GetPresses(code);
             foreach (var key in keys)
             {
-                var delay = 0_500;//= key == A ? 1_000 : 0_500;
+                const int delay = 0_500;
                 await Click(key, delay, token).ConfigureAwait(false);
             }
             // Confirm Code outside of this method (allow synchronization)
