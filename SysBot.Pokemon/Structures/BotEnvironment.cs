@@ -114,5 +114,12 @@ namespace SysBot.Pokemon
             if (count != 0)
                 Hub.Barrier.RemoveParticipants(count);
         }
+
+        public void SoftStop()
+        {
+            // Tell all the bots to go to Idle after finishing.
+            foreach (var b in Bots)
+                b.Config.NextRoutineType = PokeRoutineType.Idle;
+        }
     }
 }

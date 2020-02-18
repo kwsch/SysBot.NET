@@ -131,6 +131,14 @@ namespace SysBot.Pokemon.WinForms
                 throw new ArgumentNullException(nameof(RunningEnvironment), "Should have an environment before calling stop!");
             if (!env.CanStop)
                 throw new ArgumentOutOfRangeException(nameof(BotEnvironment.CanStop), "Should be running before calling stop!");
+
+            if (ModifierKeys == Keys.Control || ModifierKeys == Keys.Shift) // either, because remembering which can be hard
+            {
+                env.SoftStop();
+                WinFormsUtil.Alert("Commanding all bots to Idle.", "Press Stop (without a modifier key) to hard-stop and unlock control.");
+                return;
+            }
+
             env.Stop();
             B_Start.Enabled = true;
             B_Stop.Enabled = false;
