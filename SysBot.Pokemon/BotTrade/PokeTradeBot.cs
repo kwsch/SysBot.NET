@@ -514,19 +514,34 @@ namespace SysBot.Pokemon
             await ExitDuduTrade(token).ConfigureAwait(false);
 
             detail.TradeFinished(this, pk);
+
+            // Send results from separate thread; the bot doesn't need to wait for things to be calculated.
+#pragma warning disable 4014
+            Task.Run(() => ReplyWithZ3Results(detail, pk), token);
+#pragma warning restore 4014
+
+            Hub.Counts.AddCompletedDudu();
+
+            await Task.Delay(5_000, token).ConfigureAwait(false);
+
+            return PokeTradeResult.Success;
+        }
+
+        private void ReplyWithZ3Results(PokeTradeDetail<PK8> detail, PK8 result)
+        {
             detail.SendNotification(this, "Calculating your seed(s)...");
-            
-            var ec = pk.EncryptionConstant;
-            var pid = pk.PID;
-            var IVs = pk.IVs.Length == 0 ? GetBlankIVTemplate() : PKX.ReorderSpeedLast((int[])pk.IVs.Clone());
-            if (pk.IsShiny)
+
+            if (result.IsShiny)
             {
                 Connection.Log("The Pokemon is already shiny!"); // Do not bother checking for next shiny frame
                 detail.SendNotification(this, "This Pokemon is already shiny! Raid seed calculation was not done.");
-                detail.TradeFinished(this, pk);
-                return PokeTradeResult.Success;
+                detail.TradeFinished(this, result);
+                return;
             }
 
+            var ec = result.EncryptionConstant;
+            var pid = result.PID;
+            var IVs = result.IVs.Length == 0 ? GetBlankIVTemplate() : PKX.ReorderSpeedLast((int[]) result.IVs.Clone());
             if (Hub.Config.ShowAllZ3Results)
             {
                 var matches = Z3Search.GetAllSeeds(ec, pid, IVs);
@@ -542,12 +557,6 @@ namespace SysBot.Pokemon
                 var msg = match.ToString();
                 detail.SendNotification(this, msg);
             }
-
-            Hub.Counts.AddCompletedDudu();
-
-            await Task.Delay(5_000, token).ConfigureAwait(false);
-
-            return PokeTradeResult.Success;
         }
 
         private void WaitAtBarrierIfApplicable(CancellationToken token)
