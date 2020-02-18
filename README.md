@@ -33,7 +33,11 @@ Supported Pokémon Sword/Shield Bots:
 - Provide a discord login token and the Roles that are allowed to interact with your bots.
 - Commands are provided to manage & join the distribution queue.
 
-Uses Discord.NET as a dependency via Nuget.
+## SysBot.Pokemon.Twitch:
+- Twitch.tv interface for remotely announcing when the distribution starts.
+- Provide a discord login token, username, and channel for login.
+
+Uses [Discord.Net](https://github.com/discord-net/Discord.Net) and [TwitchLib](https://github.com/TwitchLib/TwitchLib) as a dependency via Nuget.
 
 ## Dependencies
 Pokémon API logic is provided by [PKHeX](https://github.com/kwsch/PKHeX/), and template generation is provided by [AutoMod](https://github.com/architdate/PKHeX-Plugins/).
