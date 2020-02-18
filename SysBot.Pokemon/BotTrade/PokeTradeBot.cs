@@ -512,6 +512,10 @@ namespace SysBot.Pokemon
             }
 
             await ExitDuduTrade(token).ConfigureAwait(false);
+
+            detail.TradeFinished(this, pk);
+            detail.SendNotification(this, "Calculating your seed(s)...");
+            
             var ec = pk.EncryptionConstant;
             var pid = pk.PID;
             var IVs = pk.IVs.Length == 0 ? GetBlankIVTemplate() : PKX.ReorderSpeedLast((int[])pk.IVs.Clone());
@@ -539,7 +543,6 @@ namespace SysBot.Pokemon
                 detail.SendNotification(this, msg);
             }
 
-            detail.TradeFinished(this, pk);
             Hub.Counts.AddCompletedDudu();
 
             await Task.Delay(5_000, token).ConfigureAwait(false);
