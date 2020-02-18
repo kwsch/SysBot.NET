@@ -36,9 +36,10 @@ namespace SysBot.Pokemon
 
         protected override async Task MainLoop(CancellationToken token)
         {
-            await EchoCommands(false, token).ConfigureAwait(false);
+            Connection.Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);
 
+            Connection.Log("Checking destination slot for eggs to see if anything is in the slot...");
             var existing = await GetBoxSlotQuality(InjectBox, InjectSlot, token).ConfigureAwait(false);
             if (existing.Quality != SlotQuality.Overwritable)
             {
@@ -46,6 +47,7 @@ namespace SysBot.Pokemon
                 return;
             }
 
+            Connection.Log("Starting main EggBot loop.");
             var blank = new PK8();
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EggFetch)
             {
@@ -94,6 +96,7 @@ namespace SysBot.Pokemon
 
         private async Task<int> StepUntilEgg(CancellationToken token)
         {
+            Connection.Log("Walking around until an egg is ready...");
             int attempts = 0;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EggFetch)
             {

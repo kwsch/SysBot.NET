@@ -41,9 +41,10 @@ namespace SysBot.Pokemon
 
         protected override async Task MainLoop(CancellationToken token)
         {
-            await EchoCommands(false, token).ConfigureAwait(false);
+            Connection.Log("Identifying trainer data of the host console.");
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
             Hub.Bots.Add(this);
+            Connection.Log("Starting main TradeBot loop.");
             while (!token.IsCancellationRequested)
             {
                 Config.IterateNextRoutine();

@@ -18,6 +18,7 @@ namespace SysBot.Base
         {
             Connection.Connect(IP, Port);
             Connected = true;
+            Log("Connected!");
         }
 
         public void Disconnect()

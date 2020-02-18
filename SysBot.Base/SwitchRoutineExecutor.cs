@@ -24,6 +24,8 @@ namespace SysBot.Base
         public async Task RunAsync(CancellationToken token)
         {
             Connection.Connect();
+            Connection.Log("Initializing connection with console...");
+            await EchoCommands(false, token).ConfigureAwait(false);
             await MainLoop(token).ConfigureAwait(false);
             Connection.Disconnect();
         }
