@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using PKHeX.Core;
 using SysBot.Pokemon.Discord;
+using SysBot.Pokemon.Twitch;
 
 namespace SysBot.Pokemon
 {
@@ -13,10 +14,31 @@ namespace SysBot.Pokemon
         public BotEnvironmentImpl(PokeTradeHub<PK8> hub) : base(hub) { }
         public BotEnvironmentImpl(PokeTradeHubConfig config) : base(config) { }
 
+        private TwitchBot? Twitch;
+
         protected override void AddIntegrations()
         {
             if (!string.IsNullOrWhiteSpace(Hub.Config.DiscordToken))
                 AddDiscordBot(Hub.Config.DiscordToken);
+
+            if (!string.IsNullOrWhiteSpace(Hub.Config.TwitchToken))
+                AddTwitchBot(Hub.Config);
+        }
+
+        private void AddTwitchBot(ITwitchSettings config)
+        {
+            if (Twitch != null)
+                return; // already created
+
+            if (string.IsNullOrWhiteSpace(config.TwitchChannel))
+                return;
+            if (string.IsNullOrWhiteSpace(config.TwitchUsername))
+                return;
+            if (string.IsNullOrWhiteSpace(config.TwitchToken))
+                return;
+
+            Twitch = new TwitchBot(config.TwitchUsername, config.TwitchToken, config.TwitchChannel);
+            Hub.BarrierReleasingActions.Add(() => Twitch.StartingDistribution(config.TwitchMessageStart));
         }
 
         private void AddDiscordBot(string apiToken)

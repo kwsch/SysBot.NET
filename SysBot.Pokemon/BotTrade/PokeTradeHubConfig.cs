@@ -6,12 +6,13 @@ using PKHeX.Core;
 
 namespace SysBot.Pokemon
 {
-    public sealed class PokeTradeHubConfig : IDumper, IPoolSettings
+    public sealed class PokeTradeHubConfig : IDumper, IPoolSettings, ITwitchSettings
     {
         private const string FeatureToggle = nameof(FeatureToggle);
         private const string Files = nameof(Files);
         private const string TradeCode = nameof(TradeCode);
-        private const string Integration = nameof(Integration);
+        private const string IntegrationDiscord = nameof(IntegrationDiscord);
+        private const string IntegrationTwitch = nameof(IntegrationTwitch);
         private const string Legality = nameof(Legality);
         private const string Metadata = nameof(Metadata);
 
@@ -94,26 +95,38 @@ namespace SysBot.Pokemon
         #region Integration
         private const string DefaultDisable = "DISABLE";
 
-        [Category(Integration), Description("Discord Bot: Bot Login Token")]
+        [Category(IntegrationDiscord), Description("Discord Bot: Bot Login Token")]
         public string DiscordToken { get; set; } = string.Empty;
 
-        [Category(Integration), Description("Discord Bot: Bot Command Prefix")]
+        [Category(IntegrationDiscord), Description("Discord Bot: Bot Command Prefix")]
         public string DiscordCommandPrefix { get; set; } = "$";
 
-        [Category(Integration), Description("Discord Bot: Users with this role are allowed to enter the Trade queue.")]
+        [Category(IntegrationDiscord), Description("Discord Bot: Users with this role are allowed to enter the Trade queue.")]
         public string DiscordRoleCanTrade { get; set; } = DefaultDisable;
 
-        [Category(Integration), Description("Discord Bot: Users with this role are allowed to enter the Dudu queue.")]
+        [Category(IntegrationDiscord), Description("Discord Bot: Users with this role are allowed to enter the Dudu queue.")]
         public string DiscordRoleCanDudu { get; set; } = DefaultDisable;
 
-        [Category(Integration), Description("Discord Bot: Users with this role are allowed to bypass command restrictions.")]
+        [Category(IntegrationDiscord), Description("Discord Bot: Users with this role are allowed to bypass command restrictions.")]
         public string DiscordRoleSudo { get; set; } = DefaultDisable;
 
-        [Category(Integration), Description("Global Sudo: Disabling this will remove global sudo support.")]
+        [Category(IntegrationDiscord), Description("Global Sudo: Disabling this will remove global sudo support.")]
         public bool AllowGlobalSudo { get; set; } = true;
 
-        [Category(Integration), Description("Global Sudo List: Comma separated Discord user IDs that will have sudo access to the Bot Hub.")]
+        [Category(IntegrationDiscord), Description("Global Sudo List: Comma separated Discord user IDs that will have sudo access to the Bot Hub.")]
         public string GlobalSudoList { get; set; } = string.Empty;
+
+        [Category(IntegrationTwitch), Description("Twitch Bot: Bot Login Token")]
+        public string TwitchToken { get; set; } = string.Empty;
+
+        [Category(IntegrationTwitch), Description("Twitch Bot: Bot Username")]
+        public string TwitchUsername { get; set; } = string.Empty;
+
+        [Category(IntegrationTwitch), Description("Twitch Bot: Channel to Send Messages To")]
+        public string TwitchChannel { get; set; } = string.Empty;
+
+        [Category(IntegrationTwitch), Description("Twitch Bot: Message sent when the Barrier is released.")]
+        public string TwitchMessageStart { get; set; } = string.Empty;
         #endregion
 
         #region Legality
@@ -154,5 +167,15 @@ namespace SysBot.Pokemon
             Directory.CreateDirectory(distribute);
             DistributeFolder = distribute;
         }
+    }
+
+    public interface ITwitchSettings
+    {
+        string TwitchToken { get; }
+
+        string TwitchUsername { get; }
+
+        string TwitchChannel { get; }
+        string TwitchMessageStart { get; }
     }
 }

@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SysBot.Pokemon.WinForms", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SysBot.Pokemon.Discord", "SysBot.Pokemon.Discord\SysBot.Pokemon.Discord.csproj", "{C4BE4124-C1CF-4A81-AA7C-DE96A169CF1D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SysBot.Pokemon.Twitch", "SysBot.Pokemon.Twitch\SysBot.Pokemon.Twitch.csproj", "{5CA6568C-CD16-499C-A63F-8EF86AAF4499}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +87,18 @@ Global
 		{C4BE4124-C1CF-4A81-AA7C-DE96A169CF1D}.Release|x64.Build.0 = Release|x64
 		{C4BE4124-C1CF-4A81-AA7C-DE96A169CF1D}.Release|x86.ActiveCfg = Release|Any CPU
 		{C4BE4124-C1CF-4A81-AA7C-DE96A169CF1D}.Release|x86.Build.0 = Release|Any CPU
+		{5CA6568C-CD16-499C-A63F-8EF86AAF4499}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CA6568C-CD16-499C-A63F-8EF86AAF4499}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CA6568C-CD16-499C-A63F-8EF86AAF4499}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5CA6568C-CD16-499C-A63F-8EF86AAF4499}.Debug|x64.Build.0 = Debug|Any CPU
+		{5CA6568C-CD16-499C-A63F-8EF86AAF4499}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5CA6568C-CD16-499C-A63F-8EF86AAF4499}.Debug|x86.Build.0 = Debug|Any CPU
+		{5CA6568C-CD16-499C-A63F-8EF86AAF4499}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CA6568C-CD16-499C-A63F-8EF86AAF4499}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5CA6568C-CD16-499C-A63F-8EF86AAF4499}.Release|x64.ActiveCfg = Release|Any CPU
+		{5CA6568C-CD16-499C-A63F-8EF86AAF4499}.Release|x64.Build.0 = Release|Any CPU
+		{5CA6568C-CD16-499C-A63F-8EF86AAF4499}.Release|x86.ActiveCfg = Release|Any CPU
+		{5CA6568C-CD16-499C-A63F-8EF86AAF4499}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
