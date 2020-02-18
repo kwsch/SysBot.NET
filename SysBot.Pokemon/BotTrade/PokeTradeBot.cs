@@ -248,7 +248,7 @@ namespace SysBot.Pokemon
             }
 
             for (int i = 0; i < 5; i++)
-                await Click(A, 2_000, token).ConfigureAwait(false);
+                await Click(A, 0_500, token).ConfigureAwait(false);
 
             poke.SendNotification(this, $"Found Trading Partner: {TrainerName}. Waiting for a Pokemon ...");
 

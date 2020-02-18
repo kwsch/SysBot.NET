@@ -52,8 +52,6 @@ namespace SysBot.Pokemon.Twitch
                 await Task.Delay(1_000).ConfigureAwait(false);
                 client.SendMessage(Channel, "1...");
                 await Task.Delay(1_000).ConfigureAwait(false);
-                client.SendMessage(Channel, "1...");
-                await Task.Delay(1_000).ConfigureAwait(false);
                 if (!string.IsNullOrWhiteSpace(message))
                     client.SendMessage(Channel, message);
             });
