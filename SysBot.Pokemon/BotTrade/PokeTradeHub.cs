@@ -24,26 +24,14 @@ namespace SysBot.Pokemon
             Barrier = new Barrier(0, ReleaseBarrier);
             BarrierReleasingActions.Add(() =>
                 LogUtil.Log(LogLevel.Info, $"{Barrier.ParticipantCount} bots released.", "Barrier"));
+            Counts = new BotCompleteCounts(Config);
         }
 
         public static readonly PokeTradeLogNotifier<T> LogNotifier = new PokeTradeLogNotifier<T>();
 
         public readonly PokeTradeHubConfig Config;
-
-        public void Initialize()
-        {
-            CompletedTrades = Config.CompletedTrades;
-        }
-
         #region Trade Tracking
 
-        public int CompletedTrades;
-
-        public void AddCompletedTrade()
-        {
-            Interlocked.Increment(ref CompletedTrades);
-            Config.CompletedTrades = CompletedTrades;
-        }
         #endregion
 
         #region Barrier Synchronization
@@ -73,6 +61,7 @@ namespace SysBot.Pokemon
         public readonly PokeTradeQueue<T> Dudu = new PokeTradeQueue<T>();
         public readonly PokemonPool<T> Pool;
         public readonly ConcurrentPool<PokeTradeBot> Bots = new ConcurrentPool<PokeTradeBot>();
+        public readonly BotCompleteCounts Counts;
 
         public PokeTradeQueue<T> GetQueue(PokeRoutineType type)
         {

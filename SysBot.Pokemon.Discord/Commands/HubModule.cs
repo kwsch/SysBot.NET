@@ -26,8 +26,19 @@ namespace SysBot.Pokemon.Discord
                 x.Value =
                     $"Bot Count: {hub.Bots.Count}\n" +
                     $"Bot State: {SummarizeBots(hub)}\n" +
-                    $"Completed Trades: {hub.Config.CompletedTrades}\n" +
                     $"Pool Count: {hub.Pool.Count}\n";
+                x.IsInline = false;
+            });
+
+            builder.AddField(x =>
+            {
+                x.Name = "Counts";
+                x.Value =
+                    $"Completed Trades: {hub.Config.CompletedTrades}\n" +
+                    $"Distribution Trades: {hub.Config.CompletedDistribution}\n" +
+                    $"Surprise Trades: {hub.Config.CompletedSurprise}\n" +
+                    $"Eggs Received: {hub.Config.CompletedEggs}\n" +
+                    $"Dudu Trades: {hub.Config.CompletedDudu}\n";
                 x.IsInline = false;
             });
 

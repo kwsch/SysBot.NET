@@ -46,9 +46,9 @@ namespace SysBot.Pokemon.Discord
             string OT = cfg.GenerateOT;
             int TID = cfg.GenerateTID16;
             int SID = cfg.GenerateSID16;
-            int lang = cfg.GenerateLanguage;
+            int lang = (int)cfg.GenerateLanguage;
 
-            var externalSource = cfg.GeneratePathSaveFiles;
+            var externalSource = cfg.GeneratePathTrainerInfo;
             if (!string.IsNullOrWhiteSpace(externalSource) && Directory.Exists(externalSource))
                 TrainerSettings.LoadTrainerDatabaseFromPath(externalSource);
 

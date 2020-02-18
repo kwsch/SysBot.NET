@@ -25,7 +25,7 @@ namespace SysBot.Pokemon
         public void Start(BotList cfg)
         {
             CreateBots(cfg.Bots);
-            Hub.Initialize();
+            Hub.Counts.ReloadCounts(); // if user modified them
 
             var token = Source.Token;
             var tasks = CreateBotTasks(token);
@@ -96,7 +96,7 @@ namespace SysBot.Pokemon
                     return new PokeTradeBot(Hub, cfg);
 
                 case PokeRoutineType.EggFetch:
-                    return new EggBot(cfg);
+                    return new EggBot(cfg, Hub.Counts);
 
                 default:
                     throw new ArgumentException(nameof(cfg.NextRoutineType));
@@ -107,7 +107,12 @@ namespace SysBot.Pokemon
         {
             Source.Cancel();
             IsRunning = false;
-            Hub.Barrier.RemoveParticipants(Hub.Barrier.ParticipantCount);
+
+            // bots currently don't de-register
+            Thread.Sleep(100);
+            int count = Hub.Barrier.ParticipantCount;
+            if (count != 0)
+                Hub.Barrier.RemoveParticipants(count);
         }
     }
 }
