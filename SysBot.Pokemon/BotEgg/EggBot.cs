@@ -45,34 +45,17 @@ namespace SysBot.Pokemon
                 PrintBadSlotMessage(existing);
                 return;
             }
+
             var blank = new PK8();
-            while (!token.IsCancellationRequested)
+            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EggFetch)
             {
                 // Walk a step left, then right => check if egg was generated on this attempt.
                 // Repeat until an egg is generated.
-                int attempts = 0;
-                while (true)
-                {
-                    await SetEggStepCounter(Location, token).ConfigureAwait(false);
+                var attempts = await StepUntilEgg(token).ConfigureAwait(false);
+                if (attempts < 0) // aborted
+                    continue;
 
-                    // Walk Diagonally Left
-                    await SetStick(LEFT, -19000, 19000, 500, token).ConfigureAwait(false);
-                    await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false); // reset
-
-                    // Walk Diagonally Right, slightly longer to ensure we stay at the Daycare lady.
-                    await SetStick(LEFT, 19000, 19000, 550, token).ConfigureAwait(false);
-                    await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false); // reset
-
-                    bool checkEgg = await IsEggReady(Location, token).ConfigureAwait(false);
-                    if (checkEgg)
-                        break;
-
-                    attempts++;
-                    if (attempts % 10 == 0)
-                        Connection.Log($"Tried {attempts} times, still no egg.");
-                }
-
-                Connection.Log("Egg available! Clearing destination slot.");
+                Connection.Log($"Egg available after {attempts} attempts! Clearing destination slot.");
                 await SetBoxPokemon(blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
 
                 for (int i = 0; i < 4; i++)
@@ -107,6 +90,33 @@ namespace SysBot.Pokemon
 
             // If aborting the sequence, we might have the stick set at some position. Clear it just in case.
             await SetStick(LEFT, 0, 0, 0, CancellationToken.None).ConfigureAwait(false); // reset
+        }
+
+        private async Task<int> StepUntilEgg(CancellationToken token)
+        {
+            int attempts = 0;
+            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EggFetch)
+            {
+                await SetEggStepCounter(Location, token).ConfigureAwait(false);
+
+                // Walk Diagonally Left
+                await SetStick(LEFT, -19000, 19000, 500, token).ConfigureAwait(false);
+                await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false); // reset
+
+                // Walk Diagonally Right, slightly longer to ensure we stay at the Daycare lady.
+                await SetStick(LEFT, 19000, 19000, 550, token).ConfigureAwait(false);
+                await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false); // reset
+
+                bool eggReady = await IsEggReady(Location, token).ConfigureAwait(false);
+                if (eggReady)
+                    return attempts;
+
+                attempts++;
+                if (attempts % 10 == 0)
+                    Connection.Log($"Tried {attempts} times, still no egg.");
+            }
+
+            return -1; // aborted
         }
     }
 }
