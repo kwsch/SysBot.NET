@@ -9,6 +9,8 @@ namespace SysBot.Pokemon
 {
     public class EggBot : PokeRoutineExecutor, IDumper
     {
+        private readonly BotCompleteCounts Counts;
+
         /// <summary>
         /// Folder to dump received trade data to.
         /// </summary>
@@ -23,7 +25,7 @@ namespace SysBot.Pokemon
 
         private const SwordShieldDaycare Location = SwordShieldDaycare.Route5;
 
-        public EggBot(PokeBotConfig cfg) : base(cfg) { }
+        public EggBot(PokeBotConfig cfg, BotCompleteCounts counts) : base(cfg) => Counts = counts;
 
         private int encounterCount;
 
@@ -90,6 +92,7 @@ namespace SysBot.Pokemon
                 }
 
                 Connection.Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
+                Counts.AddCompletedEggs();
 
                 if (Dump && !string.IsNullOrEmpty(DumpFolder))
                     DumpPokemon(DumpFolder, pk);

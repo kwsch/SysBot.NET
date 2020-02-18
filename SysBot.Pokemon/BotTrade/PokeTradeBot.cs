@@ -29,6 +29,11 @@ namespace SysBot.Pokemon
         /// </summary>
         public bool ShouldWaitAtBarrier { get; private set; }
 
+        /// <summary>
+        /// Tracks failed synchronized starts to attempt to re-sync.
+        /// </summary>
+        public int FailedBarrier { get; private set; }
+
         public PokeTradeBot(PokeTradeHub<PK8> hub, PokeBotConfig cfg) : base(cfg) => Hub = hub;
 
         private const int InjectBox = 0;
@@ -105,7 +110,7 @@ namespace SysBot.Pokemon
                 }
             }
 
-            ExitLinkTradeRoutine();
+            UpdateBarrier(false);
         }
 
         private async Task DoDuduTrades(CancellationToken token)
@@ -143,6 +148,8 @@ namespace SysBot.Pokemon
                     }
                 }
             }
+
+            UpdateBarrier(false);
         }
 
         private async Task DoSurpriseTrades(SAV8SWSH sav, CancellationToken token)
@@ -158,7 +165,8 @@ namespace SysBot.Pokemon
         private async Task<PokeTradeResult> PerformLinkCodeTrade(SAV8SWSH sav, PokeTradeDetail<PK8> poke, CancellationToken token)
         {
             // Update Barrier Settings
-            ShouldWaitAtBarrier = UpdateBarrier(Hub.Barrier, poke.IsRandomCode, ShouldWaitAtBarrier);
+            UpdateBarrier(poke.IsRandomCode);
+            bool dist = poke.IsRandomCode;
             var code = poke.Code;
             if (code == PokeTradeDetail<PK8>.RandomCode)
                 poke.Code = code = Hub.Config.GetRandomTradeCode();
@@ -192,8 +200,7 @@ namespace SysBot.Pokemon
             await EnterTradeCode(code, token).ConfigureAwait(false);
 
             // Wait for Barrier to trigger all bots simultaneously.
-            if (ShouldWaitAtBarrier && Hub.Config.SynchronizeLinkTradeBots)
-                Hub.Barrier.SignalAndWait(TimeSpan.FromSeconds(Hub.Config.SynchronizeLinkTradeBotsTimeout), token);
+            WaitAtBarrierIfApplicable(token);
             await Click(PLUS, 1_000, token).ConfigureAwait(false);
 
             // Start a Link Trade, in case of Empty Slot/Egg/Bad Pokemon we press sometimes B to return to the Overworld and skip this Slot.
@@ -286,11 +293,14 @@ namespace SysBot.Pokemon
 
             poke.TradeFinished(this, traded);
             Connection.Log("Trade complete!");
-            Hub.AddCompletedTrade();
+
+            if (dist)
+                Hub.Counts.AddCompletedDistribution();
+            else
+                Hub.Counts.AddCompletedTrade();
+
             if (Dump && !string.IsNullOrEmpty(DumpFolder))
-            {
                 DumpPokemon(DumpFolder, traded);
-            }
 
             return PokeTradeResult.Success;
         }
@@ -405,6 +415,7 @@ namespace SysBot.Pokemon
 
             if (Dump && !string.IsNullOrEmpty(DumpFolder))
                 DumpPokemon(DumpFolder, SuprisePoke);
+            Hub.Counts.AddCompletedSurprise();
 
             return PokeTradeResult.Success;
         }
@@ -412,7 +423,7 @@ namespace SysBot.Pokemon
         private async Task<PokeTradeResult> PerformDuduTrade(PokeTradeDetail<PK8> detail, CancellationToken token)
         {
             // Update Barrier Settings
-            ShouldWaitAtBarrier = UpdateBarrier(Hub.Barrier, detail.IsRandomCode, ShouldWaitAtBarrier);
+            UpdateBarrier(detail.IsRandomCode);
             var code = detail.Code;
             if (code == PokeTradeDetail<PK8>.RandomCode)
                 detail.Code = code = Hub.Config.GetRandomTradeCode();
@@ -444,7 +455,9 @@ namespace SysBot.Pokemon
 
             // Wait for Barrier to trigger all bots simultaneously.
             if (ShouldWaitAtBarrier && Hub.Config.SynchronizeLinkTradeBots)
+            {
                 Hub.Barrier.SignalAndWait(TimeSpan.FromSeconds(60), token);
+            }
             await Click(PLUS, 0_100, token).ConfigureAwait(false);
 
             // Start a Link Trade, in case of Empty Slot/Egg/Bad Pokemon we press sometimes B to return to the Overworld and skip this Slot.
@@ -530,20 +543,31 @@ namespace SysBot.Pokemon
             }
 
             detail.TradeFinished(this, pk);
+            Hub.Counts.AddCompletedDudu();
 
             await Task.Delay(5_000, token).ConfigureAwait(false);
 
             return PokeTradeResult.Success;
         }
 
-        private void ExitLinkTradeRoutine()
+        private void WaitAtBarrierIfApplicable(CancellationToken token)
         {
-            // On exit, remove self from Barrier list
-            if (ShouldWaitAtBarrier)
+            if (!ShouldWaitAtBarrier || !Hub.Config.SynchronizeLinkTradeBots)
+                return;
+
+            var timeoutAfter = Hub.Config.SynchronizeLinkTradeBotsTimeout;
+            if (FailedBarrier == 1) // failed last iteration
+                timeoutAfter *= 2; // try to re-sync in the event things are too slow.
+
+            bool result = Hub.Barrier.SignalAndWait(TimeSpan.FromSeconds(timeoutAfter), token);
+            if (result)
             {
-                Hub.Barrier.RemoveParticipant();
-                ShouldWaitAtBarrier = false;
+                FailedBarrier = 0;
+                return;
             }
+
+            FailedBarrier++;
+            Connection.Log($"Barrier sync timed out after {timeoutAfter} seconds. Continuing.");
         }
 
         /// <summary>
@@ -551,24 +575,24 @@ namespace SysBot.Pokemon
         /// If it should be considered, it adds it to the barrier if it is not already added.
         /// If it should not be considered, it removes it from the barrier if not already removed.
         /// </summary>
-        private bool UpdateBarrier(Barrier b, bool shouldWait, bool alreadyWait)
+        private void UpdateBarrier(bool shouldWait)
         {
             if (shouldWait)
             {
-                if (alreadyWait)
-                    return true;
+                if (ShouldWaitAtBarrier)
+                    return;
 
-                b.AddParticipant();
-                Connection.Log($"Joined the Barrier. Count: {b.ParticipantCount}");
-                return true;
+                ShouldWaitAtBarrier = true;
+                Hub.Barrier.AddParticipant();
+                Connection.Log($"Joined the Barrier. Count: {Hub.Barrier.ParticipantCount}");
             }
 
-            if (!alreadyWait)
-                return false;
+            if (!ShouldWaitAtBarrier)
+                return;
 
-            b.RemoveParticipant();
-            Connection.Log($"Left the Barrier. Count: {b.ParticipantCount}");
-            return false;
+            ShouldWaitAtBarrier = false;
+            Hub.Barrier.RemoveParticipant();
+            Connection.Log($"Left the Barrier. Count: {Hub.Barrier.ParticipantCount}");
         }
     }
 }

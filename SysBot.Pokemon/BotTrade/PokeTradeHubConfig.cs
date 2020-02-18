@@ -11,6 +11,7 @@ namespace SysBot.Pokemon
         private const string TradeCode = nameof(TradeCode);
         private const string Integration = nameof(Integration);
         private const string Legality = nameof(Legality);
+        private const string Metadata = nameof(Metadata);
 
         #region Toggles
         [Category(FeatureToggle), Description("When enabled, dumps any received PKM files (trade results) to the DumpFolder.")]
@@ -66,15 +67,26 @@ namespace SysBot.Pokemon
         public int MaxTradeCode { get; set; } = 8199;
 
         /// <summary>
-        /// Amount of Trades that have been completed.
-        /// </summary>
-        [Category(TradeCode), Description("Completed Trades.")]
-        public int CompletedTrades { get; set; }
-
-        /// <summary>
         /// Gets a random trade code based on the range settings.
         /// </summary>
         public int GetRandomTradeCode() => PKHeX.Core.Util.Rand.Next(MinTradeCode, MaxTradeCode + 1);
+        #endregion
+
+        #region Counts
+        [Category(Metadata), Description("Completed Surprise Trades")]
+        public int CompletedSurprise { get; set; }
+
+        [Category(Metadata), Description("Completed Link Trades (Distribution)")]
+        public int CompletedDistribution { get; set; }
+
+        [Category(Metadata), Description("Completed Link Trades (Specific User)")]
+        public int CompletedTrades { get; set; }
+
+        [Category(Metadata), Description("Completed Dudu Trades")]
+        public int CompletedDudu { get; set; }
+
+        [Category(Metadata), Description("Eggs Retrieved")]
+        public int CompletedEggs { get; set; }
         #endregion
 
         #region Integration
