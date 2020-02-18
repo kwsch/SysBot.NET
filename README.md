@@ -35,7 +35,7 @@ Supported Pokémon Sword/Shield Bots:
 
 ## SysBot.Pokemon.Twitch:
 - Twitch.tv interface for remotely announcing when the distribution starts.
-- Provide a discord login token, username, and channel for login.
+- Provide a Twitch login token, username, and channel for login.
 
 Uses [Discord.Net](https://github.com/discord-net/Discord.Net) and [TwitchLib](https://github.com/TwitchLib/TwitchLib) as a dependency via Nuget.
 
