@@ -169,27 +169,27 @@ namespace SysBot.Pokemon
             }
         }
 
-        public async Task ExitTrade(bool UnExpected, CancellationToken token)
+        public async Task ExitTrade(bool unexpected, CancellationToken token)
         {
-            if (UnExpected)
+            if (unexpected)
                 Connection.Log("Unexpected behavior, recover position");
 
-            int attemps = 0;
-            uint ScreenID = 0;
-            int SoftbannAttemps = 0;
-            while (ScreenID != CurrentScreen_Overworld)
+            int attempts = 0;
+            uint screenID = 0;
+            int softBanAttempts = 0;
+            while (screenID != CurrentScreen_Overworld)
             {
-                ScreenID = await GetCurrentScreen(token).ConfigureAwait(false);
+                screenID = await GetCurrentScreen(token).ConfigureAwait(false);
 
-                if(ScreenID == CurrentScreen_Softbann)
+                if(screenID == CurrentScreen_Softbann)
                 {
-                    SoftbannAttemps++;
-                    if (SoftbannAttemps > 10)
-                        await ReOpenGame(token);
+                    softBanAttempts++;
+                    if (softBanAttempts > 10)
+                        await ReOpenGame(token).ConfigureAwait(false);
                 }
 
-                attemps++;
-                if (attemps >= 15)
+                attempts++;
+                if (attempts >= 15)
                     break;
 
                 await Click(B, 1_000, token).ConfigureAwait(false);
@@ -201,11 +201,11 @@ namespace SysBot.Pokemon
         public async Task ExitDuduTrade(CancellationToken token)
         {
             // Dudubot doesn't show anything, so it can skip the first B press.
-            int attemps = 0;
+            int attempts = 0;
             while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
-                attemps++;
-                if (attemps >= 15)
+                attempts++;
+                if (attempts >= 15)
                     break;
 
                 await Click(B, 1_000, token).ConfigureAwait(false);
@@ -215,8 +215,8 @@ namespace SysBot.Pokemon
 
         public async Task ReOpenGame(CancellationToken token)
         {
-            // Reopen The Game if we got a Softbann
-            Connection.Log("Potential Softban detected, Reopen Game just in case!");
+            // Reopen The Game if we got a Soft-ban
+            Connection.Log("Potential Soft-ban detected, Reopen Game just in case!");
             await Click(HOME, 2000, token).ConfigureAwait(false);
             await Click(X, 1000, token).ConfigureAwait(false);
             await Click(A, 5000, token).ConfigureAwait(false);
