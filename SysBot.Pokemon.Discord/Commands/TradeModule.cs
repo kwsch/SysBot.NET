@@ -148,7 +148,7 @@ namespace SysBot.Pokemon.Discord
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[set.Species];
             var msg = la.Valid
-                ? $"Here's your ({result}) legalized PKM for {spec}!"
+                ? $"Here's your ({result}) legalized PKM for {spec} ({la.EncounterOriginal.Name})!"
                 : $"Oops! I wasn't able to create something from that. Here's my best attempt for that {spec}!";
 
             if (!la.Valid || !(pkm is PK8 pk8))
