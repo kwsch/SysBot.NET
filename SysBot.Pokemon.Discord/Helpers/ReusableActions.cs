@@ -58,18 +58,13 @@ namespace SysBot.Pokemon.Discord
 
         private const string ALLOW_ALL = "@everyone";
 
-        public static bool GetHasRole(this SocketCommandContext Context, string RequiredRole)
+        public static bool GetHasRole(this SocketCommandContext Context, string rolesPermitted)
         {
-            if (RequiredRole == ALLOW_ALL)
+            if (rolesPermitted == ALLOW_ALL)
                 return true;
-            var guild = Context.Guild;
-            var role = guild.Roles.FirstOrDefault(x => x.Name == RequiredRole);
-            if (role == default)
-                return false;
 
             var igu = (SocketGuildUser)Context.User;
-            bool hasRole = igu.Roles.Contains(role);
-            return hasRole;
+            return igu.Roles.Any(z => rolesPermitted.Contains(z.Name));
         }
 
         public static async Task SendPKMAsShowdownSetAsync(this ISocketMessageChannel channel, PKM pkm)
