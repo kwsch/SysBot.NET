@@ -180,8 +180,7 @@ namespace SysBot.Pokemon
             while (screenID != CurrentScreen_Overworld)
             {
                 screenID = await GetCurrentScreen(token).ConfigureAwait(false);
-
-                if(screenID == CurrentScreen_Softbann)
+                if (screenID == CurrentScreen_Softbann)
                 {
                     softBanAttempts++;
                     if (softBanAttempts > 10)
@@ -221,14 +220,18 @@ namespace SysBot.Pokemon
             await Click(X, 1000, token).ConfigureAwait(false);
             await Click(A, 5000, token).ConfigureAwait(false);
 
-            for(int i = 0; i < 30; i++)
+            for (int i = 0; i < 30; i++)
                 await Click(A, 1000, token).ConfigureAwait(false);
 
+            // In case we are Soft-banned we reset the Timestamp
             await Unban(token).ConfigureAwait(false);
         }
 
         public async Task Unban(CancellationToken token)
         {
+            // Like previous Generations the Game uses a Unix Timestamp for 
+            // how long we are Soft-Banned and once the Soft-Ban is lifted
+            // the Game sets the value back to 0 (1970/01/01 12:00 AM (UTC) )
             var data = BitConverter.GetBytes(0);
             await Connection.WriteBytesAsync(data, SoftBanUnixTimespanOffset, token).ConfigureAwait(false);
         }
