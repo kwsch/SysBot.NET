@@ -175,8 +175,19 @@ namespace SysBot.Pokemon
                 Connection.Log("Unexpected behavior, recover position");
 
             int attemps = 0;
-            while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            uint ScreenID = 0;
+            int SoftbannAttemps = 0;
+            while (ScreenID != CurrentScreen_Overworld)
             {
+                ScreenID = await GetCurrentScreen(token).ConfigureAwait(false);
+
+                if(ScreenID == CurrentScreen_Softbann)
+                {
+                    SoftbannAttemps++;
+                    if (SoftbannAttemps > 10)
+                        await ReOpenGame(token);
+                }
+
                 attemps++;
                 if (attemps >= 15)
                     break;
@@ -200,6 +211,26 @@ namespace SysBot.Pokemon
                 await Click(B, 1_000, token).ConfigureAwait(false);
                 await Click(A, 1_000, token).ConfigureAwait(false);
             }
+        }
+
+        public async Task ReOpenGame(CancellationToken token)
+        {
+            // Reopen The Game if we got a Softbann
+            Connection.Log("Potential Softban detected, Reopen Game just in case!");
+            await Click(HOME, 2000, token).ConfigureAwait(false);
+            await Click(X, 1000, token).ConfigureAwait(false);
+            await Click(A, 5000, token).ConfigureAwait(false);
+
+            for(int i = 0; i < 30; i++)
+                await Click(A, 1000, token).ConfigureAwait(false);
+
+            await Unban(token).ConfigureAwait(false);
+        }
+
+        public async Task Unban(CancellationToken token)
+        {
+            var data = BitConverter.GetBytes(0);
+            await Connection.WriteBytesAsync(data, SoftBanUnixTimespanOffset, token).ConfigureAwait(false);
         }
 
         public async Task ResetTradePosition(CancellationToken token)

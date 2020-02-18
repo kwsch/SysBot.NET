@@ -177,10 +177,10 @@ namespace SysBot.Pokemon
             await Click(Y, 2_000, token).ConfigureAwait(false);
 
             Connection.Log("Select Link Trade");
-            await Click(A, 1_000, token).ConfigureAwait(false);
+            await Click(A, 1_500, token).ConfigureAwait(false);
 
             Connection.Log("Select Link Trade Code");
-            await Click(DDOWN, 200, token).ConfigureAwait(false);
+            await Click(DDOWN, 500, token).ConfigureAwait(false);
 
             for (int i = 0; i < 2; i++)
                 await Click(A, 2_000, token).ConfigureAwait(false);

@@ -6,6 +6,7 @@ namespace SysBot.Pokemon
     {
         public const uint BoxStartOffset = 0x4293D8B0;
         public const uint TrainerDataOffset = 0x42935E48;
+        public const uint SoftBanUnixTimespanOffset = 0x4298f9f8;
 
         public const uint IsConnectedOffset = 0x2f865c78;
 
@@ -72,6 +73,8 @@ namespace SysBot.Pokemon
         public const uint CurrentScreen_Box = 0xFF00D59B;
         public const uint CurrentScreen_Box_WaitingForOffer = 0xC800B483;
         public const uint CurrentScreen_Box_ConfirmOffer = 0xFF00B483;
+
+        public const uint CurrentScreen_Softbann = 0xFF000000;
 
         //public const uint CurrentScreen_YMenu = 0xFFFF7983;
         #endregion
