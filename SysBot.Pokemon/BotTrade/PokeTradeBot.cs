@@ -574,22 +574,20 @@ namespace SysBot.Pokemon
         /// </summary>
         private void UpdateBarrier(bool shouldWait)
         {
+            if (ShouldWaitAtBarrier == shouldWait)
+                return; // no change required
+
+            ShouldWaitAtBarrier = shouldWait;
             if (shouldWait)
             {
-                if (ShouldWaitAtBarrier)
-                    return;
-
-                ShouldWaitAtBarrier = true;
                 Hub.Barrier.AddParticipant();
                 Connection.Log($"Joined the Barrier. Count: {Hub.Barrier.ParticipantCount}");
             }
-
-            if (!ShouldWaitAtBarrier)
-                return;
-
-            ShouldWaitAtBarrier = false;
-            Hub.Barrier.RemoveParticipant();
-            Connection.Log($"Left the Barrier. Count: {Hub.Barrier.ParticipantCount}");
+            else
+            {
+                Hub.Barrier.RemoveParticipant();
+                Connection.Log($"Left the Barrier. Count: {Hub.Barrier.ParticipantCount}");
+            }
         }
     }
 }
