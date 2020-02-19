@@ -14,12 +14,13 @@ pool:
   - visualstudio
 
 variables:
-  solution: '**/*.sln'
-  buildPlatform: 'x64'
-  buildConfiguration: 'Release'
+  Solution: '**/*.sln'
+  Platform: 'x64'
+  Configuration: 'Release'
 
 steps:
 - task: NuGetToolInstaller@1
+
 - task: NuGetCommand@2
   inputs:
     command: 'restore'
@@ -31,9 +32,9 @@ steps:
 
 - task: VSBuild@1
   inputs:
-    solution: '$(solution)'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    solution: '$(Solution)'
+    platform: '$(Platform)'
+    configuration: '$(Configuration)'
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact: SysBot-x64'
