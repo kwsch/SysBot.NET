@@ -42,6 +42,8 @@ namespace SysBot.Pokemon
 
         public readonly List<Action> BarrierReleasingActions = new List<Action>();
 
+        public readonly EventWaitHandle RemoteBarrier = new EventWaitHandle(false, EventResetMode.AutoReset, "Remote");
+
         /// <summary>
         /// When the Barrier releases the bots, this method is executed before the bots continue execution.
         /// </summary>

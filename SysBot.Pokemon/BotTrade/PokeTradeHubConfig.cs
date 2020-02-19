@@ -35,14 +35,14 @@ namespace SysBot.Pokemon
         [Category(FeatureToggle), Description("Link Trade: Enables trading priority files sourced from the priority folder. This is not necessary if an integration service (e.g. Discord) is adding to the queue from the same executable process.")]
         public bool MonitorForPriorityTrades { get; set; }
 
-        [Category(FeatureToggle), Description("Link Trade: Using multiple distribution bots -- all bots will confirm their trade code at the same time.")]
-        public bool SynchronizeLinkTradeBots { get; set; } = true;
+        [Category(FeatureToggle), Description("Link Trade: Using multiple distribution bots -- all bots will confirm their trade code at the same time. When Local, the bots will continue when all are at the barrier. When Remote, something else must signal the bots to continue.")]
+        public BotSyncOption SynchronizeLinkTradeBots { get; set; } = BotSyncOption.LocalSync;
 
         [Category(Legality), Description("Link Trade: Using multiple distribution bots -- once all bots are ready to confirm trade code, the Hub will wait X milliseconds before releasing all bots.")]
         public int SynchronizeLinkTradeBotsDelay { get; set; }
 
         [Category(Legality), Description("Link Trade: Using multiple distribution bots -- how long (Seconds) a bot will wait for synchronization before continuing anyways.")]
-        public double SynchronizeLinkTradeBotsTimeout { get; set; } = 60;
+        public double SynchronizeLinkTradeBotsTimeout { get; set; } = 90;
         #endregion
 
         #region Folders

@@ -562,14 +562,20 @@ namespace SysBot.Pokemon
 
         private void WaitAtBarrierIfApplicable(CancellationToken token)
         {
-            if (!ShouldWaitAtBarrier || !Hub.Config.SynchronizeLinkTradeBots)
+            if (!ShouldWaitAtBarrier)
+                return;
+            var opt = Hub.Config.SynchronizeLinkTradeBots;
+            if (opt == BotSyncOption.NoSync)
                 return;
 
             var timeoutAfter = Hub.Config.SynchronizeLinkTradeBotsTimeout;
             if (FailedBarrier == 1) // failed last iteration
                 timeoutAfter *= 2; // try to re-sync in the event things are too slow.
 
-            bool result = Hub.Barrier.SignalAndWait(TimeSpan.FromSeconds(timeoutAfter), token);
+            var result = opt == BotSyncOption.LocalSync
+                ? Hub.Barrier.SignalAndWait(TimeSpan.FromSeconds(timeoutAfter), token)
+                : Hub.RemoteBarrier.WaitOne(TimeSpan.FromSeconds(timeoutAfter));
+
             if (result)
             {
                 FailedBarrier = 0;
