@@ -27,7 +27,7 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            var position = check.Position;
+            var position = $"{check.Position}/{check.QueueCount}";
             var msg = check.Detail.Type == PokeRoutineType.DuduBot
                 ? $"You are in the Dudu queue! Position: {position}"
                 : $"You are in the Trade queue! Position: {position}, Receiving: {(Species)check.Detail.Trade.TradeData.Species}";

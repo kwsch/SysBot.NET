@@ -29,7 +29,9 @@ namespace SysBot.Pokemon
                         actualIndex++;
                 }
 
-                return new QueueCheckResult<T>(true, entry, actualIndex);
+                var inQueue = UsersInQueue.Count(z => z.Type == type);
+
+                return new QueueCheckResult<T>(true, entry, actualIndex, inQueue);
             }
         }
 
@@ -159,14 +161,16 @@ namespace SysBot.Pokemon
         public readonly bool InQueue;
         public readonly TradeEntry<T>? Detail;
         public readonly int Position;
+        public readonly int QueueCount;
 
         public static readonly QueueCheckResult<T> None = new QueueCheckResult<T>();
 
-        public QueueCheckResult(bool inQueue = false, TradeEntry<T>? detail = default, int position = -1)
+        public QueueCheckResult(bool inQueue = false, TradeEntry<T>? detail = default, int position = -1, int queueCount = -1)
         {
             InQueue = inQueue;
             Detail = detail;
             Position = position;
+            QueueCount = queueCount;
         }
     }
 }
