@@ -5,11 +5,10 @@ using PKHeX.Core;
 
 namespace SysBot.Pokemon
 {
-    public class PokemonPool<T> : List<T> where T : PKM
+    public class PokemonPool<T> : List<T> where T : PKM, new()
     {
-        public int ExpectedSize = 344;
+        public readonly int ExpectedSize = new T().Data.Length;
 
-        private int Counter;
 
         public readonly IPoolSettings Settings;
 
@@ -19,6 +18,8 @@ namespace SysBot.Pokemon
         }
 
         public bool Randomized => Settings.DistributeShuffled;
+
+        private int Counter;
 
         public T GetRandomPoke()
         {

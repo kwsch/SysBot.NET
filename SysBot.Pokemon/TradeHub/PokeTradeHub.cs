@@ -81,8 +81,6 @@ namespace SysBot.Pokemon
         /// <param name="token">Thread cancellation</param>
         public async Task MonitorTradeQueueAddIfEmpty(string path, CancellationToken token)
         {
-            var blank = new T();
-            Pool.ExpectedSize = blank.SIZE_PARTY;
             if (!Pool.LoadFolder(path))
                 LogUtil.Log(LogLevel.Error, "Nothing found in pool folder!", "Hub");
 
