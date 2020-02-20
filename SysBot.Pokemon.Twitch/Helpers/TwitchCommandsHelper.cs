@@ -1,12 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using PKHeX.Core;
+using PKHeX.Core.AutoMod;
 
 namespace SysBot.Pokemon.Twitch
 {
     public class TwitchCommandsHelper
     {
         // Helper functions for commands
+        public static bool AddToWaitingList(string setstring, string display, string username, out string msg)
+        {
+            ShowdownSet set = TwitchShowdownUtil.ConvertToShowdown(setstring);
+            var sav = TrainerSettings.GetSavedTrainerData(8);
+            PKM pkm = sav.GetLegalFromSet(set, out _);
+            if (new LegalityAnalysis(pkm).Valid && pkm is PK8 p8)
+            {
+                var tq = new TwitchQueue(p8, new PokeTradeTrainerInfo(display),
+                    username);
+                TwitchBot.QueuePool.Add(tq);
+                msg = "Added you to the waiting list. Please whisper to me your trade code! Your request from the waiting list will be removed if you are too slow!";
+                return true;
+            }
+
+            msg = "Unable to legalize the pokemon. Skipping Trade.";
+            return false;
+        }
 
     }
 }

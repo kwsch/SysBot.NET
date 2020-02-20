@@ -14,7 +14,7 @@ namespace SysBot.Pokemon.Twitch
     public class TwitchBot
     {
         internal static readonly TradeQueueInfo<PK8> Info = new TradeQueueInfo<PK8>();
-        private static readonly List<TwitchQueue> QueuePool = new List<TwitchQueue>();
+        internal static readonly List<TwitchQueue> QueuePool = new List<TwitchQueue>();
         private readonly TwitchClient client;
         private readonly string Channel;
 
@@ -106,19 +106,44 @@ namespace SysBot.Pokemon.Twitch
 
         private void Client_OnMessageReceived(object sender, OnMessageReceivedArgs e)
         {
-            if (e.ChatMessage.Message.StartsWith($"{Info.Hub.Config.DiscordCommandPrefix}trade"))
+            var command = e.ChatMessage.Message.Split(' ')[0].Trim();
+            var p = Info.Hub.Config.DiscordCommandPrefix;
+
+            if (!command.StartsWith(p))
+                return;
+
+            if (!e.ChatMessage.IsSubscriber && Info.Hub.Config.SubOnlyBot)
+                return;
+
+            if (command == $"{p}trade")
             {
-                var setstring = e.ChatMessage.Message.Substring(6).Trim();
-                ShowdownSet set = TwitchShowdownUtil.ConvertToShowdown(setstring);
-                var sav = TrainerSettings.GetSavedTrainerData(8);
-                PKM pkm = sav.GetLegalFromSet(set, out _);
-                if (new LegalityAnalysis(pkm).Valid && pkm is PK8 p8)
-                {
-                    var tq = new TwitchQueue(p8, new PokeTradeTrainerInfo(e.ChatMessage.DisplayName),
-                        e.ChatMessage.Username);
-                    QueuePool.Add(tq);
-                    client.SendMessage(e.ChatMessage.Channel, "Added you to the waiting list. Please whisper to me your trade code! Your request from the waiting list will be removed if you are too slow!");
-                }
+                var _ = TwitchCommandsHelper.AddToWaitingList(e.ChatMessage.Message.Substring(6).Trim(), e.ChatMessage.DisplayName, e.ChatMessage.Username, out string msg);
+                client.SendMessage(e.ChatMessage.Channel, msg);
+            }
+
+            else if (command == $"{p}tradestatus")
+            {
+                // Implement Trade status
+            }
+
+            else if (command == $"{p}tradeclear")
+            {
+
+            }
+
+            else if (command == $"{p}tradeclearall")
+            {
+                // Sudo only
+            }
+
+            else if (command == $"{p}poolreload")
+            {
+                // Sudo only
+            }
+
+            else if (command == $"{p}poolcount")
+            {
+                // Sudo only
             }
         }
 
