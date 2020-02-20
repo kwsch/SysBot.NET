@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 
 namespace SysBot.Pokemon.Discord
@@ -25,13 +27,32 @@ namespace SysBot.Pokemon.Discord
                 await ReplyAsync($"Reloaded from folder. Pool count: {hub.Ledy.Pool.Count}").ConfigureAwait(false);
         }
 
-        [Command("poolCount")]
-        [Summary("Displays the count of Pokémon files in the random pool.")]
+        [Command("pool")]
+        [Summary("Displays the details of Pokémon files in the random pool.")]
         public async Task DisplayPoolCountAsync()
         {
             var me = SysCordInstance.Self;
             var hub = me.Hub;
-            await ReplyAsync($"Pool count: {hub.Ledy.Pool.Count}").ConfigureAwait(false);
+            var pool = hub.Ledy.Pool;
+            var count = pool.Count;
+            if (count < 20)
+            {
+                var lines = pool.Files.Select((z, i) => $"{i:00}: {z.Key} = {z.Value.RequestInfo.Species}");
+                var msg = string.Join("\n", lines);
+
+                var embed = new EmbedBuilder();
+                embed.AddField(x =>
+                {
+                    x.Name = $"Count: {count}";
+                    x.Value = msg;
+                    x.IsInline = false;
+                });
+                await ReplyAsync("Pool Details", embed: embed.Build()).ConfigureAwait(false);
+            }
+            else
+            {
+                await ReplyAsync($"Pool Count: {count}").ConfigureAwait(false);
+            }
         }
     }
 }
