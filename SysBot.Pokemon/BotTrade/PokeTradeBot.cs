@@ -172,6 +172,9 @@ namespace SysBot.Pokemon
                 poke.Code = code = Hub.Config.GetRandomTradeCode();
             poke.TradeInitialize(this);
 
+            var pkm = poke.TradeData;
+            await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+
             if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
@@ -243,8 +246,12 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Recover;
             }
 
-            for (int i = 0; i < 5; i++)
-                await Click(A, 0_500, token).ConfigureAwait(false);
+            // Confirm Box 1 Slot 1
+            if (PokeTradeType.Specific == poke.Type)
+            {
+                for (int i = 0; i < 5; i++)
+                    await Click(A, 0_500, token).ConfigureAwait(false);
+            }
 
             poke.SendNotification(this, $"Found Trading Partner: {TrainerName}. Waiting for a Pokemon ...");
 
@@ -256,21 +263,19 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.TrainerTooSlow;
             }
 
-            PK8 pkm;
             if (distribution)
             {
                 var trade = Hub.Ledy.GetLedyTrade(pk, Hub.Config.DistributeLedySpecies);
                 pkm = trade.Receive;
-                var msg = trade.Type == LedyResponseType.Random
-                    ? $"Injecting Random Pokemon: {trade.Receive.Nickname}"
-                    : $"Injecting Ledy Pokemon ({trade.Type}): {trade.Receive.Nickname}";
-                poke.SendNotification(this, msg);
-                await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
-            }
-            else
-            {
-                pkm = poke.TradeData;
-                await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+                if (trade.Type != LedyResponseType.Random)
+                {
+                    poke.SendNotification(this, "Injecting your requested Pokemon");
+                    await Click(A, 0_800, token).ConfigureAwait(false);
+                    await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+                    //await Click(L, 0_800, token).ConfigureAwait(false);
+                }
+                for (int i = 0; i < 5; i++)
+                    await Click(A, 0_500, token).ConfigureAwait(false);
             }
 
             await Click(A, 3_000, token).ConfigureAwait(false);

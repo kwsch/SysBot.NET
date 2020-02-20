@@ -46,10 +46,13 @@ namespace SysBot.Pokemon
             var loadedAny = false;
             var files = Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories);
             var matchFiles = LoadUtil.GetFilesOfSize(files, ExpectedSize);
-            var matchPKM = LoadUtil.GetPKMFilesOfType<T>(matchFiles);
 
-            foreach (var dest in matchPKM)
+            foreach (var file in matchFiles)
             {
+                var data = File.ReadAllBytes(file);
+                var pkm = PKMConverter.GetPKMfromBytes(data);
+                if (!(pkm is T dest))
+                    continue;
                 if (dest.Species == 0 || !new LegalityAnalysis(dest).Valid || !(dest is PK8 pk8))
                 {
                     Console.WriteLine("SKIPPED: Provided pk8 is not valid: " + dest.FileName);
@@ -65,7 +68,7 @@ namespace SysBot.Pokemon
                     pk8.Tracker = 0;
 
                 Add(dest);
-                var fn = Path.GetFileNameWithoutExtension(path);
+                var fn = Path.GetFileNameWithoutExtension(file);
                 Files.Add(fn, new LedyRequest<T>(dest, fn));
                 loadedAny = true;
             }
