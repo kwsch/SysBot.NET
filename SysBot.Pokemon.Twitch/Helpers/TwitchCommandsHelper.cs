@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SysBot.Pokemon.Twitch
+﻿namespace SysBot.Pokemon.Twitch
 {
     public class TwitchCommandsHelper
     {

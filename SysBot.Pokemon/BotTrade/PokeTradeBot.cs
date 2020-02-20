@@ -51,7 +51,7 @@ namespace SysBot.Pokemon
                 {
                     PokeRoutineType.LinkTrade => DoLinkTrades(sav, token),
                     PokeRoutineType.SurpriseTrade => DoSurpriseTrades(sav, token),
-                    PokeRoutineType.DuduBot => DoDuduTrades(token),
+                    PokeRoutineType.DuduBot => DoDuduTrades(sav, token),
                     _ => DoNothing(token),
                 };
                 await task.ConfigureAwait(false);
@@ -113,7 +113,7 @@ namespace SysBot.Pokemon
             UpdateBarrier(false);
         }
 
-        private async Task DoDuduTrades(CancellationToken token)
+        private async Task DoDuduTrades(SAV8SWSH sav, CancellationToken token)
         {
             int waitCounter = 0;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.DuduBot)
@@ -133,7 +133,7 @@ namespace SysBot.Pokemon
                 waitCounter = 0;
                 Connection.Log("Starting next Dudu Bot Trade. Getting data...");
                 await EnsureConnectedToYCom(token).ConfigureAwait(false);
-                var result = await PerformDuduTrade(detail, token).ConfigureAwait(false);
+                var result = await PerformLinkCodeTrade(sav, detail, token).ConfigureAwait(false);
                 if (result != PokeTradeResult.Success) // requeue
                 {
                     if (result == PokeTradeResult.Aborted)
@@ -165,15 +165,16 @@ namespace SysBot.Pokemon
         private async Task<PokeTradeResult> PerformLinkCodeTrade(SAV8SWSH sav, PokeTradeDetail<PK8> poke, CancellationToken token)
         {
             // Update Barrier Settings
-            bool distribution = poke.Type == PokeTradeType.Random;
-            UpdateBarrier(distribution);
+            UpdateBarrier(poke.IsSynchronized);
             var code = poke.Code;
-            if (distribution)
+            if (poke.IsRandomCode)
                 poke.Code = code = Hub.Config.GetRandomTradeCode();
+
             poke.TradeInitialize(this);
 
             var pkm = poke.TradeData;
-            await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+            if (pkm.Species != 0)
+                await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
 
             if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
@@ -247,7 +248,7 @@ namespace SysBot.Pokemon
             }
 
             // Confirm Box 1 Slot 1
-            if (PokeTradeType.Specific == poke.Type)
+            if (poke.Type == PokeTradeType.Specific)
             {
                 for (int i = 0; i < 5; i++)
                     await Click(A, 0_500, token).ConfigureAwait(false);
@@ -263,8 +264,15 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.TrainerTooSlow;
             }
 
-            if (distribution)
+            if (poke.Type == PokeTradeType.Dudu)
             {
+                // Immediately exit, we aren't trading anything.
+                return await EndDuduTradeAsync(poke, pk, token).ConfigureAwait(false);
+            }
+
+            if (poke.Type == PokeTradeType.Random) // distribution
+            {
+                // Allow the trade partner to do a Ledy swap.
                 var trade = Hub.Ledy.GetLedyTrade(pk, Hub.Config.DistributeLedySpecies);
                 pkm = trade.Receive;
                 if (trade.Type != LedyResponseType.Random)
@@ -313,7 +321,7 @@ namespace SysBot.Pokemon
             poke.TradeFinished(this, traded);
             Connection.Log("Trade complete!");
 
-            if (distribution)
+            if (poke.Type == PokeTradeType.Random)
                 Hub.Counts.AddCompletedDistribution();
             else
                 Hub.Counts.AddCompletedTrade();
@@ -439,98 +447,8 @@ namespace SysBot.Pokemon
             return PokeTradeResult.Success;
         }
 
-        private async Task<PokeTradeResult> PerformDuduTrade(PokeTradeDetail<PK8> detail, CancellationToken token)
+        private async Task<PokeTradeResult> EndDuduTradeAsync(PokeTradeDetail<PK8> detail, PK8 pk, CancellationToken token)
         {
-            // Update Barrier Settings
-            bool random = detail.IsRandomCode;
-            UpdateBarrier(random);
-            var code = detail.Code;
-            if (random)
-                detail.Code = code = Hub.Config.GetRandomTradeCode();
-            detail.TradeInitialize(this);
-
-            if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
-            {
-                await ExitTrade(true, token).ConfigureAwait(false);
-                return PokeTradeResult.Recover;
-            }
-
-            Connection.Log("Open Y-Comm Menu");
-            await Click(Y, 2_000, token).ConfigureAwait(false);
-
-            Connection.Log("Select Link Trade");
-            await Click(A, 1_000, token).ConfigureAwait(false);
-
-            Connection.Log("Select Link Trade Code");
-            await Click(DDOWN, 200, token).ConfigureAwait(false);
-
-            for (int i = 0; i < 2; i++)
-                await Click(A, 2_000, token).ConfigureAwait(false);
-
-            // Loading Screen
-            await Task.Delay(2_000, token).ConfigureAwait(false);
-
-            Connection.Log($"Entering Link Trade Code: {code} ...");
-            await EnterTradeCode(code, token).ConfigureAwait(false);
-
-            // Wait for Barrier to trigger all bots simultaneously.
-            WaitAtBarrierIfApplicable(token);
-            await Click(PLUS, 0_100, token).ConfigureAwait(false);
-
-            // Start a Link Trade, in case of Empty Slot/Egg/Bad Pokemon we press sometimes B to return to the Overworld and skip this Slot.
-            // Confirming...
-            for (int i = 0; i < 4; i++)
-                await Click(A, 1_000, token).ConfigureAwait(false);
-
-            detail.TradeSearching(this);
-            await Task.Delay(Util.Rand.Next(100, 1000), token).ConfigureAwait(false);
-
-            for (int i = 0; i < 5; i++)
-                await Click(A, 0_500, token).ConfigureAwait(false);
-
-            if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
-            {
-                await ExitTrade(true, token).ConfigureAwait(false);
-                return PokeTradeResult.Recover;
-            }
-
-            // Clear the shown data offset.
-            await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
-
-            // Wait 40 Seconds for Trainer...
-            var partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, 90_000, 2_000, token).ConfigureAwait(false);
-
-            if (token.IsCancellationRequested)
-                return PokeTradeResult.Aborted;
-            if (!partnerFound)
-            {
-                await ResetTradePosition(token).ConfigureAwait(false);
-                return PokeTradeResult.NoTrainerFound;
-            }
-
-            // Potential Trainer Found!
-
-            // Select Pokemon
-            var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
-            Connection.Log($"Found Trading Partner: {TrainerName} ...");
-            await Task.Delay(1_000, token).ConfigureAwait(false);
-
-            if (!await IsCorrectScreen(CurrentScreen_Box, token).ConfigureAwait(false))
-            {
-                await ExitTrade(true, token).ConfigureAwait(false);
-                return PokeTradeResult.Recover;
-            }
-
-            detail.SendNotification(this, $"Found Trading Partner: {TrainerName}. Waiting for a Pokemon ...");
-
-            // Wait for User Input...
-            var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 25_000, 1_000, token).ConfigureAwait(false);
-            if (pk == null)
-            {
-                await ExitDuduTrade(token).ConfigureAwait(false);
-                return PokeTradeResult.TrainerTooSlow;
-            }
-
             await ExitDuduTrade(token).ConfigureAwait(false);
 
             detail.TradeFinished(this, pk);
