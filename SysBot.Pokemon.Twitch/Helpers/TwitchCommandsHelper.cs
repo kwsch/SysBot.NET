@@ -39,5 +39,21 @@ namespace SysBot.Pokemon.Twitch
                 : $"You are in the Trade queue! Position: {position}, Receiving: {(Species)check.Detail.Trade.TradeData.Species}";
         }
 
+        public static string ClearTrade(bool sudo, ulong userid)
+        {
+            var allowed = sudo || TwitchBot.Info.CanQueue;
+            if (!allowed)
+                return "Sorry, you are not permitted to use this command!";
+
+            var userID = userid;
+            var result = TwitchBot.Info.ClearTrade(userID);
+            switch(result)
+            {
+                case QueueResultRemove.CurrentlyProcessing: return "Looks like you're currently being processed! Unable to remove from queue.";
+                case QueueResultRemove.Removed: return "Removed you from the queue.";
+                default: return "Sorry, you are not currently in the queue.";
+            };
+        }
+
     }
 }

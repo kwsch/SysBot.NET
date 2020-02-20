@@ -130,7 +130,9 @@ namespace SysBot.Pokemon.Twitch
 
             else if (command == $"{p}tradeclear")
             {
-
+                bool sudo = TwitchRoleUtil.IsSudo(e.ChatMessage.Username);
+                var msg = TwitchCommandsHelper.ClearTrade(sudo, ulong.Parse(e.ChatMessage.UserId));
+                client.SendMessage(channel, msg);
             }
 
             else if (command == $"{p}tradeclearall")
