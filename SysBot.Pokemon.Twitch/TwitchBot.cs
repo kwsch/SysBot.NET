@@ -73,7 +73,7 @@ namespace SysBot.Pokemon.Twitch
 
             var trainer = new PokeTradeTrainerInfo(name);
             var notifier = new TwitchTradeNotifier<PK8>(pk8, trainer, code, e.WhisperMessage.Username, client, Channel);
-            var detail = new PokeTradeDetail<PK8>(pk8, trainer, notifier, PokeTradeType.Specific, code: code);
+            var detail = type == PokeRoutineType.DuduBot ? new PokeTradeDetail<PK8>(pk8, trainer, notifier, PokeTradeType.Dudu, code: code) : new PokeTradeDetail<PK8>(pk8, trainer, notifier, PokeTradeType.Specific, code: code);
             var trade = new TradeEntry<PK8>(detail, userID, type, name);
 
             var added = Info.AddToTradeQueue(trade, userID, sudo);
