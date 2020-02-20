@@ -68,7 +68,7 @@ namespace SysBot.Pokemon.Twitch
         private bool AddToTradeQueue(PK8 pk8, int code, OnWhisperReceivedArgs e, bool sudo, PokeRoutineType type, out string msg)
         {
             // var user = e.WhisperMessage.UserId;
-            var userID = ulong.MinValue;
+            var userID = ulong.Parse(e.WhisperMessage.UserId);
             var name = e.WhisperMessage.DisplayName;
 
             var trainer = new PokeTradeTrainerInfo(name);
@@ -108,6 +108,7 @@ namespace SysBot.Pokemon.Twitch
         {
             var command = e.ChatMessage.Message.Split(' ')[0].Trim();
             var p = Info.Hub.Config.DiscordCommandPrefix;
+            var channel = e.ChatMessage.Channel;
 
             if (!command.StartsWith(p))
                 return;
@@ -118,12 +119,13 @@ namespace SysBot.Pokemon.Twitch
             if (command == $"{p}trade")
             {
                 var _ = TwitchCommandsHelper.AddToWaitingList(e.ChatMessage.Message.Substring(6).Trim(), e.ChatMessage.DisplayName, e.ChatMessage.Username, out string msg);
-                client.SendMessage(e.ChatMessage.Channel, msg);
+                client.SendMessage(channel, msg);
             }
 
             else if (command == $"{p}tradestatus")
             {
-                // Implement Trade status
+                var msg = TwitchCommandsHelper.GetTradePosition(ulong.Parse(e.ChatMessage.UserId));
+                client.SendMessage(channel, msg);
             }
 
             else if (command == $"{p}tradeclear")

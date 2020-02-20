@@ -27,5 +27,17 @@ namespace SysBot.Pokemon.Twitch
             return false;
         }
 
+        public static string GetTradePosition(ulong id)
+        {
+            var check = TwitchBot.Info.CheckPosition(id);
+            if (!check.InQueue || check.Detail is null)
+                return "You are not in the queue.";
+
+            var position = $"{check.Position}/{check.QueueCount}";
+            return check.Detail.Type == PokeRoutineType.DuduBot
+                ? $"You are in the Dudu queue! Position: {position}"
+                : $"You are in the Trade queue! Position: {position}, Receiving: {(Species)check.Detail.Trade.TradeData.Species}";
+        }
+
     }
 }
