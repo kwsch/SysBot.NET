@@ -8,6 +8,5 @@
             var cfg = TwitchBot.Info.Hub.Config;
             return cfg.TwitchSudoList.Contains(username);
         }
-        
     }
 }
