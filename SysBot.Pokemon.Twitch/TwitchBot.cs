@@ -109,14 +109,13 @@ namespace SysBot.Pokemon.Twitch
             var command = e.ChatMessage.Message.Split(' ')[0].Trim();
             var p = Info.Hub.Config.DiscordCommandPrefix;
             var channel = e.ChatMessage.Channel;
+            bool sudo = TwitchRoleUtil.IsSudo(e.ChatMessage.Username);
 
             if (!command.StartsWith(p))
                 return;
 
-            if (!e.ChatMessage.IsSubscriber && Info.Hub.Config.SubOnlyBot)
+            if (!e.ChatMessage.IsSubscriber && Info.Hub.Config.SubOnlyBot && !sudo)
                 return;
-
-            bool sudo = TwitchRoleUtil.IsSudo(e.ChatMessage.Username);
 
             if (command == $"{p}trade")
             {

@@ -261,7 +261,7 @@ namespace SysBot.Pokemon.Discord
 
             var trainer = new PokeTradeTrainerInfo(trainerName);
             var notifier = new DiscordTradeNotifier<PK8>(pk8, trainer, code, Context);
-            var detail = new PokeTradeDetail<PK8>(pk8, trainer, notifier, PokeTradeType.Specific, code: code);
+            var detail = type == PokeRoutineType.DuduBot ? new PokeTradeDetail<PK8>(pk8, trainer, notifier, PokeTradeType.Dudu, code: code) : new PokeTradeDetail<PK8>(pk8, trainer, notifier, PokeTradeType.Specific, code: code);
             var trade = new TradeEntry<PK8>(detail, userID, type, name);
 
             var added = Info.AddToTradeQueue(trade, userID, sudo);
