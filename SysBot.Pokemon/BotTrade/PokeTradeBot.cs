@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
 using PKHeX.Core.Searching;
+using SysBot.Base;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Pokemon.PokeDataOffsets;
 
@@ -80,7 +81,7 @@ namespace SysBot.Pokemon
             int waitCounter = 0;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.LinkTrade)
             {
-                if (!Hub.Queue.TryDequeue(out var poke, out var priority))
+                if (!Hub.Queues.Queue.TryDequeue(out var poke, out var priority))
                 {
                     if (waitCounter == 0)
                         Connection.Log("Nothing to send in the queue! Waiting for new trade data.");
@@ -101,7 +102,7 @@ namespace SysBot.Pokemon
                     if (result == PokeTradeResult.Aborted)
                     {
                         poke.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
-                        Hub.Queue.Enqueue(poke, Math.Min(priority, PokeTradeQueue<PK8>.Tier2));
+                        Hub.Queues.Queue.Enqueue(poke, Math.Min(priority, PokeTradeQueue<PK8>.Tier2));
                     }
                     else
                     {
@@ -119,7 +120,7 @@ namespace SysBot.Pokemon
             int waitCounter = 0;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.DuduBot)
             {
-                if (!Hub.Dudu.TryDequeue(out var detail, out var priority))
+                if (!Hub.Queues.Dudu.TryDequeue(out var detail, out var priority))
                 {
                     if (waitCounter == 0)
                         Connection.Log("Nothing to check, waiting for new users...");
@@ -140,7 +141,7 @@ namespace SysBot.Pokemon
                     if (result == PokeTradeResult.Aborted)
                     {
                         detail.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
-                        Hub.Dudu.Enqueue(detail, Math.Min(priority, PokeTradeQueue<PK8>.Tier2));
+                        Hub.Queues.Dudu.Enqueue(detail, Math.Min(priority, PokeTradeQueue<PK8>.Tier2));
                     }
                     else
                     {
@@ -157,7 +158,7 @@ namespace SysBot.Pokemon
         {
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.SurpriseTrade)
             {
-                var pkm = Hub.Pool.GetRandomPoke();
+                var pkm = Hub.Ledy.Pool.GetRandomPoke();
                 await EnsureConnectedToYCom(token).ConfigureAwait(false);
                 var _ = await PerformSurpriseTrade(sav, pkm, token).ConfigureAwait(false);
             }
@@ -564,17 +565,17 @@ namespace SysBot.Pokemon
         {
             if (!ShouldWaitAtBarrier)
                 return;
-            var opt = Hub.Config.SynchronizeLinkTradeBots;
+            var opt = Hub.Config.SynchronizeBots;
             if (opt == BotSyncOption.NoSync)
                 return;
 
-            var timeoutAfter = Hub.Config.SynchronizeLinkTradeBotsTimeout;
+            var timeoutAfter = Hub.Config.SynchronizeTimeout;
             if (FailedBarrier == 1) // failed last iteration
                 timeoutAfter *= 2; // try to re-sync in the event things are too slow.
 
             var result = opt == BotSyncOption.LocalSync
-                ? Hub.Barrier.SignalAndWait(TimeSpan.FromSeconds(timeoutAfter), token)
-                : Hub.RemoteBarrier.WaitOne(TimeSpan.FromSeconds(timeoutAfter));
+                ? Hub.BotSync.Barrier.SignalAndWait(TimeSpan.FromSeconds(timeoutAfter), token)
+                : Hub.BotSync.RemoteBarrier.WaitOne(TimeSpan.FromSeconds(timeoutAfter));
 
             if (result)
             {
@@ -599,13 +600,13 @@ namespace SysBot.Pokemon
             ShouldWaitAtBarrier = shouldWait;
             if (shouldWait)
             {
-                Hub.Barrier.AddParticipant();
-                Connection.Log($"Joined the Barrier. Count: {Hub.Barrier.ParticipantCount}");
+                Hub.BotSync.Barrier.AddParticipant();
+                Connection.Log($"Joined the Barrier. Count: {Hub.BotSync.Barrier.ParticipantCount}");
             }
             else
             {
-                Hub.Barrier.RemoveParticipant();
-                Connection.Log($"Left the Barrier. Count: {Hub.Barrier.ParticipantCount}");
+                Hub.BotSync.Barrier.RemoveParticipant();
+                Connection.Log($"Left the Barrier. Count: {Hub.BotSync.Barrier.ParticipantCount}");
             }
         }
     }

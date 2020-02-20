@@ -53,8 +53,7 @@ namespace SysBot.Pokemon
         {
             lock (_sync)
             {
-                Hub.Dudu.Clear();
-                Hub.Queue.Clear();
+                Hub.Queues.ClearAll();
                 UsersInQueue.Clear();
             }
         }
@@ -80,12 +79,12 @@ namespace SysBot.Pokemon
             {
                 foreach (var detail in details)
                 {
-                    int removed = hub.Queue.Remove(detail.Trade);
+                    int removed = hub.Queues.Queue.Remove(detail.Trade);
                     if (removed != 0)
                         UsersInQueue.Remove(detail);
                     removedCount += removed;
 
-                    removed = hub.Dudu.Remove(detail.Trade);
+                    removed = hub.Queues.Dudu.Remove(detail.Trade);
                     if (removed != 0)
                         UsersInQueue.Remove(detail);
                     removedCount += removed;
@@ -120,7 +119,7 @@ namespace SysBot.Pokemon
                     t.Tracker = 0;
 
                 var priority = sudo ? PokeTradeQueue<PK8>.Tier1 : PokeTradeQueue<PK8>.TierFree;
-                var queue = Hub.GetQueue(trade.Type);
+                var queue = Hub.Queues.GetQueue(trade.Type);
 
                 queue.Enqueue(trade.Trade, priority);
                 UsersInQueue.Add(trade);
@@ -140,37 +139,6 @@ namespace SysBot.Pokemon
         {
             lock (_sync)
                 return UsersInQueue.Count(func);
-        }
-    }
-
-    public enum QueueResultRemove
-    {
-        Removed,
-        CurrentlyProcessing,
-        NotInQueue,
-    }
-
-    public enum QueueResultAdd
-    {
-        Added,
-        AlreadyInQueue,
-    }
-
-    public class QueueCheckResult<T> where T : PKM, new()
-    {
-        public readonly bool InQueue;
-        public readonly TradeEntry<T>? Detail;
-        public readonly int Position;
-        public readonly int QueueCount;
-
-        public static readonly QueueCheckResult<T> None = new QueueCheckResult<T>();
-
-        public QueueCheckResult(bool inQueue = false, TradeEntry<T>? detail = default, int position = -1, int queueCount = -1)
-        {
-            InQueue = inQueue;
-            Detail = detail;
-            Position = position;
-            QueueCount = queueCount;
         }
     }
 }

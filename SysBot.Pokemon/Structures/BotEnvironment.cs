@@ -56,10 +56,10 @@ namespace SysBot.Pokemon
                 var path = Hub.Config.DistributeFolder;
                 if (!Directory.Exists(path))
                     throw new DirectoryNotFoundException(nameof(path));
-                var task = Hub.MonitorTradeQueueAddIfEmpty(path, token);
+                var task = Hub.Queues.MonitorTradeQueueAddIfEmpty(path, token);
                 tasks.Add(task);
 
-                if (Hub.Pool.Count == 0)
+                if (Hub.Ledy.Pool.Count == 0)
                     LogUtil.Log(LogLevel.Error, "Nothing to distribute for Empty Trade Queues!", "Hub");
             }
             if (Hub.Config.MonitorForPriorityTrades)
@@ -67,7 +67,7 @@ namespace SysBot.Pokemon
                 var path = Hub.Config.PriorityFolder;
                 if (!Directory.Exists(path))
                     throw new DirectoryNotFoundException(nameof(path));
-                var task = Hub.MonitorFolderAddPriority(path, PokeTradeHub<PK8>.LogNotifier, token);
+                var task = Hub.Queues.MonitorFolderAddPriority(path, PokeTradeHub<PK8>.LogNotifier, token);
                 tasks.Add(task);
             }
         }
@@ -112,9 +112,9 @@ namespace SysBot.Pokemon
 
             // bots currently don't de-register
             Thread.Sleep(100);
-            int count = Hub.Barrier.ParticipantCount;
+            int count = Hub.BotSync.Barrier.ParticipantCount;
             if (count != 0)
-                Hub.Barrier.RemoveParticipants(count);
+                Hub.BotSync.Barrier.RemoveParticipants(count);
         }
 
         public void SoftStop()

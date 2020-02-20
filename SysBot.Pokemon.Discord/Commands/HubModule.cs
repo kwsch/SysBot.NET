@@ -26,7 +26,7 @@ namespace SysBot.Pokemon.Discord
                 x.Value =
                     $"Bot Count: {hub.Bots.Count}\n" +
                     $"Bot State: {SummarizeBots(hub)}\n" +
-                    $"Pool Count: {hub.Pool.Count}\n";
+                    $"Pool Count: {hub.Ledy.Pool.Count}\n";
                 x.IsInline = false;
             });
 
@@ -42,9 +42,9 @@ namespace SysBot.Pokemon.Discord
                 x.IsInline = false;
             });
 
-            var next = hub.Queue.TryPeek(out var detail, out _);
+            var next = hub.Queues.Queue.TryPeek(out var detail, out _);
             var nextMsg = next ? $"{detail.Trainer.TrainerName} - {detail.TradeData.Nickname}" : "None!";
-            var count = hub.Queue.Count;
+            var count = hub.Queues.Queue.Count;
             builder.AddField(x =>
             {
                 x.Name = "Trade Queue";
@@ -54,9 +54,9 @@ namespace SysBot.Pokemon.Discord
                 x.IsInline = false;
             });
 
-            var nextD = hub.Dudu.TryPeek(out var detailD, out _);
+            var nextD = hub.Queues.Dudu.TryPeek(out var detailD, out _);
             var nextMsgD = nextD ? $"{detailD.Trainer.TrainerName}" : "None!";
-            var countD = hub.Dudu.Count;
+            var countD = hub.Queues.Dudu.Count;
             builder.AddField(x =>
             {
                 x.Name = "Dudu Queue";

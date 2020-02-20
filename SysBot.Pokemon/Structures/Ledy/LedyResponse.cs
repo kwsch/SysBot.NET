@@ -2,7 +2,7 @@
 
 namespace SysBot.Pokemon
 {
-    public class LedyResponse<T> : IReceivable<T> where T : PKM, new()
+    public class LedyResponse<T> where T : PKM, new()
     {
         public T Receive { get; }
         public LedyResponseType Type { get; }

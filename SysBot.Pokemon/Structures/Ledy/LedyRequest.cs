@@ -4,10 +4,10 @@ namespace SysBot.Pokemon
 {
     public class LedyRequest<T> where T : PKM, new()
     {
-        public string Nickname;
-        public IReceivable<T> RequestInfo;
+        public readonly string Nickname;
+        public readonly T RequestInfo;
 
-        public LedyRequest(IReceivable<T> requestInfo, string nickname)
+        public LedyRequest(T requestInfo, string nickname)
         {
             RequestInfo = requestInfo;
             Nickname = nickname;

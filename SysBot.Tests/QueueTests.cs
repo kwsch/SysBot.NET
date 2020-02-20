@@ -13,7 +13,7 @@ namespace SysBot.Tests
         public void TestEnqueue()
         {
             var info = new TradeQueueInfo<PK8>();
-            var queue = info.Hub.GetQueue(PokeRoutineType.LinkTrade);
+            var queue = info.Hub.Queues.GetQueue(PokeRoutineType.LinkTrade);
 
             var t1 = GetTestTrade(info, 1);
             var t2 = GetTestTrade(info, 2);

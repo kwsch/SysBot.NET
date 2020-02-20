@@ -34,9 +34,12 @@ namespace SysBot.Pokemon
             return LoadFolder(Settings.DistributeFolder);
         }
 
+        public readonly Dictionary<string, LedyRequest<T>> Files = new Dictionary<string, LedyRequest<T>>();
+
         public bool LoadFolder(string path)
         {
             Clear();
+            Files.Clear();
             if (!Directory.Exists(path))
                 return false;
 
@@ -62,6 +65,8 @@ namespace SysBot.Pokemon
                     pk8.Tracker = 0;
 
                 Add(dest);
+                var fn = Path.GetFileNameWithoutExtension(path);
+                Files.Add(fn, new LedyRequest<T>(dest, fn));
                 loadedAny = true;
             }
             return loadedAny;

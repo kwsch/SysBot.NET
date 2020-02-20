@@ -1,12 +1,13 @@
 ﻿using System.ComponentModel;
 using System.IO;
 using PKHeX.Core;
+using SysBot.Base;
 
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
 namespace SysBot.Pokemon
 {
-    public sealed class PokeTradeHubConfig : IDumper, IPoolSettings, ITwitchSettings
+    public sealed class PokeTradeHubConfig : IDumper, IPoolSettings, ITwitchSettings, ISynchronizationSetting
     {
         private const string FeatureToggle = nameof(FeatureToggle);
         private const string Files = nameof(Files);
@@ -36,13 +37,13 @@ namespace SysBot.Pokemon
         public bool MonitorForPriorityTrades { get; set; }
 
         [Category(FeatureToggle), Description("Link Trade: Using multiple distribution bots -- all bots will confirm their trade code at the same time. When Local, the bots will continue when all are at the barrier. When Remote, something else must signal the bots to continue.")]
-        public BotSyncOption SynchronizeLinkTradeBots { get; set; } = BotSyncOption.LocalSync;
+        public BotSyncOption SynchronizeBots { get; set; } = BotSyncOption.LocalSync;
 
         [Category(Legality), Description("Link Trade: Using multiple distribution bots -- once all bots are ready to confirm trade code, the Hub will wait X milliseconds before releasing all bots.")]
-        public int SynchronizeLinkTradeBotsDelay { get; set; }
+        public int SynchronizeDelayBarrier { get; set; }
 
         [Category(Legality), Description("Link Trade: Using multiple distribution bots -- how long (Seconds) a bot will wait for synchronization before continuing anyways.")]
-        public double SynchronizeLinkTradeBotsTimeout { get; set; } = 90;
+        public double SynchronizeTimeout { get; set; } = 90;
         #endregion
 
         #region Folders

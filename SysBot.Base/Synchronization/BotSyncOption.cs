@@ -1,4 +1,4 @@
-﻿namespace SysBot.Pokemon
+﻿namespace SysBot.Base
 {
     public enum BotSyncOption
     {

@@ -18,11 +18,11 @@ namespace SysBot.Pokemon.Discord
             var me = SysCordInstance.Self;
             var hub = me.Hub;
 
-            var pool = hub.Pool.Reload();
+            var pool = hub.Ledy.Pool.Reload();
             if (!pool)
                 await ReplyAsync($"Failed to reload from folder.").ConfigureAwait(false);
             else
-                await ReplyAsync($"Reloaded from folder. Pool count: {hub.Pool.Count}").ConfigureAwait(false);
+                await ReplyAsync($"Reloaded from folder. Pool count: {hub.Ledy.Pool.Count}").ConfigureAwait(false);
         }
 
         [Command("poolCount")]
@@ -31,7 +31,7 @@ namespace SysBot.Pokemon.Discord
         {
             var me = SysCordInstance.Self;
             var hub = me.Hub;
-            await ReplyAsync($"Pool count: {hub.Pool.Count}").ConfigureAwait(false);
+            await ReplyAsync($"Pool count: {hub.Ledy.Pool.Count}").ConfigureAwait(false);
         }
     }
 }
