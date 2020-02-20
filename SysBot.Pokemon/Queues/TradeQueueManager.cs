@@ -52,7 +52,7 @@ namespace SysBot.Pokemon
                     continue;
 
                 var random = Hub.Ledy.Pool.GetRandomPoke();
-                var detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier);
+                var detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random);
                 Queue.Enqueue(detail);
             }
         }
@@ -98,7 +98,7 @@ namespace SysBot.Pokemon
                     var finalPath = Path.Combine(processed, Path.GetFileName(f));
                     File.Move(f, processedPath);
 
-                    var detail = new PokeTradeDetail<T>(t, trainer, notifier, code)
+                    var detail = new PokeTradeDetail<T>(t, trainer, notifier, PokeTradeType.Specific, code)
                     {
                         SourcePath = processedPath,
                         DestinationPath = finalPath,

@@ -93,7 +93,7 @@ namespace SysBot.Tests
 
         private static TradeEntry<PK8> GetTestTrade(int tag)
         {
-            var d3 = new PokeTradeDetail<PK8>(new PK8 {Species = tag}, new PokeTradeTrainerInfo($"Test {tag}"), new PokeTradeLogNotifier<PK8>(), tag);
+            var d3 = new PokeTradeDetail<PK8>(new PK8 {Species = tag}, new PokeTradeTrainerInfo($"Test {tag}"), new PokeTradeLogNotifier<PK8>(), PokeTradeType.Specific, tag);
             return new TradeEntry<PK8>(d3, (ulong)tag, PokeRoutineType.LinkTrade, $"Test Trade {tag}");
         }
     }

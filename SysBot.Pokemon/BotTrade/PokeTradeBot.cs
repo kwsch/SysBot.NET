@@ -165,15 +165,12 @@ namespace SysBot.Pokemon
         private async Task<PokeTradeResult> PerformLinkCodeTrade(SAV8SWSH sav, PokeTradeDetail<PK8> poke, CancellationToken token)
         {
             // Update Barrier Settings
-            UpdateBarrier(poke.IsRandomCode);
-            bool dist = poke.IsRandomCode;
+            bool distribution = poke.Type == PokeTradeType.Random;
+            UpdateBarrier(distribution);
             var code = poke.Code;
-            if (code == PokeTradeDetail<PK8>.RandomCode)
+            if (distribution)
                 poke.Code = code = Hub.Config.GetRandomTradeCode();
             poke.TradeInitialize(this);
-
-            var pkm = poke.TradeData;
-            await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
 
             if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
@@ -259,6 +256,23 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.TrainerTooSlow;
             }
 
+            PK8 pkm;
+            if (distribution)
+            {
+                var trade = Hub.Ledy.GetLedyTrade(pk, Hub.Config.DistributeLedySpecies);
+                pkm = trade.Receive;
+                var msg = trade.Type == LedyResponseType.Random
+                    ? $"Injecting Random Pokemon: {trade.Receive.Nickname}"
+                    : $"Injecting Ledy Pokemon ({trade.Type}): {trade.Receive.Nickname}";
+                poke.SendNotification(this, msg);
+                await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+            }
+            else
+            {
+                pkm = poke.TradeData;
+                await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+            }
+
             await Click(A, 3_000, token).ConfigureAwait(false);
             for (int i = 0; i < 5; i++)
                 await Click(A, 1_500, token).ConfigureAwait(false);
@@ -294,7 +308,7 @@ namespace SysBot.Pokemon
             poke.TradeFinished(this, traded);
             Connection.Log("Trade complete!");
 
-            if (dist)
+            if (distribution)
                 Hub.Counts.AddCompletedDistribution();
             else
                 Hub.Counts.AddCompletedTrade();
@@ -423,9 +437,10 @@ namespace SysBot.Pokemon
         private async Task<PokeTradeResult> PerformDuduTrade(PokeTradeDetail<PK8> detail, CancellationToken token)
         {
             // Update Barrier Settings
-            UpdateBarrier(detail.IsRandomCode);
+            bool random = detail.IsRandomCode;
+            UpdateBarrier(random);
             var code = detail.Code;
-            if (code == PokeTradeDetail<PK8>.RandomCode)
+            if (random)
                 detail.Code = code = Hub.Config.GetRandomTradeCode();
             detail.TradeInitialize(this);
 

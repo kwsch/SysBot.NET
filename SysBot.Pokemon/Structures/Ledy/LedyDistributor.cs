@@ -15,11 +15,11 @@ namespace SysBot.Pokemon
             Distribution = Pool.Files;
         }
 
-        private const int NoMatchSpecies = -1;
+        private const Species NoMatchSpecies = Species.None;
 
-        public LedyResponse<T> GetLedyTrade(T pk, int speciesMatch = -1)
+        public LedyResponse<T> GetLedyTrade(T pk, Species speciesMatch = NoMatchSpecies)
         {
-            if (speciesMatch != NoMatchSpecies && pk.Species != speciesMatch)
+            if (speciesMatch != NoMatchSpecies && pk.Species != (int)speciesMatch)
                 return GetRandomResponse();
 
             var nick = pk.Nickname;
