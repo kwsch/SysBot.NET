@@ -6,7 +6,7 @@ using PKHeX.Core.AutoMod;
 
 namespace SysBot.Pokemon.Twitch
 {
-    public class TwitchCommandsHelper
+    public static class TwitchCommandsHelper
     {
         // Helper functions for commands
         public static bool AddToWaitingList(string setstring, string display, string username, out string msg)
