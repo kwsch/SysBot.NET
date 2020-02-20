@@ -127,6 +127,9 @@ namespace SysBot.Pokemon
 
         [Category(IntegrationTwitch), Description("Twitch Bot: Message sent when the Barrier is released.")]
         public string TwitchMessageStart { get; set; } = string.Empty;
+
+        [Category(IntegrationTwitch), Description("Twitch Bot: Sudo Usernames")]
+        public string TwitchSudoList { get; set; } = string.Empty;
         #endregion
 
         #region Legality

@@ -1,22 +1,30 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
 using TwitchLib.Communication.Models;
+using PKHeX.Core;
+using PKHeX.Core.AutoMod;
 
 namespace SysBot.Pokemon.Twitch
 {
     public class TwitchBot
     {
+        internal static readonly TradeQueueInfo<PK8> Info = new TradeQueueInfo<PK8>();
+        private static readonly List<TwitchQueue> QueuePool = new List<TwitchQueue>();
         private readonly TwitchClient client;
         private readonly string Channel;
 
-        public TwitchBot(string username, string token, string channel)
+        public TwitchBot(string username, string token, string channel, PokeTradeHub<PK8> hub)
         {
             var credentials = new ConnectionCredentials(username, token);
             Channel = channel;
+            //Hub = hub;
+            Info.Hub = hub;
+            AutoLegalityExtensions.EnsureInitialized();
 
             var clientOptions = new ClientOptions
             {
@@ -57,6 +65,29 @@ namespace SysBot.Pokemon.Twitch
             });
         }
 
+        private bool AddToTradeQueue(PK8 pk8, int code, OnWhisperReceivedArgs e, bool sudo, PokeRoutineType type, out string msg)
+        {
+            var user = e.WhisperMessage.UserId;
+            var userID = ulong.MinValue;
+            var name = e.WhisperMessage.DisplayName;
+
+            var trainer = new PokeTradeTrainerInfo(name);
+            var notifier = new TwitchTradeNotifier<PK8>(pk8, trainer, code, e.WhisperMessage.Username, client, Channel);
+            var detail = new PokeTradeDetail<PK8>(pk8, trainer, notifier, code: code);
+            var trade = new TradeEntry<PK8>(detail, userID, type, name);
+
+            var added = Info.AddToTradeQueue(trade, userID, sudo);
+
+            if (added == QueueResultAdd.AlreadyInQueue)
+            {
+                msg = "Sorry, you are already in the queue.";
+                return false;
+            }
+
+            msg = $"Added {name} to the queue. Your current position is: {Info.CheckPosition(userID, type).Position}";
+            return true;
+        }
+
         private void Client_OnLog(object sender, OnLogArgs e)
         {
             Console.WriteLine($"{DateTime.Now,-19} [{e.BotUsername}] {e.Data}");
@@ -75,11 +106,43 @@ namespace SysBot.Pokemon.Twitch
 
         private void Client_OnMessageReceived(object sender, OnMessageReceivedArgs e)
         {
+            if (e.ChatMessage.Message.StartsWith($"{Info.Hub.Config.DiscordCommandPrefix}trade"))
+            {
+                var setstring = e.ChatMessage.Message.Substring(6).Trim();
+                ShowdownSet set = TwitchShowdownUtil.ConvertToShowdown(setstring);
+                var sav = TrainerSettings.GetSavedTrainerData(8);
+                PKM pkm = sav.GetLegalFromSet(set, out var result);
+                if (new LegalityAnalysis(pkm).Valid && pkm is PK8 p8)
+                {
+                    var tq = new TwitchQueue(p8, new PokeTradeTrainerInfo(e.ChatMessage.DisplayName),
+                        e.ChatMessage.Username);
+                    QueuePool.Add(tq);
+                    client.SendMessage(e.ChatMessage.Channel, "Added you to the waiting list. Please whisper to me your tradecode! Your request from the waiting list will be removed if you are too slow!");
+                }
+            }
         }
 
         private void Client_OnWhisperReceived(object sender, OnWhisperReceivedArgs e)
         {
-            client.SendWhisper(e.WhisperMessage.Username, "I don't do anything but reply this message.");
+            if (QueuePool.Count > 100)
+            {
+                var removed = QueuePool[0];
+                QueuePool.RemoveAt(0); // First in, first out
+                client.SendMessage(Channel, $"Removed {removed.DisplayName} from the waiting list. (list exceeded maximum count)");
+            }
+
+            var user = QueuePool.Find(q => q.UserName == e.WhisperMessage.Username);
+            if (user == null)
+                return;
+            QueuePool.Remove(user);
+            var msg = e.WhisperMessage.Message;
+            try
+            {
+                int code = int.Parse(msg);
+                var _ = AddToTradeQueue(user.Pokemon, code, e, TwitchRoleUtil.IsSudo(user.UserName), PokeRoutineType.LinkTrade, out string message);
+                client.SendMessage(Channel, message);
+            }
+            catch { }
         }
 
         private void Client_OnNewSubscriber(object sender, OnNewSubscriberArgs e)

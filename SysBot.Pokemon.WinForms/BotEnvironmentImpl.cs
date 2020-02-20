@@ -37,7 +37,7 @@ namespace SysBot.Pokemon
             if (string.IsNullOrWhiteSpace(config.TwitchToken))
                 return;
 
-            Twitch = new TwitchBot(config.TwitchUsername, config.TwitchToken, config.TwitchChannel);
+            Twitch = new TwitchBot(config.TwitchUsername, config.TwitchToken, config.TwitchChannel, Hub);
             Hub.BarrierReleasingActions.Add(() => Twitch.StartingDistribution(config.TwitchMessageStart));
         }
 
