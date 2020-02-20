@@ -5,7 +5,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="PKHeX.Core" Version="20.2.14" />
     <PackageReference Include="TwitchLib" Version="3.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />
+    <ProjectReference Include="..\SysBot.Pokemon\SysBot.Pokemon.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="PKHeX.Core.AutoMod">
+      <HintPath>deps\PKHeX.Core.AutoMod.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
