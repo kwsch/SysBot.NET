@@ -116,6 +116,8 @@ namespace SysBot.Pokemon.Twitch
             if (!e.ChatMessage.IsSubscriber && Info.Hub.Config.SubOnlyBot)
                 return;
 
+            bool sudo = TwitchRoleUtil.IsSudo(e.ChatMessage.Username);
+
             if (command == $"{p}trade")
             {
                 var _ = TwitchCommandsHelper.AddToWaitingList(e.ChatMessage.Message.Substring(6).Trim(), e.ChatMessage.DisplayName, e.ChatMessage.Username, out string msg);
@@ -130,7 +132,6 @@ namespace SysBot.Pokemon.Twitch
 
             else if (command == $"{p}tradeclear")
             {
-                bool sudo = TwitchRoleUtil.IsSudo(e.ChatMessage.Username);
                 var msg = TwitchCommandsHelper.ClearTrade(sudo, ulong.Parse(e.ChatMessage.UserId));
                 client.SendMessage(channel, msg);
             }
@@ -138,16 +139,39 @@ namespace SysBot.Pokemon.Twitch
             else if (command == $"{p}tradeclearall")
             {
                 // Sudo only
+                if (!sudo)
+                {
+                    client.SendMessage(channel, "This command is locked for sudo users only!");
+                    return;
+                }
+                Info.ClearAllQueues();
+                client.SendMessage(channel, "Cleared all queues!");
             }
 
             else if (command == $"{p}poolreload")
             {
                 // Sudo only
+                if (!sudo)
+                {
+                    client.SendMessage(channel, "This command is locked for sudo users only!");
+                    return;
+                }
+                var pool = Info.Hub.Ledy.Pool.Reload();
+                if (!pool)
+                    client.SendMessage(channel, $"Failed to reload from folder.");
+                else
+                    client.SendMessage(channel, $"Reloaded from folder. Pool count: {Info.Hub.Ledy.Pool.Count}");
             }
 
             else if (command == $"{p}poolcount")
             {
                 // Sudo only
+                if (!sudo)
+                {
+                    client.SendMessage(channel, "This command is locked for sudo users only!");
+                    return;
+                }
+                client.SendMessage(channel, $"The pool count is: {Info.Hub.Ledy.Pool.Count}");
             }
         }
 
