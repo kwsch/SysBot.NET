@@ -12,10 +12,8 @@ namespace SysBot.Pokemon.Twitch
         public static ShowdownSet ConvertToShowdown(string setstring)
         {
             // Twitch removes new lines, so we are left with a single line set
-            var splittables = new [] { "Ability:", "EVs:", "IVs:", "Shiny:", "- ", "Adamant", "Bashful", "Brave", "Bold", "Calm", 
-                                        "Careful", "Docile", "Gentle", "Hardy", "Hasty", "Impish", "Jolly", "Lax", "Lonely", "Mild", 
-                                        "Modest", "Naive", "Naughty", "Quiet", "Quirky", "Rash", "Relaxed", "Sassy", "Serious", "Timid" };
             var restorenick = string.Empty;
+
             var nickIndex = setstring.LastIndexOf(')');
             if (nickIndex > -1)
             {
@@ -28,8 +26,19 @@ namespace SysBot.Pokemon.Twitch
                 if (setstring.Contains(i))
                     setstring = setstring.Replace(i, $"\r\n{i}");
             }
+
             var finalset =  restorenick + setstring;
             return new ShowdownSet(finalset);
         }
+
+        private static readonly string[] splittables =
+        {
+            "Ability:", "EVs:", "IVs:", "Shiny:", "- ",
+            "Adamant", "Bashful", "Brave", "Bold", "Calm",
+            "Careful", "Docile", "Gentle", "Hardy", "Hasty",
+            "Impish", "Jolly", "Lax", "Lonely", "Mild",
+            "Modest", "Naive", "Naughty", "Quiet", "Quirky",
+            "Rash", "Relaxed", "Sassy", "Serious", "Timid"
+        };
     }
 }
