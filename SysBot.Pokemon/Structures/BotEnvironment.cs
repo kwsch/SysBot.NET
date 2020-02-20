@@ -24,8 +24,10 @@ namespace SysBot.Pokemon
 
         public void Start(BotList cfg)
         {
-            CreateBots(cfg.Bots);
+            Hub.Bots.Clear();
             Hub.Counts.ReloadCounts(); // if user modified them
+
+            CreateBots(cfg.Bots);
 
             var token = Source.Token;
             var tasks = CreateBotTasks(token);

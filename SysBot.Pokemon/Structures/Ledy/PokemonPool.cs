@@ -9,7 +9,6 @@ namespace SysBot.Pokemon
     {
         public readonly int ExpectedSize = new T().Data.Length;
 
-
         public readonly IPoolSettings Settings;
 
         public PokemonPool(IPoolSettings settings)

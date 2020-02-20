@@ -55,5 +55,11 @@ namespace System.Collections.Concurrent
             lock (_syncLock)
                 return _list.ToArray();
         }
+
+        public void Clear()
+        {
+            lock (_syncLock)
+                _list.Clear();
+        }
     }
 }
