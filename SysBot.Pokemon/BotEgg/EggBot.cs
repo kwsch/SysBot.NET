@@ -7,25 +7,17 @@ using static SysBot.Base.SwitchStick;
 
 namespace SysBot.Pokemon
 {
-    public class EggBot : PokeRoutineExecutor, IDumper
+    public class EggBot : PokeRoutineExecutor
     {
         private readonly BotCompleteCounts Counts;
-
-        /// <summary>
-        /// Folder to dump received trade data to.
-        /// </summary>
-        /// <remarks>If null, will skip dumping.</remarks>
-        public string DumpFolder { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Determines if it should dump received trade data.
-        /// </summary>
-        /// <remarks>If false, will skip dumping.</remarks>
-        public bool Dump { get; set; } = false;
-
+        public readonly IDumper DumpSetting;
         private const SwordShieldDaycare Location = SwordShieldDaycare.Route5;
 
-        public EggBot(PokeBotConfig cfg, BotCompleteCounts counts) : base(cfg) => Counts = counts;
+        public EggBot(PokeTradeHub<PK8> hub, PokeBotConfig cfg) : base(cfg)
+        {
+            Counts = hub.Counts;
+            DumpSetting = hub.Config;
+        }
 
         private int encounterCount;
 
@@ -79,8 +71,8 @@ namespace SysBot.Pokemon
                 Connection.Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
                 Counts.AddCompletedEggs();
 
-                if (Dump && !string.IsNullOrEmpty(DumpFolder))
-                    DumpPokemon(DumpFolder, pk);
+                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                    DumpPokemon(DumpSetting.DumpFolder, pk);
 
                 encounterCount++;
                 if (!StopCondition(pk))

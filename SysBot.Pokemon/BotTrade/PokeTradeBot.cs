@@ -9,7 +9,7 @@ using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
-    public class PokeTradeBot : PokeRoutineExecutor, IDumper
+    public class PokeTradeBot : PokeRoutineExecutor
     {
         private readonly PokeTradeHub<PK8> Hub;
 
@@ -17,13 +17,7 @@ namespace SysBot.Pokemon
         /// Folder to dump received trade data to.
         /// </summary>
         /// <remarks>If null, will skip dumping.</remarks>
-        public string DumpFolder { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Determines if it should dump received trade data.
-        /// </summary>
-        /// <remarks>If false, will skip dumping.</remarks>
-        public bool Dump { get; set; } = true;
+        private readonly IDumper DumpSetting;
 
         /// <summary>
         /// Synchronized start for multiple bots.
@@ -35,7 +29,11 @@ namespace SysBot.Pokemon
         /// </summary>
         public int FailedBarrier { get; private set; }
 
-        public PokeTradeBot(PokeTradeHub<PK8> hub, PokeBotConfig cfg) : base(cfg) => Hub = hub;
+        public PokeTradeBot(PokeTradeHub<PK8> hub, PokeBotConfig cfg) : base(cfg)
+        {
+            Hub = hub;
+            DumpSetting = hub.Config;
+        }
 
         private const int InjectBox = 0;
         private const int InjectSlot = 0;
@@ -301,8 +299,8 @@ namespace SysBot.Pokemon
             else
                 Hub.Counts.AddCompletedTrade();
 
-            if (Dump && !string.IsNullOrEmpty(DumpFolder))
-                DumpPokemon(DumpFolder, traded);
+            if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                DumpPokemon(DumpSetting.DumpFolder, traded);
 
             return PokeTradeResult.Success;
         }
@@ -415,8 +413,8 @@ namespace SysBot.Pokemon
             else
                 await ExitTrade(true, token).ConfigureAwait(false);
 
-            if (Dump && !string.IsNullOrEmpty(DumpFolder))
-                DumpPokemon(DumpFolder, SuprisePoke);
+            if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                DumpPokemon(DumpSetting.DumpFolder, SuprisePoke);
             Hub.Counts.AddCompletedSurprise();
 
             return PokeTradeResult.Success;

@@ -77,11 +77,6 @@ namespace SysBot.Pokemon
             foreach (var cfg in bots)
             {
                 var bot = GetBotFromConfig(cfg);
-                if (bot is IDumper d)
-                {
-                    d.Dump = Hub.Config.Dump;
-                    d.DumpFolder = Hub.Config.DumpFolder;
-                }
                 Bots.Add(bot);
             }
         }
@@ -98,7 +93,7 @@ namespace SysBot.Pokemon
                     return new PokeTradeBot(Hub, cfg);
 
                 case PokeRoutineType.EggFetch:
-                    return new EggBot(cfg, Hub.Counts);
+                    return new EggBot(Hub, cfg);
 
                 default:
                     throw new ArgumentException(nameof(cfg.NextRoutineType));
