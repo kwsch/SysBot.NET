@@ -67,7 +67,7 @@ namespace SysBot.Pokemon.Twitch
 
         private bool AddToTradeQueue(PK8 pk8, int code, OnWhisperReceivedArgs e, bool sudo, PokeRoutineType type, out string msg)
         {
-            var user = e.WhisperMessage.UserId;
+            // var user = e.WhisperMessage.UserId;
             var userID = ulong.MinValue;
             var name = e.WhisperMessage.DisplayName;
 
@@ -111,7 +111,7 @@ namespace SysBot.Pokemon.Twitch
                 var setstring = e.ChatMessage.Message.Substring(6).Trim();
                 ShowdownSet set = TwitchShowdownUtil.ConvertToShowdown(setstring);
                 var sav = TrainerSettings.GetSavedTrainerData(8);
-                PKM pkm = sav.GetLegalFromSet(set, out var result);
+                PKM pkm = sav.GetLegalFromSet(set, out _);
                 if (new LegalityAnalysis(pkm).Valid && pkm is PK8 p8)
                 {
                     var tq = new TwitchQueue(p8, new PokeTradeTrainerInfo(e.ChatMessage.DisplayName),
@@ -142,9 +142,9 @@ namespace SysBot.Pokemon.Twitch
                 var _ = AddToTradeQueue(user.Pokemon, code, e, TwitchRoleUtil.IsSudo(user.UserName), PokeRoutineType.LinkTrade, out string message);
                 client.SendMessage(Channel, message);
             }
-            catch
+            catch (Exception ex)
             {
-
+                Console.WriteLine($"{ex.Message}");
             }
         }
 

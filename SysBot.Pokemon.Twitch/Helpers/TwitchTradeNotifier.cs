@@ -21,6 +21,8 @@ namespace SysBot.Pokemon.Twitch
             Username = username;
             Client = client;
             Channel = channel;
+
+            Console.WriteLine($"{Username} - {Code}");
         }
 
         public Action<PokeRoutineExecutor> OnFinish { private get; set; }
