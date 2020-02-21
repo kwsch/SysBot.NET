@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using NLog;
 using PKHeX.Core;
 using SysBot.Base;
 
@@ -53,7 +52,7 @@ namespace SysBot.Pokemon
             if (File.Exists(DestinationPath))
                 File.Delete(DestinationPath);
             File.Move(SourcePath, DestinationPath);
-            LogUtil.Log(LogLevel.Info, "Moved processed trade to destination folder.", completedBy.Connection.Name);
+            LogUtil.LogInfo("Moved processed trade to destination folder.", completedBy.Connection.Name);
         }
 
         public bool Equals(PokeTradeDetail<TPoke>? other)

@@ -2,7 +2,6 @@
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using NLog;
 
 namespace SysBot.Base
 {
@@ -38,7 +37,7 @@ namespace SysBot.Base
 
             // Signal that the disconnect is complete.
             disconnectDone.Set();
-            LogUtil.Log(LogLevel.Info, "Disconnected.", Name);
+            LogUtil.LogInfo("Disconnected.", Name);
         }
 
         public int Read(byte[] buffer)

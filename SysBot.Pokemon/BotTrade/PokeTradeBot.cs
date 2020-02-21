@@ -156,7 +156,7 @@ namespace SysBot.Pokemon
         {
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.SurpriseTrade)
             {
-                var pkm = Hub.Ledy.Pool.GetRandomPoke();
+                var pkm = Hub.Ledy.Pool.GetRandomSurprise();
                 await EnsureConnectedToYCom(token).ConfigureAwait(false);
                 var _ = await PerformSurpriseTrade(sav, pkm, token).ConfigureAwait(false);
             }

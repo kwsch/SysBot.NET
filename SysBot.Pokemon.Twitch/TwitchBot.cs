@@ -7,7 +7,6 @@ using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
 using TwitchLib.Communication.Models;
 using PKHeX.Core;
-using PKHeX.Core.AutoMod;
 
 namespace SysBot.Pokemon.Twitch
 {
@@ -122,19 +121,16 @@ namespace SysBot.Pokemon.Twitch
                 var _ = TwitchCommandsHelper.AddToWaitingList(e.ChatMessage.Message.Substring(6).Trim(), e.ChatMessage.DisplayName, e.ChatMessage.Username, out string msg);
                 client.SendMessage(channel, msg);
             }
-
             else if (command == $"{p}tradestatus")
             {
                 var msg = TwitchCommandsHelper.GetTradePosition(ulong.Parse(e.ChatMessage.UserId));
                 client.SendMessage(channel, msg);
             }
-
             else if (command == $"{p}tradeclear")
             {
                 var msg = TwitchCommandsHelper.ClearTrade(sudo, ulong.Parse(e.ChatMessage.UserId));
                 client.SendMessage(channel, msg);
             }
-
             else if (command == $"{p}tradeclearall")
             {
                 // Sudo only
@@ -146,7 +142,6 @@ namespace SysBot.Pokemon.Twitch
                 Info.ClearAllQueues();
                 client.SendMessage(channel, "Cleared all queues!");
             }
-
             else if (command == $"{p}poolreload")
             {
                 // Sudo only
@@ -161,7 +156,6 @@ namespace SysBot.Pokemon.Twitch
                 else
                     client.SendMessage(channel, $"Reloaded from folder. Pool count: {Info.Hub.Ledy.Pool.Count}");
             }
-
             else if (command == $"{p}poolcount")
             {
                 // Sudo only

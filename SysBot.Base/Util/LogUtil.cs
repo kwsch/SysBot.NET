@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using NLog;
 
 namespace SysBot.Base
 {
@@ -11,10 +10,21 @@ namespace SysBot.Base
         // hook in here if you want to forward the message elsewhere???
         public static readonly List<Action<string, string>> Forwarders = new List<Action<string, string>>();
 
-        public static void Log(LogLevel level, string message, string identity)
+        public static void LogError(string message, string identity)
+        {
+            // Logger.Log(LogLevel.Error, level, message));
+            Log(message, identity);
+        }
+
+        public static void LogInfo(string message, string identity)
+        {
+            // Logger.Log(LogLevel.Info, level, message));
+            Log(message, identity);
+        }
+
+        private static void Log(string message, string identity)
         {
             Console.WriteLine(message);
-            // Logger.Log(level, message));
             foreach (var fwd in Forwarders)
                 fwd(message, identity);
         }
