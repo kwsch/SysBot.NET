@@ -60,7 +60,7 @@ namespace SysBot.Pokemon.Twitch
                 return blankSav;
             }
 
-            for (int i = 1; i < PKX.Generation; i++)
+            for (int i = 1; i < PKX.Generation + 1; i++)
             {
                 var fallback = GetFallbackBlank(i);
                 var exist = TrainerSettings.GetSavedTrainerData(i, fallback);
@@ -68,7 +68,7 @@ namespace SysBot.Pokemon.Twitch
                     TrainerSettings.Register(fallback);
             }
 
-            var trainer = TrainerSettings.GetSavedTrainerData(7);
+            var trainer = TrainerSettings.GetSavedTrainerData(PKX.Generation);
             PKMConverter.SetPrimaryTrainer(trainer);
         }
 

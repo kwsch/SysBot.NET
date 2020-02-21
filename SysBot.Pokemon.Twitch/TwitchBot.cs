@@ -21,8 +21,6 @@ namespace SysBot.Pokemon.Twitch
         {
             var credentials = new ConnectionCredentials(username, token);
             Channel = channel;
-            //Hub = hub;
-            Info.Hub = hub;
             AutoLegalityExtensions.EnsureInitialized();
 
             var clientOptions = new ClientOptions
@@ -30,6 +28,8 @@ namespace SysBot.Pokemon.Twitch
                 MessagesAllowedInPeriod = 20,
                 ThrottlingPeriod = TimeSpan.FromSeconds(30)
             };
+
+            Info.Hub = hub;
 
             WebSocketClient customClient = new WebSocketClient(clientOptions);
             client = new TwitchClient(customClient);
