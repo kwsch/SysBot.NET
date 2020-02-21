@@ -44,6 +44,7 @@ namespace SysBot.Pokemon
                 pkm.RefreshChecksum();
             }
             var ofs = GetBoxSlotOffset(box, slot);
+            pkm.ResetPartyStats();
             await Connection.WriteBytesAsync(pkm.EncryptedPartyData, ofs, token).ConfigureAwait(false);
         }
 
