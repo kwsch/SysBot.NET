@@ -1,5 +1,4 @@
 ﻿using System.Net.Sockets;
-using NLog;
 
 namespace SysBot.Base
 {
@@ -12,9 +11,7 @@ namespace SysBot.Base
         public string Name { get; set; }
         public bool Connected { get; protected set; }
 
-        public void Log(string message, LogLevel level) => LogUtil.Log(level, message, Name);
-        public void Log(string message) => Log(message, LogLevel.Info);
-        public void LogError(string message) => Log(message, LogLevel.Error);
+        public void Log(string message) => LogUtil.LogInfo(message, Name);
 
         protected SwitchConnectionBase(string ipaddress, int port)
         {

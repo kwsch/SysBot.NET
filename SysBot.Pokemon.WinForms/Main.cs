@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using Newtonsoft.Json;
-using NLog;
 using PKHeX.Core;
 using SysBot.Base;
 
@@ -119,7 +118,7 @@ namespace SysBot.Pokemon.WinForms
             B_New.Enabled = false;
             B_Delete.Enabled = false;
             RunningEnvironment = env;
-            LogUtil.Log(LogLevel.Info, "Starting", "Form");
+            LogUtil.LogInfo("Starting", "Form");
             env.Start(cfg);
             Tab_Logs.Select();
         }

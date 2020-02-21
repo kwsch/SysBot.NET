@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
 using SysBot.Base;
-using LogLevel = NLog.LogLevel;
 
 namespace SysBot.Pokemon
 {
@@ -60,7 +59,7 @@ namespace SysBot.Pokemon
                 tasks.Add(task);
 
                 if (Hub.Ledy.Pool.Count == 0)
-                    LogUtil.Log(LogLevel.Error, "Nothing to distribute for Empty Trade Queues!", "Hub");
+                    LogUtil.LogError("Nothing to distribute for Empty Trade Queues!", "Hub");
             }
             if (Hub.Config.MonitorForPriorityTrades)
             {

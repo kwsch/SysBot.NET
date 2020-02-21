@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PKHeX.Core;
 using PKHeX.Core.AutoMod;
 
@@ -52,8 +49,7 @@ namespace SysBot.Pokemon.Twitch
                 case QueueResultRemove.CurrentlyProcessing: return "Looks like you're currently being processed! Unable to remove from queue.";
                 case QueueResultRemove.Removed: return "Removed you from the queue.";
                 default: return "Sorry, you are not currently in the queue.";
-            };
+            }
         }
-
     }
 }

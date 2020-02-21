@@ -3,7 +3,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using NLog;
 using PKHeX.Core;
 using SysBot.Base;
 
@@ -35,7 +34,7 @@ namespace SysBot.Pokemon
         public async Task MonitorTradeQueueAddIfEmpty(string path, CancellationToken token)
         {
             if (!Hub.Ledy.Pool.LoadFolder(path))
-                LogUtil.Log(LogLevel.Error, "Nothing found in pool folder!", "Hub");
+                LogUtil.LogError("Nothing found in pool folder!", "Hub");
 
             var trainer = new PokeTradeTrainerInfo("Random");
             while (!token.IsCancellationRequested)

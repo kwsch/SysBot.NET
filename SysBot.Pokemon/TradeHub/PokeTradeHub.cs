@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using NLog;
 using PKHeX.Core;
 using SysBot.Base;
 
@@ -17,8 +16,8 @@ namespace SysBot.Pokemon
             var pool = new PokemonPool<T>(config);
             Ledy = new LedyDistributor<T>(pool);
             BotSync = new BotSynchronizer(config);
-            BotSync.BarrierReleasingActions.Add(() => LogUtil.Log(LogLevel.Info, $"{BotSync.Barrier.ParticipantCount} bots released.", "Barrier"));
-            Counts = new BotCompleteCounts(Config);
+            BotSync.BarrierReleasingActions.Add(() => LogUtil.LogInfo($"{BotSync.Barrier.ParticipantCount} bots released.", "Barrier"));
+            Counts = new BotCompleteCounts(config);
 
             Queues = new TradeQueueManager<T>(this);
         }
