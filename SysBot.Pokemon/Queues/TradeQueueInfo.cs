@@ -9,8 +9,10 @@ namespace SysBot.Pokemon
     {
         private readonly object _sync = new object();
         private readonly List<TradeEntry<T>> UsersInQueue = new List<TradeEntry<T>>();
+        public readonly PokeTradeHub<T> Hub;
 
-        public PokeTradeHub<T> Hub { get; set; } = new PokeTradeHub<T>(new PokeTradeHubConfig());
+        public TradeQueueInfo(PokeTradeHub<T> hub) => Hub = hub;
+
         public bool CanQueue { get; set; } = true;
 
         public QueueCheckResult<T> CheckPosition(ulong uid, PokeRoutineType type = 0)
