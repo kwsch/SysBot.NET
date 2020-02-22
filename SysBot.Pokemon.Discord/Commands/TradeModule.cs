@@ -31,6 +31,7 @@ namespace SysBot.Pokemon.Discord
             var embed = new EmbedBuilder();
             embed.AddField(x =>
             {
+                x.Name = "Queue Status";
                 x.Value = msg;
                 x.IsInline = false;
             });
