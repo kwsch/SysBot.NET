@@ -1,11 +1,13 @@
-﻿namespace SysBot.Pokemon.Twitch
+﻿using PKHeX.Core;
+
+namespace SysBot.Pokemon.Twitch
 {
     public static class TwitchRoleUtil
     {
         // Util for checking subscribers/ mods/ sudos etc. Future expandability??
-        public static bool IsSudo(string username)
+        public static bool IsSudo(this PokeTradeHub<PK8> hub, string username)
         {
-            var cfg = TwitchBot.Info.Hub.Config;
+            var cfg = hub.Config;
             return cfg.TwitchSudoList.Contains(username);
         }
     }

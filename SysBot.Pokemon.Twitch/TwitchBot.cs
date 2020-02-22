@@ -109,64 +109,58 @@ namespace SysBot.Pokemon.Twitch
         {
             var command = e.ChatMessage.Message.Split(' ')[0].Trim();
             var p = Info.Hub.Config.DiscordCommandPrefix;
-            var channel = e.ChatMessage.Channel;
-            bool sudo = TwitchRoleUtil.IsSudo(e.ChatMessage.Username);
 
             if (!command.StartsWith(p))
                 return;
 
-            if (!e.ChatMessage.IsSubscriber && Info.Hub.Config.SubOnlyBot && !sudo)
+            var c = command.Substring(p.Length).ToLower();
+
+
+            var msg = HandleCommand(c, e);
+            if (msg == null)
                 return;
 
-            if (command == $"{p}trade")
+            var channel = e.ChatMessage.Channel;
+            client.SendMessage(channel, msg);
+        }
+
+        private string HandleCommand(string c, OnMessageReceivedArgs e)
+        {
+            bool sudo = Hub.IsSudo(e.ChatMessage.Username);
+            if (!e.ChatMessage.IsSubscriber && Info.Hub.Config.SubOnlyBot && !sudo)
+                return null;
+
+            if (c == "trade")
             {
-                var _ = TwitchCommandsHelper.AddToWaitingList(e.ChatMessage.Message.Substring(6).Trim(), e.ChatMessage.DisplayName, e.ChatMessage.Username, out string msg);
-                client.SendMessage(channel, msg);
+                var chat = e.ChatMessage;
+                var _ = TwitchCommandsHelper.AddToWaitingList(chat.Message.Substring(6).Trim(), chat.DisplayName, chat.Username, out string msg);
+                return msg;
             }
-            else if (command == $"{p}tradestatus")
+
+            switch (c)
             {
-                var msg = Info.GetPositionString(ulong.Parse(e.ChatMessage.UserId));
-                client.SendMessage(channel, msg);
-            }
-            else if (command == $"{p}tradeclear")
-            {
-                var msg = TwitchCommandsHelper.ClearTrade(sudo, ulong.Parse(e.ChatMessage.UserId));
-                client.SendMessage(channel, msg);
-            }
-            else if (command == $"{p}tradeclearall")
-            {
-                // Sudo only
-                if (!sudo)
-                {
-                    client.SendMessage(channel, "This command is locked for sudo users only!");
-                    return;
-                }
-                Info.ClearAllQueues();
-                client.SendMessage(channel, "Cleared all queues!");
-            }
-            else if (command == $"{p}poolreload")
-            {
-                // Sudo only
-                if (!sudo)
-                {
-                    client.SendMessage(channel, "This command is locked for sudo users only!");
-                    return;
-                }
-                var pool = Info.Hub.Ledy.Pool.Reload();
-                if (!pool)
-                    client.SendMessage(channel, $"Failed to reload from folder.");
-                else
-                    client.SendMessage(channel, $"Reloaded from folder. Pool count: {Info.Hub.Ledy.Pool.Count}");
-            }
-            else if (command == $"{p}poolcount")
-            {
-                // Sudo only
-                if (!sudo)
-                {
-                    client.SendMessage(channel, "This command is locked for sudo users only!");
-                    return;
-                }
-                client.SendMessage(channel, $"The pool count is: {Info.Hub.Ledy.Pool.Count}");
+                case "tradestatus":
+                    return Info.GetPositionString(ulong.Parse(e.ChatMessage.UserId));
+                case "tradeclear":
+                    return TwitchCommandsHelper.ClearTrade(sudo, ulong.Parse(e.ChatMessage.UserId));
+
+                case "tradeclearall" when !sudo:
+                    return "This command is locked for sudo users only!";
+                case "tradeclearall":
+                    Info.ClearAllQueues();
+                    return "Cleared all queues!";
+
+                case "poolreload" when !sudo:
+                    return "This command is locked for sudo users only!";
+                case "poolreload":
+                    return Info.Hub.Ledy.Pool.Reload() ? $"Reloaded from folder. Pool count: {Info.Hub.Ledy.Pool.Count}" : "Failed to reload from folder.";
+
+                case "poolcount" when !sudo:
+                    return "This command is locked for sudo users only!";
+                case "poolcount":
+                    return $"The pool count is: {Info.Hub.Ledy.Pool.Count}";
+
+                default: return null;
             }
         }
 
@@ -187,7 +181,7 @@ namespace SysBot.Pokemon.Twitch
             try
             {
                 int code = int.Parse(msg);
-                var _ = AddToTradeQueue(user.Pokemon, code, e, TwitchRoleUtil.IsSudo(user.UserName), PokeRoutineType.LinkTrade, out string message);
+                var _ = AddToTradeQueue(user.Pokemon, code, e, Hub.IsSudo(user.UserName), PokeRoutineType.LinkTrade, out string message);
                 client.SendMessage(Channel, message);
             }
             catch (Exception ex)
