@@ -92,6 +92,9 @@ namespace SysBot.Pokemon
         [Category(Metadata), Description("Completed Dudu Trades")]
         public int CompletedDudu { get; set; }
 
+        [Category(Metadata), Description("Completed Clone Trades (Specific User)")]
+        public int CompletedClones { get; set; }
+
         [Category(Metadata), Description("Eggs Retrieved")]
         public int CompletedEggs { get; set; }
         #endregion

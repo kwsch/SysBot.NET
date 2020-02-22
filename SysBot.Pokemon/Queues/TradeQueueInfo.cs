@@ -44,9 +44,11 @@ namespace SysBot.Pokemon
                 return "You are not in the queue.";
 
             var position = $"{check.Position}/{check.QueueCount}";
-            return check.Detail.Type == PokeRoutineType.DuduBot
-                ? $"You are in the Dudu queue! Position: {position}"
-                : $"You are in the Trade queue! Position: {position}, Receiving: {(Species)check.Detail.Trade.TradeData.Species}";
+            var msg = $"You are in the {check.Detail.Type} queue! Position: {position}";
+            var pk = check.Detail.Trade.TradeData;
+            if (pk.Species != 0)
+                msg += $", Receiving: {(Species)check.Detail.Trade.TradeData.Species}";
+            return msg;
         }
 
         public string GetTradeList(PokeRoutineType t)

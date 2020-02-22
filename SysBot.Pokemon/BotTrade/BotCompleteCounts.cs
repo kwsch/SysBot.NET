@@ -11,6 +11,7 @@ namespace SysBot.Pokemon
         private int CompletedDudu;
         private int CompletedSurprise;
         private int CompletedDistribution;
+        private int CompletedClones;
 
         public BotCompleteCounts(PokeTradeHubConfig config)
         {
@@ -25,6 +26,7 @@ namespace SysBot.Pokemon
             CompletedDudu = Config.CompletedDudu;
             CompletedSurprise = Config.CompletedSurprise;
             CompletedDistribution = Config.CompletedDistribution;
+            CompletedClones = Config.CompletedClones;
         }
 
         public void AddCompletedTrade()
@@ -55,6 +57,12 @@ namespace SysBot.Pokemon
         {
             Interlocked.Increment(ref CompletedDistribution);
             Config.CompletedDistribution = CompletedDistribution;
+        }
+
+        public void AddCompletedClones()
+        {
+            Interlocked.Increment(ref CompletedClones);
+            Config.CompletedClones = CompletedClones;
         }
     }
 }

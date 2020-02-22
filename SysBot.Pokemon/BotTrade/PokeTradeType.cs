@@ -5,5 +5,6 @@
         Random,
         Specific,
         Dudu,
+        Clone,
     }
 }

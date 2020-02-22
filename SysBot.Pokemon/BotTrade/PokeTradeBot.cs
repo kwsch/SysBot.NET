@@ -49,10 +49,9 @@ namespace SysBot.Pokemon
                 Config.IterateNextRoutine();
                 var task = Config.CurrentRoutineType switch
                 {
-                    PokeRoutineType.LinkTrade => DoLinkTrades(sav, token),
+                    PokeRoutineType.Idle => DoNothing(token),
                     PokeRoutineType.SurpriseTrade => DoSurpriseTrades(sav, token),
-                    PokeRoutineType.DuduBot => DoDuduTrades(sav, token),
-                    _ => DoNothing(token),
+                    _ => DoTrades(sav, token),
                 };
                 await task.ConfigureAwait(false);
             }
@@ -74,51 +73,13 @@ namespace SysBot.Pokemon
             }
         }
 
-        private async Task DoLinkTrades(SAV8SWSH sav, CancellationToken token)
+        private async Task DoTrades(SAV8SWSH sav, CancellationToken token)
         {
             int waitCounter = 0;
-            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.LinkTrade)
+            while (!token.IsCancellationRequested && Config.NextRoutineType != PokeRoutineType.Idle)
             {
-                if (!Hub.Queues.Queue.TryDequeue(out var poke, out var priority))
-                {
-                    if (waitCounter == 0)
-                        Connection.Log("Nothing to send in the queue! Waiting for new trade data.");
-                    waitCounter++;
-                    if (waitCounter % 10 == 0 && Hub.Config.AntiIdle)
-                        await Click(B, 1_000, token).ConfigureAwait(false);
-                    else
-                        await Task.Delay(1_000, token).ConfigureAwait(false);
-                    continue;
-                }
-
-                waitCounter = 0;
-                Connection.Log("Starting next Link Code trade. Getting data...");
-                await EnsureConnectedToYCom(token).ConfigureAwait(false);
-                var result = await PerformLinkCodeTrade(sav, poke, token).ConfigureAwait(false);
-                if (result != PokeTradeResult.Success) // requeue
-                {
-                    if (result == PokeTradeResult.Aborted)
-                    {
-                        poke.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
-                        Hub.Queues.Queue.Enqueue(poke, Math.Min(priority, PokeTradeQueue<PK8>.Tier2));
-                    }
-                    else
-                    {
-                        poke.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
-                        poke.TradeCanceled(this, result);
-                    }
-                }
-            }
-
-            UpdateBarrier(false);
-        }
-
-        private async Task DoDuduTrades(SAV8SWSH sav, CancellationToken token)
-        {
-            int waitCounter = 0;
-            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.DuduBot)
-            {
-                if (!Hub.Queues.Dudu.TryDequeue(out var detail, out var priority))
+                var type = Config.CurrentRoutineType;
+                if (!Hub.Queues.TryDequeue(Config.CurrentRoutineType, out var detail, out var priority))
                 {
                     if (waitCounter == 0)
                         Connection.Log("Nothing to check, waiting for new users...");
@@ -131,7 +92,7 @@ namespace SysBot.Pokemon
                 }
 
                 waitCounter = 0;
-                Connection.Log("Starting next Dudu Bot Trade. Getting data...");
+                Connection.Log($"Starting next {type} Bot Trade. Getting data...");
                 await EnsureConnectedToYCom(token).ConfigureAwait(false);
                 var result = await PerformLinkCodeTrade(sav, detail, token).ConfigureAwait(false);
                 if (result != PokeTradeResult.Success) // requeue
@@ -139,7 +100,7 @@ namespace SysBot.Pokemon
                     if (result == PokeTradeResult.Aborted)
                     {
                         detail.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
-                        Hub.Queues.Dudu.Enqueue(detail, Math.Min(priority, PokeTradeQueue<PK8>.Tier2));
+                        Hub.Queues.Enqueue(type, detail, Math.Min(priority, PokeTradeQueue<PK8>.Tier2));
                     }
                     else
                     {
@@ -280,8 +241,21 @@ namespace SysBot.Pokemon
                     poke.SendNotification(this, "Injecting your requested Pokemon");
                     await Click(A, 0_800, token).ConfigureAwait(false);
                     await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
-                    //await Click(L, 0_800, token).ConfigureAwait(false);
                 }
+                for (int i = 0; i < 5; i++)
+                    await Click(A, 0_500, token).ConfigureAwait(false);
+            }
+            else if (poke.Type == PokeTradeType.Clone)
+            {
+                // Inject the shown Pokemon.
+                var clone = (PK8)pk.Clone();
+                if (Hub.Config.ResetHOMETracker)
+                    clone.Tracker = 0;
+
+                poke.SendNotification(this, "Injecting your requested Pokemon");
+                await Click(A, 0_800, token).ConfigureAwait(false);
+                await SetBoxPokemon(clone, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+
                 for (int i = 0; i < 5; i++)
                     await Click(A, 0_500, token).ConfigureAwait(false);
             }
@@ -321,8 +295,11 @@ namespace SysBot.Pokemon
             poke.TradeFinished(this, traded);
             Connection.Log("Trade complete!");
 
+            var counts = Hub.Counts;
             if (poke.Type == PokeTradeType.Random)
-                Hub.Counts.AddCompletedDistribution();
+                counts.AddCompletedDistribution();
+            else if (poke.Type == PokeTradeType.Clone)
+                counts.AddCompletedClones();
             else
                 Hub.Counts.AddCompletedTrade();
 

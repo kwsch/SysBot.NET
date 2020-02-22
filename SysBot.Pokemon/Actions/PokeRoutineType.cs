@@ -3,10 +3,14 @@
     public enum PokeRoutineType
     {
         Idle,
-        Reserved,
-        LinkTrade,
+
         SurpriseTrade,
+
+        LinkTrade,
         DuduBot,
+        Clone,
+        FlexTrade,
+
         EggFetch,
     }
 }

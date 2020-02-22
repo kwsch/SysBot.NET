@@ -14,6 +14,7 @@ namespace SysBot.Pokemon
 
         public readonly PokeTradeQueue<T> Queue = new PokeTradeQueue<T>();
         public readonly PokeTradeQueue<T> Dudu = new PokeTradeQueue<T>();
+        public readonly PokeTradeQueue<T> Clone = new PokeTradeQueue<T>();
         public readonly TradeQueueInfo<T> Info;
 
         public TradeQueueManager(PokeTradeHub<T> hub)
@@ -27,6 +28,7 @@ namespace SysBot.Pokemon
             return type switch
             {
                 PokeRoutineType.DuduBot => Dudu,
+                PokeRoutineType.Clone => Clone,
                 _ => Queue,
             };
         }
@@ -117,6 +119,30 @@ namespace SysBot.Pokemon
         {
             Dudu.Clear();
             Queue.Clear();
+            Clone.Clear();
+        }
+
+        public bool TryDequeue(PokeRoutineType type, out PokeTradeDetail<T> detail, out uint priority)
+        {
+            if (type == PokeRoutineType.FlexTrade)
+            {
+                if (TryDequeue(PokeRoutineType.DuduBot, out detail, out priority))
+                    return true;
+                if (TryDequeue(PokeRoutineType.Clone, out detail, out priority))
+                    return true;
+                if (TryDequeue(PokeRoutineType.LinkTrade, out detail, out priority))
+                    return true;
+                return false;
+            }
+
+            var queue = GetQueue(type);
+            return queue.TryDequeue(out detail, out priority);
+        }
+
+        public void Enqueue(PokeRoutineType type, PokeTradeDetail<T> detail, uint priority)
+        {
+            var queue = GetQueue(type);
+            queue.Enqueue(detail, priority);
         }
     }
 }
