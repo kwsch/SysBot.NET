@@ -72,5 +72,12 @@ namespace SysBot.Pokemon
 
         public override int GetHashCode() => Trainer.GetHashCode();
         public override string ToString() => $"{Trainer.TrainerName} - {Code}";
+
+        public string Summary(int i)
+        {
+            if (TradeData.Species == 0)
+                return $"{i:00}: {Trainer.TrainerName}";
+            return $"{i:00}: {Trainer.TrainerName}, {(Species)TradeData.Species}";
+        }
     }
 }

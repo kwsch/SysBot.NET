@@ -14,8 +14,13 @@ namespace SysBot.Pokemon
 
         public readonly PokeTradeQueue<T> Queue = new PokeTradeQueue<T>();
         public readonly PokeTradeQueue<T> Dudu = new PokeTradeQueue<T>();
+        public readonly TradeQueueInfo<T> Info;
 
-        public TradeQueueManager(PokeTradeHub<T> hub) => Hub = hub;
+        public TradeQueueManager(PokeTradeHub<T> hub)
+        {
+            Hub = hub;
+            Info = new TradeQueueInfo<T> {Hub = Hub};
+        }
 
         public PokeTradeQueue<T> GetQueue(PokeRoutineType type)
         {

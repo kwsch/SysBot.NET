@@ -12,13 +12,17 @@ namespace SysBot.Pokemon.Twitch
 {
     public class TwitchBot
     {
-        internal static readonly TradeQueueInfo<PK8> Info = new TradeQueueInfo<PK8>();
+        private static PokeTradeHub<PK8> Hub;
+        internal static TradeQueueInfo<PK8> Info => Hub.Queues.Info;
+
         internal static readonly List<TwitchQueue> QueuePool = new List<TwitchQueue>();
         private readonly TwitchClient client;
         private readonly string Channel;
 
         public TwitchBot(string username, string token, string channel, PokeTradeHub<PK8> hub)
         {
+            Hub = hub;
+
             var credentials = new ConnectionCredentials(username, token);
             Channel = channel;
             AutoLegalityExtensions.EnsureInitialized();
@@ -28,8 +32,6 @@ namespace SysBot.Pokemon.Twitch
                 MessagesAllowedInPeriod = 20,
                 ThrottlingPeriod = TimeSpan.FromSeconds(30)
             };
-
-            Info.Hub = hub;
 
             WebSocketClient customClient = new WebSocketClient(clientOptions);
             client = new TwitchClient(customClient);
@@ -123,7 +125,7 @@ namespace SysBot.Pokemon.Twitch
             }
             else if (command == $"{p}tradestatus")
             {
-                var msg = TwitchCommandsHelper.GetTradePosition(ulong.Parse(e.ChatMessage.UserId));
+                var msg = Info.GetPositionString(ulong.Parse(e.ChatMessage.UserId));
                 client.SendMessage(channel, msg);
             }
             else if (command == $"{p}tradeclear")

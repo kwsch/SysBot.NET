@@ -5,6 +5,7 @@ using Discord.Commands;
 
 namespace SysBot.Pokemon.Discord
 {
+    [Summary("Distribution Pool Module")]
     public class PoolModule : ModuleBase<SocketCommandContext>
     {
         [Command("poolReload")]

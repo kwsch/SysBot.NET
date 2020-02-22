@@ -24,18 +24,6 @@ namespace SysBot.Pokemon.Twitch
             return false;
         }
 
-        public static string GetTradePosition(ulong id)
-        {
-            var check = TwitchBot.Info.CheckPosition(id);
-            if (!check.InQueue || check.Detail is null)
-                return "You are not in the queue.";
-
-            var position = $"{check.Position}/{check.QueueCount}";
-            return check.Detail.Type == PokeRoutineType.DuduBot
-                ? $"You are in the Dudu queue! Position: {position}"
-                : $"You are in the Trade queue! Position: {position}, Receiving: {(Species)check.Detail.Trade.TradeData.Species}";
-        }
-
         public static string ClearTrade(bool sudo, ulong userid)
         {
             var allowed = sudo || TwitchBot.Info.CanQueue;
@@ -44,7 +32,7 @@ namespace SysBot.Pokemon.Twitch
 
             var userID = userid;
             var result = TwitchBot.Info.ClearTrade(userID);
-            switch(result)
+            switch (result)
             {
                 case QueueResultRemove.CurrentlyProcessing: return "Looks like you're currently being processed! Unable to remove from queue.";
                 case QueueResultRemove.Removed: return "Removed you from the queue.";

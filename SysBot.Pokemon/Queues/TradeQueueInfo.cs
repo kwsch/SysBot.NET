@@ -35,17 +35,26 @@ namespace SysBot.Pokemon
             }
         }
 
-        public string GetTradeList()
+        public string GetPositionString(ulong uid, PokeRoutineType type = PokeRoutineType.Idle)
+        {
+            var check = CheckPosition(uid, type);
+            if (!check.InQueue || check.Detail is null)
+                return "You are not in the queue.";
+
+            var position = $"{check.Position}/{check.QueueCount}";
+            return check.Detail.Type == PokeRoutineType.DuduBot
+                ? $"You are in the Dudu queue! Position: {position}"
+                : $"You are in the Trade queue! Position: {position}, Receiving: {(Species)check.Detail.Trade.TradeData.Species}";
+        }
+
+        public string GetTradeList(PokeRoutineType t)
         {
             lock (_sync)
             {
-                if (UsersInQueue.Count == 0)
-                    return "Nobody in any queue.";
-
-                var queued = UsersInQueue.GroupBy(z => z.Type);
-                var list = queued.SelectMany(z => z.Select(x =>
-                    $"{x.Type}: {x.Trade.Trainer.TrainerName} ({x.Username}), {(Species)x.Trade.TradeData.Species}"));
-                return string.Join("\n", list);
+                var queue = Hub.Queues.GetQueue(t);
+                if (queue.Count == 0)
+                    return "Nobody in queue.";
+                return queue.Summary();
             }
         }
 

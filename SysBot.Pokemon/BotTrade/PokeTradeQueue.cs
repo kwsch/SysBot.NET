@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using PKHeX.Core;
 
 namespace SysBot.Pokemon
@@ -39,5 +40,11 @@ namespace SysBot.Pokemon
         public void Clear() => Queue.Clear();
         public int Remove(PokeTradeDetail<TPoke> detail) => Queue.Remove(detail);
         public int IndexOf(PokeTradeDetail<TPoke> detail) => Queue.IndexOf(detail);
+
+        public string Summary()
+        {
+            var list = Queue.Select((x, i) => x.Value.Summary(i));
+            return string.Join("\n", list);
+        }
     }
 }
