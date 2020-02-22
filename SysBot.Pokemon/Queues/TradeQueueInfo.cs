@@ -31,7 +31,7 @@ namespace SysBot.Pokemon
                         actualIndex++;
                 }
 
-                var inQueue = UsersInQueue.Count(z => z.Type == type);
+                var inQueue = UsersInQueue.Count(z => z.Type == entry.Type);
 
                 return new QueueCheckResult<T>(true, entry, actualIndex, inQueue);
             }
