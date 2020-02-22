@@ -238,7 +238,7 @@ namespace SysBot.Pokemon
                 pkm = trade.Receive;
                 if (trade.Type != LedyResponseType.Random)
                 {
-                    poke.SendNotification(this, "Injecting your requested Pokemon");
+                    poke.SendNotification(this, "Injecting your requested Pokemon.");
                     await Click(A, 0_800, token).ConfigureAwait(false);
                     await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
                 }
@@ -252,7 +252,7 @@ namespace SysBot.Pokemon
                 if (Hub.Config.ResetHOMETracker)
                     clone.Tracker = 0;
 
-                poke.SendNotification(this, "Injecting your requested Pokemon");
+                poke.SendNotification(this, "Cloned. Change what you're offering!");
                 await Click(A, 0_800, token).ConfigureAwait(false);
                 await SetBoxPokemon(clone, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
 
