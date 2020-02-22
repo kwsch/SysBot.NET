@@ -32,16 +32,8 @@ namespace SysBot.Pokemon.Discord
 
             builder.AddField(x =>
             {
-                var counts = hub.Config;
                 x.Name = "Counts";
-                x.Value =
-                    $"Dudu Trades: {counts.CompletedDudu}\n" +
-                    $"Clone Trades: {counts.CompletedClones}\n" +
-                    $"Eggs Received: {counts.CompletedEggs}\n" +
-                    $"Surprise Trades: {counts.CompletedSurprise}\n" +
-                    $"Completed Trades: {counts.CompletedTrades}\n" +
-                    $"Distribution Trades: {counts.CompletedDistribution}\n" +
-                    "";
+                x.Value = string.Join("\n", hub.Counts.Summary());
                 x.IsInline = false;
             });
 

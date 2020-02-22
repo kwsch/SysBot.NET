@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 
 namespace SysBot.Pokemon
 {
@@ -63,6 +64,22 @@ namespace SysBot.Pokemon
         {
             Interlocked.Increment(ref CompletedClones);
             Config.CompletedClones = CompletedClones;
+        }
+
+        public IEnumerable<string> Summary()
+        {
+            if (CompletedDudu != 0)
+                yield return $"Dudu Trades: {CompletedDudu}";
+            if (CompletedClones != 0)
+                yield return $"Clone Trades: {CompletedClones}";
+            if (CompletedDudu != 0)
+                yield return $"Eggs Received: {CompletedEggs}";
+            if (CompletedDudu != 0)
+                yield return $"Surprise Trades: {CompletedSurprise}";
+            if (CompletedDudu != 0)
+                yield return $"Completed Trades: {CompletedTrades}";
+            if (CompletedDudu != 0)
+                yield return $"Distribution Trades: {CompletedDistribution}";
         }
     }
 }
