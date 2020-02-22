@@ -1,5 +1,4 @@
 using PKHeX.Core;
-using PKHeX.Core.AutoMod;
 
 namespace SysBot.Pokemon.Twitch
 {
@@ -9,8 +8,8 @@ namespace SysBot.Pokemon.Twitch
         public static bool AddToWaitingList(string setstring, string display, string username, out string msg)
         {
             ShowdownSet set = TwitchShowdownUtil.ConvertToShowdown(setstring);
-            var sav = TrainerSettings.GetSavedTrainerData(8);
-            PKM pkm = sav.GetLegalFromSet(set, out _);
+            var sav = AutoLegalityExtensions.GetTrainerInfo(PKX.Generation);
+            PKM pkm = sav.GetLegal(set, out _);
             if (new LegalityAnalysis(pkm).Valid && pkm is PK8 p8)
             {
                 var tq = new TwitchQueue(p8, new PokeTradeTrainerInfo(display),

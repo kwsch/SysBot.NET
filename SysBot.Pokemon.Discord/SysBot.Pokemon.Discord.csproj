@@ -24,10 +24,5 @@
   </ItemGroup>
 
   <!-- local dependencies -->
-  <ItemGroup>
-    <Reference Include="PKHeX.Core.AutoMod">
-      <HintPath>deps\PKHeX.Core.AutoMod.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 
 </Project>

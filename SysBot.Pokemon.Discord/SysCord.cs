@@ -36,6 +36,7 @@ namespace SysBot.Pokemon.Discord
         {
             Hub = hub;
             SysCordInstance.Self = this; // hack
+            AutoLegalityExtensions.EnsureInitialized(Hub.Config);
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
                 // How much logging do you want to see?

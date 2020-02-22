@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using PKHeX.Core;
-using PKHeX.Core.AutoMod;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -11,8 +10,6 @@ namespace SysBot.Pokemon.Discord
     public class TradeModule : ModuleBase<SocketCommandContext>
     {
         internal static TradeQueueInfo<PK8> Info => SysCordInstance.Self.Hub.Queues.Info;
-
-        static TradeModule() => AutoLegalityExtensions.EnsureInitialized();
 
         private const uint MaxTradeCode = 9999;
 
@@ -92,9 +89,9 @@ namespace SysBot.Pokemon.Discord
             const int gen = 8;
             content = ReusableActions.StripCodeBlock(content);
             var set = new ShowdownSet(content);
-            var sav = TrainerSettings.GetSavedTrainerData(gen);
+            var sav = AutoLegalityExtensions.GetTrainerInfo(gen);
 
-            var pkm = sav.GetLegalFromSet(set, out var result);
+            var pkm = sav.GetLegal(set, out var result);
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[set.Species];
             var msg = la.Valid

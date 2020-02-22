@@ -22,5 +22,13 @@
   <ItemGroup Condition=" '$(Platform)' == 'x86' ">
     <PackageReference Include="Microsoft.Z3.x86" Version="4.8.7" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="deps\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="PKHeX.Core.AutoMod">
+      <HintPath>deps\PKHeX.Core.AutoMod.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 
 </Project>

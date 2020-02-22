@@ -2,49 +2,45 @@
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
-using  PKHeX.Core.AutoMod;
+using PKHeX.Core.AutoMod;
 
-namespace SysBot.Pokemon.Twitch
+namespace SysBot.Pokemon
 {
     public static class AutoLegalityExtensions
     {
         private static bool Initialized;
 
-        static AutoLegalityExtensions() => EnsureInitialized();
-
-        public static void EnsureInitialized()
+        public static void EnsureInitialized(PokeTradeHubConfig cfg)
         {
             if (Initialized)
                 return;
             Initialized = true;
-            InitializeAutoLegality();
+            InitializeAutoLegality(cfg);
         }
 
-        private static void InitializeAutoLegality()
+        private static void InitializeAutoLegality(PokeTradeHubConfig cfg)
         {
             Task.Run(InitializeCoreStrings);
             Task.Run(() => EncounterEvent.RefreshMGDB());
-            InitializeTrainerDatabase();
-            InitializeSettings();
+            InitializeTrainerDatabase(cfg);
+            InitializeSettings(cfg);
 
             // Legalizer.AllowBruteForce = false;
         }
 
-        private static void InitializeSettings()
+        private static void InitializeSettings(PokeTradeHubConfig cfg)
         {
-            var cfg = TwitchBot.Info.Hub.Config;
             APILegality.SetAllLegalRibbons = cfg.SetAllLegalRibbons;
             APILegality.SetMatchingBalls = cfg.SetMatchingBalls;
         }
 
-        private static void InitializeTrainerDatabase()
+        private static void InitializeTrainerDatabase(PokeTradeHubConfig cfg)
         {
             // Seed the Trainer Database with enough fake save files so that we return a generation sensitive format when needed.
-            var cfg = TwitchBot.Info.Hub.Config;
             string OT = cfg.GenerateOT;
             int TID = cfg.GenerateTID16;
             int SID = cfg.GenerateSID16;
-            int lang = (int)cfg.GenerateLanguage;
+            int lang = (int) cfg.GenerateLanguage;
 
             var externalSource = cfg.GeneratePathTrainerInfo;
             if (!string.IsNullOrWhiteSpace(externalSource) && Directory.Exists(externalSource))
@@ -83,5 +79,16 @@ namespace SysBot.Pokemon.Twitch
             LegalityAnalysis.MoveStrings = GameInfo.Strings.movelist;
             LegalityAnalysis.SpeciesStrings = GameInfo.Strings.specieslist;
         }
+
+        public static ITrainerInfo GetTrainerInfo(int gen) => TrainerSettings.GetSavedTrainerData(gen);
+
+        public static PKM GetLegal(this ITrainerInfo sav, ShowdownSet set, out string res)
+        {
+            var result =  sav.GetLegalFromSet(set, out var type);
+            res = type.ToString();
+            return result;
+        }
+
+        public static PKM LegalizePokemon(this PKM pk) => pk.Legalize();
     }
 }
