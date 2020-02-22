@@ -141,7 +141,7 @@ namespace SysBot.Pokemon.WinForms
 
             if (ModifierKeys == Keys.Control || ModifierKeys == Keys.Shift) // either, because remembering which can be hard
             {
-                env.SoftStop();
+                env.Pause();
                 WinFormsUtil.Alert("Commanding all bots to Idle.", "Press Stop (without a modifier key) to hard-stop and unlock control.");
                 return;
             }

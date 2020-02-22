@@ -112,11 +112,18 @@ namespace SysBot.Pokemon
                 Hub.BotSync.Barrier.RemoveParticipants(count);
         }
 
-        public void SoftStop()
+        public void Pause()
         {
             // Tell all the bots to go to Idle after finishing.
             foreach (var b in Bots)
-                b.Config.Stop();
+                b.Config.Pause();
+        }
+
+        public void Resume()
+        {
+            // Tell all the bots to go to Idle after finishing.
+            foreach (var b in Bots)
+                b.Config.Resume();
         }
     }
 }
