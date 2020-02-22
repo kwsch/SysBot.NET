@@ -43,7 +43,7 @@ namespace SysBot.Pokemon
 
         public string Summary()
         {
-            var list = Queue.Select((x, i) => x.Value.Summary(i));
+            var list = Queue.Select((x, i) => x.Value.Summary(i + 1));
             return string.Join("\n", list);
         }
     }
