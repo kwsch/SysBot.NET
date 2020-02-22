@@ -104,6 +104,11 @@ namespace SysBot.Pokemon.WinForms
                 Thread.Sleep(100); // wait for things to abort?
             }
 
+            SaveCurrentConfig();
+        }
+
+        private void SaveCurrentConfig()
+        {
             var cfg = GetCurrentConfiguration();
             var lines = JsonConvert.SerializeObject(cfg);
             File.WriteAllText(ConfigPath, lines);
@@ -111,12 +116,15 @@ namespace SysBot.Pokemon.WinForms
 
         private void B_Start_Click(object sender, EventArgs e)
         {
+            SaveCurrentConfig();
+
             var cfg = GetCurrentConfiguration();
             var env = new BotEnvironmentImpl(Hub);
             B_Start.Enabled = false;
             B_Stop.Enabled = true;
             B_New.Enabled = false;
             B_Delete.Enabled = false;
+
             RunningEnvironment = env;
             LogUtil.LogInfo("Starting", "Form");
             env.Start(cfg);

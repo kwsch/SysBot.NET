@@ -105,6 +105,9 @@ namespace SysBot.Pokemon
         [Category(IntegrationDiscord), Description("Discord Bot: Bot Command Prefix")]
         public string DiscordCommandPrefix { get; set; } = "$";
 
+        [Category(IntegrationDiscord), Description("Discord Bot: List of Modules that will not be loaded when the Bot is started (comma separated).")]
+        public string DiscordModuleBlacklist { get; set; } = string.Empty;
+
         [Category(IntegrationDiscord), Description("Discord Bot: Users with this role are allowed to enter the Trade queue.")]
         public string DiscordRoleCanTrade { get; set; } = DefaultDisable;
 
