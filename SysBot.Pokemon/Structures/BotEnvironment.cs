@@ -115,7 +115,7 @@ namespace SysBot.Pokemon
         {
             // Tell all the bots to go to Idle after finishing.
             foreach (var b in Bots)
-                b.Config.NextRoutineType = PokeRoutineType.Idle;
+                b.Config.Stop();
         }
     }
 }
