@@ -19,7 +19,7 @@ namespace SysBot.Pokemon
         public TradeQueueManager(PokeTradeHub<T> hub)
         {
             Hub = hub;
-            Info = new TradeQueueInfo<T> {Hub = Hub};
+            Info = new TradeQueueInfo<T>(hub);
         }
 
         public PokeTradeQueue<T> GetQueue(PokeRoutineType type)

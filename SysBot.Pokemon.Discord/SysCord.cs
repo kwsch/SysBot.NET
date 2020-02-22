@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -61,8 +63,6 @@ namespace SysBot.Pokemon.Discord
 
             // Setup your DI container.
             _services = ConfigureServices();
-
-            TradeModule.Info.Hub = Hub;
         }
 
         // If any services require the client, or the CommandService, or something else you keep on hand,
@@ -117,17 +117,34 @@ namespace SysBot.Pokemon.Discord
 
         private async Task InitCommands()
         {
-            // Either search the program and add all Module classes that can be found.
-            // Module classes MUST be marked 'public' or they will be ignored.
-            // You also need to pass your 'IServiceProvider' instance now,
-            // so make sure that's done before you get here.
-            await _commands.AddModulesAsync(Assembly.GetExecutingAssembly(), _services).ConfigureAwait(false);
-            // Or add Modules manually if you prefer to be a little more explicit:
-            //await _commands.AddModuleAsync<SomeModule>(_services);
-            // Note that the first one is 'Modules' (plural) and the second is 'Module' (singular).
+            var assembly = Assembly.GetExecutingAssembly();
+
+            var types = Search(assembly);
+            var blacklist = Hub.Config.DiscordModuleBlacklist
+                .Replace("Module", "").Split(new [] {','}, StringSplitOptions.RemoveEmptyEntries)
+                .Select(z => z.Trim()).ToList();
+
+            foreach (var t in types)
+            {
+                var name = t.Name.Replace("Module", "");
+                if (blacklist.Any(z => z.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+                await _commands.AddModuleAsync(t, _services).ConfigureAwait(false);
+            }
 
             // Subscribe a handler to see if a message invokes a command.
             _client.MessageReceived += HandleMessageAsync;
+        }
+
+        public static IEnumerable<TypeInfo> Search(Assembly assembly)
+        {
+            static bool IsLoadableModule(TypeInfo info)
+            {
+                return info.DeclaredMethods.Any(x => x.GetCustomAttribute<CommandAttribute>() != null) &&
+                       info.GetCustomAttribute<DontAutoLoadAttribute>() == null;
+            }
+
+            return assembly.DefinedTypes.Where(IsLoadableModule).Where(typeInfo => typeInfo.IsPublic || typeInfo.IsNestedPublic);
         }
 
         private async Task HandleMessageAsync(SocketMessage arg)
