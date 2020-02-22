@@ -225,7 +225,7 @@ namespace SysBot.Pokemon.WinForms
             var port = (int)NUD_Port.Value;
 
             var cfg = SwitchBotConfig.GetConfig<PokeBotConfig>(ip, port);
-            cfg.NextRoutineType = type;
+            cfg.Initialize(type);
             return cfg;
         }
 

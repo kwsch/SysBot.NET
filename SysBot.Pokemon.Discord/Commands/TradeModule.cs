@@ -31,11 +31,11 @@ namespace SysBot.Pokemon.Discord
             var embed = new EmbedBuilder();
             embed.AddField(x =>
             {
-                x.Name = "Queue Status";
+                x.Name = "Pending Trades";
                 x.Value = msg;
                 x.IsInline = false;
             });
-            await ReplyAsync("Link Trade Queue:", embed: embed.Build()).ConfigureAwait(false);
+            await ReplyAsync("These are the users who are currently waiting:", embed: embed.Build()).ConfigureAwait(false);
         }
 
         [Command("trade")]
