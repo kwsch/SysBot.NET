@@ -32,13 +32,16 @@ namespace SysBot.Pokemon.Discord
 
             builder.AddField(x =>
             {
+                var counts = hub.Config;
                 x.Name = "Counts";
                 x.Value =
-                    $"Completed Trades: {hub.Config.CompletedTrades}\n" +
-                    $"Distribution Trades: {hub.Config.CompletedDistribution}\n" +
-                    $"Surprise Trades: {hub.Config.CompletedSurprise}\n" +
-                    $"Eggs Received: {hub.Config.CompletedEggs}\n" +
-                    $"Dudu Trades: {hub.Config.CompletedDudu}\n";
+                    $"Dudu Trades: {counts.CompletedDudu}\n" +
+                    $"Clone Trades: {counts.CompletedClones}\n" +
+                    $"Eggs Received: {counts.CompletedEggs}\n" +
+                    $"Surprise Trades: {counts.CompletedSurprise}\n" +
+                    $"Completed Trades: {counts.CompletedTrades}\n" +
+                    $"Distribution Trades: {counts.CompletedDistribution}\n" +
+                    "";
                 x.IsInline = false;
             });
 
@@ -51,6 +54,18 @@ namespace SysBot.Pokemon.Discord
                 x.Value =
                     $"Next: {nextMsg}\n" +
                     $"Count: {count}\n";
+                x.IsInline = false;
+            });
+
+            var nextC = hub.Queues.Clone.TryPeek(out var detailC, out _);
+            var nextMsgC = nextC ? $"{detailC.Trainer.TrainerName}" : "None!";
+            var countC = hub.Queues.Clone.Count;
+            builder.AddField(x =>
+            {
+                x.Name = "Clone Queue";
+                x.Value =
+                    $"Next: {nextMsgC}\n" +
+                    $"Count: {countC}\n";
                 x.IsInline = false;
             });
 
