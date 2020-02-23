@@ -30,7 +30,10 @@ namespace SysBot.Pokemon
 
         private IEnumerable<string> GetLines()
         {
-            yield return $"Seed: {Seed:X16}, IVCount: {FlawlessIVCount}";
+            var first = $"Seed: {Seed:X16}";
+            if (FlawlessIVCount >= 1)
+                first += $", IVCount: {FlawlessIVCount}";
+            yield return first;
             yield return $"Next Shiny Frame: {Z3Search.GetNextShinyFrame(Seed, out var type)}";
             var shinytype = type == 1 ? "Star" : "Square";
             yield return $"Shiny Type: {shinytype}";

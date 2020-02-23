@@ -65,6 +65,29 @@ namespace SysBot.Pokemon.Discord
             await ReplyAsync("These are the users who are currently waiting:", embed: embed.Build()).ConfigureAwait(false);
         }
 
+        [Command("findFrame")]
+        [Alias("ff", "getFrameData")]
+        [Summary("Prints the next shiny frame from the provided seed.")]
+        public async Task FindFrameAsync([Remainder]string seedString)
+        {
+            seedString = seedString.ToLower();
+            if (seedString.StartsWith("0x"))
+                seedString = seedString.Substring(2);
+
+            var seed = Util.GetHexValue64(seedString);
+
+            var r = new Z3SeedResult(Z3SearchResult.Success, seed, -1);
+            var msg = r.ToString();
+            var embed = new EmbedBuilder();
+            embed.AddField(x =>
+            {
+                x.Name = "Seed Result";
+                x.Value = msg;
+                x.IsInline = false;
+            });
+            await ReplyAsync($"Here's your seed details for `{seed:X16}`:", embed: embed.Build()).ConfigureAwait(false);
+        }
+
         private async Task AddSeedCheckToQueueAsync(int code, string trainer, bool sudo)
         {
             var result = AddToTradeQueue(new PK8(), code, trainer, sudo, PokeRoutineType.DuduBot, out var msg);
