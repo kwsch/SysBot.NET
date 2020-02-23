@@ -255,6 +255,7 @@ namespace SysBot.Pokemon
                 poke.SendNotification(this, "Cloned. Change what you're offering!");
                 await Click(A, 0_800, token).ConfigureAwait(false);
                 await SetBoxPokemon(clone, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+                await Task.Delay(2_500, token).ConfigureAwait(false);
 
                 for (int i = 0; i < 5; i++)
                     await Click(A, 0_500, token).ConfigureAwait(false);
