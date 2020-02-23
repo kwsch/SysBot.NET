@@ -163,6 +163,10 @@ namespace SysBot.Pokemon.Discord
             if (!(arg is SocketUserMessage msg))
                 return;
 
+            // Only listen to messages in specified channel in config if it is specified
+            if (Hub.Config.DiscordListenChannel != "DISABLED" && Hub.Config.DiscordListenChannel != msg.Channel.Id.ToString())
+                return;
+
             // We don't want the bot to respond to itself or other bots.
             if (msg.Author.Id == _client.CurrentUser.Id || msg.Author.IsBot || ReusableActions.IsBlackListed(msg.Author.Id))
                 return;

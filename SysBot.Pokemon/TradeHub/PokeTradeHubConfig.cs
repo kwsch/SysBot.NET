@@ -112,6 +112,9 @@ namespace SysBot.Pokemon
         [Category(IntegrationDiscord), Description("Discord Bot: Bot Command Prefix")]
         public string DiscordCommandPrefix { get; set; } = "$";
 
+        [Category(IntegrationDiscord), Description("Discord Bot: Channel to listen for commands/PK8 files in")]
+        public string DiscordListenChannel { get; set; } = DefaultDisable;
+
         [Category(IntegrationDiscord), Description("Discord Bot: List of Modules that will not be loaded when the Bot is started (comma separated).")]
         public string DiscordModuleBlacklist { get; set; } = string.Empty;
 
