@@ -101,10 +101,20 @@ namespace SysBot.Pokemon
                     if (removed != 0)
                         UsersInQueue.Remove(detail);
                     removedCount += removed;
+
+                    removed = hub.Queues.Clone.Remove(detail.Trade);
+                    if (removed != 0)
+                        UsersInQueue.Remove(detail);
+                    removedCount += removed;
                 }
             }
 
             return removedCount;
+        }
+
+        public IEnumerable<string> GetUserList()
+        {
+            return UsersInQueue.Select(z => $"{z.Username} - {z.Type} - {z.Trade.Type} - Code:{z.Trade.Code}");
         }
 
         public IList<TradeEntry<T>> GetIsUserQueued(ulong userID)

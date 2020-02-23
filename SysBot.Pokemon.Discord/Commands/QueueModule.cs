@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 using PKHeX.Core;
 
@@ -55,6 +56,25 @@ namespace SysBot.Pokemon.Discord
 
             Info.CanQueue ^= true;
             await ReplyAsync($"CanQueue has been set to: {Info.CanQueue}").ConfigureAwait(false);
+        }
+
+        [Command("queueList")]
+        [Alias("ql")]
+        [Summary("[Sudo Only] Private messages the list of users in the queue.")]
+        public async Task ListUserQueue()
+        {
+            if (!Context.GetIsSudo(Info.Hub.Config))
+            {
+                await ReplyAsync("You can't use this command.").ConfigureAwait(false);
+                return;
+            }
+
+            var lines = SysCordInstance.Self.Hub.Queues.Info.GetUserList();
+            var msg = string.Join("\n", lines);
+            if (msg.Length < 3)
+                await ReplyAsync("List is empty.").ConfigureAwait(false);
+            else
+                await Context.User.SendMessageAsync(msg).ConfigureAwait(false);
         }
 
         private string ClearTrade()
