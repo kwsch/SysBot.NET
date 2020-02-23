@@ -95,6 +95,9 @@ namespace SysBot.Pokemon
                 case PokeRoutineType.EggFetch:
                     return new EggBot(Hub, cfg);
 
+                case PokeRoutineType.FossilBot:
+                    return new FossilBot(Hub, cfg);
+
                 default:
                     throw new ArgumentException(nameof(cfg.NextRoutineType));
             }

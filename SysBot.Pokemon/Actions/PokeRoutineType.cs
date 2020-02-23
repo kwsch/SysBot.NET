@@ -12,5 +12,6 @@
         FlexTrade,
 
         EggFetch,
+        FossilBot,
     }
 }
