@@ -110,6 +110,16 @@ namespace SysBot.Pokemon
             int count = Hub.BotSync.Barrier.ParticipantCount;
             if (count != 0)
                 Hub.BotSync.Barrier.RemoveParticipants(count);
+
+            DetatchBots();
+        }
+
+        private void DetatchBots()
+        {
+            foreach (var bot in Bots)
+            {
+                Task.Run(() => bot.Connection.SendAsync(SwitchCommand.DetachController(), CancellationToken.None));
+            }
         }
 
         public void Pause()
@@ -117,10 +127,12 @@ namespace SysBot.Pokemon
             // Tell all the bots to go to Idle after finishing.
             foreach (var b in Bots)
                 b.Config.Pause();
+            IsRunning = false;
         }
 
         public void Resume()
         {
+            IsRunning = true;
             // Tell all the bots to go to Idle after finishing.
             foreach (var b in Bots)
                 b.Config.Resume();
