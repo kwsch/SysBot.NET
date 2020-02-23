@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord.Commands;
+using Discord.WebSocket;
 using SysBot.Base;
 
 namespace SysBot.Pokemon.Discord
@@ -10,6 +11,27 @@ namespace SysBot.Pokemon.Discord
     {
         private static readonly List<Action<string, string>> Loggers = new List<Action<string, string>>();
         private static readonly Dictionary<ulong, string> Channels = new Dictionary<ulong, string>();
+
+        public static void RestoreLogging(DiscordSocketClient discord)
+        {
+            var cfg = SysCordInstance.Self.Hub.Config;
+            var guilds = discord.Guilds;
+            foreach (SocketGuild guild in guilds)
+            {
+                var channels = guild.TextChannels;
+                foreach (SocketTextChannel c in channels)
+                {
+                    if (cfg.GlobalDiscordLoggers.Contains(c.Id.ToString()))
+                    {
+                        void Logger(string msg, string identity) => c.SendMessageAsync(GetMessage(msg, identity));
+                        static string GetMessage(string msg, string identity) => $"> [{DateTime.Now:hh:mm:ss}] - {identity}: {msg}";
+                        LogUtil.Forwarders.Add(Logger);
+                        Loggers.Add(Logger);
+                        Channels.Add(c.Id, c.Name);
+                    }
+                }
+            }
+        }
 
         [Command("logHere")]
         [Summary("Makes the bot log to the channel.")]

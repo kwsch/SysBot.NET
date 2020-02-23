@@ -37,6 +37,7 @@ namespace SysBot.Pokemon.Discord
             Hub = hub;
             SysCordInstance.Self = this; // hack
             AutoLegalityExtensions.EnsureInitialized(Hub.Config);
+
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
                 // How much logging do you want to see?
@@ -111,6 +112,10 @@ namespace SysBot.Pokemon.Discord
             // Login and connect.
             await _client.LoginAsync(TokenType.Bot, apiToken).ConfigureAwait(false);
             await _client.StartAsync().ConfigureAwait(false);
+
+            // Restore Logging
+            await Task.Delay(5_000, token).ConfigureAwait(false);
+            LogModule.RestoreLogging(_client);
 
             // Wait infinitely so your bot actually stays connected.
             await Task.Delay(Timeout.Infinite, token).ConfigureAwait(false);

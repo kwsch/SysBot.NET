@@ -129,6 +129,9 @@ namespace SysBot.Pokemon
         [Category(IntegrationDiscord), Description("Global Sudo List: Comma separated Discord user IDs that will have sudo access to the Bot Hub.")]
         public string GlobalSudoList { get; set; } = string.Empty;
 
+        [Category(IntegrationDiscord), Description("Global Loggers: Comma separated Logger channel IDs that will persistently log bot data.")]
+        public string GlobalDiscordLoggers { get; set; } = string.Empty;
+
         [Category(IntegrationTwitch), Description("Twitch Bot: Bot Login Token")]
         public string TwitchToken { get; set; } = string.Empty;
 
