@@ -87,7 +87,7 @@ namespace SysBot.Pokemon.Discord
                 builder.AddField(x =>
                 {
                     x.Name = "Queues are empty.";
-                    x.Value = string.Empty;
+                    x.Value = "Nobody in line!";
                     x.IsInline = false;
                 });
             }

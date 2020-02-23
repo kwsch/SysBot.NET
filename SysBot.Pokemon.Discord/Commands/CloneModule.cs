@@ -13,6 +13,7 @@ namespace SysBot.Pokemon.Discord
         private const uint MaxTradeCode = 9999;
 
         [Command("clone")]
+        [Alias("c")]
         [Summary("Clones the Pokemon you show via Link Trade.")]
         public async Task CloneAsync(int code)
         {
