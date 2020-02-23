@@ -120,6 +120,9 @@ namespace SysBot.Pokemon
         [Category(IntegrationDiscord), Description("Discord Bot: Users with this role are allowed to bypass command restrictions.")]
         public string DiscordRoleSudo { get; set; } = DefaultDisable;
 
+        [Category(IntegrationDiscord), Description("Discord Bot: Users with these user IDs cannot use the bot.")]
+        public string DiscordBlackList { get; set; } = string.Empty;
+
         [Category(IntegrationDiscord), Description("Global Sudo: Disabling this will remove global sudo support.")]
         public bool AllowGlobalSudo { get; set; } = true;
 

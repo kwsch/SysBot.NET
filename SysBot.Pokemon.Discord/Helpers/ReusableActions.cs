@@ -67,6 +67,15 @@ namespace SysBot.Pokemon.Discord
             return igu.Roles.Any(z => rolesPermitted.Contains(z.Name));
         }
 
+        public static bool IsBlackListed(this SocketCommandContext Context) => Context.IsBlackListed(SysCordInstance.Self.Hub.Config);
+
+        public static bool IsBlackListed(this SocketCommandContext Context, PokeTradeHubConfig cfg)
+        {
+            return cfg.DiscordBlackList.Contains(Context.User.Id.ToString());
+        }
+
+        public static bool IsBlackListed(ulong userID) => SysCordInstance.Self.Hub.Config.DiscordBlackList.Contains(userID.ToString());
+
         public static async Task SendPKMAsShowdownSetAsync(this ISocketMessageChannel channel, PKM pkm)
         {
             var txt = GetFormattedShowdownText(pkm);
