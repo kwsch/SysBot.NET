@@ -8,5 +8,6 @@
         SurpriseTrade,
         DuduBot,
         EggFetch,
+        FossilBot,
     }
 }

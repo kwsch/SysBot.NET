@@ -45,6 +45,7 @@ namespace SysBot.Pokemon
             {
                 // Walk a step left, then right => check if egg was generated on this attempt.
                 // Repeat until an egg is generated.
+
                 var attempts = await StepUntilEgg(token).ConfigureAwait(false);
                 if (attempts < 0) // aborted
                     continue;

@@ -16,6 +16,7 @@ namespace SysBot.Pokemon
         private const string IntegrationTwitch = nameof(IntegrationTwitch);
         private const string Legality = nameof(Legality);
         private const string Metadata = nameof(Metadata);
+        private const string FossilPokemon = nameof(FossilPokemon);
 
         #region Toggles
         [Category(FeatureToggle), Description("When enabled, dumps any received PKM files (trade results) to the DumpFolder.")]
@@ -94,6 +95,9 @@ namespace SysBot.Pokemon
 
         [Category(Metadata), Description("Eggs Retrieved")]
         public int CompletedEggs { get; set; }
+
+        [Category(Metadata), Description("Fossil Pokemon Revived")]
+        public int CompletedFossils { get; set; }
         #endregion
 
         #region Integration
@@ -166,6 +170,21 @@ namespace SysBot.Pokemon
 
         [Category(Legality), Description("Legality: Zero out HOME tracker regardless of current tracker value. Applies to user requested PKM files as well.")]
         public bool ResetHOMETracker { get; set; } = true;
+
+        #endregion
+
+        #region Fossil Pokemon
+        /// <summary>
+        /// Species of fossil Pokemon to hunt for.
+        /// </summary>
+        [Category(FossilPokemon), Description("Species of fossil Pokemon to hunt for.")]
+        public FossilSpecies FossilSpecies { get; set; } = FossilSpecies.Dracozolt;
+
+        /// <summary>
+        /// Toggle for injecting fossil pieces.
+        /// </summary>
+        [Category(FossilPokemon), Description("Toggle for injecting fossil pieces.")]
+        public bool InjectFossils { get; set; } = false;
 
         #endregion
 
