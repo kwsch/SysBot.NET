@@ -33,7 +33,7 @@ namespace SysBot.Pokemon
             Connection.Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);
 
-            Connection.Log("Checking destination slot for eggs to see if anything is in the slot...");
+            Connection.Log("Checking destination slot for revived fossil Pokemon to see if anything is in the slot...");
             var existing = await GetBoxSlotQuality(InjectBox, InjectSlot, token).ConfigureAwait(false);
             if (existing.Quality != SlotQuality.Overwritable)
             {
@@ -171,7 +171,7 @@ namespace SysBot.Pokemon
             // dinoFossil = 3
 
             // dracozolt = 0
-            // arctzolt = 1
+            // arctozolt = 1
             // dracovish = 2
             // arctovish = 3
             String selectedFossil = FossilSpecies.ToString();
@@ -180,7 +180,7 @@ namespace SysBot.Pokemon
                 case "Dracozolt":
                     possibleRevives = Math.Min(fossils[0, 0], fossils[2, 0]);
                     break;
-                case "Arctzolt":
+                case "Arctozolt":
                     possibleRevives = Math.Min(fossils[0, 0], fossils[3, 0]);
                     break;
                 case "Dracovish":
@@ -190,7 +190,6 @@ namespace SysBot.Pokemon
                     possibleRevives = Math.Min(fossils[1, 0], fossils[3, 0]);
                     break;
             }
-
             return possibleRevives;
         }
         private async void InjectFossilPieces(CancellationToken token, uint[,] fossilPieces)
@@ -200,21 +199,26 @@ namespace SysBot.Pokemon
             {
                 case "Dracozolt":
                     await Connection.WriteBytesAsync(BitConverter.GetBytes(32736337), fossilPieces[0, 1], token).ConfigureAwait(false);
+                    await Task.Delay(200, token).ConfigureAwait(false);
                     await Connection.WriteBytesAsync(BitConverter.GetBytes(32736339), fossilPieces[2, 1], token).ConfigureAwait(false);
                     break;
-                case "Arctzolt":
+                case "Arctozolt":
                     await Connection.WriteBytesAsync(BitConverter.GetBytes(32736337), fossilPieces[0, 1], token).ConfigureAwait(false);
+                    await Task.Delay(200, token).ConfigureAwait(false);
                     await Connection.WriteBytesAsync(BitConverter.GetBytes(32736340), fossilPieces[3, 1], token).ConfigureAwait(false);
                     break;
                 case "Dracovish":
                     await Connection.WriteBytesAsync(BitConverter.GetBytes(32736338), fossilPieces[1, 1], token).ConfigureAwait(false);
+                    await Task.Delay(200, token).ConfigureAwait(false);
                     await Connection.WriteBytesAsync(BitConverter.GetBytes(32736339), fossilPieces[2, 1], token).ConfigureAwait(false);
                     break;
                 case "Arctovish":
                     await Connection.WriteBytesAsync(BitConverter.GetBytes(32736338), fossilPieces[1, 1], token).ConfigureAwait(false);
+                    await Task.Delay(200, token).ConfigureAwait(false);
                     await Connection.WriteBytesAsync(BitConverter.GetBytes(32736340), fossilPieces[3, 1], token).ConfigureAwait(false);
                     break;
             }
+            Connection.Log("999 of required fossil pieces injected.");
         }
     }
 }
