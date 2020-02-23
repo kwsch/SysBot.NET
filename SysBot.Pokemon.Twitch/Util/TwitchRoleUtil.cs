@@ -1,4 +1,6 @@
-﻿using PKHeX.Core;
+﻿using System;
+using System.Linq;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon.Twitch
 {
@@ -7,8 +9,8 @@ namespace SysBot.Pokemon.Twitch
         // Util for checking subscribers/ mods/ sudos etc. Future expandability??
         public static bool IsSudo(this PokeTradeHub<PK8> hub, string username)
         {
-            var cfg = hub.Config;
-            return cfg.TwitchSudoList.Contains(username);
+            var sudos = hub.Config.TwitchSudoList.Split(new[] { ",", ", ", " " }, StringSplitOptions.RemoveEmptyEntries);
+            return sudos.Contains(username);
         }
     }
 }
