@@ -36,16 +36,16 @@ namespace SysBot.Pokemon.Discord
 
         public void TradeCanceled(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeResult msg)
         {
-            Context.User.SendMessageAsync($"Trade canceled: {msg}").ConfigureAwait(false);
             OnFinish?.Invoke(routine);
+            Context.User.SendMessageAsync($"Trade canceled: {msg}").ConfigureAwait(false);
         }
 
         public void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result)
         {
+            OnFinish?.Invoke(routine);
             var message = Data.Species != 0 ? $"Trade finished. Enjoy your {(Species)Data.Species}!" : "Trade finished. Enjoy your Pokemon!";
             Context.User.SendMessageAsync(message).ConfigureAwait(false);
             Context.User.SendPKMAsync(result, "Here's what you traded me!").ConfigureAwait(false);
-            OnFinish?.Invoke(routine);
         }
 
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, string message)
