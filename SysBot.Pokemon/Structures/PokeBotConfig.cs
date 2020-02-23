@@ -4,7 +4,9 @@ namespace SysBot.Pokemon
 {
     public sealed class PokeBotConfig : SwitchBotConfig
     {
-        public PokeRoutineType InitialRoutine { get; private set; }
+        // we need to have the setter public for json serialization
+        // ReSharper disable once MemberCanBePrivate.Global
+        public PokeRoutineType InitialRoutine { get; set; }
         public PokeRoutineType CurrentRoutineType { get; private set; }
         public PokeRoutineType NextRoutineType { get; private set; }
 
@@ -16,6 +18,7 @@ namespace SysBot.Pokemon
             InitialRoutine = type;
         }
 
+        public void Initialize() => Resume();
         public void Pause() => NextRoutineType = PokeRoutineType.Idle;
         public void Resume() => NextRoutineType = InitialRoutine;
     }

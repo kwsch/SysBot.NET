@@ -46,8 +46,11 @@ namespace SysBot.Pokemon.WinForms
             {
                 var lines = File.ReadAllText(ConfigPath);
                 var prog = JsonConvert.DeserializeObject<ProgramConfig>(lines);
-                foreach (var c in prog.Bots)
-                    AddBot(c);
+                foreach (var bot in prog.Bots)
+                {
+                    bot.Initialize();
+                    AddBot(bot);
+                }
                 cfg = prog.Hub;
             }
             else
