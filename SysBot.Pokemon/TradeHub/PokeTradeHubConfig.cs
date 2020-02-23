@@ -123,6 +123,9 @@ namespace SysBot.Pokemon
         [Category(IntegrationDiscord), Description("Discord Bot: Users with these user IDs cannot use the bot.")]
         public string DiscordBlackList { get; set; } = string.Empty;
 
+        [Category(IntegrationDiscord), Description("Discord Bot: Custom Status for playing a game.")]
+        public string DiscordGameStatus { get; set; } = "SysBot.NET: Pokémon";
+
         [Category(IntegrationDiscord), Description("Global Sudo: Disabling this will remove global sudo support.")]
         public bool AllowGlobalSudo { get; set; } = true;
 

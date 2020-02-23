@@ -117,6 +117,10 @@ namespace SysBot.Pokemon.Discord
             await Task.Delay(5_000, token).ConfigureAwait(false);
             LogModule.RestoreLogging(_client);
 
+            var game = SysCordInstance.Self.Hub.Config.DiscordGameStatus;
+            if (!string.IsNullOrWhiteSpace(game))
+                await _client.SetGameAsync(game).ConfigureAwait(false);
+
             // Wait infinitely so your bot actually stays connected.
             await Task.Delay(Timeout.Infinite, token).ConfigureAwait(false);
         }
