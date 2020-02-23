@@ -61,17 +61,17 @@ namespace SysBot.Pokemon
         #endregion
 
         #region Trade Codes
-        /// <summary>
-        /// Minimum trade code to be yielded.
-        /// </summary>
         [Category(TradeCode), Description("Minimum Link Code.")]
         public int MinTradeCode { get; set; } = 8180;
 
-        /// <summary>
-        /// Maximum trade code to be yielded.
-        /// </summary>
         [Category(TradeCode), Description("Maximum Link Code.")]
         public int MaxTradeCode { get; set; } = 8199;
+
+        [Category(TradeCode), Description("Distribution Trade Link Code.")]
+        public int DistributionTradeCode { get; set; } = 7196;
+
+        [Category(TradeCode), Description("Distribution Trade Link Code uses the Min and Max range rather than the fixed trade code.")]
+        public bool DistributionRandomCode { get; set; }
 
         /// <summary>
         /// Gets a random trade code based on the range settings.

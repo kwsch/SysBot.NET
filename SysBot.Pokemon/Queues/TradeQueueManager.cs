@@ -58,7 +58,7 @@ namespace SysBot.Pokemon
                     continue;
 
                 var random = Hub.Ledy.Pool.GetRandomPoke();
-                var detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random);
+                var detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random, Hub.Config.DistributionTradeCode);
                 Queue.Enqueue(detail);
             }
         }
