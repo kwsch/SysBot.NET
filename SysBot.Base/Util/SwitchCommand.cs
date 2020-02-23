@@ -21,7 +21,7 @@ namespace SysBot.Base
         /// Configures the sys-botbase parameter to the specified value.
         /// </summary>
         /// <returns>Encoded command bytes</returns>
-        public static byte[] Configure(SwitchConfigureParameter p, int ms) => Encode($"{p} {ms}");
+        public static byte[] Configure(SwitchConfigureParameter p, int ms) => Encode($"configure {p} {ms}");
 
         /* 
          *
