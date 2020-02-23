@@ -15,22 +15,16 @@ namespace SysBot.Pokemon.Discord
         public static void RestoreLogging(DiscordSocketClient discord)
         {
             var cfg = SysCordInstance.Self.Hub.Config;
-            var guilds = discord.Guilds;
-            foreach (SocketGuild guild in guilds)
+            var channels = cfg.GlobalDiscordLoggers.Split(new[] {",", ", ", " "}, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var ch in channels)
             {
-                var channels = guild.TextChannels;
-                foreach (SocketTextChannel c in channels)
-                {
-                    if (cfg.GlobalDiscordLoggers.Contains(c.Id.ToString()))
-                    {
-                        void Logger(string msg, string identity) => c.SendMessageAsync(GetMessage(msg, identity));
-                        static string GetMessage(string msg, string identity) => $"> [{DateTime.Now:hh:mm:ss}] - {identity}: {msg}";
-                        LogUtil.Forwarders.Add(Logger);
-                        Loggers.Add(Logger);
-                        Channels.Add(c.Id, c.Name);
-                    }
-                }
+                if (!ulong.TryParse(ch, out var cid))
+                    continue;
+                var c = (ISocketMessageChannel)discord.GetChannel(cid);
+                AddLogChannel(c, cid);
             }
+
+            LogUtil.LogInfo("Added logging to Discord channel(s) on Bot startup.", "Discord");
         }
 
         [Command("logHere")]
@@ -52,10 +46,15 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
+            AddLogChannel(c, cid);
+            await ReplyAsync("Added logging output to this channel!").ConfigureAwait(false);
+        }
+
+        private static void AddLogChannel(ISocketMessageChannel c, ulong cid)
+        {
             void Logger(string msg, string identity) => c.SendMessageAsync(GetMessage(msg, identity));
             LogUtil.Forwarders.Add(Logger);
             static string GetMessage(string msg, string identity) => $"> [{DateTime.Now:hh:mm:ss}] - {identity}: {msg}";
-            await ReplyAsync("Added logging output to this channel!").ConfigureAwait(false);
 
             Loggers.Add(Logger);
             Channels.Add(cid, c.Name);
