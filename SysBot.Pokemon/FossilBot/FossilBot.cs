@@ -9,16 +9,16 @@ namespace SysBot.Pokemon
     public class FossilBot : PokeRoutineExecutor
     {
         private readonly BotCompleteCounts Counts;
-        public readonly IDumper DumpSetting;
-        public readonly FossilSpecies FossilSpecies;
-        public readonly bool InjectFossils;
+        private readonly IDumper DumpSetting;
+        private readonly FossilSpecies FossilSpecies;
+        private readonly PokeTradeHubConfig Settings;
 
         public FossilBot(PokeTradeHub<PK8> hub, PokeBotConfig cfg) : base(cfg)
         {
             Counts = hub.Counts;
             DumpSetting = hub.Config;
             FossilSpecies = hub.Config.FossilSpecies;
-            InjectFossils = hub.Config.InjectFossils;
+            Settings = hub.Config;
         }
 
         private int encounterCount;
@@ -27,6 +27,8 @@ namespace SysBot.Pokemon
         private const int InjectSlot = 0;
 
         public Func<PK8, bool> StopCondition { private get; set; } = pkm => pkm.IsShiny;
+
+        private static readonly PK8 Blank = new PK8();
 
         protected override async Task MainLoop(CancellationToken token)
         {
@@ -41,177 +43,84 @@ namespace SysBot.Pokemon
                 return;
             }
 
-            Connection.Log("Starting main FossilBot loop.");
-            var blank = new PK8();
-            uint[,] fossilPieces;
-            uint possibleRevives;
-
-            if (InjectFossils)
+            Connection.Log("Checking item counts...");
+            var pouchData = await Connection.ReadBytesAsync(PokeDataOffsets.ItemTreasureAddress, 100, token).ConfigureAwait(false);
+            var counts = FossilCount.GetFossilCounts(pouchData);
+            int reviveCount = counts.PossibleRevives(FossilSpecies);
+            if (reviveCount == 0)
             {
-                fossilPieces = await RetrieveFossilQuantity(token).ConfigureAwait(false);
-                InjectFossilPieces(fossilPieces, token);
+                Connection.Log("Insufficient fossil pieces to start. Please obtain at least one of each required fossil piece before starting.");
+                return;
             }
-            fossilPieces = await RetrieveFossilQuantity(token).ConfigureAwait(false);
-            possibleRevives = PossibleRevives(fossilPieces);
 
+            Connection.Log("Starting main FossilBot loop.");
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.FossilBot)
             {
-                // Top Half: Select Down for fish if species type == Dracovish || Arctovish
-                // Bottom Half: Select Down for dino if species type == Arctozolt || Arctovish
-                int[] timings = { 1100, 1300, 1300, 1200, 1200, 4000, 1200, 1200, 1200, 4500 };
+                await ReviveFossil(counts, token).ConfigureAwait(false);
+                Connection.Log("Fossil revived. Checking details.");
 
-                for (int j = 0; j < timings.Length; j++)
-                {
-                    // if bird = 0
-                    if (j == 2 && fossilPieces[0, 0] != 0)
-                    {
-                        if (FossilSpecies == FossilSpecies.Dracovish|| FossilSpecies == FossilSpecies.Arctovish)
-                        {
-                            await Click(DDOWN, 300, token).ConfigureAwait(false);
-                        }
-                    }
-                    else if (j == 3 && fossilPieces[2, 0] != 0) // if drake  = 0
-                    {
-                        if (FossilSpecies == FossilSpecies.Arctozolt || FossilSpecies == FossilSpecies.Arctovish)
-                        {
-                            await Click(DDOWN, 300, token).ConfigureAwait(false);
-                        }
-                    }
-
-                    await Click(A, timings[j], token).ConfigureAwait(false);
-                }
-
-                Connection.Log("Getting fossil! Clearing destination slot.");
-                await SetBoxPokemon(blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
-
-                await Click(A, 2400, token).ConfigureAwait(false);
-                await Click(A, 1800, token).ConfigureAwait(false);
-
-                Connection.Log("Fossil obtained. Checking details.");
                 var pk = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
-                if (pk.Species == 0)
+                if (pk.Species == 0 || !pk.ChecksumValid)
                 {
                     Connection.Log("Invalid data detected in destination slot. Restarting loop.");
                     continue;
                 }
-                Connection.Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
 
-                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                encounterCount++;
+                Connection.Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
+                if (DumpSetting.Dump)
                     DumpPokemon(DumpSetting.DumpFolder, pk);
 
                 Counts.AddCompletedFossils();
-                encounterCount++;
 
-                if (!StopCondition(pk))
+                if (StopCondition(pk))
+                {
+                    Connection.Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
+                    return;
+                }
+
+                if (encounterCount != reviveCount)
                     continue;
 
-                if (possibleRevives == encounterCount - 1)
+                Connection.Log($"Ran out of fossils to revive {FossilSpecies}.");
+                if (Settings.InjectFossils)
                 {
-                    if (InjectFossils)
-                    {
-                        Connection.Log($"Ran out of fossils to revive {FossilSpecies.ToString()}. Injecting more fossil pieces.");
-                        InjectFossilPieces(fossilPieces, token);
-                        break;
-                    }
-                    Connection.Log($"Ran out of fossils to revive {FossilSpecies.ToString()}. Re-start the game then re-start the bot(s), or set \"Inject Fossils\" to True in the config.");
-                    break;
+                    Connection.Log("Restoring original pouch data.");
+                    await Connection.WriteBytesAsync(pouchData, PokeDataOffsets.ItemTreasureAddress, token).ConfigureAwait(false);
                 }
-
-                Connection.Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
-                break;
-            }
-        }
-
-        private async Task<uint[,]> RetrieveFossilQuantity(CancellationToken token)
-        {
-            // indexes of items 1105: Fossilized Bird / 1106: Fossilized Fish / 1107: Fossilized Drake / 1108: Fossilized Dino
-            var itemsBlock = await Connection.ReadBytesAsync(PokeDataOffsets.ItemAddress, 100, token).ConfigureAwait(false);
-            uint[,] fossils = { { 1, 2 }, { 3, 4 }, { 5, 6 }, { 7, 8 } };
-
-            //uint birdFossil = 0;
-            //uint fishFossil = 0;
-            //uint drakeFossil = 0;
-            //uint dinoFossil = 0;
-
-            for (uint i = 0; i < 25; i++)
-            {
-                uint item = BitConverter.ToUInt32(itemsBlock, (int)i * 4);
-                uint itemIndex = item & 0x7FF;
-                uint itemCount = item >> 15 & 0x3FF;
-
-                fossils[0, 0] = itemIndex == 1105 ? itemCount : fossils[0, 0];
-                fossils[1, 0] = itemIndex == 1106 ? itemCount : fossils[1, 0];
-                fossils[2, 0] = itemIndex == 1107 ? itemCount : fossils[2, 0];
-                fossils[3, 0] = itemIndex == 1108 ? itemCount : fossils[3, 0];
-
-                var addr = PokeDataOffsets.ItemAddress + (i * 4);
-                switch (itemIndex)
+                else
                 {
-                    case 1105:
-                        fossils[0, 1] = addr;
-                        break;
-                    case 1106:
-                        fossils[1, 1] = addr;
-                        break;
-                    case 1107:
-                        fossils[2, 1] = addr;
-                        break;
-                    case 1108:
-                        fossils[3, 1] = addr;
-                        break;
+                    Connection.Log("Re-start the game then re-start the bot(s), or set \"Inject Fossils\" to True in the config.");
+                    return;
                 }
             }
-            return fossils;
         }
 
-        private uint PossibleRevives(uint[,] fossils)
+        private async Task ReviveFossil(FossilCount count, CancellationToken token)
         {
-            // birdFossil = 0
-            // fishFossil = 1
-            // drakeFossil = 2
-            // dinoFossil = 3
+            await Click(A, 1100, token).ConfigureAwait(false);
+            await Click(A, 1300, token).ConfigureAwait(false);
+            await Click(A, 1300, token).ConfigureAwait(false);
 
-            // dracozolt = 0
-            // arctozolt = 1
-            // dracovish = 2
-            // arctovish = 3
-            var possibleRevives = FossilSpecies switch
-            {
-                FossilSpecies.Dracozolt => Math.Min(fossils[0, 0], fossils[2, 0]),
-                FossilSpecies.Arctozolt => Math.Min(fossils[0, 0], fossils[3, 0]),
-                FossilSpecies.Dracovish => Math.Min(fossils[1, 0], fossils[2, 0]),
-                FossilSpecies.Arctovish => Math.Min(fossils[1, 0], fossils[3, 0]),
-                _ => 0u
-            };
-            return possibleRevives;
-        }
+            if (count.UseSecondOption1(FossilSpecies))
+                await Click(DDOWN, 300, token).ConfigureAwait(false);
+            await Click(A, 1200, token).ConfigureAwait(false);
 
-        private async void InjectFossilPieces(uint[,] fossilPieces, CancellationToken token)
-        {
-            switch (FossilSpecies)
-            {
-                case FossilSpecies.Dracozolt:
-                    await Connection.WriteBytesAsync(BitConverter.GetBytes(0x1F38451), fossilPieces[0, 1], token).ConfigureAwait(false);
-                    await Task.Delay(200, token).ConfigureAwait(false);
-                    await Connection.WriteBytesAsync(BitConverter.GetBytes(0x1F38453), fossilPieces[2, 1], token).ConfigureAwait(false);
-                    break;
-                case FossilSpecies.Arctozolt:
-                    await Connection.WriteBytesAsync(BitConverter.GetBytes(0x1F38451), fossilPieces[0, 1], token).ConfigureAwait(false);
-                    await Task.Delay(200, token).ConfigureAwait(false);
-                    await Connection.WriteBytesAsync(BitConverter.GetBytes(0x1F38454), fossilPieces[3, 1], token).ConfigureAwait(false);
-                    break;
-                case FossilSpecies.Dracovish:
-                    await Connection.WriteBytesAsync(BitConverter.GetBytes(0x1F38452), fossilPieces[1, 1], token).ConfigureAwait(false);
-                    await Task.Delay(200, token).ConfigureAwait(false);
-                    await Connection.WriteBytesAsync(BitConverter.GetBytes(0x1F38453), fossilPieces[2, 1], token).ConfigureAwait(false);
-                    break;
-                case FossilSpecies.Arctovish:
-                    await Connection.WriteBytesAsync(BitConverter.GetBytes(0x1F38452), fossilPieces[1, 1], token).ConfigureAwait(false);
-                    await Task.Delay(200, token).ConfigureAwait(false);
-                    await Connection.WriteBytesAsync(BitConverter.GetBytes(0x1F38454), fossilPieces[3, 1], token).ConfigureAwait(false);
-                    break;
-            }
-            Connection.Log("999 of required fossil pieces injected.");
+            if (count.UseSecondOption2(FossilSpecies))
+                await Click(DDOWN, 300, token).ConfigureAwait(false);
+            await Click(A, 1200, token).ConfigureAwait(false);
+
+            await Click(A, 4000, token).ConfigureAwait(false);
+            await Click(A, 1200, token).ConfigureAwait(false);
+            await Click(A, 1200, token).ConfigureAwait(false);
+            await Click(A, 1200, token).ConfigureAwait(false);
+            await Click(A, 4500, token).ConfigureAwait(false);
+
+            Connection.Log("Getting fossil! Clearing destination slot.");
+            await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
+
+            await Click(A, 2400, token).ConfigureAwait(false);
+            await Click(A, 1800, token).ConfigureAwait(false);
         }
     }
 }

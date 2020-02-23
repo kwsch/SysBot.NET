@@ -26,7 +26,7 @@ namespace SysBot.Pokemon
         public const uint SupriseTradeSearch_Found = 0x0200012C;
 
         public const uint SupriseTradePartnerNameOffset = 0x42934638;
-        public const uint ItemAddress = 0x429358A0;
+        public const uint ItemTreasureAddress = 0x429358A0;
 
         /* Route 5 Daycare */
         //public const uint DayCareSlot_1_WildArea_Present = 0x429e4EA8;
