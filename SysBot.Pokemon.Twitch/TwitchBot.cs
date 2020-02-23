@@ -110,7 +110,7 @@ namespace SysBot.Pokemon.Twitch
             var command = e.ChatMessage.Message.Split(' ')[0].Trim();
             var p = Info.Hub.Config.DiscordCommandPrefix;
 
-            if (!command.StartsWith(p))
+            if (!command.StartsWith(p) || Hub.Config.TwitchBlackList.Contains(e.ChatMessage.Username))
                 return;
 
             var c = command.Substring(p.Length).ToLower();

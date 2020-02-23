@@ -144,6 +144,9 @@ namespace SysBot.Pokemon
         [Category(IntegrationTwitch), Description("Twitch Bot: Sudo Usernames")]
         public string TwitchSudoList { get; set; } = string.Empty;
 
+        [Category(IntegrationTwitch), Description("Twitch Bot: Users with these usernames cannot use the bot.")]
+        public string TwitchBlackList { get; set; } = string.Empty;
+
         [Category(IntegrationTwitch), Description("Twitch Bot: Sub only mode (Restricts the bot to twitch subs only)")]
         public bool SubOnlyBot { get; set; } = false;
         #endregion
