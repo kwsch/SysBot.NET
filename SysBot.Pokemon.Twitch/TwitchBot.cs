@@ -115,7 +115,6 @@ namespace SysBot.Pokemon.Twitch
 
             var c = command.Substring(p.Length).ToLower();
 
-
             var msg = HandleCommand(c, e);
             if (msg == null)
                 return;

@@ -241,6 +241,7 @@ namespace SysBot.Pokemon
                     poke.SendNotification(this, "Injecting your requested Pokemon.");
                     await Click(A, 0_800, token).ConfigureAwait(false);
                     await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+                    await Task.Delay(2_500, token).ConfigureAwait(false);
                 }
                 for (int i = 0; i < 5; i++)
                     await Click(A, 0_500, token).ConfigureAwait(false);

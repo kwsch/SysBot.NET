@@ -2,13 +2,11 @@
 using Discord;
 using Discord.WebSocket;
 using PKHeX.Core;
-using SysBot.Pokemon;
 
 namespace SysBot.Pokemon.Discord
 {
     public static class AutoLegalityExtensionsDiscord
     {
-       
         public static async Task ReplyWithLegalizedSetAsync(this ISocketMessageChannel channel, ITrainerInfo sav, ShowdownSet set)
         {
             if (set.Species <= 0)
