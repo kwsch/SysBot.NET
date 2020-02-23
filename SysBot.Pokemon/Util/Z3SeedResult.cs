@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon
 {
@@ -37,6 +38,12 @@ namespace SysBot.Pokemon
             yield return $"Next Shiny Frame: {Z3Search.GetNextShinyFrame(Seed, out var type)}";
             var shinytype = type == 1 ? "Star" : "Square";
             yield return $"Shiny Type: {shinytype}";
+        }
+
+        public Shiny GetShinyType()
+        {
+            Z3Search.GetNextShinyFrame(Seed, out var type);
+            return type == 1 ? Shiny.AlwaysStar : Shiny.AlwaysSquare;
         }
     }
 }

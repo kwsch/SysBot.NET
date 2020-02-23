@@ -77,8 +77,11 @@ namespace SysBot.Pokemon.Discord
             var seed = Util.GetHexValue64(seedString);
 
             var r = new Z3SeedResult(Z3SearchResult.Success, seed, -1);
+            var type = r.GetShinyType();
             var msg = r.ToString();
-            var embed = new EmbedBuilder();
+
+            var embed = new EmbedBuilder {Color = type == Shiny.AlwaysStar ? Color.Gold : Color.LighterGrey};
+
             embed.AddField(x =>
             {
                 x.Name = "Seed Result";
