@@ -30,7 +30,7 @@ namespace SysBot.Pokemon.Discord
         public void TradeSearching(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
         {
             var name = Info.TrainerName;
-            var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", ({name})";
+            var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", {name}";
             Context.User.SendMessageAsync($"I'm searching for you{trainer}! Your code is {Code:0000}.").ConfigureAwait(false);
         }
 

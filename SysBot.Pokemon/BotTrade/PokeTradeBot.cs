@@ -93,7 +93,7 @@ namespace SysBot.Pokemon
 
                 waitCounter = 0;
                 Connection.Log($"Starting next {type} Bot Trade. Getting data...");
-                await EnsureConnectedToYCom(token).ConfigureAwait(false);
+                await EnsureConnectedToYComm(token).ConfigureAwait(false);
                 var result = await PerformLinkCodeTrade(sav, detail, token).ConfigureAwait(false);
                 if (result != PokeTradeResult.Success) // requeue
                 {
@@ -118,7 +118,7 @@ namespace SysBot.Pokemon
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.SurpriseTrade)
             {
                 var pkm = Hub.Ledy.Pool.GetRandomSurprise();
-                await EnsureConnectedToYCom(token).ConfigureAwait(false);
+                await EnsureConnectedToYComm(token).ConfigureAwait(false);
                 var _ = await PerformSurpriseTrade(sav, pkm, token).ConfigureAwait(false);
             }
         }
@@ -477,6 +477,7 @@ namespace SysBot.Pokemon
                 var msg = match.ToString();
                 detail.SendNotification(this, msg);
             }
+            Connection.Log("Seed calculation completed.");
         }
 
         private void WaitAtBarrierIfApplicable(CancellationToken token)

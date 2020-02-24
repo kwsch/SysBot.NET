@@ -43,6 +43,13 @@ namespace SysBot.Pokemon.Discord
             var cfg = Info.Hub.Config;
             var sudo = Context.GetIsSudo(cfg);
             var allowed = sudo || (Context.GetHasRole(cfg.DiscordRoleCanTrade) && Info.CanQueue);
+
+            if (!sudo && !Info.CanQueue)
+            {
+                await ReplyAsync("Sorry, I am not currently accepting queue requests!").ConfigureAwait(false);
+                return;
+            }
+
             if (!allowed)
             {
                 await ReplyAsync("Sorry, you are not permitted to use this command!").ConfigureAwait(false);
@@ -80,6 +87,13 @@ namespace SysBot.Pokemon.Discord
             var cfg = Info.Hub.Config;
             var sudo = Context.GetIsSudo(cfg);
             var allowed = sudo || (Context.GetHasRole(cfg.DiscordRoleCanTrade) && Info.CanQueue);
+
+            if (!sudo && !Info.CanQueue)
+            {
+                await ReplyAsync("Sorry, I am not currently accepting queue requests!").ConfigureAwait(false);
+                return;
+            }
+
             if (!allowed)
             {
                 await ReplyAsync("Sorry, you are not permitted to use this command!").ConfigureAwait(false);
