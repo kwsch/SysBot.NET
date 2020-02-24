@@ -69,7 +69,7 @@ namespace SysBot.Pokemon
                 encounterCount++;
                 Connection.Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
                 if (DumpSetting.Dump)
-                    DumpPokemon(DumpSetting.DumpFolder, pk);
+                    DumpPokemon(DumpSetting.DumpFolder, "fossil", pk);
 
                 Counts.AddCompletedFossils();
 

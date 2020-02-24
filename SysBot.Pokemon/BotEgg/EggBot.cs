@@ -73,7 +73,7 @@ namespace SysBot.Pokemon
                 Counts.AddCompletedEggs();
 
                 if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                    DumpPokemon(DumpSetting.DumpFolder, pk);
+                    DumpPokemon(DumpSetting.DumpFolder, "egg", pk);
 
                 encounterCount++;
                 if (!StopCondition(pk))

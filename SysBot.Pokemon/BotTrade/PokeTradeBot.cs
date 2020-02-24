@@ -306,7 +306,7 @@ namespace SysBot.Pokemon
                 Hub.Counts.AddCompletedTrade();
 
             if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                DumpPokemon(DumpSetting.DumpFolder, traded);
+                DumpPokemon(DumpSetting.DumpFolder, poke.Type.ToString().ToLower(), traded);
 
             return PokeTradeResult.Success;
         }
@@ -420,7 +420,7 @@ namespace SysBot.Pokemon
                 await ExitTrade(true, token).ConfigureAwait(false);
 
             if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                DumpPokemon(DumpSetting.DumpFolder, SuprisePoke);
+                DumpPokemon(DumpSetting.DumpFolder, "surprise", SuprisePoke);
             Hub.Counts.AddCompletedSurprise();
 
             return PokeTradeResult.Success;
@@ -431,6 +431,9 @@ namespace SysBot.Pokemon
             await ExitDuduTrade(token).ConfigureAwait(false);
 
             detail.TradeFinished(this, pk);
+
+            if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                DumpPokemon(DumpSetting.DumpFolder, "seed", pk);
 
             // Send results from separate thread; the bot doesn't need to wait for things to be calculated.
 #pragma warning disable 4014

@@ -94,11 +94,14 @@ namespace SysBot.Pokemon
             return sav;
         }
 
-        public static void DumpPokemon(string? folder, PKM pk)
+        public static void DumpPokemon(string folder, string subfolder, PKM pk)
         {
-            if (folder == null || !Directory.Exists(folder))
+            if (!Directory.Exists(folder))
                 return;
-            File.WriteAllBytes(Path.Combine(folder, Util.CleanFileName(pk.FileName)), pk.DecryptedPartyData);
+            var dir = Path.Combine(folder, subfolder);
+            Directory.CreateDirectory(dir);
+            var fn = Path.Combine(dir, Util.CleanFileName(pk.FileName));
+            File.WriteAllBytes(fn, pk.DecryptedPartyData);
         }
 
         /// <summary>
