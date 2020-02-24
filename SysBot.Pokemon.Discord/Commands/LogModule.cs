@@ -98,8 +98,8 @@ namespace SysBot.Pokemon.Discord
                     updatedch.Add(cid.ToString());
                 else Channels.Remove(cid);
             }
-
             SysCordInstance.Self.Hub.Config.GlobalDiscordLoggers = string.Join(", ", updatedch);
+            await ReplyAsync($"Logging cleared from channel: {Context.Channel.Name}").ConfigureAwait(false);
         }
 
         [Command("logClearAll")]
@@ -116,6 +116,8 @@ namespace SysBot.Pokemon.Discord
                 LogUtil.Forwarders.Remove(l);
             Loggers.Clear();
             Channels.Clear();
+            SysCordInstance.Self.Hub.Config.GlobalDiscordLoggers = string.Empty;
+            await ReplyAsync("Logging cleared from all channels!").ConfigureAwait(false);
         }
     }
 }
