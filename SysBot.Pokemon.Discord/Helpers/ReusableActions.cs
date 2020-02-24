@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -86,6 +88,12 @@ namespace SysBot.Pokemon.Discord
         {
             var showdown = ShowdownSet.GetShowdownText(pkm);
             return Format.Code(showdown);
+        }
+
+        public static List<string> GetListFromString(string str)
+        {
+            // Extract comma separated list
+            return str.Split(new[] { ",", ", ", " " }, StringSplitOptions.RemoveEmptyEntries).ToList();
         }
 
         public static string StripCodeBlock(string str) => str.Replace("`\n", "").Replace("\n`", "").Replace("`", "").Trim();
