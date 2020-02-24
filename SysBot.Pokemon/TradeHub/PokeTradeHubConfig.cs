@@ -121,6 +121,9 @@ namespace SysBot.Pokemon
         [Category(IntegrationDiscord), Description("Discord Bot: Users with this role are allowed to enter the Dudu queue.")]
         public string DiscordRoleCanDudu { get; set; } = DefaultDisable;
 
+        [Category(IntegrationDiscord), Description("Discord Bot: Users with this role are allowed to enter the Clone queue.")]
+        public string DiscordRoleCanClone { get; set; } = DefaultDisable;
+
         [Category(IntegrationDiscord), Description("Discord Bot: Users with this role are allowed to bypass command restrictions.")]
         public string DiscordRoleSudo { get; set; } = DefaultDisable;
 

@@ -81,7 +81,7 @@ namespace SysBot.Pokemon.Discord
         {
             var cfg = Info.Hub.Config;
             var sudo = Context.GetIsSudo(cfg);
-            var allowed = sudo || (Info.CanQueue && (Context.GetHasRole(cfg.DiscordRoleCanTrade) || Context.GetHasRole(cfg.DiscordRoleCanDudu)));
+            var allowed = sudo || (Info.CanQueue && (Context.GetHasRole(cfg.DiscordRoleCanTrade) || Context.GetHasRole(cfg.DiscordRoleCanDudu) || Context.GetHasRole(cfg.DiscordRoleCanClone)));
             if (!allowed)
                 return "Sorry, you are not permitted to use this command!";
 
