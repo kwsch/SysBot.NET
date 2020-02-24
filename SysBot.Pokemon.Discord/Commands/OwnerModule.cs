@@ -105,5 +105,48 @@ namespace SysBot.Pokemon.Discord
             SysCordInstance.Self.Hub.Config.DiscordBlackList = string.Join(", ", new HashSet<string>(userids)); // empty string joins
             await ReplyAsync("Un-Blacklisted listed IDs from using the bot!").ConfigureAwait(false);
         }
+
+        [Command("addSudo")]
+        [Summary("Adds mentioned user to global sudo")]
+        public async Task SudoUsers([Summary("Mentioned users will be added to the global sudo list")][Remainder]string content)
+        {
+            if (!await IsOwner(Context.Message.Author).ConfigureAwait(false))
+            {
+                await ReplyAsync("You are not permitted to use this command.").ConfigureAwait(false);
+                return;
+            }
+
+            var users = Context.Message.MentionedUsers;
+            var userids = users.Select(z => z.Id.ToString());
+            var sudos = ReusableActions.GetListFromString(SysCordInstance.Self.Hub.Config.GlobalSudoList);
+            sudos.AddRange(userids);
+            SysCordInstance.Self.Hub.Config.GlobalSudoList = string.Join(", ", new HashSet<string>(sudos)); // unique values
+            await ReplyAsync("Mentioned users are now sudo users for the bot!").ConfigureAwait(false);
+        }
+
+        [Command("removeSudo")]
+        [Summary("Removes mentioned user to global sudo")]
+        public async Task RemoveSudoUsers([Summary("Mentioned users will be removed from the global sudo list")][Remainder]string content)
+        {
+            if (!await IsOwner(Context.Message.Author).ConfigureAwait(false))
+            {
+                await ReplyAsync("You are not permitted to use this command.").ConfigureAwait(false);
+                return;
+            }
+
+            var users = Context.Message.MentionedUsers;
+            var userids = users.Select(z => z.Id.ToString());
+            var sudos = ReusableActions.GetListFromString(SysCordInstance.Self.Hub.Config.GlobalSudoList);
+            var iter = sudos.ToList(); // Deepclone
+            foreach (var ch in iter)
+            {
+                if (!ulong.TryParse(ch, out var uid) || !userids.Contains(uid.ToString()))
+                    continue;
+                sudos.Remove(uid.ToString());
+            }
+
+            SysCordInstance.Self.Hub.Config.GlobalSudoList = string.Join(", ", new HashSet<string>(sudos)); // unique values
+            await ReplyAsync("Mentioned users are no longer sudo users for the bot!").ConfigureAwait(false);
+        }
     }
 }
