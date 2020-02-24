@@ -15,7 +15,7 @@ namespace SysBot.Pokemon.Discord
         public static void RestoreLogging(DiscordSocketClient discord)
         {
             var cfg = SysCordInstance.Self.Hub.Config;
-            var channels = cfg.GlobalDiscordLoggers.Split(new[] {",", ", ", " "}, StringSplitOptions.RemoveEmptyEntries);
+            var channels = ReusableActions.GetListFromString(cfg.GlobalDiscordLoggers);
             foreach (var ch in channels)
             {
                 if (!ulong.TryParse(ch, out var cid))
