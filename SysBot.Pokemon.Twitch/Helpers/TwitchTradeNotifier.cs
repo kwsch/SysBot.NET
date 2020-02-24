@@ -54,7 +54,7 @@ namespace SysBot.Pokemon.Twitch
         public void TradeSearching(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
         {
             var name = Info.TrainerName;
-            var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", ({name})";
+            var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", {name}";
             Client.SendWhisper(Username, $"I'm searching for you{trainer}! Use the code you whispered me to search!");
         }
     }

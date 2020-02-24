@@ -18,8 +18,15 @@ namespace SysBot.Pokemon.Discord
         public async Task SeedCheckAsync(int code)
         {
             var cfg = Info.Hub.Config;
-            var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
+            var sudo = Context.GetIsSudo(cfg);
             var allowed = sudo || (Context.GetHasRole(cfg.DiscordRoleCanDudu) && Info.CanQueue);
+
+            if (!sudo && !Info.CanQueue)
+            {
+                await ReplyAsync("Sorry, I am not currently accepting queue requests!").ConfigureAwait(false);
+                return;
+            }
+
             if (!allowed)
             {
                 await ReplyAsync("Sorry, you are not permitted to use this command!").ConfigureAwait(false);

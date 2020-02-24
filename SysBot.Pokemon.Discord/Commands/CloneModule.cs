@@ -18,8 +18,15 @@ namespace SysBot.Pokemon.Discord
         public async Task CloneAsync(int code)
         {
             var cfg = Info.Hub.Config;
-            var sudo = Context.GetHasRole(cfg.DiscordRoleSudo);
+            var sudo = Context.GetIsSudo(cfg);
             var allowed = sudo || (Context.GetHasRole(cfg.DiscordRoleCanClone) && Info.CanQueue);
+
+            if (!sudo && !Info.CanQueue)
+            {
+                await ReplyAsync("Sorry, I am not currently accepting queue requests!").ConfigureAwait(false);
+                return;
+            }
+
             if (!allowed)
             {
                 await ReplyAsync("Sorry, you are not permitted to use this command!").ConfigureAwait(false);
@@ -35,6 +42,7 @@ namespace SysBot.Pokemon.Discord
         }
 
         [Command("clone")]
+        [Alias("c")]
         [Summary("Clones the Pokemon you show via Link Trade.")]
         public async Task CloneAsync()
         {

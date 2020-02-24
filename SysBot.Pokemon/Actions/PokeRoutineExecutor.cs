@@ -127,12 +127,12 @@ namespace SysBot.Pokemon
             // Confirm Code outside of this method (allow synchronization)
         }
 
-        public async Task EnsureConnectedToYCom(CancellationToken token)
+        public async Task EnsureConnectedToYComm(CancellationToken token)
         {
-            if (!await IsGameConnectedToYCom(token).ConfigureAwait(false))
+            if (!await IsGameConnectedToYComm(token).ConfigureAwait(false))
             {
-                Connection.Log("Reconnecting to Y-Com...");
-                await ReconnectToYCom(token).ConfigureAwait(false);
+                Connection.Log("Reconnecting to Y-Comm...");
+                await ReconnectToYComm(token).ConfigureAwait(false);
             }
         }
 
@@ -149,14 +149,14 @@ namespace SysBot.Pokemon
             return StringConverter.GetString7(data, 0, 26);
         }
 
-        public async Task<bool> IsGameConnectedToYCom(CancellationToken token)
+        public async Task<bool> IsGameConnectedToYComm(CancellationToken token)
         {
-            // Reads the Y-Com Flag is the Game is connected Online
+            // Reads the Y-Comm Flag is the Game is connected Online
             var data = await Connection.ReadBytesAsync(IsConnectedOffset, 1, token).ConfigureAwait(false);
             return data[0] == 1;
         }
 
-        public async Task ReconnectToYCom(CancellationToken token)
+        public async Task ReconnectToYComm(CancellationToken token)
         {
             // Press B in case a Error Message is Present
             await Click(B, 2000, token).ConfigureAwait(false);
