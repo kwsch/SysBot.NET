@@ -78,8 +78,33 @@ namespace SysBot.Pokemon.Discord
         }
 
         [Command("logClear")]
-        [Summary("Clears the logging settings.")]
+        [Summary("Clears the logging settings in that specific channel.")]
         public async Task ClearLogsAsync()
+        {
+            if (!Context.GetIsSudo())
+            {
+                await ReplyAsync("You are not permitted to use this command.").ConfigureAwait(false);
+                return;
+            }
+
+            var cfg = SysCordInstance.Self.Hub.Config;
+            var channels = cfg.GlobalDiscordLoggers.Split(new[] { ",", ", ", " " }, StringSplitOptions.RemoveEmptyEntries);
+            var updatedch = new List<string>();
+            foreach (var ch in channels)
+            {
+                if (!ulong.TryParse(ch, out var cid))
+                    continue;
+                if (cid != Context.Channel.Id)
+                    updatedch.Add(cid.ToString());
+                else Channels.Remove(cid);
+            }
+
+            SysCordInstance.Self.Hub.Config.GlobalDiscordLoggers = string.Join(", ", updatedch);
+        }
+
+        [Command("logClearAll")]
+        [Summary("Clears all the logging settings.")]
+        public async Task ClearLogsAllAsync()
         {
             if (!Context.GetIsSudo())
             {
