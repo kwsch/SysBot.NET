@@ -79,7 +79,7 @@ namespace SysBot.Pokemon
                     return;
                 }
 
-                if (encounterCount != reviveCount)
+                if (encounterCount % reviveCount != 0)
                     continue;
 
                 Connection.Log($"Ran out of fossils to revive {FossilSpecies}.");
