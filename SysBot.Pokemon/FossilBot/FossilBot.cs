@@ -100,14 +100,14 @@ namespace SysBot.Pokemon
         {
             await Click(A, 1100, token).ConfigureAwait(false);
             await Click(A, 1300, token).ConfigureAwait(false);
-            await Click(A, 1300, token).ConfigureAwait(false);
-
+            
             if (count.UseSecondOption1(FossilSpecies))
                 await Click(DDOWN, 300, token).ConfigureAwait(false);
-            await Click(A, 1200, token).ConfigureAwait(false);
+            await Click(A, 1300, token).ConfigureAwait(false);
 
             if (count.UseSecondOption2(FossilSpecies))
                 await Click(DDOWN, 300, token).ConfigureAwait(false);
+            await Click(A, 1200, token).ConfigureAwait(false);
             await Click(A, 1200, token).ConfigureAwait(false);
 
             await Click(A, 4000, token).ConfigureAwait(false);
