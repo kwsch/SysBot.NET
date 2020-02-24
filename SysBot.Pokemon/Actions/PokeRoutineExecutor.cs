@@ -14,6 +14,8 @@ namespace SysBot.Pokemon
     {
         protected PokeRoutineExecutor(PokeBotConfig cfg) : base(cfg) { }
 
+        public IngameLanguage? GameLang;
+
         public async Task Click(SwitchButton b, int delayMin, int delayMax, CancellationToken token) =>
             await Click(b, Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
 
@@ -104,6 +106,7 @@ namespace SysBot.Pokemon
             var info = sav.MyStatus;
             var read = await Connection.ReadBytesAsync(TrainerDataOffset, TrainerDataLength, token).ConfigureAwait(false);
             read.CopyTo(info.Data);
+            GameLang = (IngameLanguage)sav.Language;
             return sav;
         }
 
@@ -297,6 +300,20 @@ namespace SysBot.Pokemon
                     Connection.Log(new ShowdownSet(q.Data!).Text);
                     return;
             }
+        }
+
+        public enum IngameLanguage
+        {
+            Japanese = 1,
+            English = 2,
+            French = 3,
+            Italian = 4,
+            German = 5,
+            // Unusued_6 = 6,
+            Spanish = 7,
+            Korean = 8,
+            ChineseS = 9,
+            ChineseT = 10,
         }
     }
 }
