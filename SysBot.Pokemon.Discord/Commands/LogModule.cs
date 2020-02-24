@@ -49,7 +49,9 @@ namespace SysBot.Pokemon.Discord
             AddLogChannel(c, cid);
 
             // Add to discord global loggers (saves on program close)
-            SysCordInstance.Self.Hub.Config.GlobalDiscordLoggers = SysCordInstance.Self.Hub.Config.GlobalDiscordLoggers.TrimEnd(',', ' ') + $", {cid.ToString()}";
+            var loggers = ReusableActions.GetListFromString(SysCordInstance.Self.Hub.Config.GlobalDiscordLoggers);
+            loggers.Add(cid.ToString());
+            SysCordInstance.Self.Hub.Config.GlobalDiscordLoggers = string.Join(", ", new HashSet<string>(loggers));
             await ReplyAsync("Added logging output to this channel!").ConfigureAwait(false);
         }
 
