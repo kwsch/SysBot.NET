@@ -44,7 +44,7 @@ namespace SysBot.Pokemon
             }
 
             Connection.Log("Checking item counts...");
-            var pouchData = await Connection.ReadBytesAsync(PokeDataOffsets.ItemTreasureAddress, 100, token).ConfigureAwait(false);
+            var pouchData = await Connection.ReadBytesAsync(PokeDataOffsets.ItemTreasureAddress, 80, token).ConfigureAwait(false);
             var counts = FossilCount.GetFossilCounts(pouchData);
             int reviveCount = counts.PossibleRevives(FossilSpecies);
             if (reviveCount == 0)

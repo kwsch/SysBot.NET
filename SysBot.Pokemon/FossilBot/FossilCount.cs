@@ -52,7 +52,7 @@ namespace SysBot.Pokemon
 
         private static InventoryPouch8 GetTreasurePouch(byte[] itemsBlock)
         {
-            var pouch = new InventoryPouch8(InventoryType.MailItems, Pouch_Treasure_SWSH, 999, 0, PouchSize8.Treasures);
+            var pouch = new InventoryPouch8(InventoryType.MailItems, Pouch_Treasure_SWSH, 999, 0, 20);
             pouch.GetPouch(itemsBlock);
             return pouch;
         }
