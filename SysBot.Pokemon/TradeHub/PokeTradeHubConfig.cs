@@ -40,6 +40,9 @@ namespace SysBot.Pokemon
         [Category(FeatureToggle), Description("When set to something other than None, the Random Trades will require this species in addition to the nickname match.")]
         public Species DistributeLedySpecies { get; set; } = Species.Wooloo;
 
+        [Category(FeatureToggle), Description("When enabled, the EggBot will continue to get eggs and dump the Pokemon into the egg dump folder")]
+        public bool ContinueGettingEggs { get; set; } = false;
+
         [Category(FeatureToggle), Description("Link Trade: Using multiple distribution bots -- all bots will confirm their trade code at the same time. When Local, the bots will continue when all are at the barrier. When Remote, something else must signal the bots to continue.")]
         public BotSyncOption SynchronizeBots { get; set; } = BotSyncOption.LocalSync;
 

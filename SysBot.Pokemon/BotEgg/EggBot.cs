@@ -11,12 +11,14 @@ namespace SysBot.Pokemon
     {
         private readonly BotCompleteCounts Counts;
         public readonly IDumper DumpSetting;
+        public readonly bool ContinueGettingEggs;
         private const SwordShieldDaycare Location = SwordShieldDaycare.Route5;
 
         public EggBot(PokeTradeHub<PK8> hub, PokeBotConfig cfg) : base(cfg)
         {
             Counts = hub.Counts;
             DumpSetting = hub.Config;
+            ContinueGettingEggs = hub.Config.ContinueGettingEggs;
         }
 
         private int encounterCount;
@@ -69,18 +71,23 @@ namespace SysBot.Pokemon
                     continue;
                 }
 
+                encounterCount++;
                 Connection.Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
                 Counts.AddCompletedEggs();
 
                 if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
                     DumpPokemon(DumpSetting.DumpFolder, "egg", pk);
 
-                encounterCount++;
-                if (!StopCondition(pk))
-                    continue;
-
-                Connection.Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
-                break;
+                if (StopCondition(pk))
+                {
+                    if (ContinueGettingEggs)
+                    {
+                        Connection.Log("Restult found! Continuing to collect more eggs.");
+                        continue;
+                    }
+                    Connection.Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
+                    return;
+                }
             }
 
             // If aborting the sequence, we might have the stick set at some position. Clear it just in case.
