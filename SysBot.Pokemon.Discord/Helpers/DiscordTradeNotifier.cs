@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Discord;
 using Discord.Commands;
 using PKHeX.Core;
@@ -51,6 +52,36 @@ namespace SysBot.Pokemon.Discord
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, string message)
         {
             Context.User.SendMessageAsync(message).ConfigureAwait(false);
+        }
+
+        public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeSummary message)
+        {
+            if (message.ExtraInfo is Z3SeedResult r)
+            {
+                SendNotificationZ3(r);
+                return;
+            }
+
+            var msg = message.Summary;
+            if (message.Details.Count > 0)
+                msg += ", " + string.Join(", ", message.Details.Select(z => $"{z.Heading}: {z.Detail}"));
+            Context.User.SendMessageAsync(msg).ConfigureAwait(false);
+        }
+
+        private void SendNotificationZ3(Z3SeedResult r)
+        {
+            var type = r.GetShinyType();
+            var lines = r.ToString();
+
+            var embed = new EmbedBuilder {Color = type == Shiny.AlwaysStar ? Color.Gold : Color.LighterGrey};
+            embed.AddField(x =>
+            {
+                x.Name = "Seed Result";
+                x.Value = lines;
+                x.IsInline = false;
+            });
+            var msg = $"Here's your seed details for `{r.Seed:X16}`:";
+            Context.User.SendMessageAsync(msg, embed: embed.Build()).ConfigureAwait(false);
         }
     }
 }

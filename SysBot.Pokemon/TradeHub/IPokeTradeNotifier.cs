@@ -10,6 +10,7 @@ namespace SysBot.Pokemon
         void TradeCanceled(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeResult msg);
         void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result);
         void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, string message);
+        void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeSummary message);
         Action<PokeRoutineExecutor>? OnFinish { set; }
     }
 }

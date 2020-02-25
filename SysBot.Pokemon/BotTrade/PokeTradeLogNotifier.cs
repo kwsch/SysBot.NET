@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using PKHeX.Core;
 using SysBot.Base;
 
@@ -32,6 +33,14 @@ namespace SysBot.Pokemon
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, string message)
         {
             LogUtil.LogInfo(message, routine.Connection.Name);
+        }
+
+        public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeSummary message)
+        {
+            var msg = message.Summary;
+            if (message.Details.Count > 0)
+                msg += ", " + string.Join(", ", message.Details.Select(z => $"{z.Heading}: {z.Detail}"));
+            LogUtil.LogInfo(msg, routine.Connection.Name);
         }
 
         public Action<PokeRoutineExecutor>? OnFinish { get; set; }

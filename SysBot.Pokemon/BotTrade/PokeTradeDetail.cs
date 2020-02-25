@@ -41,6 +41,7 @@ namespace SysBot.Pokemon
         }
 
         public void SendNotification(PokeRoutineExecutor routine, string message) => Notifier.SendNotification(routine, this, message);
+        public void SendNotification(PokeRoutineExecutor routine, PokeTradeSummary obj) => Notifier.SendNotification(routine, this, obj);
 
         private void RelocateProcessedFile(PokeRoutineExecutor completedBy)
         {

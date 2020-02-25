@@ -474,8 +474,8 @@ namespace SysBot.Pokemon
             else
             {
                 var match = Z3Search.GetFirstSeed(ec, pid, IVs);
-                var msg = match.ToString();
-                detail.SendNotification(this, msg);
+                var lump = new PokeTradeSummary("Calculated Seed:", match);
+                detail.SendNotification(this, lump);
             }
             Connection.Log("Seed calculation completed.");
         }
