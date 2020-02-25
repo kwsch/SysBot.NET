@@ -227,9 +227,12 @@ namespace SysBot.Pokemon.Discord
 
                 if (gap <= TimeSpan.Zero)
                 {
-                    if (state != UserStatus.Idle)
+                    var idle = !SysCordInstance.Self.Hub.Queues.Info.CanQueue
+                        ? UserStatus.DoNotDisturb
+                        : UserStatus.Idle;
+                    if (idle != state)
                     {
-                        state = UserStatus.Idle;
+                        state = idle;
                         await _client.SetStatusAsync(state).ConfigureAwait(false);
                     }
                     await Task.Delay(2_000, token).ConfigureAwait(false);
