@@ -9,6 +9,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using PKHeX.Core;
+using SysBot.Base;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -122,7 +123,7 @@ namespace SysBot.Pokemon.Discord
                 await _client.SetGameAsync(game).ConfigureAwait(false);
 
             // Wait infinitely so your bot actually stays connected.
-            await Task.Delay(Timeout.Infinite, token).ConfigureAwait(false);
+            await MonitorStatusAsync(token).ConfigureAwait(false);
         }
 
         private async Task InitCommands()
@@ -210,6 +211,39 @@ namespace SysBot.Pokemon.Discord
             if (!result.IsSuccess)
                 await msg.Channel.SendMessageAsync(result.ErrorReason).ConfigureAwait(false);
             return true;
+        }
+
+        private async Task MonitorStatusAsync(CancellationToken token)
+        {
+            const int Interval = 20; // seconds
+            // Check datetime for update
+            UserStatus state = UserStatus.Idle;
+            while (!token.IsCancellationRequested)
+            {
+                var time = DateTime.Now;
+                var lastLogged = LogUtil.LastLogged;
+                var delta = time - lastLogged;
+                var gap = TimeSpan.FromSeconds(Interval) - delta;
+
+                if (gap <= TimeSpan.Zero)
+                {
+                    if (state != UserStatus.Idle)
+                    {
+                        state = UserStatus.Idle;
+                        await _client.SetStatusAsync(state).ConfigureAwait(false);
+                    }
+                    await Task.Delay(2_000, token).ConfigureAwait(false);
+                    continue;
+                }
+
+                var active = !SysCordInstance.Self.Hub.Queues.Info.CanQueue ? UserStatus.DoNotDisturb : UserStatus.Online;
+                if (active != state)
+                {
+                    state = active;
+                    await _client.SetStatusAsync(state).ConfigureAwait(false);
+                }
+                await Task.Delay(gap, token).ConfigureAwait(false);
+            }
         }
     }
 }
