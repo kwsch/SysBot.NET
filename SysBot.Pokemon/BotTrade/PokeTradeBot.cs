@@ -437,7 +437,17 @@ namespace SysBot.Pokemon
 
             // Send results from separate thread; the bot doesn't need to wait for things to be calculated.
 #pragma warning disable 4014
-            Task.Run(() => ReplyWithZ3Results(detail, pk), token);
+            Task.Run(() =>
+            {
+                try
+                {
+                    ReplyWithZ3Results(detail, pk);
+                }
+                catch (Exception ex)
+                {
+                    detail.SendNotification(this, $"Unable to calculate seeds: {ex.Message}\r\n{ex.StackTrace}");
+                }
+            }, token);
 #pragma warning restore 4014
 
             Hub.Counts.AddCompletedDudu();
