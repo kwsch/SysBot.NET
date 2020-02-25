@@ -87,6 +87,7 @@ namespace SysBot.Pokemon
                 {
                     Connection.Log("Restoring original pouch data.");
                     await Connection.WriteBytesAsync(pouchData, PokeDataOffsets.ItemTreasureAddress, token).ConfigureAwait(false);
+                    await Task.Delay(200, token).ConfigureAwait(false);
                 }
                 else
                 {
