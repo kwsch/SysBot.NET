@@ -127,10 +127,6 @@ namespace SysBot.Pokemon
         {
             // Update Barrier Settings
             UpdateBarrier(poke.IsSynchronized);
-            var code = poke.Code;
-            if (poke.IsRandomCode)
-                poke.Code = code = Hub.Config.GetRandomTradeCode();
-
             poke.TradeInitialize(this);
 
             var pkm = poke.TradeData;
@@ -158,6 +154,7 @@ namespace SysBot.Pokemon
             // Loading Screen
             await Task.Delay(2_000, token).ConfigureAwait(false);
 
+            var code = poke.Code;
             Connection.Log($"Entering Link Trade Code: {code} ...");
             await EnterTradeCode(code, token).ConfigureAwait(false);
 

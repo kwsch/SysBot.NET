@@ -12,22 +12,18 @@ namespace SysBot.Pokemon
         public readonly PokeTradeTrainerInfo Trainer;
         public readonly IPokeTradeNotifier<TPoke> Notifier;
         public readonly PokeTradeType Type;
-        public readonly bool IsSynchronized;
-
-        private const int RandomCode = -1;
-        public bool IsRandomCode => Code == RandomCode;
 
         public string? SourcePath { get; set; }
         public string? DestinationPath { get; set; }
+        public bool IsSynchronized => Type == PokeTradeType.Random;
 
-        public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code = RandomCode)
+        public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code)
         {
             Code = code;
             TradeData = pkm;
             Trainer = info;
             Notifier = notifier;
             Type = type;
-            IsSynchronized = IsRandomCode;
         }
 
         public void TradeInitialize(PokeRoutineExecutor routine) => Notifier.TradeInitialize(routine, this);
