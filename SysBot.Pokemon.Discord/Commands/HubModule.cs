@@ -53,7 +53,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             var countC = hub.Queues.Clone.Count;
-            if (countC == 0)
+            if (countC != 0)
             {
                 var nextC = hub.Queues.Clone.TryPeek(out var detailC, out _);
                 var nextMsgC = nextC ? $"{detailC.Trainer.TrainerName}" : "None!";
@@ -68,7 +68,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             var countD = hub.Queues.Dudu.Count;
-            if (countD == 0)
+            if (countD != 0)
             {
                 var nextD = hub.Queues.Dudu.TryPeek(out var detailD, out _);
                 var nextMsgD = nextD ? $"{detailD.Trainer.TrainerName}" : "None!";

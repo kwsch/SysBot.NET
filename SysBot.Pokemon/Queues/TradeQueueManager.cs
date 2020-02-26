@@ -49,7 +49,7 @@ namespace SysBot.Pokemon
                 await Task.Delay(1_000, token).ConfigureAwait(false);
                 if (Queue.Count != 0)
                     continue;
-                if (Hub.Bots.All(z => z.Config.CurrentRoutineType != PokeRoutineType.LinkTrade))
+                if (Hub.Bots.All(z => (z.Config.CurrentRoutineType != PokeRoutineType.LinkTrade && z.Config.CurrentRoutineType != PokeRoutineType.FlexTrade)))
                     continue;
                 if (!Hub.Config.DistributeWhileIdle)
                     continue;

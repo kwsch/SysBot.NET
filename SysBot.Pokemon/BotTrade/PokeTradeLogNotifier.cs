@@ -25,8 +25,7 @@ namespace SysBot.Pokemon
 
         public void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result)
         {
-            LogUtil.LogInfo($"Finished trade for {info.Trainer.TrainerName}, sending {(Species)info.TradeData.Species}", routine.Connection.Name);
-            LogUtil.LogInfo($"Received: {(Species)result.Species}.", routine.Connection.Name);
+            LogUtil.LogInfo($"Finished trading {info.Trainer.TrainerName} {(Species)info.TradeData.Species} for {(Species)result.Species}", routine.Connection.Name);
             OnFinish?.Invoke(routine);
         }
 
