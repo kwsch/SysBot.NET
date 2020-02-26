@@ -92,7 +92,8 @@ namespace SysBot.Pokemon
                 }
 
                 waitCounter = 0;
-                Connection.Log($"Starting next {type} Bot Trade. Getting data...");
+                string tradetype = $" ({detail.Type.ToString()})";
+                Connection.Log($"Starting next {type}{tradetype} Bot Trade. Getting data...");
                 await EnsureConnectedToYComm(token).ConfigureAwait(false);
                 var result = await PerformLinkCodeTrade(sav, detail, token).ConfigureAwait(false);
                 if (result != PokeTradeResult.Success) // requeue
@@ -139,23 +140,27 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Recover;
             }
 
-            Connection.Log("Open Y-Comm Menu");
-            await Click(Y, 2_000, token).ConfigureAwait(false);
+            Connection.Log("Opening Y-Comm Menu");
+            await Click(Y, 1_700, token).ConfigureAwait(false);
 
-            Connection.Log("Select Link Trade");
+            Connection.Log("Selecting Link Trade");
             await Click(A, 1_500, token).ConfigureAwait(false);
 
-            Connection.Log("Select Link Trade Code");
+            Connection.Log("Selecting Link Trade Code");
             await Click(DDOWN, 500, token).ConfigureAwait(false);
 
             for (int i = 0; i < 2; i++)
-                await Click(A, 2_000, token).ConfigureAwait(false);
+                await Click(A, 1_500, token).ConfigureAwait(false);
+
+            // Korean requires an extra A press at this menu.
+            if (GameLang == LanguageID.Korean)
+                await Click(A, 1_500, token).ConfigureAwait(false);
 
             // Loading Screen
             await Task.Delay(2_000, token).ConfigureAwait(false);
 
             var code = poke.Code;
-            Connection.Log($"Entering Link Trade Code: {code} ...");
+            Connection.Log($"Entering Link Trade Code: {code:0000} ...");
             await EnterTradeCode(code, token).ConfigureAwait(false);
 
             // Wait for Barrier to trigger all bots simultaneously.
@@ -251,9 +256,22 @@ namespace SysBot.Pokemon
                     clone.Tracker = 0;
 
                 poke.SendNotification(this, "Cloned. Change what you're offering!");
+                Connection.Log("Waiting for trading partner to change their Pokemon...");
+
+                // Clear the shown data offset.
+                await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
+
+                // Wait for User Input...
+                var pk2 = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 15_000, 1_000, token).ConfigureAwait(false);
+                if (pk2 == null || SearchUtil.HashByDetails(pk2) == SearchUtil.HashByDetails(pk))
+                {
+                    Connection.Log("Trading partner did not change their Pokemon.");
+                    await ExitTrade(true, token).ConfigureAwait(false);
+                    return PokeTradeResult.TrainerTooSlow;
+                }
+
                 await Click(A, 0_800, token).ConfigureAwait(false);
                 await SetBoxPokemon(clone, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
-                await Task.Delay(2_500, token).ConfigureAwait(false);
 
                 for (int i = 0; i < 5; i++)
                     await Click(A, 0_500, token).ConfigureAwait(false);
@@ -285,14 +303,13 @@ namespace SysBot.Pokemon
             // Trade was Successful!
             var traded = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
             if (SearchUtil.HashByDetails(traded) == SearchUtil.HashByDetails(pk))
-                Connection.Log("User traded the initially shown file.");
-            else if (SearchUtil.HashByDetails(traded) != SearchUtil.HashByDetails(pkm))
+                Connection.Log("User traded the initially shown Pokémon.");
+            else if (SearchUtil.HashByDetails(traded) == SearchUtil.HashByDetails(pkm))
                 Connection.Log("User did not complete the trade.");
             else
-                Connection.Log("Recipient changed the traded Pokémon after initially showing another.");
+                Connection.Log("User completed the trade.");
 
             poke.TradeFinished(this, traded);
-            Connection.Log("Trade complete!");
 
             var counts = Hub.Counts;
             if (poke.Type == PokeTradeType.Random)
@@ -327,13 +344,13 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Recover;
             }
 
-            Connection.Log("Open Y-Comm Menu");
+            Connection.Log("Opening Y-Comm Menu");
             await Click(Y, 2_000, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
 
-            Connection.Log("Select Surprise Trade");
+            Connection.Log("Selecting Surprise Trade");
             await Click(DDOWN, 0_500, token).ConfigureAwait(false);
             await Click(A, 4_000, token).ConfigureAwait(false);
 
@@ -348,7 +365,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Recover;
             }
 
-            Connection.Log("Select Pokemon");
+            Connection.Log("Selecting Pokemon");
             // Box 1 Slot 1; no movement required.
             await Click(A, 0_700, token).ConfigureAwait(false);
 
@@ -392,7 +409,7 @@ namespace SysBot.Pokemon
             var TrainerName = await GetTradePartnerName(TradeMethod.SupriseTrade, token).ConfigureAwait(false);
             var SuprisePoke = await ReadSupriseTradePokemon(token).ConfigureAwait(false);
 
-            Connection.Log($"Found Surprise Trade Partner: {TrainerName} , Pokemon: {(Species)SuprisePoke.Species}");
+            Connection.Log($"Found Surprise Trade Partner: {TrainerName}, Pokemon: {(Species)SuprisePoke.Species}");
 
             // Clear out the received trade data; we want to skip the trade animation.
             // The box slot locks have been removed prior to searching.
@@ -468,7 +485,7 @@ namespace SysBot.Pokemon
 
             var ec = result.EncryptionConstant;
             var pid = result.PID;
-            var IVs = result.IVs.Length == 0 ? GetBlankIVTemplate() : PKX.ReorderSpeedLast((int[]) result.IVs.Clone());
+            var IVs = result.IVs.Length == 0 ? GetBlankIVTemplate() : PKX.ReorderSpeedLast((int[])result.IVs.Clone());
             if (Hub.Config.ShowAllZ3Results)
             {
                 var matches = Z3Search.GetAllSeeds(ec, pid, IVs);

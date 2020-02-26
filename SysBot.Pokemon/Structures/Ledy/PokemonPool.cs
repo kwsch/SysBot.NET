@@ -87,7 +87,13 @@ namespace SysBot.Pokemon
 
                 Add(dest);
                 var fn = Path.GetFileNameWithoutExtension(file);
-                Files.Add(fn, new LedyRequest<T>(dest, fn));
+                fn = StringsUtil.Sanitize(fn);
+
+                // Since file names can be sanitized to the same string, only add one of them.
+                if (!Files.ContainsKey(fn))
+                    Files.Add(fn, new LedyRequest<T>(dest, fn));
+                else
+                    LogUtil.LogInfo("Provided pk8 was not added due to duplicate name: " + dest.FileName, nameof(PokemonPool<T>));
                 loadedAny = true;
             }
 
