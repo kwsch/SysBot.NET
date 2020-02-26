@@ -1,20 +1,15 @@
 ﻿using System;
-using System.IO;
 using PKHeX.Core;
-using SysBot.Base;
 
 namespace SysBot.Pokemon
 {
     public class PokeTradeDetail<TPoke> : IEquatable<PokeTradeDetail<TPoke>> where TPoke : PKM, new()
     {
-        public int Code;
+        public readonly int Code;
         public readonly TPoke TradeData;
         public readonly PokeTradeTrainerInfo Trainer;
         public readonly IPokeTradeNotifier<TPoke> Notifier;
         public readonly PokeTradeType Type;
-
-        public string? SourcePath { get; set; }
-        public string? DestinationPath { get; set; }
         public bool IsSynchronized => Type == PokeTradeType.Random;
 
         public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code)
@@ -30,27 +25,13 @@ namespace SysBot.Pokemon
         public void TradeSearching(PokeRoutineExecutor routine) => Notifier.TradeSearching(routine, this);
         public void TradeCanceled(PokeRoutineExecutor routine, PokeTradeResult msg) => Notifier.TradeCanceled(routine, this, msg);
 
-        public void TradeFinished(PokeRoutineExecutor routine, TPoke result)
+        public virtual void TradeFinished(PokeRoutineExecutor routine, TPoke result)
         {
             Notifier.TradeFinished(routine, this, result);
-            RelocateProcessedFile(routine);
         }
 
         public void SendNotification(PokeRoutineExecutor routine, string message) => Notifier.SendNotification(routine, this, message);
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeSummary obj) => Notifier.SendNotification(routine, this, obj);
-
-        private void RelocateProcessedFile(PokeRoutineExecutor completedBy)
-        {
-            if (SourcePath == null || !Directory.Exists(Path.GetDirectoryName(SourcePath)) || !File.Exists(SourcePath))
-                return;
-            if (DestinationPath == null || !Directory.Exists(Path.GetDirectoryName(DestinationPath)))
-                return;
-
-            if (File.Exists(DestinationPath))
-                File.Delete(DestinationPath);
-            File.Move(SourcePath, DestinationPath);
-            LogUtil.LogInfo("Moved processed trade to destination folder.", completedBy.Connection.Name);
-        }
 
         public bool Equals(PokeTradeDetail<TPoke>? other)
         {

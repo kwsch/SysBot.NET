@@ -104,12 +104,8 @@ namespace SysBot.Pokemon
                     var finalPath = Path.Combine(processed, Path.GetFileName(f));
                     File.Move(f, processedPath);
 
-                    var detail = new PokeTradeDetail<T>(t, trainer, notifier, PokeTradeType.Specific, code)
-                    {
-                        SourcePath = processedPath,
-                        DestinationPath = finalPath,
-                    };
-
+                    var tf = new TradeFile(processedPath, finalPath);
+                    var detail = new ExternalPokeTradeDetail<T>(t, trainer, notifier, PokeTradeType.Specific, code, tf);
                     Queue.Enqueue(detail, priority);
                 }
             }
