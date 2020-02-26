@@ -75,6 +75,11 @@ namespace SysBot.Pokemon
 
                 if (StopCondition(pk))
                 {
+                    if (Settings.ContinueGettingFossils)
+                    {
+                        Connection.Log("Restult found! Continuing to collect more fossils.");
+                        continue;
+                    }
                     Connection.Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
                     return;
                 }

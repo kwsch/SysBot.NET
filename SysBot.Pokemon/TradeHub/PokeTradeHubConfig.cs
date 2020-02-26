@@ -207,6 +207,12 @@ namespace SysBot.Pokemon
         [Category(FossilPokemon), Description("Toggle for injecting fossil pieces.")]
         public bool InjectFossils { get; set; } = false;
 
+        /// <summary>
+        /// Toggle for continuing to revive fossils after condition has been met.
+        /// </summary>
+        [Category(FossilPokemon), Description("When enabled, the FossilBot will continue to get fossils and dump the Pokemon into the fossil dump folder.")]
+        public bool ContinueGettingFossils { get; set; } = false;
+
         #endregion
 
         public void CreateDefaults(string path)
