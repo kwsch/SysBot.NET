@@ -60,7 +60,7 @@ namespace SysBot.Pokemon
                 await Task.Delay(4000, token).ConfigureAwait(false);
 
                 await Click(A, 1850, token).ConfigureAwait(false);
-                await Click(A, 1850, token).ConfigureAwait(false);
+                await Click(A, 1950, token).ConfigureAwait(false);
                 await Click(A, 450, token).ConfigureAwait(false);
 
                 Connection.Log("Egg received. Checking details.");
@@ -117,6 +117,9 @@ namespace SysBot.Pokemon
                 attempts++;
                 if (attempts % 10 == 0)
                     Connection.Log($"Tried {attempts} times, still no egg.");
+
+                if (attempts > 10)
+                    await Click(B, 500, token).ConfigureAwait(false);
             }
 
             return -1; // aborted
