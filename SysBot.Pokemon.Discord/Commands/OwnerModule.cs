@@ -4,8 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
-using SysBot.Base;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -19,7 +17,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("blacklist")]
         [Summary("Blacklists mentioned user.")]
-        public async Task BlackListUsers([Summary("Mentioned users that need to be blacklisted")][Remainder]string content)
+        public async Task BlackListUsers()
         {
             if (!await IsOwner(Context.Message.Author).ConfigureAwait(false))
             {
@@ -37,7 +35,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("unblacklist")]
         [Summary("Un-Blacklists mentioned user.")]
-        public async Task UnBlackListUsers([Summary("Mentioned users that need to be unblacklisted")][Remainder]string content)
+        public async Task UnBlackListUsers()
         {
             if (!await IsOwner(Context.Message.Author).ConfigureAwait(false))
             {
@@ -45,7 +43,7 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            var users = Context.Message.MentionedUsers.Select(z => z.Id);
+            var users = Context.Message.MentionedUsers.Select(z => z.Id).ToList();
             var blusers = ReusableActions.GetListFromString(SysCordInstance.Self.Hub.Config.DiscordBlackList);
             var iter = blusers.ToList(); // Deepclone
             foreach (var ch in iter)
@@ -108,7 +106,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("addSudo")]
         [Summary("Adds mentioned user to global sudo")]
-        public async Task SudoUsers([Summary("Mentioned users will be added to the global sudo list")][Remainder]string content)
+        public async Task SudoUsers()
         {
             if (!await IsOwner(Context.Message.Author).ConfigureAwait(false))
             {
@@ -126,7 +124,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("removeSudo")]
         [Summary("Removes mentioned user to global sudo")]
-        public async Task RemoveSudoUsers([Summary("Mentioned users will be removed from the global sudo list")][Remainder]string content)
+        public async Task RemoveSudoUsers()
         {
             if (!await IsOwner(Context.Message.Author).ConfigureAwait(false))
             {
@@ -135,7 +133,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             var users = Context.Message.MentionedUsers;
-            var userids = users.Select(z => z.Id.ToString());
+            var userids = users.Select(z => z.Id.ToString()).ToList();
             var sudos = ReusableActions.GetListFromString(SysCordInstance.Self.Hub.Config.GlobalSudoList);
             var iter = sudos.ToList(); // Deepclone
             foreach (var ch in iter)
