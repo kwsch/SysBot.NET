@@ -21,8 +21,6 @@ namespace SysBot.Pokemon
 
         public bool CanQueue { get; set; } = true;
 
-        
-
         public QueueCheckResult<T> CheckPosition(ulong uid, PokeRoutineType type = 0)
         {
             lock (_sync)
