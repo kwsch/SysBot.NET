@@ -17,6 +17,10 @@ namespace SysBot.Pokemon.Discord
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
         public static SysCord Self;
 #pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
+
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
+        public static DiscordManager Manager;
+#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
     }
 
     public sealed class SysCord
@@ -36,6 +40,7 @@ namespace SysBot.Pokemon.Discord
         {
             Hub = hub;
             SysCordInstance.Self = this; // hack
+            SysCordInstance.Manager = new DiscordManager(Hub.Config);
             AutoLegalityExtensions.EnsureInitialized(Hub.Config);
 
             _client = new DiscordSocketClient(new DiscordSocketConfig
@@ -183,6 +188,18 @@ namespace SysBot.Pokemon.Discord
         {
             // Create a Command Context.
             var context = new SocketCommandContext(_client, msg);
+
+            // Check Permission
+            if (!SysCordInstance.Manager.CanUseCommandUser(msg.Author.Id))
+            {
+                await msg.Channel.SendMessageAsync("You are not permitted to use this command.").ConfigureAwait(false);
+                return true;
+            }
+            if (!SysCordInstance.Manager.CanUseCommandChannel(msg.Channel.Id))
+            {
+                await msg.Channel.SendMessageAsync("You can't use that command here.").ConfigureAwait(false);
+                return true;
+            }
 
             // Execute the command. (result does not indicate a return value, 
             // rather an object stating if the command executed successfully).
