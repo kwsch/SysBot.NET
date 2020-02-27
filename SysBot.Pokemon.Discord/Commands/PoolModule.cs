@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -31,9 +32,9 @@ namespace SysBot.Pokemon.Discord
             var hub = me.Hub;
             var pool = hub.Ledy.Pool;
             var count = pool.Count;
-            if (count < 20)
+            if (count > 0 && count < 20)
             {
-                var lines = pool.Files.Select((z, i) => $"{i:00}: {z.Key} = {z.Value.RequestInfo.Species}");
+                var lines = pool.Files.Select((z, i) => $"{i + 1:00}: {z.Key} = {(Species)z.Value.RequestInfo.Species}");
                 var msg = string.Join("\n", lines);
 
                 var embed = new EmbedBuilder();
