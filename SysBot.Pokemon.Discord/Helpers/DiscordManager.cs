@@ -17,8 +17,6 @@ namespace SysBot.Pokemon.Discord
         public readonly SensitiveSet<string> RolesTrade = new SensitiveSet<string>();
         public readonly SensitiveSet<string> RolesDudu = new SensitiveSet<string>();
 
-        public DiscordManager(PokeTradeHubConfig cfg) => Config = cfg;
-
         public bool CanUseSudo(ulong uid) => SudoDiscord.Contains(uid);
         public bool CanUseSudo(IEnumerable<string> roles) => roles.Any(SudoRoles.Contains);
 
@@ -26,6 +24,12 @@ namespace SysBot.Pokemon.Discord
         public bool CanUseCommandUser(ulong uid) => !BlacklistedUsers.Contains(uid);
 
         private const string ALLOW_ALL = "@everyone";
+
+        public DiscordManager(PokeTradeHubConfig cfg)
+        {
+            Config = cfg;
+            Read();
+        }
 
         public bool GetHasRoleQueue(string type, IEnumerable<string> roles)
         {
