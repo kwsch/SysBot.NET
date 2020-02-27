@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -126,36 +125,26 @@ namespace SysBot.Pokemon.Discord
             await MonitorStatusAsync(token).ConfigureAwait(false);
         }
 
-        private async Task InitCommands()
+        public async Task InitCommands()
         {
             var assembly = Assembly.GetExecutingAssembly();
 
-            var types = Search(assembly);
+            await _commands.AddModulesAsync(assembly, _services).ConfigureAwait(false);
+            var modules = _commands.Modules.ToList();
+
             var blacklist = Hub.Config.DiscordModuleBlacklist
                 .Replace("Module", "").Split(new [] {','}, StringSplitOptions.RemoveEmptyEntries)
                 .Select(z => z.Trim()).ToList();
 
-            foreach (var t in types)
+            foreach (var module in modules)
             {
-                var name = t.Name.Replace("Module", "");
+                var name = module.Name.Replace("Module", "");
                 if (blacklist.Any(z => z.Equals(name, StringComparison.OrdinalIgnoreCase)))
-                    continue;
-                await _commands.AddModuleAsync(t, _services).ConfigureAwait(false);
+                    await _commands.RemoveModuleAsync(module).ConfigureAwait(false);
             }
 
             // Subscribe a handler to see if a message invokes a command.
             _client.MessageReceived += HandleMessageAsync;
-        }
-
-        public static IEnumerable<TypeInfo> Search(Assembly assembly)
-        {
-            static bool IsLoadableModule(TypeInfo info)
-            {
-                return info.DeclaredMethods.Any(x => x.GetCustomAttribute<CommandAttribute>() != null) &&
-                       info.GetCustomAttribute<DontAutoLoadAttribute>() == null;
-            }
-
-            return assembly.DefinedTypes.Where(IsLoadableModule).Where(typeInfo => typeInfo.IsPublic || typeInfo.IsNestedPublic);
         }
 
         private async Task HandleMessageAsync(SocketMessage arg)
