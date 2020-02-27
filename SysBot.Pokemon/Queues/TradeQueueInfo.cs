@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using PKHeX.Core;
+using static SysBot.Pokemon.PokeRoutineExecutor;
 
 namespace SysBot.Pokemon
 {
@@ -10,10 +11,17 @@ namespace SysBot.Pokemon
         private readonly object _sync = new object();
         private readonly List<TradeEntry<T>> UsersInQueue = new List<TradeEntry<T>>();
         public readonly PokeTradeHub<T> Hub;
+        private readonly IDumper DumpSetting;
 
-        public TradeQueueInfo(PokeTradeHub<T> hub) => Hub = hub;
+        public TradeQueueInfo(PokeTradeHub<T> hub)
+        {
+            Hub = hub;
+            DumpSetting = hub.Config;
+        }
 
         public bool CanQueue { get; set; } = true;
+
+        
 
         public QueueCheckResult<T> CheckPosition(ulong uid, PokeRoutineType type = 0)
         {
@@ -56,6 +64,7 @@ namespace SysBot.Pokemon
             lock (_sync)
             {
                 var queue = Hub.Queues.GetQueue(t);
+                
                 if (queue.Count == 0)
                     return "Nobody in queue.";
                 return queue.Summary();
@@ -151,6 +160,8 @@ namespace SysBot.Pokemon
                 {
                     r.Connection.Log($"Removing {trade.Username}'s request from the queue.");
                     Remove(trade);
+                    if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                        DumpPokemon(DumpSetting.DumpFolder, "Requested Pokemon", trade.Trade.TradeData);
                 };
                 return QueueResultAdd.Added;
             }
