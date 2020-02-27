@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using PKHeX.Core;
 using Image = System.Drawing.Image;
@@ -49,34 +48,15 @@ namespace SysBot.Pokemon.Discord
             await channel.SendPKMAsShowdownSetAsync(pkm).ConfigureAwait(false);
         }
 
-        public static bool GetIsSudo(this SocketCommandContext Context, PokeTradeHubConfig cfg)
+        public static bool GetIsSudo(this IUser user)
         {
-            if (cfg.AllowGlobalSudo && cfg.GlobalSudoList.Contains(Context.User.Id.ToString()))
+            var mgr = SysCordInstance.Manager;
+            if (mgr.CanUseSudo(user.Id))
                 return true;
-            return Context.GetHasRole(cfg.DiscordRoleSudo);
-        }
-
-        public static bool GetIsSudo(this SocketCommandContext Context) => Context.GetIsSudo(SysCordInstance.Self.Hub.Config);
-
-        private const string ALLOW_ALL = "@everyone";
-
-        public static bool GetHasRole(this SocketCommandContext Context, string rolesPermitted)
-        {
-            if (rolesPermitted == ALLOW_ALL)
+            if (user is SocketGuildUser g && mgr.CanUseSudo(g.Roles.Select(z => z.Name)))
                 return true;
-
-            var igu = (SocketGuildUser)Context.User;
-            return igu.Roles.Any(z => rolesPermitted.Contains(z.Name));
+            return false;
         }
-
-        public static bool IsBlackListed(this SocketCommandContext Context) => Context.IsBlackListed(SysCordInstance.Self.Hub.Config);
-
-        public static bool IsBlackListed(this SocketCommandContext Context, PokeTradeHubConfig cfg)
-        {
-            return cfg.DiscordBlackList.Contains(Context.User.Id.ToString());
-        }
-
-        public static bool IsBlackListed(ulong userID) => SysCordInstance.Self.Hub.Config.DiscordBlackList.Contains(userID.ToString());
 
         public static async Task SendPKMAsShowdownSetAsync(this ISocketMessageChannel channel, PKM pkm)
         {

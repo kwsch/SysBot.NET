@@ -12,7 +12,6 @@ namespace SysBot.Pokemon.Discord
 
         [Command("queueStatus")]
         [Alias("qs", "ts")]
-        [Summary("Prints the user's status in the trade queues.")]
         public async Task GetTradePositionAsync()
         {
             var msg = Info.GetPositionString(Context.User.Id);
@@ -31,14 +30,9 @@ namespace SysBot.Pokemon.Discord
         [Command("queueClearAll")]
         [Alias("qca", "tca")]
         [Summary("Clears all users from the trade queues.")]
+        [RequireSudo]
         public async Task ClearAllTradesAsync()
         {
-            if (!Context.GetIsSudo(Info.Hub.Config))
-            {
-                await ReplyAsync("You can't use this command.").ConfigureAwait(false);
-                return;
-            }
-
             Info.ClearAllQueues();
             await ReplyAsync("Cleared all in the queue.").ConfigureAwait(false);
         }
@@ -46,29 +40,19 @@ namespace SysBot.Pokemon.Discord
         [Command("queueToggle")]
         [Alias("qt", "tt")]
         [Summary("Toggles on/off the ability to join the trade queue.")]
+        [RequireSudo]
         public async Task ToggleQueueTradeAsync()
         {
-            if (!Context.GetIsSudo(Info.Hub.Config))
-            {
-                await ReplyAsync("You can't use this command.").ConfigureAwait(false);
-                return;
-            }
-
             Info.CanQueue ^= true;
             await ReplyAsync($"CanQueue has been set to: {Info.CanQueue}").ConfigureAwait(false);
         }
 
         [Command("queueList")]
         [Alias("ql")]
-        [Summary("[Sudo Only] Private messages the list of users in the queue.")]
+        [Summary("Private messages the list of users in the queue.")]
+        [RequireSudo]
         public async Task ListUserQueue()
         {
-            if (!Context.GetIsSudo(Info.Hub.Config))
-            {
-                await ReplyAsync("You can't use this command.").ConfigureAwait(false);
-                return;
-            }
-
             var lines = SysCordInstance.Self.Hub.Queues.Info.GetUserList();
             var msg = string.Join("\n", lines);
             if (msg.Length < 3)
@@ -79,12 +63,6 @@ namespace SysBot.Pokemon.Discord
 
         private string ClearTrade()
         {
-            var cfg = Info.Hub.Config;
-            var sudo = Context.GetIsSudo(cfg);
-            var allowed = sudo || (Info.CanQueue && (Context.GetHasRole(cfg.DiscordRoleCanTrade) || Context.GetHasRole(cfg.DiscordRoleCanDudu) || Context.GetHasRole(cfg.DiscordRoleCanClone)));
-            if (!allowed)
-                return "Sorry, you are not permitted to use this command!";
-
             var userID = Context.User.Id;
             var result = Info.ClearTrade(userID);
             return result switch

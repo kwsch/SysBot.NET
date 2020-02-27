@@ -15,35 +15,17 @@ namespace SysBot.Pokemon.Discord
         [Command("seedCheck")]
         [Alias("dudu", "d", "sc")]
         [Summary("Checks the seed for a pokemon.")]
+        [RequireQueueRole(nameof(DiscordManager.RolesDudu))]
         public async Task SeedCheckAsync(int code)
         {
-            var cfg = Info.Hub.Config;
-            var sudo = Context.GetIsSudo(cfg);
-            var allowed = sudo || (Context.GetHasRole(cfg.DiscordRoleCanDudu) && Info.CanQueue);
-
-            if (!sudo && !Info.CanQueue)
-            {
-                await ReplyAsync("Sorry, I am not currently accepting queue requests!").ConfigureAwait(false);
-                return;
-            }
-
-            if (!allowed)
-            {
-                await ReplyAsync("Sorry, you are not permitted to use this command!").ConfigureAwait(false);
-                return;
-            }
-
-            if ((uint)code > MaxTradeCode)
-            {
-                await ReplyAsync("Trade code should be 0000-9999!").ConfigureAwait(false);
-                return;
-            }
+            var sudo = Context.User.GetIsSudo();
             await AddSeedCheckToQueueAsync(code, Context.User.Username, sudo).ConfigureAwait(false);
         }
 
         [Command("seedCheck")]
         [Alias("dudu", "d", "sc")]
         [Summary("Checks the seed for a pokemon.")]
+        [RequireQueueRole(nameof(DiscordManager.RolesDudu))]
         public async Task SeedCheckAsync()
         {
             var code = Info.GetRandomTradeCode();
@@ -53,14 +35,9 @@ namespace SysBot.Pokemon.Discord
         [Command("duduList")]
         [Alias("dl", "scq", "seedCheckQueue", "duduQueue", "seedList")]
         [Summary("Prints the users in the Seed Check queue.")]
+        [RequireSudo]
         public async Task GetSeedListAsync()
         {
-            if (!Context.GetIsSudo(Info.Hub.Config))
-            {
-                await ReplyAsync("You can't use this command.").ConfigureAwait(false);
-                return;
-            }
-
             string msg = Info.GetTradeList(PokeRoutineType.DuduBot);
             var embed = new EmbedBuilder();
             embed.AddField(x =>
@@ -100,6 +77,12 @@ namespace SysBot.Pokemon.Discord
 
         private async Task AddSeedCheckToQueueAsync(int code, string trainer, bool sudo)
         {
+            if ((uint)code > MaxTradeCode)
+            {
+                await ReplyAsync("Trade code should be 0000-9999!").ConfigureAwait(false);
+                return;
+            }
+
             var result = AddToTradeQueue(new PK8(), code, trainer, sudo, PokeRoutineType.DuduBot, out var msg);
             await ReplyAsync(msg).ConfigureAwait(false);
             if (result)

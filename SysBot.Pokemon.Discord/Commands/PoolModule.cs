@@ -10,14 +10,9 @@ namespace SysBot.Pokemon.Discord
     {
         [Command("poolReload")]
         [Summary("Reloads the bot pool from the setting's folder.")]
+        [RequireSudo]
         public async Task ReloadPoolAsync()
         {
-            if (!Context.GetIsSudo())
-            {
-                await ReplyAsync("You are not permitted to use this command.").ConfigureAwait(false);
-                return;
-            }
-
             var me = SysCordInstance.Self;
             var hub = me.Hub;
 

@@ -26,6 +26,11 @@ namespace SysBot.Pokemon.Discord
                 Description = "These are the commands you can use:"
             };
 
+            var mgr = SysCordInstance.Manager;
+            var app = await Context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
+            var owner = app.Owner.Id;
+            var uid = Context.User.Id;
+
             foreach (var module in _service.Modules)
             {
                 string? description = null;
@@ -35,6 +40,11 @@ namespace SysBot.Pokemon.Discord
                     var name = cmd.Name;
                     if (mentioned.Contains(name))
                         continue;
+                    if (cmd.Attributes.Any(z => z is RequireOwnerAttribute) && owner != uid)
+                        continue;
+                    if (cmd.Attributes.Any(z => z is RequireSudoAttribute) && !mgr.CanUseSudo(uid))
+                        continue;
+
                     mentioned.Add(name);
                     var result = await cmd.CheckPreconditionsAsync(Context).ConfigureAwait(false);
                     if (result.IsSuccess)

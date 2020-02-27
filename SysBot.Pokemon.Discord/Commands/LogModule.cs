@@ -29,16 +29,10 @@ namespace SysBot.Pokemon.Discord
 
         [Command("logHere")]
         [Summary("Makes the bot log to the channel.")]
+        [RequireSudo]
         public async Task AddLogAsync()
         {
-            if (!Context.GetIsSudo())
-            {
-                await ReplyAsync("You are not permitted to use this command.").ConfigureAwait(false);
-                return;
-            }
-
             var c = Context.Channel;
-
             var cid = c.Id;
             if (Channels.TryGetValue(cid, out _))
             {
@@ -67,28 +61,18 @@ namespace SysBot.Pokemon.Discord
 
         [Command("logInfo")]
         [Summary("Dumps the logging settings.")]
+        [RequireSudo]
         public async Task DumpLogInfoAsync()
         {
-            if (!Context.GetIsSudo())
-            {
-                await ReplyAsync("You are not permitted to use this command.").ConfigureAwait(false);
-                return;
-            }
-
             foreach (var c in Channels)
                 await ReplyAsync($"{c.Key} - {c.Value}").ConfigureAwait(false);
         }
 
         [Command("logClear")]
         [Summary("Clears the logging settings in that specific channel.")]
+        [RequireSudo]
         public async Task ClearLogsAsync()
         {
-            if (!Context.GetIsSudo())
-            {
-                await ReplyAsync("You are not permitted to use this command.").ConfigureAwait(false);
-                return;
-            }
-
             var cfg = SysCordInstance.Self.Hub.Config;
             var channels = cfg.GlobalDiscordLoggers.Split(new[] { ",", ", ", " " }, StringSplitOptions.RemoveEmptyEntries);
             var updatedch = new List<string>();
@@ -106,14 +90,9 @@ namespace SysBot.Pokemon.Discord
 
         [Command("logClearAll")]
         [Summary("Clears all the logging settings.")]
+        [RequireSudo]
         public async Task ClearLogsAllAsync()
         {
-            if (!Context.GetIsSudo())
-            {
-                await ReplyAsync("You are not permitted to use this command.").ConfigureAwait(false);
-                return;
-            }
-
             foreach (var l in Loggers)
                 LogUtil.Forwarders.Remove(l);
             Loggers.Clear();

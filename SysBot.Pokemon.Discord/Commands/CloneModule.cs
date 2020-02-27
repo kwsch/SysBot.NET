@@ -15,35 +15,17 @@ namespace SysBot.Pokemon.Discord
         [Command("clone")]
         [Alias("c")]
         [Summary("Clones the Pokemon you show via Link Trade.")]
+        [RequireQueueRole(nameof(DiscordManager.RolesClone))]
         public async Task CloneAsync(int code)
         {
-            var cfg = Info.Hub.Config;
-            var sudo = Context.GetIsSudo(cfg);
-            var allowed = sudo || (Context.GetHasRole(cfg.DiscordRoleCanClone) && Info.CanQueue);
-
-            if (!sudo && !Info.CanQueue)
-            {
-                await ReplyAsync("Sorry, I am not currently accepting queue requests!").ConfigureAwait(false);
-                return;
-            }
-
-            if (!allowed)
-            {
-                await ReplyAsync("Sorry, you are not permitted to use this command!").ConfigureAwait(false);
-                return;
-            }
-
-            if ((uint)code > MaxTradeCode)
-            {
-                await ReplyAsync("Trade code should be 0000-9999!").ConfigureAwait(false);
-                return;
-            }
+            bool sudo = Context.User.GetIsSudo();
             await AddToQueueAsync(code, Context.User.Username, sudo).ConfigureAwait(false);
         }
 
         [Command("clone")]
         [Alias("c")]
         [Summary("Clones the Pokemon you show via Link Trade.")]
+        [RequireQueueRole(nameof(DiscordManager.RolesClone))]
         public async Task CloneAsync()
         {
             var code = Info.GetRandomTradeCode();
@@ -53,14 +35,9 @@ namespace SysBot.Pokemon.Discord
         [Command("cloneList")]
         [Alias("cl", "cq")]
         [Summary("Prints the users in the Clone queue.")]
+        [RequireSudo]
         public async Task GetListAsync()
         {
-            if (!Context.GetIsSudo(Info.Hub.Config))
-            {
-                await ReplyAsync("You can't use this command.").ConfigureAwait(false);
-                return;
-            }
-
             string msg = Info.GetTradeList(PokeRoutineType.Clone);
             var embed = new EmbedBuilder();
             embed.AddField(x =>
@@ -74,6 +51,12 @@ namespace SysBot.Pokemon.Discord
 
         private async Task AddToQueueAsync(int code, string trainer, bool sudo)
         {
+            if ((uint)code > MaxTradeCode)
+            {
+                await ReplyAsync("Trade code should be 0000-9999!").ConfigureAwait(false);
+                return;
+            }
+
             var result = AddToTradeQueue(new PK8(), code, trainer, sudo, PokeRoutineType.Clone, out var msg);
             await ReplyAsync(msg).ConfigureAwait(false);
             if (result)

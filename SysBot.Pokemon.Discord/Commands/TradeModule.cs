@@ -16,14 +16,9 @@ namespace SysBot.Pokemon.Discord
         [Command("tradeList")]
         [Alias("tl")]
         [Summary("Prints the users in the trade queues.")]
+        [RequireSudo]
         public async Task GetTradeListAsync()
         {
-            if (!Context.GetIsSudo(Info.Hub.Config))
-            {
-                await ReplyAsync("You can't use this command.").ConfigureAwait(false);
-                return;
-            }
-
             string msg = Info.GetTradeList(PokeRoutineType.LinkTrade);
             var embed = new EmbedBuilder();
             embed.AddField(x =>
@@ -38,29 +33,10 @@ namespace SysBot.Pokemon.Discord
         [Command("trade")]
         [Alias("t")]
         [Summary("Makes the bot trade you the provided PKM by adding it to the pool.")]
+        [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
         public async Task TradeAsync([Summary("Trade Code")]int code, [Remainder][Summary("Trainer Name to trade to.")]string trainerName)
         {
-            var cfg = Info.Hub.Config;
-            var sudo = Context.GetIsSudo(cfg);
-            var allowed = sudo || (Context.GetHasRole(cfg.DiscordRoleCanTrade) && Info.CanQueue);
-
-            if (!sudo && !Info.CanQueue)
-            {
-                await ReplyAsync("Sorry, I am not currently accepting queue requests!").ConfigureAwait(false);
-                return;
-            }
-
-            if (!allowed)
-            {
-                await ReplyAsync("Sorry, you are not permitted to use this command!").ConfigureAwait(false);
-                return;
-            }
-
-            if ((uint)code > MaxTradeCode)
-            {
-                await ReplyAsync("Trade code should be 0000-9999!").ConfigureAwait(false);
-                return;
-            }
+            var sudo = Context.User.GetIsSudo();
 
             var attachment = Context.Message.Attachments.FirstOrDefault();
             if (attachment == default)
@@ -82,24 +58,9 @@ namespace SysBot.Pokemon.Discord
         [Command("trade")]
         [Alias("t")]
         [Summary("Makes the bot trade you the provided Showdown Set by adding it to the pool.")]
+        [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
         public async Task TradeAsync([Summary("Showdown Set")][Remainder]string content)
         {
-            var cfg = Info.Hub.Config;
-            var sudo = Context.GetIsSudo(cfg);
-            var allowed = sudo || (Context.GetHasRole(cfg.DiscordRoleCanTrade) && Info.CanQueue);
-
-            if (!sudo && !Info.CanQueue)
-            {
-                await ReplyAsync("Sorry, I am not currently accepting queue requests!").ConfigureAwait(false);
-                return;
-            }
-
-            if (!allowed)
-            {
-                await ReplyAsync("Sorry, you are not permitted to use this command!").ConfigureAwait(false);
-                return;
-            }
-
             const int gen = 8;
             content = ReusableActions.StripCodeBlock(content);
             var set = new ShowdownSet(content);
@@ -121,12 +82,14 @@ namespace SysBot.Pokemon.Discord
             pk8.ResetPartyStats();
 
             var code = Info.GetRandomTradeCode();
+            var sudo = Context.User.GetIsSudo();
             await AddTradeToQueueAsync(code, Context.User.Username, pk8, sudo).ConfigureAwait(false);
         }
 
         [Command("trade")]
         [Alias("t")]
         [Summary("Makes the bot trade you the attached file by adding it to the pool.")]
+        [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
         public async Task TradeAsync()
         {
             var code = Info.GetRandomTradeCode();
@@ -135,6 +98,12 @@ namespace SysBot.Pokemon.Discord
 
         private async Task AddTradeToQueueAsync(int code, string trainerName, PK8 pk8, bool sudo)
         {
+            if ((uint)code > MaxTradeCode)
+            {
+                await ReplyAsync("Trade code should be 0000-9999!").ConfigureAwait(false);
+                return;
+            }
+
             var la = new LegalityAnalysis(pk8);
             if (!la.Valid)
             {

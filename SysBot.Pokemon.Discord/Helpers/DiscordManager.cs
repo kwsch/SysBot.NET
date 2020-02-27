@@ -5,7 +5,7 @@ namespace SysBot.Pokemon.Discord
 {
     public class DiscordManager
     {
-        private readonly PokeTradeHubConfig Config;
+        public readonly PokeTradeHubConfig Config;
 
         public readonly SensitiveSet<ulong> BlacklistedUsers = new SensitiveSet<ulong>();
         public readonly SensitiveSet<ulong> WhitelistedChannels = new SensitiveSet<ulong>();
@@ -24,6 +24,19 @@ namespace SysBot.Pokemon.Discord
 
         public bool CanUseCommandChannel(ulong channel) => WhitelistedChannels.Count == 0 || WhitelistedChannels.Contains(channel);
         public bool CanUseCommandUser(ulong uid) => !BlacklistedUsers.Contains(uid);
+
+        private const string ALLOW_ALL = "@everyone";
+
+        public bool GetHasRoleQueue(string type, IEnumerable<string> roles)
+        {
+            return type switch
+            {
+                nameof(RolesClone) => roles.Any(RolesClone.Contains) || RolesClone.Contains(ALLOW_ALL),
+                nameof(RolesTrade) => roles.Any(RolesTrade.Contains) || RolesTrade.Contains(ALLOW_ALL),
+                nameof(RolesDudu) => roles.Any(RolesDudu.Contains) || RolesDudu.Contains(ALLOW_ALL),
+                _ => false
+            };
+        }
 
         public void Read()
         {
