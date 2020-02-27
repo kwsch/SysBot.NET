@@ -98,6 +98,9 @@ namespace SysBot.Pokemon
                 case PokeRoutineType.FossilBot:
                     return new FossilBot(Hub, cfg);
 
+                //case PokeRoutineType.RaidBot:
+                    //return new RaidBot(Hub, cfg);
+
                 default:
                     throw new ArgumentException(nameof(cfg.NextRoutineType));
             }

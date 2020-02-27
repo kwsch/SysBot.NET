@@ -104,6 +104,9 @@ namespace SysBot.Pokemon
 
         [Category(Metadata), Description("Fossil Pokemon Revived")]
         public int CompletedFossils { get; set; }
+
+        [Category(Metadata), Description("Raids Completed")]
+        public int CompletedRaids { get; set; }
         #endregion
 
         #region Integration

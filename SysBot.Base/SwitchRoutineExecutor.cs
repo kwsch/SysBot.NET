@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SysBot.Base
@@ -36,6 +38,15 @@ namespace SysBot.Base
         {
             await Connection.SendAsync(SwitchCommand.Click(b), token).ConfigureAwait(false);
             await Task.Delay(delay, token).ConfigureAwait(false);
+        }
+
+        public async Task DaisyChainCommands(int Delay, SwitchButton[] buttons, CancellationToken token)
+        {
+            SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, Delay);
+            var commands = buttons.Select(SwitchCommand.Click).ToArray();
+            var chain = commands.SelectMany(x => x).ToArray();
+            await Connection.SendAsync(chain, token).ConfigureAwait(false);
+            SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, 0);
         }
 
         public async Task SetStick(SwitchStick stick, short x, short y, int delay, CancellationToken token)

@@ -13,5 +13,6 @@
 
         EggFetch,
         FossilBot,
+        //RaidBot,
     }
 }
