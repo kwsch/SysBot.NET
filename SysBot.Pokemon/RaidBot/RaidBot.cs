@@ -97,7 +97,7 @@ namespace SysBot.Pokemon
             }
             else
             {
-                // Check if you are the only one in the raid. If not, set airplane to false.
+                // Check if you are the only one in the raid. If not, set airplane to true.
                 var airplane = false;
 
                 if (airplane)

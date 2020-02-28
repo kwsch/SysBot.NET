@@ -46,6 +46,7 @@ namespace SysBot.Base
             await Connection.SendAsync(delaycgf, token).ConfigureAwait(false);
             // Press the button
             await Click(b, delay, token).ConfigureAwait(false);
+            // Reset delay
             delaycgf = SwitchCommand.Configure(SwitchConfigureParameter.buttonClickSleepTime, 50); // 50 ms
             await Connection.SendAsync(delaycgf, token).ConfigureAwait(false);
         }
