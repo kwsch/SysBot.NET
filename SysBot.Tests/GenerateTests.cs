@@ -10,7 +10,8 @@ namespace SysBot.Tests
         static GenerateTests() => AutoLegalityWrapper.EnsureInitialized(new PokeTradeHubConfig());
 
         [Theory]
-        [InlineData(TorkoalH, 4)]
+        [InlineData(Torkoal2, 2)]
+        [InlineData(Charizard4, 4)]
         public void TestAbility(string set, int abilNumber)
         {
             var sav = AutoLegalityWrapper.GetTrainerInfo(8);
@@ -22,8 +23,8 @@ namespace SysBot.Tests
             }
         }
 
-        private const string TorkoalH =
-            @"Torkoal (M) @ Assault Vest
+        private const string Torkoal2 =
+@"Torkoal (M) @ Assault Vest
 IVs: 0 Atk
 EVs: 248 HP / 8 Atk / 252 SpA
 Ability: Drought
@@ -32,5 +33,17 @@ Quiet Nature
 - Earth Power
 - Eruption
 - Fire Blast";
+
+        private const string Charizard4 =
+@"Charizard @ Choice Scarf 
+Ability: Solar Power 
+Level: 50 
+Shiny: Yes 
+EVs: 252 SpA / 4 SpD / 252 Spe 
+Timid Nature 
+- Heat Wave 
+- Air Slash 
+- Solar Beam 
+- Beat Up";
     }
 }
