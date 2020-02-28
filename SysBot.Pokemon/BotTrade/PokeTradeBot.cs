@@ -316,10 +316,12 @@ namespace SysBot.Pokemon
             var traded = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
             // Pokemon in b1s1 is same as the one they were supposed to receive (was never sent).
             if (SearchUtil.HashByDetails(traded) == SearchUtil.HashByDetails(pkm))
+            {
                 Connection.Log("User did not complete the trade.");
-            // As long as we got rid of our inject in b1s1, assume the trade went through.
+            }
             else
             {
+                // As long as we got rid of our inject in b1s1, assume the trade went through.
                 Connection.Log("User completed the trade.");
                 poke.TradeFinished(this, traded);
 

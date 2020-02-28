@@ -136,6 +136,9 @@ namespace SysBot.Pokemon
         [Category(IntegrationDiscord), Description("Discord Bot: Users with these user IDs cannot use the bot.")]
         public string DiscordBlackList { get; set; } = string.Empty;
 
+        [Category(IntegrationDiscord), Description("Discord Bot: Channels with these IDs are the only channels where the bot acknowledges commands.")]
+        public string DiscordWhiteList { get; set; } = string.Empty;
+
         [Category(IntegrationDiscord), Description("Discord Bot: Custom Status for playing a game.")]
         public string DiscordGameStatus { get; set; } = "SysBot.NET: Pokémon";
 

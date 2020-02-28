@@ -2,19 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
 using Discord.Commands;
 
 namespace SysBot.Pokemon.Discord
 {
     public class OwnerModule : ModuleBase<SocketCommandContext>
     {
-        public async Task<bool> IsOwner(IUser author)
-        {
-            var app = await Context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
-            return author.Id.Equals(app.Owner.Id);
-        }
-
         [Command("blacklist")]
         [Summary("Blacklists mentioned user.")]
         [RequireOwner]
@@ -65,6 +58,24 @@ namespace SysBot.Pokemon.Discord
         public async Task RemoveSudoUsers([Remainder]string _)
         {
             await Process(Context.Message.MentionedUsers.Select(z => z.Id), (z, x) => z.Remove(x), z => z.SudoDiscord).ConfigureAwait(false);
+        }
+
+        [Command("addChannel")]
+        [Summary("Adds a channel to the list of channels that are accepting commands.")]
+        [RequireOwner]
+        // ReSharper disable once UnusedParameter.Global
+        public async Task AddChannel()
+        {
+            await Process(new[] {Context.Message.Channel.Id}, (z, x) => z.Add(x), z => z.WhitelistedChannels).ConfigureAwait(false);
+        }
+
+        [Command("remiveChannel")]
+        [Summary("Removes a channel from the list of channels that are accepting commands.")]
+        [RequireOwner]
+        // ReSharper disable once UnusedParameter.Global
+        public async Task RemoveChannel()
+        {
+            await Process(new[] { Context.Message.Channel.Id }, (z, x) => z.Remove(x), z => z.WhitelistedChannels).ConfigureAwait(false);
         }
 
         private async Task Process(IEnumerable<ulong> values, Func<SensitiveSet<ulong>, ulong, bool> process, Func<DiscordManager, SensitiveSet<ulong>> fetch)

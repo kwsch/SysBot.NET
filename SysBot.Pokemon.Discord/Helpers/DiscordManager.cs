@@ -6,6 +6,7 @@ namespace SysBot.Pokemon.Discord
     public class DiscordManager
     {
         public readonly PokeTradeHubConfig Config;
+        public ulong Owner;
 
         public readonly SensitiveSet<ulong> BlacklistedUsers = new SensitiveSet<ulong>();
         public readonly SensitiveSet<ulong> WhitelistedChannels = new SensitiveSet<ulong>();
@@ -46,7 +47,7 @@ namespace SysBot.Pokemon.Discord
         {
             var cfg = Config;
             BlacklistedUsers.Read(cfg.DiscordBlackList, ulong.Parse);
-            //WhitelistedChannels.Read(cfg);
+            WhitelistedChannels.Read(cfg.DiscordWhiteList, ulong.Parse);
 
             SudoDiscord.Read(cfg.GlobalSudoList, ulong.Parse);
             SudoRoles.Read(cfg.DiscordRoleSudo, z => z);
@@ -59,6 +60,7 @@ namespace SysBot.Pokemon.Discord
         public void Write()
         {
             Config.DiscordBlackList = BlacklistedUsers.Write();
+            Config.DiscordWhiteList = WhitelistedChannels.Write();
             Config.DiscordRoleSudo = SudoRoles.Write();
             Config.GlobalSudoList = SudoDiscord.Write();
 

@@ -126,6 +126,9 @@ namespace SysBot.Pokemon.Discord
             if (!string.IsNullOrWhiteSpace(game))
                 await _client.SetGameAsync(game).ConfigureAwait(false);
 
+            var app = await _client.GetApplicationInfoAsync().ConfigureAwait(false);
+            SysCordInstance.Manager.Owner = app.Owner.Id;
+
             // Wait infinitely so your bot actually stays connected.
             await MonitorStatusAsync(token).ConfigureAwait(false);
         }
@@ -190,12 +193,13 @@ namespace SysBot.Pokemon.Discord
             var context = new SocketCommandContext(_client, msg);
 
             // Check Permission
-            if (!SysCordInstance.Manager.CanUseCommandUser(msg.Author.Id))
+            var mgr = SysCordInstance.Manager;
+            if (!mgr.CanUseCommandUser(msg.Author.Id))
             {
                 await msg.Channel.SendMessageAsync("You are not permitted to use this command.").ConfigureAwait(false);
                 return true;
             }
-            if (!SysCordInstance.Manager.CanUseCommandChannel(msg.Channel.Id))
+            if (!mgr.CanUseCommandChannel(msg.Channel.Id) && msg.Author.Id != mgr.Owner)
             {
                 await msg.Channel.SendMessageAsync("You can't use that command here.").ConfigureAwait(false);
                 return true;
