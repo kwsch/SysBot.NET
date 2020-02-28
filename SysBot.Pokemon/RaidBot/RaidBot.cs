@@ -9,7 +9,7 @@ namespace SysBot.Pokemon
     {
         private readonly BotCompleteCounts Counts;
         public readonly PokeTradeHubConfig Settings;
-        private bool ldn = true;
+        private readonly bool ldn;
 
         public RaidBot(PokeTradeHub<PK8> hub, PokeBotConfig cfg) : base(cfg)
         {
@@ -29,8 +29,8 @@ namespace SysBot.Pokemon
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.RaidBot)
             {
                 int code = Settings.DistributionTradeCode;
-                await HostRaidAsync(sav, code, token).ConfigureAwait(false);
-                await ResetGameAsync(ldn, token).ConfigureAwait(false);
+                bool airplane = await HostRaidAsync(sav, code, token).ConfigureAwait(false);
+                await ResetGameAsync(airplane, token).ConfigureAwait(false);
 
                 encounterCount++;
                 Connection.Log($"Raid host {encounterCount} finished.");
@@ -38,7 +38,7 @@ namespace SysBot.Pokemon
             }
         }
 
-        private async Task HostRaidAsync(SAV8SWSH sav, int code, CancellationToken token)
+        private async Task<bool> HostRaidAsync(SAV8SWSH sav, int code, CancellationToken token)
         {
             // Connect to Y-Comm
             await EnsureConnectedToYComm(token).ConfigureAwait(false);
@@ -61,106 +61,127 @@ namespace SysBot.Pokemon
             await Click(A, 5000, token).ConfigureAwait(false);
             await Click(DUP, 1000, token).ConfigureAwait(false);
             await Click(A, 1000, token).ConfigureAwait(false);
+
             // Use Offset to actually calculate this value and press A
             var timetowait = 3 * 60 * 1000;
-            var fullqueue = false;
-            while (!fullqueue)
+            while (timetowait > 0)
             {
-                if (timetowait < 0)
+                bool result = await CheckIfQueueFullAsync().ConfigureAwait(false);
+                if (result)
                     break;
+
                 await Task.Delay(1000, token).ConfigureAwait(false);
                 timetowait -= 1000;
-                // Check if queue is full and set true if it is
             }
 
-            if (fullqueue)
-                await Click(A, 3000, token).ConfigureAwait(false);
-
-            Connection.Log($"Hosting raid as {sav.OT} with code: {code:0000}.");
-            await Task.Delay(10000, token).ConfigureAwait(false);
-        }
-
-        private async Task ResetGameAsync(bool ldn, CancellationToken token)
-        {
-            if (!ldn)
+            if (timetowait > 0)
             {
-                var buttons = new[]
-                {
-                    HOME, X, A, // Close out of the game
-                    A, A,       // Open game and select profile
-                    B, B, B, B, // Delay 20 seconds for switch logo lag
-                    A, B, B,    // Overworld!
-                    Y, PLUS,    // Connect to Y-Comm
-                    B, B, B, B  // Ensure Overworld
-                };
-                await DaisyChainCommands(5000, buttons, token).ConfigureAwait(false);
+                Connection.Log("All participants have joined.");
+                await Click(A, 3000, token).ConfigureAwait(false);
             }
             else
             {
-                // Check if you are the only one in the raid. If not, set airplane to true.
-                var airplane = false;
-
-                if (airplane)
-                {
-                    Connection.Log("Resetting raid using Airplane Mode method");
-                    // Airplane mode method (only works when you connect with someone but faster)
-                    // Need to test if ldn_mitm crashes
-                    // Side menu
-                    await PressAndHold(HOME, 2_000, 1_000, token).ConfigureAwait(false);
-
-                    // Navigate to Airplane mode
-                    for (int i = 0; i < 4; i++)
-                        await Click(DDOWN, 1_200, token).ConfigureAwait(false);
-
-                    // Press A to turn on Airplane mode and then A again to turn it off (causes a freeze for a solid minute?)
-                    await Click(A, 1_200, token).ConfigureAwait(false);
-                    await Click(A, 1_200, token).ConfigureAwait(false);
-                    await Click(B, 1_200, token).ConfigureAwait(false);
-                    Connection.Log("Toggled Airplane Mode!");
-
-                    // Press OK on the error
-                    await Click(A, 1_200, token).ConfigureAwait(false);
-
-                    while (!await IsCorrectScreen(PokeDataOffsets.CurrentScreen_Overworld, token).ConfigureAwait(false))
-                    {
-                        await Task.Delay(1000, token).ConfigureAwait(false);
-                    }
-
-                    Connection.Log("Back in overworld, reconnecting to Y-Comm");
-                    // Reconnect to ycomm.
-                    await EnsureConnectedToYComm(token).ConfigureAwait(false);
-                }
-
-                else 
-                {
-                    Connection.Log("Resetting raid by restarting the game");
-                    // Close out of the game
-                    await Click(HOME, 3000, token).ConfigureAwait(false);
-                    await Click(X, 1000, token).ConfigureAwait(false);
-                    await Click(A, 5000, token).ConfigureAwait(false); // Closing software prompt
-                    Connection.Log("Closed out of the game!");
-
-                    // Open game and select profile
-                    await Click(A, 1000, token).ConfigureAwait(false);
-                    await Click(A, 1000, token).ConfigureAwait(false);
-                    Connection.Log("Restarting the game!");
-
-                    // Switch Logo lag, skip cutscene, game load screen
-                    await Task.Delay(20000, token).ConfigureAwait(false);
-                    await Click(A, 1000, token).ConfigureAwait(false);
-                    await Task.Delay(10000, token).ConfigureAwait(false);
-
-                    while (!await IsCorrectScreen(PokeDataOffsets.CurrentScreen_Overworld, token).ConfigureAwait(false))
-                    {
-                        await Task.Delay(1000, token).ConfigureAwait(false);
-                    }
-                    Connection.Log("Back in the overworld!");
-
-                    // Reconnect to ycomm.
-                    await EnsureConnectedToYComm(token).ConfigureAwait(false);
-                    Connection.Log("Reconnected to Y-Comm!");
-                }
+                Connection.Log("Not all participants have joined. Continuing anyway!");
+                await Click(A, 3000, token).ConfigureAwait(false);
             }
+
+            Connection.Log($"Hosting raid as {sav.OT} with code: {code:0000}.");
+            await Task.Delay(10_000, token).ConfigureAwait(false);
+
+            return false;
+        }
+
+        // Check if queue is full and set true if it is
+        private async Task<bool> CheckIfQueueFullAsync()
+        {
+            await Task.Delay(1).ConfigureAwait(false);
+            return false;
+        }
+
+        private async Task ResetGameAsync(bool airplane, CancellationToken token)
+        {
+            if (!ldn)
+                await ResetRaidCloseGame(token).ConfigureAwait(false);
+            else if (airplane)
+                await ResetRaidAirplaneLDN(token).ConfigureAwait(false);
+            else
+                await ResetRaidCloseGameLDN(token).ConfigureAwait(false);
+        }
+
+        private async Task ResetRaidCloseGameLDN(CancellationToken token)
+        {
+            Connection.Log("Resetting raid by restarting the game");
+            // Close out of the game
+            await Click(HOME, 3_000, token).ConfigureAwait(false);
+            await Click(X, 1_000, token).ConfigureAwait(false);
+            await Click(A, 5_000, token).ConfigureAwait(false); // Closing software prompt
+            Connection.Log("Closed out of the game!");
+
+            // Open game and select profile
+            await Click(A, 1_000, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
+            Connection.Log("Restarting the game!");
+
+            // Switch Logo lag, skip cutscene, game load screen
+            await Task.Delay(20_000, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
+            await Task.Delay(10_000, token).ConfigureAwait(false);
+
+            while (!await IsCorrectScreen(PokeDataOffsets.CurrentScreen_Overworld, token).ConfigureAwait(false))
+            {
+                await Task.Delay(1_000, token).ConfigureAwait(false);
+            }
+
+            Connection.Log("Back in the overworld!");
+
+            // Reconnect to ycomm.
+            await EnsureConnectedToYComm(token).ConfigureAwait(false);
+            Connection.Log("Reconnected to Y-Comm!");
+        }
+
+        private async Task ResetRaidAirplaneLDN(CancellationToken token)
+        {
+            Connection.Log("Resetting raid using Airplane Mode method");
+            // Airplane mode method (only works when you connect with someone but faster)
+            // Need to test if ldn_mitm crashes
+            // Side menu
+            await PressAndHold(HOME, 2_000, 1_000, token).ConfigureAwait(false);
+
+            // Navigate to Airplane mode
+            for (int i = 0; i < 4; i++)
+                await Click(DDOWN, 1_200, token).ConfigureAwait(false);
+
+            // Press A to turn on Airplane mode and then A again to turn it off (causes a freeze for a solid minute?)
+            await Click(A, 1_200, token).ConfigureAwait(false);
+            await Click(A, 1_200, token).ConfigureAwait(false);
+            await Click(B, 1_200, token).ConfigureAwait(false);
+            Connection.Log("Toggled Airplane Mode!");
+
+            // Press OK on the error
+            await Click(A, 1_200, token).ConfigureAwait(false);
+
+            while (!await IsCorrectScreen(PokeDataOffsets.CurrentScreen_Overworld, token).ConfigureAwait(false))
+            {
+                await Task.Delay(1_000, token).ConfigureAwait(false);
+            }
+
+            Connection.Log("Back in overworld, reconnecting to Y-Comm");
+            // Reconnect to ycomm.
+            await EnsureConnectedToYComm(token).ConfigureAwait(false);
+        }
+
+        private async Task ResetRaidCloseGame(CancellationToken token)
+        {
+            var buttons = new[]
+            {
+                HOME, X, A, // Close out of the game
+                A, A, // Open game and select profile
+                B, B, B, B, // Delay 20 seconds for switch logo lag
+                A, B, B, // Overworld!
+                Y, PLUS, // Connect to Y-Comm
+                B, B, B, B // Ensure Overworld
+            };
+            await DaisyChainCommands(5_000, buttons, token).ConfigureAwait(false);
         }
     }
 }
