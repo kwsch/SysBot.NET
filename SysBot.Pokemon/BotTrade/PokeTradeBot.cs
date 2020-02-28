@@ -272,6 +272,7 @@ namespace SysBot.Pokemon
 
                 await Click(A, 0_800, token).ConfigureAwait(false);
                 await SetBoxPokemon(clone, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+                pkm = clone;
 
                 for (int i = 0; i < 5; i++)
                     await Click(A, 0_500, token).ConfigureAwait(false);
@@ -320,7 +321,12 @@ namespace SysBot.Pokemon
                 Hub.Counts.AddCompletedTrade();
 
             if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                DumpPokemon(DumpSetting.DumpFolder, poke.Type.ToString().ToLower(), traded);
+            {
+                var subfolder = poke.Type.ToString().ToLower();
+                DumpPokemon(DumpSetting.DumpFolder, subfolder, traded); // received
+                if (poke.Type == PokeTradeType.Specific || poke.Type == PokeTradeType.Clone)
+                    DumpPokemon(DumpSetting.DumpFolder, "traded", pkm); // sent to partner
+            }
 
             return PokeTradeResult.Success;
         }
