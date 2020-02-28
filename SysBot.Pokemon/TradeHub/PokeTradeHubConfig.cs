@@ -46,6 +46,9 @@ namespace SysBot.Pokemon
         [Category(FeatureToggle), Description("Link Trade: Using multiple distribution bots -- all bots will confirm their trade code at the same time. When Local, the bots will continue when all are at the barrier. When Remote, something else must signal the bots to continue.")]
         public BotSyncOption SynchronizeBots { get; set; } = BotSyncOption.LocalSync;
 
+        [Category(FeatureToggle), Description("When set, the bot will assume that ldn_mitm sysmodule is running on your system. Better stability")]
+        public bool UseLdnMitm { get; set; } = true;
+
         [Category(Legality), Description("Link Trade: Using multiple distribution bots -- once all bots are ready to confirm trade code, the Hub will wait X milliseconds before releasing all bots.")]
         public int SynchronizeDelayBarrier { get; set; }
 
