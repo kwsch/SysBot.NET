@@ -23,6 +23,21 @@ namespace SysBot.Tests
             }
         }
 
+        [Theory]
+        [InlineData(Torkoal2, 2)]
+        [InlineData(Charizard4, 4)]
+        public void TestAbilityTwitch(string set, int abilNumber)
+        {
+            var sav = AutoLegalityWrapper.GetTrainerInfo(8);
+            for (int i = 0; i < 10; i++)
+            {
+                var twitch = set.Replace("\r\n", " ").Replace("\n", " ");
+                var s = TwitchShowdownUtil.ConvertToShowdown(twitch);
+                var pk = sav.GetLegal(s, out _);
+                pk.AbilityNumber.Should().Be(abilNumber);
+            }
+        }
+
         private const string Torkoal2 =
 @"Torkoal (M) @ Assault Vest
 IVs: 0 Atk

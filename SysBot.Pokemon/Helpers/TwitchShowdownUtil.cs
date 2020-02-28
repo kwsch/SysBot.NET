@@ -1,6 +1,6 @@
 ﻿using PKHeX.Core;
 
-namespace SysBot.Pokemon.Twitch
+namespace SysBot.Pokemon
 {
     public static class TwitchShowdownUtil
     {
@@ -27,13 +27,13 @@ namespace SysBot.Pokemon.Twitch
                     setstring = setstring.Replace(i, $"\r\n{i}");
             }
 
-            var finalset =  restorenick + setstring;
+            var finalset = restorenick + setstring;
             return new ShowdownSet(finalset);
         }
 
         private static readonly string[] splittables =
         {
-            "Ability:", "EVs:", "IVs:", "Shiny:", "- ",
+            "Ability:", "EVs:", "IVs:", "Shiny:", "- ", "Level:",
             "Adamant", "Bashful", "Brave", "Bold", "Calm",
             "Careful", "Docile", "Gentle", "Hardy", "Hasty",
             "Impish", "Jolly", "Lax", "Lonely", "Mild",
