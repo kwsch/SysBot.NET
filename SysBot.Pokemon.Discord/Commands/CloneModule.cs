@@ -24,7 +24,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("clone")]
         [Alias("c")]
-        [Summary("Clones the Pokemon you show via Link Trade.")]
+        [Summary("Clones the Pokémon you show via Link Trade.")]
         [RequireQueueRole(nameof(DiscordManager.RolesClone))]
         public async Task CloneAsync()
         {

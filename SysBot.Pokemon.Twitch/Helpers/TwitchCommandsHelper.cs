@@ -19,7 +19,7 @@ namespace SysBot.Pokemon.Twitch
                 return true;
             }
 
-            msg = "Unable to legalize the pokemon. Skipping Trade.";
+            msg = "Unable to legalize the Pokémon. Skipping Trade.";
             return false;
         }
 

@@ -35,7 +35,7 @@ namespace SysBot.Pokemon
             Connection.Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);
 
-            Connection.Log("Checking destination slot for revived fossil Pokemon to see if anything is in the slot...");
+            Connection.Log("Checking destination slot for revived fossil Pokémon to see if anything is in the slot...");
             var existing = await GetBoxSlotQuality(InjectBox, InjectSlot, token).ConfigureAwait(false);
             if (existing.Quality != SlotQuality.Overwritable)
             {

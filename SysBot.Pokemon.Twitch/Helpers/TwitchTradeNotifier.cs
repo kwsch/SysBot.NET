@@ -41,7 +41,7 @@ namespace SysBot.Pokemon.Twitch
 
         public void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result)
         {
-            var message = Data.Species != 0 ? $"Trade finished {Username}. Enjoy your {(Species)Data.Species}!" : "Trade finished. Enjoy your Pokemon!";
+            var message = Data.Species != 0 ? $"Trade finished {Username}. Enjoy your {(Species)Data.Species}!" : "Trade finished. Enjoy your Pokémon!";
             Client.SendMessage(Channel, message);
             OnFinish?.Invoke(routine);
         }
@@ -56,7 +56,7 @@ namespace SysBot.Pokemon.Twitch
         {
             var name = Info.TrainerName;
             var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", {name}";
-            Client.SendWhisper(Username, $"I'm searching for you{trainer}! Use the code you whispered me to search!");
+            Client.SendWhisper(Username, $"I'm waiting for you{trainer}! My IGN is {routine.InGameName}. Use the code you whispered me to search!");
         }
 
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeSummary message)
