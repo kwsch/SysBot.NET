@@ -70,9 +70,17 @@ namespace SysBot.Pokemon
                 if (!(pkm is T dest))
                     continue;
 
-                if (dest.Species == 0 || !new LegalityAnalysis(dest).Valid || !(dest is PK8 pk8))
+                if (dest.Species == 0 || !(dest is PK8 pk8))
                 {
                     LogUtil.LogInfo("SKIPPED: Provided pk8 is not valid: " + dest.FileName, nameof(PokemonPool<T>));
+                    continue;
+                }
+
+                var la = new LegalityAnalysis(pk8);
+                if (!la.Valid)
+                {
+                    var reason = la.Report();
+                    LogUtil.LogInfo($"SKIPPED: Provided pk8 is not valid: {dest.FileName} -- {reason}", nameof(PokemonPool<T>));
                     continue;
                 }
 
@@ -95,7 +103,9 @@ namespace SysBot.Pokemon
                     Files.Add(fn, new LedyRequest<T>(dest, fn));
                 }
                 else
+                {
                     LogUtil.LogInfo("Provided pk8 was not added due to duplicate name: " + dest.FileName, nameof(PokemonPool<T>));
+                }
                 loadedAny = true;
             }
 
