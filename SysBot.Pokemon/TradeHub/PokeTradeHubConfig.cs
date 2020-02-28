@@ -40,7 +40,7 @@ namespace SysBot.Pokemon
         [Category(FeatureToggle), Description("When set to something other than None, the Random Trades will require this species in addition to the nickname match.")]
         public Species DistributeLedySpecies { get; set; } = Species.Wooloo;
 
-        [Category(FeatureToggle), Description("When enabled, the EggBot will continue to get eggs and dump the Pokemon into the egg dump folder")]
+        [Category(FeatureToggle), Description("When enabled, the EggBot will continue to get eggs and dump the Pokémon into the egg dump folder")]
         public bool ContinueGettingEggs { get; set; } = false;
 
         [Category(FeatureToggle), Description("Link Trade: Using multiple distribution bots -- all bots will confirm their trade code at the same time. When Local, the bots will continue when all are at the barrier. When Remote, something else must signal the bots to continue.")]
@@ -102,7 +102,7 @@ namespace SysBot.Pokemon
         [Category(Metadata), Description("Eggs Retrieved")]
         public int CompletedEggs { get; set; }
 
-        [Category(Metadata), Description("Fossil Pokemon Revived")]
+        [Category(Metadata), Description("Fossil Pokémon Revived")]
         public int CompletedFossils { get; set; }
 
         [Category(Metadata), Description("Raids Completed")]
@@ -201,7 +201,7 @@ namespace SysBot.Pokemon
         /// <summary>
         /// Species of fossil Pokemon to hunt for.
         /// </summary>
-        [Category(FossilPokemon), Description("Species of fossil Pokemon to hunt for.")]
+        [Category(FossilPokemon), Description("Species of fossil Pokémon to hunt for.")]
         public FossilSpecies FossilSpecies { get; set; } = FossilSpecies.Dracozolt;
 
         /// <summary>
@@ -213,7 +213,7 @@ namespace SysBot.Pokemon
         /// <summary>
         /// Toggle for continuing to revive fossils after condition has been met.
         /// </summary>
-        [Category(FossilPokemon), Description("When enabled, the FossilBot will continue to get fossils and dump the Pokemon into the fossil dump folder.")]
+        [Category(FossilPokemon), Description("When enabled, the FossilBot will continue to get fossils and dump the Pokémon into the fossil dump folder.")]
         public bool ContinueGettingFossils { get; set; } = false;
 
         #endregion

@@ -14,7 +14,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("seedCheck")]
         [Alias("dudu", "d", "sc")]
-        [Summary("Checks the seed for a pokemon.")]
+        [Summary("Checks the seed for a Pokémon.")]
         [RequireQueueRole(nameof(DiscordManager.RolesDudu))]
         public async Task SeedCheckAsync(int code)
         {
@@ -24,7 +24,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("seedCheck")]
         [Alias("dudu", "d", "sc")]
-        [Summary("Checks the seed for a pokemon.")]
+        [Summary("Checks the seed for a Pokémon.")]
         [RequireQueueRole(nameof(DiscordManager.RolesDudu))]
         public async Task SeedCheckAsync()
         {

@@ -152,15 +152,15 @@ namespace SysBot.Pokemon
             for (int i = 0; i < 2; i++)
                 await Click(A, 1_500, token).ConfigureAwait(false);
 
-            // Korean requires an extra A press at this menu.
-            if (GameLang == LanguageID.Korean)
+            // These languages require an extra A press at this menu.
+            if (GameLang == LanguageID.Korean || GameLang == LanguageID.German)
                 await Click(A, 1_500, token).ConfigureAwait(false);
 
             // Loading Screen
             await Task.Delay(2_000, token).ConfigureAwait(false);
 
             var code = poke.Code;
-            Connection.Log($"Entering Link Trade Code: {code:0000} ...");
+            Connection.Log($"Entering Link Trade Code: {code:0000}...");
             await EnterTradeCode(code, token).ConfigureAwait(false);
 
             // Wait for Barrier to trigger all bots simultaneously.
@@ -217,7 +217,7 @@ namespace SysBot.Pokemon
                     await Click(A, 0_500, token).ConfigureAwait(false);
             }
 
-            poke.SendNotification(this, $"Found Trading Partner: {TrainerName}. Waiting for a Pokemon ...");
+            poke.SendNotification(this, $"Found Trading Partner: {TrainerName}. Waiting for a Pokémon...");
 
             // Wait for User Input...
             var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 25_000, 1_000, token).ConfigureAwait(false);
@@ -240,7 +240,7 @@ namespace SysBot.Pokemon
                 pkm = trade.Receive;
                 if (trade.Type != LedyResponseType.Random)
                 {
-                    poke.SendNotification(this, "Injecting your requested Pokemon.");
+                    poke.SendNotification(this, "Injecting your requested Pokémon.");
                     await Click(A, 0_800, token).ConfigureAwait(false);
                     await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
                     await Task.Delay(2_500, token).ConfigureAwait(false);
@@ -255,19 +255,30 @@ namespace SysBot.Pokemon
                 if (Hub.Config.ResetHOMETracker)
                     clone.Tracker = 0;
 
-                poke.SendNotification(this, "Cloned. Change what you're offering!");
-                Connection.Log("Waiting for trading partner to change their Pokemon...");
+                poke.SendNotification(this, "**Cloned your Pokémon!**\nNow press B to cancel your offer and trade me a Pokémon you don't want.");
+                Connection.Log("Waiting for trading partner to change their Pokémon...");
 
                 // Clear the shown data offset.
                 await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
 
                 // Wait for User Input...
-                var pk2 = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 15_000, 1_000, token).ConfigureAwait(false);
+                var pk2 = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 10_000, 1_000, token).ConfigureAwait(false);
                 if (pk2 == null || SearchUtil.HashByDetails(pk2) == SearchUtil.HashByDetails(pk))
                 {
-                    Connection.Log("Trading partner did not change their Pokemon.");
-                    await ExitTrade(true, token).ConfigureAwait(false);
-                    return PokeTradeResult.TrainerTooSlow;
+                    poke.SendNotification(this, "**HEY CHANGE IT NOW OR I AM LEAVING!!!**");
+
+                    // They get one more chance.
+                    // Clear the shown data offset.
+                    await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
+
+                    // Wait for User Input...
+                    pk2 = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 5_000, 1_000, token).ConfigureAwait(false);
+                    if (pk2 == null || SearchUtil.HashByDetails(pk2) == SearchUtil.HashByDetails(pk))
+                    {
+                        Connection.Log("Trading partner did not change their Pokémon.");
+                        await ExitTrade(true, token).ConfigureAwait(false);
+                        return PokeTradeResult.TrainerTooSlow;
+                    }
                 }
 
                 await Click(A, 0_800, token).ConfigureAwait(false);
@@ -303,30 +314,34 @@ namespace SysBot.Pokemon
 
             // Trade was Successful!
             var traded = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
-            if (SearchUtil.HashByDetails(traded) == SearchUtil.HashByDetails(pk))
-                Connection.Log("User traded the initially shown Pokémon.");
-            else if (SearchUtil.HashByDetails(traded) == SearchUtil.HashByDetails(pkm))
+            // Pokemon in b1s1 is same as the one they were supposed to receive (was never sent).
+            if (SearchUtil.HashByDetails(traded) == SearchUtil.HashByDetails(pkm))
                 Connection.Log("User did not complete the trade.");
-            else
-                Connection.Log("User completed the trade.");
-
-            poke.TradeFinished(this, traded);
-
-            var counts = Hub.Counts;
-            if (poke.Type == PokeTradeType.Random)
-                counts.AddCompletedDistribution();
-            else if (poke.Type == PokeTradeType.Clone)
-                counts.AddCompletedClones();
-            else
-                Hub.Counts.AddCompletedTrade();
-
-            if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
+            // Pokemon in b1s1 is the same as the one they showed initially, or this is a cloning trade.
+            else if (SearchUtil.HashByDetails(traded) == SearchUtil.HashByDetails(pk) || poke.Type == PokeTradeType.Clone)
             {
-                var subfolder = poke.Type.ToString().ToLower();
-                DumpPokemon(DumpSetting.DumpFolder, subfolder, traded); // received
-                if (poke.Type == PokeTradeType.Specific || poke.Type == PokeTradeType.Clone)
-                    DumpPokemon(DumpSetting.DumpFolder, "traded", pkm); // sent to partner
+                Connection.Log("User completed the trade.");
+                poke.TradeFinished(this, traded);
+
+                // Only log if we completed the trade.
+                var counts = Hub.Counts;
+                if (poke.Type == PokeTradeType.Random)
+                    counts.AddCompletedDistribution();
+                else if (poke.Type == PokeTradeType.Clone)
+                    counts.AddCompletedClones();
+                else
+                    Hub.Counts.AddCompletedTrade();
+
+                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                {
+                    var subfolder = poke.Type.ToString().ToLower();
+                    DumpPokemon(DumpSetting.DumpFolder, subfolder, traded); // received
+                    if (poke.Type == PokeTradeType.Specific || poke.Type == PokeTradeType.Clone)
+                        DumpPokemon(DumpSetting.DumpFolder, "traded", pkm); // sent to partner
+                }
             }
+            else
+                Connection.Log("User did not complete the trade.");
 
             return PokeTradeResult.Success;
         }
@@ -371,7 +386,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Recover;
             }
 
-            Connection.Log("Selecting Pokemon");
+            Connection.Log("Selecting Pokémon");
             // Box 1 Slot 1; no movement required.
             await Click(A, 0_700, token).ConfigureAwait(false);
 
@@ -483,8 +498,12 @@ namespace SysBot.Pokemon
 
             if (result.IsShiny)
             {
-                Connection.Log("The Pokemon is already shiny!"); // Do not bother checking for next shiny frame
-                detail.SendNotification(this, "This Pokemon is already shiny! Raid seed calculation was not done.");
+                Connection.Log("The Pokémon is already shiny!"); // Do not bother checking for next shiny frame
+                detail.SendNotification(this, "This Pokémon is already shiny! Raid seed calculation was not done.");
+
+                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                    DumpPokemon(DumpSetting.DumpFolder, "seed", result);
+
                 detail.TradeFinished(this, result);
                 return;
             }

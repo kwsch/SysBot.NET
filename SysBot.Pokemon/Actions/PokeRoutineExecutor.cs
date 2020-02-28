@@ -15,6 +15,7 @@ namespace SysBot.Pokemon
         protected PokeRoutineExecutor(PokeBotConfig cfg) : base(cfg) { }
 
         public LanguageID GameLang;
+        public string InGameName = "SysBot.NET";
 
         public async Task Click(SwitchButton b, int delayMin, int delayMax, CancellationToken token) =>
             await Click(b, Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
@@ -89,7 +90,8 @@ namespace SysBot.Pokemon
             Connection.Log("Grabbing trainer data of host console...");
             var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
             GameLang = (LanguageID)sav.Language;
-            Connection.Name = $"{sav.OT}-{sav.DisplayTID:000000}";
+            InGameName = sav.OT;
+            Connection.Name = $"{InGameName}-{sav.DisplayTID:000000}";
             Connection.Log($"{Connection.IP} identified as {Connection.Name}, using {GameLang}.");
             return sav;
         }
@@ -302,7 +304,7 @@ namespace SysBot.Pokemon
                     Connection.Log("Garbage detected in required Box Slot. Preventing execution.");
                     return;
                 case SlotQuality.HasData:
-                    Connection.Log("Required Box Slot not empty. Move this Pokemon before using the bot!");
+                    Connection.Log("Required Box Slot not empty. Move this Pokémon before using the bot!");
                     Connection.Log(new ShowdownSet(q.Data!).Text);
                     return;
             }
