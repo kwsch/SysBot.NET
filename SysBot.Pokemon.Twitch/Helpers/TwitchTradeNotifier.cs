@@ -58,6 +58,7 @@ namespace SysBot.Pokemon.Twitch
             var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", {name}";
             Client.SendWhisper(Username, $"I'm searching for you{trainer}! Use the code you whispered me to search!");
         }
+
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeSummary message)
         {
             var msg = message.Summary;

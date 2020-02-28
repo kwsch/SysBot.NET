@@ -77,7 +77,7 @@ namespace SysBot.Pokemon
                 {
                     if (Settings.ContinueGettingFossils)
                     {
-                        Connection.Log("Restult found! Continuing to collect more fossils.");
+                        Connection.Log("Result found! Continuing to collect more fossils.");
                         continue;
                     }
                     Connection.Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
@@ -106,7 +106,7 @@ namespace SysBot.Pokemon
         {
             await Click(A, 1100, token).ConfigureAwait(false);
             await Click(A, 1300, token).ConfigureAwait(false);
-            
+
             if (count.UseSecondOption1(FossilSpecies))
                 await Click(DDOWN, 300, token).ConfigureAwait(false);
             await Click(A, 1300, token).ConfigureAwait(false);

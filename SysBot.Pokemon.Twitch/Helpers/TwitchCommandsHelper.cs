@@ -8,7 +8,7 @@ namespace SysBot.Pokemon.Twitch
         public static bool AddToWaitingList(string setstring, string display, string username, out string msg)
         {
             ShowdownSet set = TwitchShowdownUtil.ConvertToShowdown(setstring);
-            var sav = AutoLegalityExtensions.GetTrainerInfo(PKX.Generation);
+            var sav = AutoLegalityWrapper.GetTrainerInfo(PKX.Generation);
             PKM pkm = sav.GetLegal(set, out _);
             if (new LegalityAnalysis(pkm).Valid && pkm is PK8 p8)
             {

@@ -6,7 +6,7 @@ using PKHeX.Core.AutoMod;
 
 namespace SysBot.Pokemon
 {
-    public static class AutoLegalityExtensions
+    public static class AutoLegalityWrapper
     {
         private static bool Initialized;
 

@@ -64,7 +64,7 @@ namespace SysBot.Pokemon.Discord
             const int gen = 8;
             content = ReusableActions.StripCodeBlock(content);
             var set = new ShowdownSet(content);
-            var sav = AutoLegalityExtensions.GetTrainerInfo(gen);
+            var sav = AutoLegalityWrapper.GetTrainerInfo(gen);
 
             var pkm = sav.GetLegal(set, out var result);
             var la = new LegalityAnalysis(pkm);
