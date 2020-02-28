@@ -82,7 +82,7 @@ namespace SysBot.Pokemon.Discord
                 return false;
             }
 
-            msg = $"Added {user.Mention} to the queue. Your current position is: {Info.CheckPosition(userID, type).Position}";
+            msg = $"Added {user.Mention} to the queue for trade type: {type}. Your current position is: {Info.CheckPosition(userID, type).Position}";
             return true;
         }
     }
