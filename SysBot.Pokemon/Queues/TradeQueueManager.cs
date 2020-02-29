@@ -53,14 +53,17 @@ namespace SysBot.Pokemon
                     continue;
                 if (Hub.Bots.All(z => (z.Config.CurrentRoutineType != PokeRoutineType.LinkTrade && z.Config.CurrentRoutineType != PokeRoutineType.FlexTrade)))
                     continue;
-                if (!Hub.Config.DistributeWhileIdle)
+
+                var cfg = Hub.Config;
+                if (!cfg.DistributeWhileIdle)
                     continue;
 
                 if (Hub.Ledy.Pool.Count == 0)
                     continue;
 
                 var random = Hub.Ledy.Pool.GetRandomPoke();
-                var detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random, Hub.Config.DistributionTradeCode);
+                var code = cfg.DistributionRandomCode ? cfg.GetRandomTradeCode() : cfg.DistributionTradeCode;
+                var detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random, code);
                 Queue.Enqueue(detail);
             }
         }
