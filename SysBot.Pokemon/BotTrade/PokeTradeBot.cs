@@ -255,8 +255,8 @@ namespace SysBot.Pokemon
                 if (Hub.Config.ResetHOMETracker)
                     clone.Tracker = 0;
 
-                poke.SendNotification(this, "**Cloned your Pokémon!**\nNow press B to cancel your offer and trade me a Pokémon you don't want.");
-                Connection.Log("Waiting for trading partner to change their Pokémon...");
+                poke.SendNotification(this, $"**Cloned your {(Species)clone.Species}!**\nNow press B to cancel your offer and trade me a Pokémon you don't want.");
+                Connection.Log($"Cloned a {(Species)clone.Species}. Waiting for user to change their Pokémon...");
 
                 // Clear the shown data offset.
                 await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
@@ -318,6 +318,7 @@ namespace SysBot.Pokemon
             if (SearchUtil.HashByDetails(traded) == SearchUtil.HashByDetails(pkm))
             {
                 Connection.Log("User did not complete the trade.");
+                return PokeTradeResult.TrainerTooSlow;
             }
             else
             {
