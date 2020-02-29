@@ -74,7 +74,7 @@ namespace SysBot.Pokemon.Discord
                 ? $"Here's your ({result}) legalized PKM for {spec} ({la.EncounterOriginal.Name})!"
                 : $"Oops! I wasn't able to create something from that. Here's my best attempt for that {spec}!";
 
-            if (!la.Valid || !(pkm is PK8 pk8))
+            if ((!la.Valid && SysCordInstance.Self.Hub.Config.VerifyLegality) || !(pkm is PK8 pk8))
             {
                 await ReplyAsync(msg).ConfigureAwait(false);
                 return;
@@ -106,7 +106,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             var la = new LegalityAnalysis(pk8);
-            if (!la.Valid)
+            if (!la.Valid && SysCordInstance.Self.Hub.Config.VerifyLegality)
             {
                 await ReplyAsync("PK8 attachment is not legal, and cannot be traded!").ConfigureAwait(false);
                 return;

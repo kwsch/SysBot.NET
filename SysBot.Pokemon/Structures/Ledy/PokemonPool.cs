@@ -9,9 +9,9 @@ namespace SysBot.Pokemon
     {
         public readonly int ExpectedSize = new T().Data.Length;
 
-        public readonly IPoolSettings Settings;
+        public readonly PokeTradeHubConfig Settings;
 
-        public PokemonPool(IPoolSettings settings)
+        public PokemonPool(PokeTradeHubConfig settings)
         {
             Settings = settings;
         }
@@ -77,7 +77,7 @@ namespace SysBot.Pokemon
                 }
 
                 var la = new LegalityAnalysis(pk8);
-                if (!la.Valid)
+                if (!la.Valid && Settings.VerifyLegality)
                 {
                     var reason = la.Report();
                     LogUtil.LogInfo($"SKIPPED: Provided pk8 is not valid: {dest.FileName} -- {reason}", nameof(PokemonPool<T>));

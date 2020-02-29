@@ -10,7 +10,8 @@ namespace SysBot.Pokemon.Twitch
             ShowdownSet set = TwitchShowdownUtil.ConvertToShowdown(setstring);
             var sav = AutoLegalityWrapper.GetTrainerInfo(PKX.Generation);
             PKM pkm = sav.GetLegal(set, out _);
-            if (new LegalityAnalysis(pkm).Valid && pkm is PK8 p8)
+            var valid = new LegalityAnalysis(pkm).Valid;
+            if (valid && pkm is PK8 p8)
             {
                 var tq = new TwitchQueue(p8, new PokeTradeTrainerInfo(display),
                     username);

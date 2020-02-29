@@ -257,7 +257,7 @@ namespace SysBot.Pokemon
                 var clone = (PK8)pk.Clone();
 
                 var la = new LegalityAnalysis(clone);
-                if (!la.Valid)
+                if (!la.Valid && Hub.Config.VerifyLegality)
                 {
                     Connection.Log("Clone request has detected an invalid Pokémon.");
                     if (DumpSetting.Dump)
