@@ -65,7 +65,7 @@ namespace SysBot.Pokemon.Discord
             catch (HttpException ex)
             {
                 await ReplyAsync($"{ex.HttpCode}: {ex.Reason}!").ConfigureAwait(false);
-                await ReplyAsync("You must enable private messages in order to be queued! otherwise I cannot carry out your request.").ConfigureAwait(false);
+                await ReplyAsync("You must enable private messages in order to be queued!").ConfigureAwait(false);
                 return;
             }
             var result = AddToTradeQueue(new PK8(), code, trainer, sudo, PokeRoutineType.Clone, out var msg);
