@@ -105,6 +105,9 @@ namespace SysBot.Pokemon
         [Category(Metadata), Description("Completed Clone Trades (Specific User)")]
         public int CompletedClones { get; set; }
 
+        [Category(Metadata), Description("Completed Dump Trades (Specific User)")]
+        public int CompletedDumps { get; set; }
+
         [Category(Metadata), Description("Eggs Retrieved")]
         public int CompletedEggs { get; set; }
 
