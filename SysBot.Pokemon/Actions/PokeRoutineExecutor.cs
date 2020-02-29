@@ -222,6 +222,8 @@ namespace SysBot.Pokemon
                 await Click(B, 1_000, token).ConfigureAwait(false);
                 await Click(A, 1_000, token).ConfigureAwait(false);
             }
+
+            await Task.Delay(3_000, token).ConfigureAwait(false);
         }
 
         public async Task ReOpenGame(CancellationToken token)

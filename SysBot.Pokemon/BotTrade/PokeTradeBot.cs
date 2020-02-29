@@ -402,6 +402,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.TrainerTooSlow;
 
             detail.Notifier.SendNotification(this, detail, $"Dumped {ctr} Pokémon.");
+            detail.Notifier.TradeFinished(this, detail, detail.TradeData); // blank pk8
             return PokeTradeResult.Success;
         }
 
@@ -545,8 +546,6 @@ namespace SysBot.Pokemon
 #pragma warning restore 4014
 
             Hub.Counts.AddCompletedDudu();
-
-            await Task.Delay(5_000, token).ConfigureAwait(false);
 
             return PokeTradeResult.Success;
         }
