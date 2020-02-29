@@ -57,6 +57,9 @@ namespace SysBot.Pokemon
 
         [Category(Legality), Description("Link Trade: Dumping routine will stop after a maximum number of dumps from a single user.")]
         public int MaxDumpsPerTrade { get; set; } = 20;
+
+        [Category(Legality), Description("Link Trade: Dumping routine will stop after spending x seconds in trade.")]
+        public int MaxDumpTradeTime { get; set; } = 180;
         #endregion
 
         #region Folders
