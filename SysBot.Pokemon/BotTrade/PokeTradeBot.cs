@@ -369,30 +369,28 @@ namespace SysBot.Pokemon
         private async Task<PokeTradeResult> ProcessDumpTradeAsync(PokeTradeDetail<PK8> detail, CancellationToken token)
         {
             int ctr = 0;
+            await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
             while (ctr <= Hub.Config.MaxDumpsPerTrade)
             {
                 var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 15_000, 1_000, token).ConfigureAwait(false);
                 if (pk == null || pk.Species < 1 || !pk.ChecksumValid)
                     break;
 
+                await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
+
                 // Send results from separate thread; the bot doesn't need to wait for things to be calculated.
-#pragma warning disable 4014
-                Task.Run(() =>
+                if (DumpSetting.Dump)
                 {
-                    if (DumpSetting.Dump)
-                    {
-                        var subfolder = detail.Type.ToString().ToLower();
-                        DumpPokemon(DumpSetting.DumpFolder, subfolder, pk); // received
-                    }
+                    var subfolder = detail.Type.ToString().ToLower();
+                    DumpPokemon(DumpSetting.DumpFolder, subfolder, pk); // received
+                }
 
-                    var la = new LegalityAnalysis(pk);
-                    var verbose = la.Report(true);
-                    Connection.Log($"Shown Pokémon is {(la.Valid ? "Valid" : "Invalid")}.");
-                    Connection.Log(verbose);
+                var la = new LegalityAnalysis(pk);
+                var verbose = la.Report(true);
+                Connection.Log($"Shown Pokémon is {(la.Valid ? "Valid" : "Invalid")}.");
+                Connection.Log(verbose);
 
-                    detail.Notifier.SendNotification(this, detail, pk, verbose);
-                }, token);
-#pragma warning restore 4014
+                detail.Notifier.SendNotification(this, detail, pk, verbose);
                 ctr++;
             }
 
