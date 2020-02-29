@@ -127,7 +127,7 @@ namespace SysBot.Pokemon
             await Click(A, 1_000, token).ConfigureAwait(false);
             await Task.Delay(10_000, token).ConfigureAwait(false);
 
-            while (!await IsCorrectScreen(PokeDataOffsets.CurrentScreen_Overworld, token).ConfigureAwait(false))
+            while (!await IsCorrectScreen(PokeDataOffsets.CurrentScreen_WildArea, token).ConfigureAwait(false))
             {
                 await Task.Delay(1_000, token).ConfigureAwait(false);
             }
@@ -160,14 +160,15 @@ namespace SysBot.Pokemon
             // Press OK on the error
             await Click(A, 1_200, token).ConfigureAwait(false);
 
-            while (!await IsCorrectScreen(PokeDataOffsets.CurrentScreen_Overworld, token).ConfigureAwait(false))
+            while (!await IsCorrectScreen(PokeDataOffsets.CurrentScreen_WildArea, token).ConfigureAwait(false))
             {
                 await Task.Delay(1_000, token).ConfigureAwait(false);
             }
+            Connection.Log("Back in the overworld!");
 
-            Connection.Log("Back in overworld, reconnecting to Y-Comm");
             // Reconnect to ycomm.
             await EnsureConnectedToYComm(token).ConfigureAwait(false);
+            Connection.Log("Reconnected to Y-Comm!");
         }
 
         private async Task ResetRaidCloseGame(CancellationToken token)

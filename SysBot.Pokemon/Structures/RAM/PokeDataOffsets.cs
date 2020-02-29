@@ -78,6 +78,7 @@ namespace SysBot.Pokemon
         public const uint CurrentScreen_Softbann = 0xFF000000;
 
         //public const uint CurrentScreen_YMenu = 0xFFFF7983;
+        public const uint CurrentScreen_WildArea = 0xFFFFFFFF;
         #endregion
 
         public static uint GetTrainerNameOffset(TradeMethod tradeMethod)
