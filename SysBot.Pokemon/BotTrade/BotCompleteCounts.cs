@@ -14,6 +14,7 @@ namespace SysBot.Pokemon
         private int CompletedSurprise;
         private int CompletedDistribution;
         private int CompletedClones;
+        private int CompletedDumps;
         private int CompletedRaids;
 
         public BotCompleteCounts(PokeTradeHubConfig config)
@@ -31,6 +32,7 @@ namespace SysBot.Pokemon
             CompletedSurprise = Config.CompletedSurprise;
             CompletedDistribution = Config.CompletedDistribution;
             CompletedClones = Config.CompletedClones;
+            CompletedDumps = Config.CompletedDumps;
             CompletedRaids = Config.CompletedRaids;
         }
 
@@ -82,12 +84,20 @@ namespace SysBot.Pokemon
             Config.CompletedRaids = CompletedRaids;
         }
 
+        public void AddCompletedDumps()
+        {
+            Interlocked.Increment(ref CompletedDumps);
+            Config.CompletedDumps = CompletedDumps;
+        }
+
         public IEnumerable<string> Summary()
         {
             if (CompletedDudu != 0)
                 yield return $"Dudu Trades: {CompletedDudu}";
             if (CompletedClones != 0)
                 yield return $"Clone Trades: {CompletedClones}";
+            if (CompletedDumps != 0)
+                yield return $"Clone Trades: {CompletedDumps}";
             if (CompletedEggs != 0)
                 yield return $"Eggs Received: {CompletedEggs}";
             if (CompletedSurprise != 0)

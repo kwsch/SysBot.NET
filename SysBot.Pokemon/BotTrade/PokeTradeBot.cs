@@ -401,6 +401,7 @@ namespace SysBot.Pokemon
             if (ctr == 0)
                 return PokeTradeResult.TrainerTooSlow;
 
+            Hub.Counts.AddCompletedDumps();
             detail.Notifier.SendNotification(this, detail, $"Dumped {ctr} Pokémon.");
             detail.Notifier.TradeFinished(this, detail, detail.TradeData); // blank pk8
             return PokeTradeResult.Success;
