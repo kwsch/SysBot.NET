@@ -219,6 +219,9 @@ namespace SysBot.Pokemon
 
             poke.SendNotification(this, $"Found Trading Partner: {TrainerName}. Waiting for a Pokémon...");
 
+            if (poke.Type == PokeTradeType.Dump)
+                return await ProcessDumpTradeAsync(poke, token).ConfigureAwait(false);
+
             // Wait for User Input...
             var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 25_000, 1_000, token).ConfigureAwait(false);
             if (pk == null)
@@ -360,6 +363,12 @@ namespace SysBot.Pokemon
                 }
             }
 
+            return PokeTradeResult.Success;
+        }
+
+        private async Task<PokeTradeResult> ProcessDumpTradeAsync(PokeTradeDetail<PK8> poke, CancellationToken token)
+        {
+            await Task.Delay(1, token).ConfigureAwait(false);
             return PokeTradeResult.Success;
         }
 

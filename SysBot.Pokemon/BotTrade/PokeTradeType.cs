@@ -6,5 +6,6 @@
         Specific,
         Dudu,
         Clone,
+        Dump,
     }
 }

@@ -85,10 +85,11 @@ namespace SysBot.Pokemon
             switch (cfg.NextRoutineType)
             {
                 case PokeRoutineType.Idle:
+                case PokeRoutineType.SurpriseTrade:
                 case PokeRoutineType.FlexTrade:
                 case PokeRoutineType.LinkTrade:
                 case PokeRoutineType.Clone:
-                case PokeRoutineType.SurpriseTrade:
+                case PokeRoutineType.Dump:
                 case PokeRoutineType.DuduBot:
                     return new PokeTradeBot(Hub, cfg);
 

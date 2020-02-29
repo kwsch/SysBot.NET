@@ -15,6 +15,7 @@ namespace SysBot.Pokemon
         public readonly PokeTradeQueue<T> Queue = new PokeTradeQueue<T>();
         public readonly PokeTradeQueue<T> Dudu = new PokeTradeQueue<T>();
         public readonly PokeTradeQueue<T> Clone = new PokeTradeQueue<T>();
+        public readonly PokeTradeQueue<T> Dump = new PokeTradeQueue<T>();
         public readonly TradeQueueInfo<T> Info;
 
         public TradeQueueManager(PokeTradeHub<T> hub)
@@ -29,6 +30,7 @@ namespace SysBot.Pokemon
             {
                 PokeRoutineType.DuduBot => Dudu,
                 PokeRoutineType.Clone => Clone,
+                PokeRoutineType.Dump => Dump,
                 _ => Queue,
             };
         }
@@ -125,6 +127,8 @@ namespace SysBot.Pokemon
                 if (TryDequeue(PokeRoutineType.DuduBot, out detail, out priority))
                     return true;
                 if (TryDequeue(PokeRoutineType.Clone, out detail, out priority))
+                    return true;
+                if (TryDequeue(PokeRoutineType.Dump, out detail, out priority))
                     return true;
                 if (TryDequeue(PokeRoutineType.LinkTrade, out detail, out priority))
                     return true;

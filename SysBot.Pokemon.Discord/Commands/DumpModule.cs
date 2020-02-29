@@ -6,40 +6,40 @@ using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord
 {
-    [Summary("Queues new Clone trades")]
-    public class CloneModule : ModuleBase<SocketCommandContext>
+    [Summary("Queues new Dump trades")]
+    public class DumpModule : ModuleBase<SocketCommandContext>
     {
         internal static TradeQueueInfo<PK8> Info => SysCordInstance.Self.Hub.Queues.Info;
 
         private const uint MaxTradeCode = 9999;
 
-        [Command("clone")]
-        [Alias("c")]
-        [Summary("Clones the Pokémon you show via Link Trade.")]
-        [RequireQueueRole(nameof(DiscordManager.RolesClone))]
-        public async Task CloneAsync(int code)
+        [Command("dump")]
+        [Alias("d")]
+        [Summary("Dumps the Pokémon you show via Link Trade.")]
+        [RequireQueueRole(nameof(DiscordManager.RolesDump))]
+        public async Task DumpAsync(int code)
         {
             bool sudo = Context.User.GetIsSudo();
             await AddToQueueAsync(code, Context.User.Username, sudo).ConfigureAwait(false);
         }
 
-        [Command("clone")]
-        [Alias("c")]
-        [Summary("Clones the Pokémon you show via Link Trade.")]
-        [RequireQueueRole(nameof(DiscordManager.RolesClone))]
-        public async Task CloneAsync()
+        [Command("dump")]
+        [Alias("d")]
+        [Summary("Dumps the Pokémon you show via Link Trade.")]
+        [RequireQueueRole(nameof(DiscordManager.RolesDump))]
+        public async Task DumpAsync()
         {
             var code = Info.GetRandomTradeCode();
-            await CloneAsync(code).ConfigureAwait(false);
+            await DumpAsync(code).ConfigureAwait(false);
         }
 
-        [Command("cloneList")]
-        [Alias("cl", "cq")]
-        [Summary("Prints the users in the Clone queue.")]
+        [Command("dumpList")]
+        [Alias("dl", "dq")]
+        [Summary("Prints the users in the Dump queue.")]
         [RequireSudo]
         public async Task GetListAsync()
         {
-            string msg = Info.GetTradeList(PokeRoutineType.Clone);
+            string msg = Info.GetTradeList(PokeRoutineType.Dump);
             var embed = new EmbedBuilder();
             embed.AddField(x =>
             {
@@ -68,7 +68,7 @@ namespace SysBot.Pokemon.Discord
                 await ReplyAsync("You must enable private messages in order to be queued!").ConfigureAwait(false);
                 return;
             }
-            var result = AddToTradeQueue(new PK8(), code, trainer, sudo, PokeRoutineType.Clone, out var msg);
+            var result = AddToTradeQueue(new PK8(), code, trainer, sudo, PokeRoutineType.Dump, out var msg);
             await ReplyAsync(msg).ConfigureAwait(false);
             if (result)
                 await Context.Message.DeleteAsync(RequestOptions.Default).ConfigureAwait(false);
@@ -82,7 +82,7 @@ namespace SysBot.Pokemon.Discord
 
             var trainer = new PokeTradeTrainerInfo(trainerName);
             var notifier = new DiscordTradeNotifier<PK8>(pk8, trainer, code, Context);
-            var detail = new PokeTradeDetail<PK8>(pk8, trainer, notifier, PokeTradeType.Clone, code: code);
+            var detail = new PokeTradeDetail<PK8>(pk8, trainer, notifier, PokeTradeType.Dump, code: code);
             var trade = new TradeEntry<PK8>(detail, userID, type, name);
 
             var added = Info.AddToTradeQueue(trade, userID, sudo);

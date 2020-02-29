@@ -9,6 +9,7 @@
         LinkTrade,
         DuduBot,
         Clone,
+        Dump,
         FlexTrade,
 
         EggFetch,
