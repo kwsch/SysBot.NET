@@ -149,7 +149,7 @@ namespace SysBot.Pokemon
 
                 trade.Trade.Notifier.OnFinish = r =>
                 {
-                    r.Connection.Log($"Removing {trade.Username}'s request from the queue.");
+                    r.Connection.Log($"Removing {trade.Username}'s request ({trade.Trade.Type}) from the queue.");
                     Remove(trade);
                 };
                 return QueueResultAdd.Added;

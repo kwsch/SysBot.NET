@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Discord.Net;
 using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord
@@ -111,6 +112,16 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
+            try
+            {
+                await Context.User.SendMessageAsync("I've added you to the queue! I'll message you here when your trade is starting.").ConfigureAwait(false);
+            }
+            catch (HttpException ex)
+            {
+                await ReplyAsync($"{ex.HttpCode}: {ex.Reason}!").ConfigureAwait(false);
+                await ReplyAsync("You must enable private messages in order to be queued! otherwise I cannot carry out your request.").ConfigureAwait(false);
+                return;
+            }
             var result = AddToTradeQueue(pk8, code, trainerName, sudo, PokeRoutineType.LinkTrade, out var msg);
             await ReplyAsync(msg).ConfigureAwait(false);
             if (result)
