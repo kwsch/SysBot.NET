@@ -388,7 +388,6 @@ namespace SysBot.Pokemon
                 var la = new LegalityAnalysis(pk);
                 var verbose = la.Report(true);
                 Connection.Log($"Shown Pokémon is {(la.Valid ? "Valid" : "Invalid")}.");
-                Connection.Log(verbose);
 
                 detail.Notifier.SendNotification(this, detail, pk, verbose);
                 ctr++;

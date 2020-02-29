@@ -44,9 +44,12 @@ namespace SysBot.Pokemon.Discord
         public void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result)
         {
             OnFinish?.Invoke(routine);
-            var message = Data.Species != 0 ? $"Trade finished. Enjoy your {(Species)Data.Species}!" : "Trade finished. Enjoy your Pokémon!";
+            var species = Data.Species;
+            var valid = species != 0;
+            var message = valid ? $"Trade finished. Enjoy your {(Species)species}!" : "Trade finished. Enjoy your Pokémon!";
             Context.User.SendMessageAsync(message).ConfigureAwait(false);
-            Context.User.SendPKMAsync(result, "Here's what you traded me!").ConfigureAwait(false);
+            if (valid)
+                Context.User.SendPKMAsync(result, "Here's what you traded me!").ConfigureAwait(false);
         }
 
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, string message)
