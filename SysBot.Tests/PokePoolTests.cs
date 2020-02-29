@@ -10,7 +10,7 @@ namespace SysBot.Tests
         [Fact]
         public void TestPool()
         {
-            // Ensure that we can get more than one pokemon out of the pool.
+            // Ensure that we can get more than one Pokémon out of the pool.
             var pool = new PokemonPool<PK8>(new PokeTradeHubConfig());
             var a = new PK8 { Species = 5 };
             var b = new PK8 { Species = 12 };

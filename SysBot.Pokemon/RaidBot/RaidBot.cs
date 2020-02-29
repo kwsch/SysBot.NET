@@ -57,7 +57,7 @@ namespace SysBot.Pokemon
                 await Click(A, 1000, token).ConfigureAwait(false);
             }
 
-            // Invite others, confirm pokemon and wait
+            // Invite others, confirm Pokémon and wait
             await Click(A, 5000, token).ConfigureAwait(false);
             await Click(DUP, 1000, token).ConfigureAwait(false);
             await Click(A, 1000, token).ConfigureAwait(false);

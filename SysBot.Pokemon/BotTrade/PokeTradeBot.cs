@@ -167,7 +167,7 @@ namespace SysBot.Pokemon
             WaitAtBarrierIfApplicable(token);
             await Click(PLUS, 1_000, token).ConfigureAwait(false);
 
-            // Start a Link Trade, in case of Empty Slot/Egg/Bad Pokemon we press sometimes B to return to the Overworld and skip this Slot.
+            // Start a Link Trade, in case of Empty Slot/Egg/Bad Pokémon we press sometimes B to return to the Overworld and skip this Slot.
             // Confirming...
             for (int i = 0; i < 4; i++)
                 await Click(A, 1_000, token).ConfigureAwait(false);
@@ -253,7 +253,7 @@ namespace SysBot.Pokemon
             }
             else if (poke.Type == PokeTradeType.Clone)
             {
-                // Inject the shown Pokemon.
+                // Inject the shown Pokémon.
                 var clone = (PK8)pk.Clone();
 
                 var la = new LegalityAnalysis(clone);
@@ -333,7 +333,7 @@ namespace SysBot.Pokemon
 
             // Trade was Successful!
             var traded = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
-            // Pokemon in b1s1 is same as the one they were supposed to receive (was never sent).
+            // Pokémon in b1s1 is same as the one they were supposed to receive (was never sent).
             if (SearchUtil.HashByDetails(traded) == SearchUtil.HashByDetails(pkm))
             {
                 Connection.Log("User did not complete the trade.");
@@ -456,7 +456,7 @@ namespace SysBot.Pokemon
             var TrainerName = await GetTradePartnerName(TradeMethod.SupriseTrade, token).ConfigureAwait(false);
             var SuprisePoke = await ReadSupriseTradePokemon(token).ConfigureAwait(false);
 
-            Connection.Log($"Found Surprise Trade Partner: {TrainerName}, Pokemon: {(Species)SuprisePoke.Species}");
+            Connection.Log($"Found Surprise Trade Partner: {TrainerName}, Pokémon: {(Species)SuprisePoke.Species}");
 
             // Clear out the received trade data; we want to skip the trade animation.
             // The box slot locks have been removed prior to searching.
