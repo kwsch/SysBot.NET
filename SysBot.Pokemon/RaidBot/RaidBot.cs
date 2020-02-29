@@ -123,7 +123,7 @@ namespace SysBot.Pokemon
             Connection.Log("Restarting the game!");
 
             // Switch Logo lag, skip cutscene, game load screen
-            await Task.Delay(20_000, token).ConfigureAwait(false);
+            await Task.Delay(25_000, token).ConfigureAwait(false);
             await Click(A, 1_000, token).ConfigureAwait(false);
             await Task.Delay(10_000, token).ConfigureAwait(false);
 
@@ -177,7 +177,7 @@ namespace SysBot.Pokemon
             {
                 HOME, X, A, // Close out of the game
                 A, A, // Open game and select profile
-                B, B, B, B, // Delay 20 seconds for switch logo lag
+                B, B, B, B, B,// Delay 20 seconds for switch logo lag
                 A, B, B, // Overworld!
                 Y, PLUS, // Connect to Y-Comm
                 B, B, B, B // Ensure Overworld
