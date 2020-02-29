@@ -372,7 +372,7 @@ namespace SysBot.Pokemon
             while (ctr <= Hub.Config.MaxDumpsPerTrade)
             {
                 var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 15_000, 1_000, token).ConfigureAwait(false);
-                if (pk == null)
+                if (pk == null || pk.Species < 1 || !pk.ChecksumValid)
                     break;
 
                 // Send results from separate thread; the bot doesn't need to wait for things to be calculated.
