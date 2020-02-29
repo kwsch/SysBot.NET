@@ -252,6 +252,22 @@ namespace SysBot.Pokemon
             {
                 // Inject the shown Pokemon.
                 var clone = (PK8)pk.Clone();
+
+                var la = new LegalityAnalysis(clone);
+                if (!la.Valid)
+                {
+                    Connection.Log("Clone request has detected an invalid Pokémon.");
+                    if (DumpSetting.Dump)
+                        DumpPokemon(DumpSetting.DumpFolder, "hacked", clone);
+
+                    var report = la.Report();
+                    Connection.Log(report);
+                    poke.SendNotification(this, "This Pokémon is not legal per PKHeX's legality checks. I am forbidden from cloning this. Exiting trade.");
+                    poke.SendNotification(this, report);
+
+                    return PokeTradeResult.InvalidData;
+                }
+
                 if (Hub.Config.ResetHOMETracker)
                     clone.Tracker = 0;
 

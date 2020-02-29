@@ -6,6 +6,7 @@
         Aborted,
         NoTrainerFound,
         TrainerTooSlow,
+        InvalidData,
         Recover,
     }
 }
