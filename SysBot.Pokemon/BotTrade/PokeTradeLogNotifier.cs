@@ -42,6 +42,12 @@ namespace SysBot.Pokemon
             LogUtil.LogInfo(msg, routine.Connection.Name);
         }
 
+        public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result, string message)
+        {
+            LogUtil.LogInfo($"Notifying {info.Trainer.TrainerName} about their {(Species)result.Species}", routine.Connection.Name);
+            LogUtil.LogInfo(message, routine.Connection.Name);
+        }
+
         public Action<PokeRoutineExecutor>? OnFinish { get; set; }
     }
 }

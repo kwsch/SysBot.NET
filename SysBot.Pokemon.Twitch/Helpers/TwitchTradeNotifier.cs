@@ -66,5 +66,11 @@ namespace SysBot.Pokemon.Twitch
                 msg += ", " + string.Join(", ", message.Details.Select(z => $"{z.Heading}: {z.Detail}"));
             Client.SendMessage(Channel, msg);
         }
+
+        public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result, string message)
+        {
+            Client.SendMessage(Channel, $"Details for {result.FileName}");
+            Client.SendMessage(Channel, message);
+        }
     }
 }

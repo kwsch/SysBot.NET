@@ -366,9 +366,42 @@ namespace SysBot.Pokemon
             return PokeTradeResult.Success;
         }
 
-        private async Task<PokeTradeResult> ProcessDumpTradeAsync(PokeTradeDetail<PK8> poke, CancellationToken token)
+        private async Task<PokeTradeResult> ProcessDumpTradeAsync(PokeTradeDetail<PK8> detail, CancellationToken token)
         {
-            await Task.Delay(1, token).ConfigureAwait(false);
+            int ctr = 0;
+            while (ctr <= Hub.Config.MaxDumpsPerTrade)
+            {
+                var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 15_000, 1_000, token).ConfigureAwait(false);
+                if (pk == null)
+                    break;
+
+                // Send results from separate thread; the bot doesn't need to wait for things to be calculated.
+#pragma warning disable 4014
+                Task.Run(() =>
+                {
+                    if (DumpSetting.Dump)
+                    {
+                        var subfolder = detail.Type.ToString().ToLower();
+                        DumpPokemon(DumpSetting.DumpFolder, subfolder, pk); // received
+                    }
+
+                    var la = new LegalityAnalysis(pk);
+                    var verbose = la.Report(true);
+                    Connection.Log($"Shown Pokémon is {(la.Valid ? "Valid" : "Invalid")}.");
+                    Connection.Log(verbose);
+
+                    detail.Notifier.SendNotification(this, detail, pk, verbose);
+                }, token);
+#pragma warning restore 4014
+                ctr++;
+            }
+
+            Connection.Log($"Ended Dump loop after processing {ctr} Pokémon");
+            await ExitDuduTrade(token).ConfigureAwait(false);
+            if (ctr == 0)
+                return PokeTradeResult.TrainerTooSlow;
+
+            detail.Notifier.SendNotification(this, detail, $"Dumped {ctr} Pokémon.");
             return PokeTradeResult.Success;
         }
 

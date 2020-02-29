@@ -68,6 +68,12 @@ namespace SysBot.Pokemon.Discord
             Context.User.SendMessageAsync(msg).ConfigureAwait(false);
         }
 
+        public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result, string message)
+        {
+            Context.User.SendPKMAsync(result, "Here's what you showed me!").ConfigureAwait(false);
+            Context.User.SendMessageAsync(message).ConfigureAwait(false);
+        }
+
         private void SendNotificationZ3(Z3SeedResult r)
         {
             var type = r.GetShinyType();

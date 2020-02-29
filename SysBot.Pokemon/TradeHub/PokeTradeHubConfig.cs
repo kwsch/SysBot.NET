@@ -54,6 +54,9 @@ namespace SysBot.Pokemon
 
         [Category(Legality), Description("Link Trade: Using multiple distribution bots -- how long (Seconds) a bot will wait for synchronization before continuing anyways.")]
         public double SynchronizeTimeout { get; set; } = 90;
+
+        [Category(Legality), Description("Link Trade: Dumping routine will stop after a maximum number of dumps from a single user.")]
+        public int MaxDumpsPerTrade { get; set; } = 20;
         #endregion
 
         #region Folders
