@@ -6,11 +6,11 @@
 
         SurpriseTrade,
 
+        FlexTrade,
         LinkTrade,
         DuduBot,
         Clone,
         Dump,
-        FlexTrade,
 
         EggFetch,
         FossilBot,
