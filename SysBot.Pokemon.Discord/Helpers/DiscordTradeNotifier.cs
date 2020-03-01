@@ -44,11 +44,10 @@ namespace SysBot.Pokemon.Discord
         public void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result)
         {
             OnFinish?.Invoke(routine);
-            var species = Data.Species;
-            var valid = species != 0;
-            var message = valid ? $"Trade finished. Enjoy your {(Species)species}!" : "Trade finished. Enjoy your Pokémon!";
+            var tradedToUser = Data.Species;
+            var message = tradedToUser != 0 ? $"Trade finished. Enjoy your {(Species)tradedToUser}!" : "Trade finished!";
             Context.User.SendMessageAsync(message).ConfigureAwait(false);
-            if (valid)
+            if (result.Species != 0)
                 Context.User.SendPKMAsync(result, "Here's what you traded me!").ConfigureAwait(false);
         }
 
@@ -73,8 +72,7 @@ namespace SysBot.Pokemon.Discord
 
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result, string message)
         {
-            Context.User.SendPKMAsync(result, "Here's what you showed me!").ConfigureAwait(false);
-            Context.User.SendMessageAsync(message).ConfigureAwait(false);
+            Context.User.SendPKMAsync(result, message).ConfigureAwait(false);
         }
 
         private void SendNotificationZ3(Z3SeedResult r)

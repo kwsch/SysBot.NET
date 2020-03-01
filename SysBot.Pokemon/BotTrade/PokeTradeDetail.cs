@@ -32,6 +32,7 @@ namespace SysBot.Pokemon
 
         public void SendNotification(PokeRoutineExecutor routine, string message) => Notifier.SendNotification(routine, this, message);
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeSummary obj) => Notifier.SendNotification(routine, this, obj);
+        public void SendNotification(PokeRoutineExecutor routine, TPoke obj, string message) => Notifier.SendNotification(routine, this, obj, message);
 
         public bool Equals(PokeTradeDetail<TPoke>? other)
         {

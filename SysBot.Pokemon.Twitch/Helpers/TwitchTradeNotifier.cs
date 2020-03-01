@@ -41,9 +41,10 @@ namespace SysBot.Pokemon.Twitch
 
         public void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result)
         {
-            var message = Data.Species != 0 ? $"Trade finished {Username}. Enjoy your {(Species)Data.Species}!" : "Trade finished. Enjoy your Pokémon!";
-            Client.SendMessage(Channel, message);
             OnFinish?.Invoke(routine);
+            var tradedToUser = Data.Species;
+            var message = tradedToUser != 0 ? $"Trade finished. Enjoy your {(Species)tradedToUser}!" : "Trade finished!";
+            Client.SendMessage(Channel, message);
         }
 
         public void TradeInitialize(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
