@@ -97,13 +97,13 @@ namespace SysBot.Pokemon
             if (CompletedClones != 0)
                 yield return $"Clone Trades: {CompletedClones}";
             if (CompletedDumps != 0)
-                yield return $"Clone Trades: {CompletedDumps}";
+                yield return $"Dump Trades: {CompletedDumps}";
             if (CompletedEggs != 0)
                 yield return $"Eggs Received: {CompletedEggs}";
             if (CompletedSurprise != 0)
                 yield return $"Surprise Trades: {CompletedSurprise}";
             if (CompletedTrades != 0)
-                yield return $"Completed Trades: {CompletedTrades}";
+                yield return $"Link Trades: {CompletedTrades}";
             if (CompletedDistribution != 0)
                 yield return $"Distribution Trades: {CompletedDistribution}";
             if (CompletedRaids != 0)

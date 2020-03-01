@@ -153,7 +153,8 @@ namespace SysBot.Pokemon
                 await Click(A, 1_500, token).ConfigureAwait(false);
 
             // These languages require an extra A press at this menu.
-            if (GameLang == LanguageID.Korean || GameLang == LanguageID.German)
+            if (GameLang == LanguageID.Korean || GameLang == LanguageID.German ||
+                GameLang == LanguageID.ChineseS || GameLang == LanguageID.ChineseT)
                 await Click(A, 1_500, token).ConfigureAwait(false);
 
             // Loading Screen
