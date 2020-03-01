@@ -51,16 +51,23 @@ namespace SysBot.Pokemon
         private void AddTradeBotMonitors(ICollection<Task> tasks, CancellationToken token)
         {
             if (Hub.Config.Distribute.DistributeWhileIdle)
-            {
-                var path = Hub.Config.Folder.DistributeFolder;
-                if (!Directory.Exists(path))
-                    throw new DirectoryNotFoundException(nameof(path));
-                var task = Hub.Queues.MonitorTradeQueueAddIfEmpty(path, token);
-                tasks.Add(task);
+                AddDistributePool(tasks, token);
+        }
 
-                if (Hub.Ledy.Pool.Count == 0)
-                    LogUtil.LogError("Nothing to distribute for Empty Trade Queues!", "Hub");
+        private void AddDistributePool(ICollection<Task> tasks, CancellationToken token)
+        {
+            var path = Hub.Config.Folder.DistributeFolder;
+            if (!Directory.Exists(path))
+            {
+                LogUtil.LogError("The distribution folder was not found. Please verify that it exists!", "Hub");
+                return;
             }
+
+            var task = Hub.Queues.MonitorTradeQueueAddIfEmpty(path, token);
+            tasks.Add(task);
+
+            if (Hub.Ledy.Pool.Count == 0)
+                LogUtil.LogError("Nothing to distribute for Empty Trade Queues!", "Hub");
         }
 
         private void CreateBots(IEnumerable<PokeBotConfig> bots)
