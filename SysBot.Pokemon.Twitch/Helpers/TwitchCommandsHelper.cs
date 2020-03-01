@@ -26,7 +26,7 @@ namespace SysBot.Pokemon.Twitch
 
         public static string ClearTrade(bool sudo, ulong userid)
         {
-            var allowed = sudo || TwitchBot.Info.CanQueue;
+            var allowed = sudo || TwitchBot.Info.GetCanQueue();
             if (!allowed)
                 return "Sorry, you are not permitted to use this command!";
 

@@ -13,7 +13,8 @@ namespace SysBot.Pokemon
 
         public TradeQueueInfo(PokeTradeHub<T> hub) => Hub = hub;
 
-        public bool CanQueue { get; set; } = true;
+        public bool ToggleQueue() => Hub.Config.Queues.CanQueue ^= true;
+        public bool GetCanQueue() => Hub.Config.Queues.CanQueue && UsersInQueue.Count < Hub.Config.Queues.MaxQueueCount;
 
         public QueueCheckResult<T> CheckPosition(ulong uid, PokeRoutineType type = 0)
         {

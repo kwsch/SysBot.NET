@@ -28,7 +28,7 @@ namespace SysBot.Pokemon.Discord
             if (mgr.CanUseSudo(roles.Select(z => z.Name)))
                 return Task.FromResult(PreconditionResult.FromSuccess());
 
-            bool canQueue = SysCordInstance.Self.Hub.Queues.Info.CanQueue;
+            bool canQueue = SysCordInstance.Self.Hub.Queues.Info.GetCanQueue();
             if (!canQueue)
                 return Task.FromResult(PreconditionResult.FromError("Sorry, I am not currently accepting queue requests!"));
 

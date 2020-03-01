@@ -233,11 +233,10 @@ namespace SysBot.Pokemon.Discord
                 var delta = time - lastLogged;
                 var gap = TimeSpan.FromSeconds(Interval) - delta;
 
+                bool noQueue = !SysCordInstance.Self.Hub.Queues.Info.GetCanQueue();
                 if (gap <= TimeSpan.Zero)
                 {
-                    var idle = !SysCordInstance.Self.Hub.Queues.Info.CanQueue
-                        ? UserStatus.DoNotDisturb
-                        : UserStatus.Idle;
+                    var idle = noQueue ? UserStatus.DoNotDisturb : UserStatus.Idle;
                     if (idle != state)
                     {
                         state = idle;
@@ -247,7 +246,7 @@ namespace SysBot.Pokemon.Discord
                     continue;
                 }
 
-                var active = !SysCordInstance.Self.Hub.Queues.Info.CanQueue ? UserStatus.DoNotDisturb : UserStatus.Online;
+                var active = noQueue ? UserStatus.DoNotDisturb : UserStatus.Online;
                 if (active != state)
                 {
                     state = active;

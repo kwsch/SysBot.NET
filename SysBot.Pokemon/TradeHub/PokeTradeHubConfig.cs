@@ -33,6 +33,10 @@ namespace SysBot.Pokemon
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public FolderSettings Folder { get; set; } = new FolderSettings();
 
+        [Category(Operation)]
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public QueueSettings Queues { get; set; } = new QueueSettings();
+
         // Bots
 
         [Category(Bots)]

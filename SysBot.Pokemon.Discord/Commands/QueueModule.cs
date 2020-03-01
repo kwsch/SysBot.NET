@@ -43,8 +43,8 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task ToggleQueueTradeAsync()
         {
-            Info.CanQueue ^= true;
-            await ReplyAsync($"CanQueue has been set to: {Info.CanQueue}").ConfigureAwait(false);
+            var state = Info.ToggleQueue();
+            await ReplyAsync($"CanQueue has been set to: {state}").ConfigureAwait(false);
         }
 
         [Command("queueList")]
