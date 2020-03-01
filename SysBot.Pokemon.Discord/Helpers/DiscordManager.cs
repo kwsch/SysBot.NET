@@ -48,29 +48,29 @@ namespace SysBot.Pokemon.Discord
         public void Read()
         {
             var cfg = Config;
-            BlacklistedUsers.Read(cfg.DiscordBlackList, ulong.Parse);
-            WhitelistedChannels.Read(cfg.DiscordWhiteList, ulong.Parse);
+            BlacklistedUsers.Read(cfg.Discord.UserBlacklist, ulong.Parse);
+            WhitelistedChannels.Read(cfg.Discord.ChannelWhitelist, ulong.Parse);
 
-            SudoDiscord.Read(cfg.GlobalSudoList, ulong.Parse);
-            SudoRoles.Read(cfg.DiscordRoleSudo, z => z);
+            SudoDiscord.Read(cfg.Discord.GlobalSudoList, ulong.Parse);
+            SudoRoles.Read(cfg.Discord.RoleSudo, z => z);
 
-            RolesClone.Read(cfg.DiscordRoleCanClone, z => z);
-            RolesTrade.Read(cfg.DiscordRoleCanTrade, z => z);
-            RolesDudu.Read(cfg.DiscordRoleCanDudu, z => z);
-            RolesDump.Read(cfg.DiscordRoleCanDump, z => z);
+            RolesClone.Read(cfg.Discord.RoleCanClone, z => z);
+            RolesTrade.Read(cfg.Discord.RoleCanTrade, z => z);
+            RolesDudu.Read(cfg.Discord.RoleCanDudu, z => z);
+            RolesDump.Read(cfg.Discord.RoleCanDump, z => z);
         }
 
         public void Write()
         {
-            Config.DiscordBlackList = BlacklistedUsers.Write();
-            Config.DiscordWhiteList = WhitelistedChannels.Write();
-            Config.DiscordRoleSudo = SudoRoles.Write();
-            Config.GlobalSudoList = SudoDiscord.Write();
+            Config.Discord.UserBlacklist = BlacklistedUsers.Write();
+            Config.Discord.ChannelWhitelist = WhitelistedChannels.Write();
+            Config.Discord.RoleSudo = SudoRoles.Write();
+            Config.Discord.GlobalSudoList = SudoDiscord.Write();
 
-            Config.DiscordRoleCanClone = RolesClone.Write();
-            Config.DiscordRoleCanTrade = RolesTrade.Write();
-            Config.DiscordRoleCanDudu = RolesDudu.Write();
-            Config.DiscordRoleCanDump = RolesDump.Write();
+            Config.Discord.RoleCanClone = RolesClone.Write();
+            Config.Discord.RoleCanTrade = RolesTrade.Write();
+            Config.Discord.RoleCanDudu = RolesDudu.Write();
+            Config.Discord.RoleCanDump = RolesDump.Write();
         }
     }
 }

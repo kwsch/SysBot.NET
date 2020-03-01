@@ -16,7 +16,7 @@ namespace SysBot.Pokemon
             Settings = settings;
         }
 
-        public bool Randomized => Settings.DistributeShuffled;
+        public bool Randomized => Settings.Distribute.Shuffled;
 
         private int Counter;
 
@@ -46,7 +46,7 @@ namespace SysBot.Pokemon
 
         public bool Reload()
         {
-            return LoadFolder(Settings.DistributeFolder);
+            return LoadFolder(Settings.Folder.DistributeFolder);
         }
 
         public readonly Dictionary<string, LedyRequest<T>> Files = new Dictionary<string, LedyRequest<T>>();
@@ -90,7 +90,7 @@ namespace SysBot.Pokemon
                     surpriseBlocked++;
                 }
 
-                if (Settings.ResetHOMETracker)
+                if (Settings.Legality.ResetHOMETracker)
                     pk8.Tracker = 0;
 
                 var fn = Path.GetFileNameWithoutExtension(file);

@@ -32,7 +32,7 @@ namespace SysBot.Pokemon
         public PokeTradeBot(PokeTradeHub<PK8> hub, PokeBotConfig cfg) : base(cfg)
         {
             Hub = hub;
-            DumpSetting = hub.Config;
+            DumpSetting = hub.Config.Folder;
         }
 
         private const int InjectBox = 0;
@@ -239,7 +239,7 @@ namespace SysBot.Pokemon
             if (poke.Type == PokeTradeType.Random) // distribution
             {
                 // Allow the trade partner to do a Ledy swap.
-                var trade = Hub.Ledy.GetLedyTrade(pk, Hub.Config.DistributeLedySpecies);
+                var trade = Hub.Ledy.GetLedyTrade(pk, Hub.Config.Distribute.LedySpecies);
                 pkm = trade.Receive;
                 if (trade.Type != LedyResponseType.Random)
                 {
@@ -273,7 +273,7 @@ namespace SysBot.Pokemon
                     return PokeTradeResult.InvalidData;
                 }
 
-                if (Hub.Config.ResetHOMETracker)
+                if (Hub.Config.Legality.ResetHOMETracker)
                     clone.Tracker = 0;
 
                 poke.SendNotification(this, $"**Cloned your {(Species)clone.Species}!**\nNow press B to cancel your offer and trade me a Pokémon you don't want.");
@@ -371,10 +371,10 @@ namespace SysBot.Pokemon
         private async Task<PokeTradeResult> ProcessDumpTradeAsync(PokeTradeDetail<PK8> detail, CancellationToken token)
         {
             int ctr = 0;
-            var time = TimeSpan.FromSeconds(Hub.Config.MaxDumpTradeTime);
+            var time = TimeSpan.FromSeconds(Hub.Config.Trade.MaxDumpTradeTime);
             var start = DateTime.Now;
             await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
-            while (ctr <= Hub.Config.MaxDumpsPerTrade || DateTime.Now - start < time)
+            while (ctr <= Hub.Config.Trade.MaxDumpsPerTrade || DateTime.Now - start < time)
             {
                 var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 15_000, 1_000, token).ConfigureAwait(false);
                 if (pk == null || pk.Species < 1 || !pk.ChecksumValid)
@@ -571,7 +571,7 @@ namespace SysBot.Pokemon
             var ec = result.EncryptionConstant;
             var pid = result.PID;
             var IVs = result.IVs.Length == 0 ? GetBlankIVTemplate() : PKX.ReorderSpeedLast((int[])result.IVs.Clone());
-            if (Hub.Config.ShowAllZ3Results)
+            if (Hub.Config.Dudu.ShowAllZ3Results)
             {
                 var matches = Z3Search.GetAllSeeds(ec, pid, IVs);
                 foreach (var match in matches)
@@ -593,11 +593,11 @@ namespace SysBot.Pokemon
         {
             if (!ShouldWaitAtBarrier)
                 return;
-            var opt = Hub.Config.SynchronizeBots;
+            var opt = Hub.Config.Distribute.SynchronizeBots;
             if (opt == BotSyncOption.NoSync)
                 return;
 
-            var timeoutAfter = Hub.Config.SynchronizeTimeout;
+            var timeoutAfter = Hub.Config.Distribute.SynchronizeTimeout;
             if (FailedBarrier == 1) // failed last iteration
                 timeoutAfter *= 2; // try to re-sync in the event things are too slow.
 

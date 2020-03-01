@@ -18,27 +18,27 @@ namespace SysBot.Pokemon
 
         protected override void AddIntegrations()
         {
-            if (!string.IsNullOrWhiteSpace(Hub.Config.DiscordToken))
-                AddDiscordBot(Hub.Config.DiscordToken);
+            if (!string.IsNullOrWhiteSpace(Hub.Config.Discord.Token))
+                AddDiscordBot(Hub.Config.Discord.Token);
 
-            if (!string.IsNullOrWhiteSpace(Hub.Config.TwitchToken))
-                AddTwitchBot(Hub.Config);
+            if (!string.IsNullOrWhiteSpace(Hub.Config.Twitch.Token))
+                AddTwitchBot(Hub.Config.Twitch);
         }
 
-        private void AddTwitchBot(ITwitchSettings config)
+        private void AddTwitchBot(TwitchSettings config)
         {
             if (Twitch != null)
                 return; // already created
 
-            if (string.IsNullOrWhiteSpace(config.TwitchChannel))
+            if (string.IsNullOrWhiteSpace(config.Channel))
                 return;
-            if (string.IsNullOrWhiteSpace(config.TwitchUsername))
+            if (string.IsNullOrWhiteSpace(config.Username))
                 return;
-            if (string.IsNullOrWhiteSpace(config.TwitchToken))
+            if (string.IsNullOrWhiteSpace(config.Token))
                 return;
 
-            Twitch = new TwitchBot(config.TwitchUsername, config.TwitchToken, config.TwitchChannel, Hub);
-            Hub.BotSync.BarrierReleasingActions.Add(() => Twitch.StartingDistribution(config.TwitchMessageStart));
+            Twitch = new TwitchBot(Hub.Config.Twitch, Hub);
+            Hub.BotSync.BarrierReleasingActions.Add(() => Twitch.StartingDistribution(config.MessageStart));
         }
 
         private void AddDiscordBot(string apiToken)

@@ -7,7 +7,7 @@ namespace SysBot.Tests
 {
     public class GenerateTests
     {
-        static GenerateTests() => AutoLegalityWrapper.EnsureInitialized(new PokeTradeHubConfig());
+        static GenerateTests() => AutoLegalityWrapper.EnsureInitialized(new LegalitySettings());
 
         [Theory]
         [InlineData(Torkoal2, 2)]

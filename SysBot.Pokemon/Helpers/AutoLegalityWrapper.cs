@@ -10,7 +10,7 @@ namespace SysBot.Pokemon
     {
         private static bool Initialized;
 
-        public static void EnsureInitialized(PokeTradeHubConfig cfg)
+        public static void EnsureInitialized(LegalitySettings cfg)
         {
             if (Initialized)
                 return;
@@ -18,7 +18,7 @@ namespace SysBot.Pokemon
             InitializeAutoLegality(cfg);
         }
 
-        private static void InitializeAutoLegality(PokeTradeHubConfig cfg)
+        private static void InitializeAutoLegality(LegalitySettings cfg)
         {
             Task.Run(InitializeCoreStrings);
             Task.Run(() => EncounterEvent.RefreshMGDB());
@@ -28,13 +28,13 @@ namespace SysBot.Pokemon
             // Legalizer.AllowBruteForce = false;
         }
 
-        private static void InitializeSettings(PokeTradeHubConfig cfg)
+        private static void InitializeSettings(LegalitySettings cfg)
         {
             APILegality.SetAllLegalRibbons = cfg.SetAllLegalRibbons;
             APILegality.SetMatchingBalls = cfg.SetMatchingBalls;
         }
 
-        private static void InitializeTrainerDatabase(PokeTradeHubConfig cfg)
+        private static void InitializeTrainerDatabase(LegalitySettings cfg)
         {
             // Seed the Trainer Database with enough fake save files so that we return a generation sensitive format when needed.
             string OT = cfg.GenerateOT;

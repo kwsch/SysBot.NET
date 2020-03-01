@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
 using SysBot.Base;
@@ -54,7 +51,7 @@ namespace SysBot.Pokemon
                 if (Hub.Bots.All(z => (z.Config.CurrentRoutineType != PokeRoutineType.LinkTrade && z.Config.CurrentRoutineType != PokeRoutineType.FlexTrade)))
                     continue;
 
-                var cfg = Hub.Config;
+                var cfg = Hub.Config.Distribute;
                 if (!cfg.DistributeWhileIdle)
                     continue;
 
@@ -62,57 +59,9 @@ namespace SysBot.Pokemon
                     continue;
 
                 var random = Hub.Ledy.Pool.GetRandomPoke();
-                var code = cfg.DistributionRandomCode ? cfg.GetRandomTradeCode() : cfg.DistributionTradeCode;
+                var code = cfg.TradeCode;
                 var detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random, code);
                 Queue.Enqueue(detail);
-            }
-        }
-
-        /// <summary>
-        /// Spins up a loop that adds a specified <see cref="T"/> to the <see cref="Queue"/> to carry out the trade.
-        /// </summary>
-        /// <param name="path">Folder to acquire new trades from</param>
-        /// <param name="notifier">Object that processes notifications when the trade is being executed</param>
-        /// <param name="token">Thread cancellation</param>
-        public async Task MonitorFolderAddPriority(string path, IPokeTradeNotifier<T> notifier, CancellationToken token)
-        {
-            var blank = new T();
-            var size = blank.SIZE_PARTY;
-
-            string queued = Path.Combine(path, "queued");
-            string processed = Path.Combine(path, "processed");
-            Directory.CreateDirectory(queued);
-            Directory.CreateDirectory(processed);
-
-            while (!token.IsCancellationRequested)
-            {
-                await Task.Delay(5_000, token).ConfigureAwait(false);
-                var files = Directory.EnumerateFiles(path);
-                foreach (var f in files)
-                {
-                    var data = File.ReadAllBytes(f);
-                    if (data.Length < size + 10)
-                        continue;
-
-                    var pkmData = data.Slice(0, size);
-                    var pkm = PKMConverter.GetPKMfromBytes(pkmData);
-                    if (!(pkm is T t))
-                        continue;
-
-                    var priority = BitConverter.ToUInt32(data, size);
-                    var code = BitConverter.ToInt32(data, size + 4);
-                    var name = Encoding.Unicode.GetString(data, size + 8, data.Length - (size + 8));
-                    var trainer = new PokeTradeTrainerInfo(name);
-
-                    // Move to subfolder as it is processed.
-                    var processedPath = Path.Combine(queued, Path.GetFileName(f));
-                    var finalPath = Path.Combine(processed, Path.GetFileName(f));
-                    File.Move(f, processedPath);
-
-                    var tf = new TradeFile(processedPath, finalPath);
-                    var detail = new ExternalPokeTradeDetail<T>(t, trainer, notifier, PokeTradeType.Specific, code, tf);
-                    Queue.Enqueue(detail, priority);
-                }
             }
         }
 

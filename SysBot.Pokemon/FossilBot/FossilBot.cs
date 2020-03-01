@@ -11,14 +11,14 @@ namespace SysBot.Pokemon
         private readonly BotCompleteCounts Counts;
         private readonly IDumper DumpSetting;
         private readonly FossilSpecies FossilSpecies;
-        private readonly PokeTradeHubConfig Settings;
+        private readonly FossilSettings Settings;
 
-        public FossilBot(PokeTradeHub<PK8> hub, PokeBotConfig cfg) : base(cfg)
+        public FossilBot(PokeBotConfig cfg, FossilSettings fossil, IDumper dump, BotCompleteCounts count) : base(cfg)
         {
-            Counts = hub.Counts;
-            DumpSetting = hub.Config;
-            FossilSpecies = hub.Config.FossilSpecies;
-            Settings = hub.Config;
+            Counts = count;
+            DumpSetting = dump;
+            Settings = fossil;
+            FossilSpecies = fossil.Species;
         }
 
         private int encounterCount;
@@ -75,7 +75,7 @@ namespace SysBot.Pokemon
 
                 if (StopCondition(pk))
                 {
-                    if (Settings.ContinueGettingFossils)
+                    if (Settings.ContinueAfterMatch)
                     {
                         Connection.Log("Result found! Continuing to collect more fossils.");
                         continue;
@@ -88,7 +88,7 @@ namespace SysBot.Pokemon
                     continue;
 
                 Connection.Log($"Ran out of fossils to revive {FossilSpecies}.");
-                if (Settings.InjectFossils)
+                if (Settings.InjectWhenEmpty)
                 {
                     Connection.Log("Restoring original pouch data.");
                     await Connection.WriteBytesAsync(pouchData, PokeDataOffsets.ItemTreasureAddress, token).ConfigureAwait(false);

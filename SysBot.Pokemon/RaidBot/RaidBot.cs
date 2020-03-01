@@ -8,13 +8,15 @@ namespace SysBot.Pokemon
     public class RaidBot : PokeRoutineExecutor
     {
         private readonly BotCompleteCounts Counts;
-        public readonly PokeTradeHubConfig Settings;
+        private readonly RaidSettings Settings;
+        public readonly IDumper Dump;
         private readonly bool ldn;
 
-        public RaidBot(PokeTradeHub<PK8> hub, PokeBotConfig cfg) : base(cfg)
+        public RaidBot(PokeBotConfig cfg, RaidSettings raid, IDumper folder, BotCompleteCounts counts) : base(cfg)
         {
-            Counts = hub.Counts;
-            Settings = hub.Config;
+            Settings = raid;
+            Dump = folder;
+            Counts = counts;
             ldn = Settings.UseLdnMitm;
         }
 
@@ -28,7 +30,7 @@ namespace SysBot.Pokemon
             Connection.Log("Starting main RaidBot loop.");
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.RaidBot)
             {
-                int code = Settings.DistributionTradeCode;
+                int code = Settings.RaidCode;
                 bool airplane = await HostRaidAsync(sav, code, token).ConfigureAwait(false);
                 await ResetGameAsync(airplane, token).ConfigureAwait(false);
 

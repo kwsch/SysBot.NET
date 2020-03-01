@@ -5,7 +5,7 @@ namespace SysBot.Pokemon
 {
     public class BotCompleteCounts
     {
-        private readonly PokeTradeHubConfig Config;
+        private readonly CountSettings Config;
 
         private int CompletedTrades;
         private int CompletedEggs;
@@ -17,7 +17,7 @@ namespace SysBot.Pokemon
         private int CompletedDumps;
         private int CompletedRaids;
 
-        public BotCompleteCounts(PokeTradeHubConfig config)
+        public BotCompleteCounts(CountSettings config)
         {
             Config = config;
             ReloadCounts();

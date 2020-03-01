@@ -56,7 +56,7 @@ namespace SysBot.Pokemon.WinForms
             else
             {
                 cfg = new PokeTradeHubConfig();
-                cfg.CreateDefaults(WorkingDirectory);
+                cfg.Folder.CreateDefaults(WorkingDirectory);
             }
 
             return new PokeTradeHub<PK8>(cfg);

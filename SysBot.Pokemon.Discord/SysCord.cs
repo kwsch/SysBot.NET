@@ -16,10 +16,8 @@ namespace SysBot.Pokemon.Discord
     {
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
         public static SysCord Self;
-#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
-
-#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
         public static DiscordManager Manager;
+        public static DiscordSettings Settings => Self.Hub.Config.Discord;
 #pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
     }
 
@@ -41,7 +39,7 @@ namespace SysBot.Pokemon.Discord
             Hub = hub;
             SysCordInstance.Self = this; // hack
             SysCordInstance.Manager = new DiscordManager(Hub.Config);
-            AutoLegalityWrapper.EnsureInitialized(Hub.Config);
+            AutoLegalityWrapper.EnsureInitialized(Hub.Config.Legality);
 
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
@@ -122,7 +120,7 @@ namespace SysBot.Pokemon.Discord
             await Task.Delay(5_000, token).ConfigureAwait(false);
             LogModule.RestoreLogging(_client);
 
-            var game = SysCordInstance.Self.Hub.Config.DiscordGameStatus;
+            var game = SysCordInstance.Settings.BotGameStatus;
             if (!string.IsNullOrWhiteSpace(game))
                 await _client.SetGameAsync(game).ConfigureAwait(false);
 
@@ -140,7 +138,7 @@ namespace SysBot.Pokemon.Discord
             await _commands.AddModulesAsync(assembly, _services).ConfigureAwait(false);
             var modules = _commands.Modules.ToList();
 
-            var blacklist = Hub.Config.DiscordModuleBlacklist
+            var blacklist = Hub.Config.Discord.ModuleBlacklist
                 .Replace("Module", "").Split(new [] {','}, StringSplitOptions.RemoveEmptyEntries)
                 .Select(z => z.Trim()).ToList();
 
@@ -167,7 +165,7 @@ namespace SysBot.Pokemon.Discord
 
             // Create a number to track where the prefix ends and the command begins
             int pos = 0;
-            if (msg.HasStringPrefix(Hub.Config.DiscordCommandPrefix, ref pos))
+            if (msg.HasStringPrefix(Hub.Config.Discord.CommandPrefix, ref pos))
             {
                 bool handled = await TryHandleCommandAsync(msg, pos).ConfigureAwait(false);
                 if (handled)

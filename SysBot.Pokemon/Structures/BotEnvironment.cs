@@ -50,9 +50,9 @@ namespace SysBot.Pokemon
 
         private void AddTradeBotMonitors(ICollection<Task> tasks, CancellationToken token)
         {
-            if (Hub.Config.DistributeWhileIdle)
+            if (Hub.Config.Distribute.DistributeWhileIdle)
             {
-                var path = Hub.Config.DistributeFolder;
+                var path = Hub.Config.Folder.DistributeFolder;
                 if (!Directory.Exists(path))
                     throw new DirectoryNotFoundException(nameof(path));
                 var task = Hub.Queues.MonitorTradeQueueAddIfEmpty(path, token);
@@ -60,14 +60,6 @@ namespace SysBot.Pokemon
 
                 if (Hub.Ledy.Pool.Count == 0)
                     LogUtil.LogError("Nothing to distribute for Empty Trade Queues!", "Hub");
-            }
-            if (Hub.Config.MonitorForPriorityTrades)
-            {
-                var path = Hub.Config.PriorityFolder;
-                if (!Directory.Exists(path))
-                    throw new DirectoryNotFoundException(nameof(path));
-                var task = Hub.Queues.MonitorFolderAddPriority(path, PokeTradeHub<PK8>.LogNotifier, token);
-                tasks.Add(task);
             }
         }
 
@@ -94,13 +86,13 @@ namespace SysBot.Pokemon
                     return new PokeTradeBot(Hub, cfg);
 
                 case PokeRoutineType.EggFetch:
-                    return new EggBot(Hub, cfg);
+                    return new EggBot(cfg, Hub.Config.Egg, Hub.Config.Folder, Hub.Counts);
 
                 case PokeRoutineType.FossilBot:
-                    return new FossilBot(Hub, cfg);
+                    return new FossilBot(cfg, Hub.Config.Fossil, Hub.Config.Folder, Hub.Counts);
 
                 case PokeRoutineType.RaidBot:
-                    return new RaidBot(Hub, cfg);
+                    return new RaidBot(cfg, Hub.Config.Raid, Hub.Config.Folder, Hub.Counts);
 
                 default:
                     throw new ArgumentException(nameof(cfg.NextRoutineType));

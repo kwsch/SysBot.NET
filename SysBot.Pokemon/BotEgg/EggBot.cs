@@ -10,15 +10,15 @@ namespace SysBot.Pokemon
     public class EggBot : PokeRoutineExecutor
     {
         private readonly BotCompleteCounts Counts;
-        public readonly IDumper DumpSetting;
-        public readonly bool ContinueGettingEggs;
+        private readonly IDumper DumpSetting;
+        private readonly bool ContinueGettingEggs;
         private const SwordShieldDaycare Location = SwordShieldDaycare.Route5;
 
-        public EggBot(PokeTradeHub<PK8> hub, PokeBotConfig cfg) : base(cfg)
+        public EggBot(PokeBotConfig cfg, EggSettings egg, IDumper dump, BotCompleteCounts count) : base(cfg)
         {
-            Counts = hub.Counts;
-            DumpSetting = hub.Config;
-            ContinueGettingEggs = hub.Config.ContinueGettingEggs;
+            Counts = count;
+            DumpSetting = dump;
+            ContinueGettingEggs = egg.ContinueAfterMatch;
         }
 
         private int encounterCount;

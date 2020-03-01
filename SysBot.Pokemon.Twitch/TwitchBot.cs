@@ -18,14 +18,15 @@ namespace SysBot.Pokemon.Twitch
         internal static readonly List<TwitchQueue> QueuePool = new List<TwitchQueue>();
         private readonly TwitchClient client;
         private readonly string Channel;
+        private readonly TwitchSettings Settings;
 
-        public TwitchBot(string username, string token, string channel, PokeTradeHub<PK8> hub)
+        public TwitchBot(TwitchSettings settings, PokeTradeHub<PK8> hub)
         {
             Hub = hub;
+            Settings = settings;
 
-            var credentials = new ConnectionCredentials(username, token);
-            Channel = channel;
-            AutoLegalityWrapper.EnsureInitialized(Hub.Config);
+            var credentials = new ConnectionCredentials(settings.Username, settings.Token);
+            AutoLegalityWrapper.EnsureInitialized(Hub.Config.Legality);
 
             var clientOptions = new ClientOptions
             {
@@ -33,9 +34,10 @@ namespace SysBot.Pokemon.Twitch
                 ThrottlingPeriod = TimeSpan.FromSeconds(30)
             };
 
+            Channel = settings.Channel;
             WebSocketClient customClient = new WebSocketClient(clientOptions);
             client = new TwitchClient(customClient);
-            client.Initialize(credentials, channel);
+            client.Initialize(credentials, Channel);
 
             client.OnLog += Client_OnLog;
             client.OnJoinedChannel += Client_OnJoinedChannel;
@@ -109,9 +111,9 @@ namespace SysBot.Pokemon.Twitch
         private void Client_OnMessageReceived(object sender, OnMessageReceivedArgs e)
         {
             var command = e.ChatMessage.Message.Split(' ')[0].Trim();
-            var p = Info.Hub.Config.DiscordCommandPrefix;
+            var p = Settings.CommandPrefix;
 
-            if (!command.StartsWith(p) || Hub.Config.TwitchBlackList.Contains(e.ChatMessage.Username))
+            if (!command.StartsWith(p) || Hub.Config.Twitch.UserBlacklist.Contains(e.ChatMessage.Username))
                 return;
 
             var c = command.Substring(p.Length).ToLower();
@@ -126,8 +128,8 @@ namespace SysBot.Pokemon.Twitch
 
         private string HandleCommand(string c, OnMessageReceivedArgs e)
         {
-            bool sudo = Hub.IsSudo(e.ChatMessage.Username);
-            if (!e.ChatMessage.IsSubscriber && Info.Hub.Config.SubOnlyBot && !sudo)
+            bool sudo = Settings.IsSudo(e.ChatMessage.Username);
+            if (!e.ChatMessage.IsSubscriber && Settings.SubOnlyBot && !sudo)
                 return null;
 
             if (c == "trade")
@@ -181,7 +183,7 @@ namespace SysBot.Pokemon.Twitch
             try
             {
                 int code = int.Parse(msg);
-                var _ = AddToTradeQueue(user.Pokemon, code, e, Hub.IsSudo(user.UserName), PokeRoutineType.LinkTrade, out string message);
+                var _ = AddToTradeQueue(user.Pokemon, code, e, Settings.IsSudo(user.UserName), PokeRoutineType.LinkTrade, out string message);
                 client.SendMessage(Channel, message);
             }
             catch (Exception ex)

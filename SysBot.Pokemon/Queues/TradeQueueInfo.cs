@@ -138,7 +138,7 @@ namespace SysBot.Pokemon
                 if (UsersInQueue.Any(z => z.UserID == userID) && !sudo)
                     return QueueResultAdd.AlreadyInQueue;
 
-                if (Hub.Config.ResetHOMETracker && trade.Trade.TradeData is IHomeTrack t)
+                if (Hub.Config.Legality.ResetHOMETracker && trade.Trade.TradeData is IHomeTrack t)
                     t.Tracker = 0;
 
                 var priority = sudo ? PokeTradeQueue<PK8>.Tier1 : PokeTradeQueue<PK8>.TierFree;
@@ -156,7 +156,7 @@ namespace SysBot.Pokemon
             }
         }
 
-        public int GetRandomTradeCode() => Hub.Config.GetRandomTradeCode();
+        public int GetRandomTradeCode() => Hub.Config.Trade.GetRandomTradeCode();
 
         public int Count(Func<TradeEntry<T>, bool> func)
         {
