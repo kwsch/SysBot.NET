@@ -69,7 +69,7 @@ namespace SysBot.Pokemon.Discord
             await Process(new[] {Context.Message.Channel.Id}, (z, x) => z.Add(x), z => z.WhitelistedChannels).ConfigureAwait(false);
         }
 
-        [Command("remiveChannel")]
+        [Command("removeChannel")]
         [Summary("Removes a channel from the list of channels that are accepting commands.")]
         [RequireOwner]
         // ReSharper disable once UnusedParameter.Global

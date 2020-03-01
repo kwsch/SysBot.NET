@@ -140,7 +140,7 @@ namespace SysBot.Pokemon.WinForms
             if (env == null)
                 throw new ArgumentNullException(nameof(RunningEnvironment), "Should have an environment before calling stop!");
             if (!env.CanStop)
-                throw new ArgumentOutOfRangeException(nameof(BotEnvironment.CanStop), "Should be running before calling stop!");
+                return;
 
             if (ModifierKeys == Keys.Control || ModifierKeys == Keys.Shift) // either, because remembering which can be hard
             {
