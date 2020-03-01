@@ -15,6 +15,9 @@ namespace SysBot.Pokemon
         public const uint TierFree = uint.MaxValue;
         private readonly ConcurrentPriorityQueue<uint, PokeTradeDetail<TPoke>> Queue = new ConcurrentPriorityQueue<uint, PokeTradeDetail<TPoke>>();
 
+        public readonly PokeTradeType Type;
+        public PokeTradeQueue(PokeTradeType type) => Type = type;
+
         public PokeTradeDetail<TPoke> Find(Func<PokeTradeDetail<TPoke>, bool> match) => Queue.Find(match).Value;
 
         public int Count => Queue.Count;
