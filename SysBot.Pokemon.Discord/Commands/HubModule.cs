@@ -37,10 +37,10 @@ namespace SysBot.Pokemon.Discord
                 x.IsInline = false;
             });
 
-            var count = hub.Queues.Queue.Count;
+            var count = hub.Queues.Trade.Count;
             if (count != 0)
             {
-                var next = hub.Queues.Queue.TryPeek(out var detail, out _);
+                var next = hub.Queues.Trade.TryPeek(out var detail, out _);
                 var nextMsg = next ? $"{detail.Trainer.TrainerName} - {detail.TradeData.Nickname}" : "None!";
                 builder.AddField(x =>
                 {

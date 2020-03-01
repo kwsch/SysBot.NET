@@ -91,22 +91,16 @@ namespace SysBot.Pokemon
             int removedCount = 0;
             lock (_sync)
             {
+                var queues = hub.Queues.AllQueues;
                 foreach (var detail in details)
                 {
-                    int removed = hub.Queues.Queue.Remove(detail.Trade);
-                    if (removed != 0)
-                        UsersInQueue.Remove(detail);
-                    removedCount += removed;
-
-                    removed = hub.Queues.Dudu.Remove(detail.Trade);
-                    if (removed != 0)
-                        UsersInQueue.Remove(detail);
-                    removedCount += removed;
-
-                    removed = hub.Queues.Clone.Remove(detail.Trade);
-                    if (removed != 0)
-                        UsersInQueue.Remove(detail);
-                    removedCount += removed;
+                    foreach (var queue in queues)
+                    {
+                        int removed = queue.Remove(detail.Trade);
+                        if (removed != 0)
+                            UsersInQueue.Remove(detail);
+                        removedCount += removed;
+                    }
                 }
             }
 

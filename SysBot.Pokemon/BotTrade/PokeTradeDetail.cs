@@ -10,6 +10,8 @@ namespace SysBot.Pokemon
         public readonly PokeTradeTrainerInfo Trainer;
         public readonly IPokeTradeNotifier<TPoke> Notifier;
         public readonly PokeTradeType Type;
+        public readonly DateTime Time;
+
         public bool IsSynchronized => Type == PokeTradeType.Random;
 
         public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code)
@@ -19,6 +21,7 @@ namespace SysBot.Pokemon
             Trainer = info;
             Notifier = notifier;
             Type = type;
+            Time = DateTime.Now;
         }
 
         public void TradeInitialize(PokeRoutineExecutor routine) => Notifier.TradeInitialize(routine, this);

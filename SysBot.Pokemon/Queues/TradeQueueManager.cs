@@ -9,16 +9,18 @@ namespace SysBot.Pokemon
     {
         public readonly PokeTradeHub<T> Hub;
 
-        public readonly PokeTradeQueue<T> Queue = new PokeTradeQueue<T>();
+        public readonly PokeTradeQueue<T> Trade = new PokeTradeQueue<T>();
         public readonly PokeTradeQueue<T> Dudu = new PokeTradeQueue<T>();
         public readonly PokeTradeQueue<T> Clone = new PokeTradeQueue<T>();
         public readonly PokeTradeQueue<T> Dump = new PokeTradeQueue<T>();
         public readonly TradeQueueInfo<T> Info;
+        public readonly PokeTradeQueue<T>[] AllQueues;
 
         public TradeQueueManager(PokeTradeHub<T> hub)
         {
             Hub = hub;
             Info = new TradeQueueInfo<T>(hub);
+            AllQueues = new[] { Dudu, Dump, Clone, Trade, };
         }
 
         public PokeTradeQueue<T> GetQueue(PokeRoutineType type)
@@ -28,12 +30,12 @@ namespace SysBot.Pokemon
                 PokeRoutineType.DuduBot => Dudu,
                 PokeRoutineType.Clone => Clone,
                 PokeRoutineType.Dump => Dump,
-                _ => Queue,
+                _ => Trade,
             };
         }
 
         /// <summary>
-        /// Spins up a loop that adds a random <see cref="T"/> to the <see cref="Queue"/> if nothing is in it.
+        /// Spins up a loop that adds a random <see cref="T"/> to the <see cref="Trade"/> if nothing is in it.
         /// </summary>
         /// <param name="path">Folder to randomly distribute from</param>
         /// <param name="token">Thread cancellation</param>
@@ -46,7 +48,7 @@ namespace SysBot.Pokemon
             while (!token.IsCancellationRequested)
             {
                 await Task.Delay(1_000, token).ConfigureAwait(false);
-                if (Queue.Count != 0)
+                if (Trade.Count != 0)
                     continue;
                 if (Hub.Bots.All(z => (z.Config.CurrentRoutineType != PokeRoutineType.LinkTrade && z.Config.CurrentRoutineType != PokeRoutineType.FlexTrade)))
                     continue;
@@ -61,15 +63,14 @@ namespace SysBot.Pokemon
                 var random = Hub.Ledy.Pool.GetRandomPoke();
                 var code = cfg.TradeCode;
                 var detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random, code);
-                Queue.Enqueue(detail);
+                Trade.Enqueue(detail);
             }
         }
 
         public void ClearAll()
         {
-            Dudu.Clear();
-            Queue.Clear();
-            Clone.Clear();
+            foreach (var q in AllQueues)
+                q.Clear();
         }
 
         public bool TryDequeue(PokeRoutineType type, out PokeTradeDetail<T> detail, out uint priority)
