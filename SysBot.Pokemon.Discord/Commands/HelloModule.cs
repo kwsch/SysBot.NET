@@ -7,7 +7,7 @@ namespace SysBot.Pokemon.Discord
     {
         [Command("hello")]
         [Alias("hi")]
-        [Summary("Say hello to the bot, and get a response.")]
+        [Summary("Say hello to the bot and get a response.")]
         public async Task PingAsync()
         {
             var str = SysCordInstance.Settings.HelloResponse;

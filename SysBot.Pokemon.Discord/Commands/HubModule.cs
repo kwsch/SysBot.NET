@@ -103,8 +103,8 @@ namespace SysBot.Pokemon.Discord
             var bots = hub.Bots.ToArray();
             if (bots.Length == 0)
                 return "No bots configured.";
-            var summaries = bots.Select(z => $"{z.Connection.Name} - {z.Config.CurrentRoutineType}");
-            return string.Join(Environment.NewLine, summaries);
+            var summaries = bots.Select(z => $"- {z.Connection.Name} - {z.Config.CurrentRoutineType}");
+            return Environment.NewLine + string.Join(Environment.NewLine, summaries);
         }
     }
 }

@@ -141,7 +141,7 @@ namespace SysBot.Pokemon
             }
 
             Connection.Log("Opening Y-Comm Menu");
-            await Click(Y, 1_700, token).ConfigureAwait(false);
+            await Click(Y, 2_000, token).ConfigureAwait(false);
 
             Connection.Log("Selecting Link Trade");
             await Click(A, 1_500, token).ConfigureAwait(false);
@@ -578,7 +578,8 @@ namespace SysBot.Pokemon
                 foreach (var match in matches)
                 {
                     var msg = match.ToString();
-                    detail.SendNotification(this, msg);
+                    var lump = new PokeTradeSummary("Calculated Seed:", match);
+                    detail.SendNotification(this, lump);
                 }
             }
             else
