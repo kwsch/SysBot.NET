@@ -577,7 +577,6 @@ namespace SysBot.Pokemon
                 var matches = Z3Search.GetAllSeeds(ec, pid, IVs);
                 foreach (var match in matches)
                 {
-                    var msg = match.ToString();
                     var lump = new PokeTradeSummary("Calculated Seed:", match);
                     detail.SendNotification(this, lump);
                 }
