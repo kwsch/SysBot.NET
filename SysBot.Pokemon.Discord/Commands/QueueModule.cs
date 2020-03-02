@@ -12,6 +12,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("queueStatus")]
         [Alias("qs", "ts")]
+        [Summary("Checks the user's position in the queue.")]
         public async Task GetTradePositionAsync()
         {
             var msg = Info.GetPositionString(Context.User.Id);
