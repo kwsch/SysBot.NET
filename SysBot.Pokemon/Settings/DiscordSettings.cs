@@ -24,6 +24,9 @@ namespace SysBot.Pokemon
         [Category(Startup), Description("Custom Status for playing a game.")]
         public string BotGameStatus { get; set; } = "SysBot.NET: Pokémon";
 
+        [Category(Operation), Description("Custom message the Bot will reply with when a user says hello to it. Use string formatting to mention the user in the reply.")]
+        public string HelloResponse { get; set; } = "Hi {0}!";
+
         // Whitelists
 
         [Category(Whitelists), Description("Users with this role are allowed to enter the Trade queue.")]
