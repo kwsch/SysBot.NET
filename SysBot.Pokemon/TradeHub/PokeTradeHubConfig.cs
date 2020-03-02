@@ -10,6 +10,7 @@ namespace SysBot.Pokemon
         private const string Operation = nameof(Operation);
         private const string Bots = nameof(Bots);
         private const string Integration = nameof(Integration);
+        private const string Debug = nameof(Debug);
 
         [Category(FeatureToggle), Description("When enabled, the bot will press the B button occasionally when it is not processing anything (to avoid sleep).")]
         public bool AntiIdle { get; set; }
@@ -68,5 +69,12 @@ namespace SysBot.Pokemon
         [Category(Integration)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public TwitchSettings Twitch { get; set; } = new TwitchSettings();
+
+#if DEBUG
+        // Debug
+
+        [Category(Debug), Description("Skips creating bots when the program is started; helpful for testing integrations.")]
+        public bool SkipConsoleBotCreation { get; set; }
+#endif
     }
 }

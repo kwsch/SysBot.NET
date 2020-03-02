@@ -72,6 +72,11 @@ namespace SysBot.Pokemon
 
         private void CreateBots(IEnumerable<PokeBotConfig> bots)
         {
+#if DEBUG
+            if (Hub.Config.SkipConsoleBotCreation)
+                return;
+#endif
+
             foreach (var cfg in bots)
             {
                 var bot = GetBotFromConfig(cfg);
