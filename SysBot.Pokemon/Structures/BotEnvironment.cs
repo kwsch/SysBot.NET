@@ -42,26 +42,17 @@ namespace SysBot.Pokemon
             tasks.AddRange(Bots.Select(b => b.RunAsync(token)));
             bool hasTradeBot = Bots.Any(z => z is PokeTradeBot);
             if (hasTradeBot)
-                AddTradeBotMonitors(tasks, token);
+                AddTradeBotMonitors();
             return tasks;
         }
 
         protected virtual void AddIntegrations() { }
 
-        private void AddTradeBotMonitors(ICollection<Task> tasks, CancellationToken token)
-        {
-            if (Hub.Config.Distribute.DistributeWhileIdle)
-                AddDistributePool(tasks, token);
-        }
-
-        private void AddDistributePool(ICollection<Task> tasks, CancellationToken token)
+        private void AddTradeBotMonitors()
         {
             var path = Hub.Config.Folder.DistributeFolder;
             if (!Directory.Exists(path))
-            {
                 LogUtil.LogError("The distribution folder was not found. Please verify that it exists!", "Hub");
-                return;
-            }
 
             if (Hub.Ledy.Pool.Count == 0)
                 LogUtil.LogError("Nothing to distribute for Empty Trade Queues!", "Hub");

@@ -32,12 +32,12 @@ namespace SysBot.Pokemon.Twitch
 
             var userID = userid;
             var result = TwitchBot.Info.ClearTrade(userID);
-            switch (result)
+            return result switch
             {
-                case QueueResultRemove.CurrentlyProcessing: return "Looks like you're currently being processed! Removed from queue.";
-                case QueueResultRemove.Removed: return "Removed you from the queue.";
-                default: return "Sorry, you are not currently in the queue.";
-            }
+                QueueResultRemove.CurrentlyProcessing => "Looks like you're currently being processed! Removed from queue.",
+                QueueResultRemove.Removed => "Removed you from the queue.",
+                _ => "Sorry, you are not currently in the queue."
+            };
         }
     }
 }
