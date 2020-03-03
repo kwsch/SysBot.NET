@@ -68,7 +68,7 @@ namespace SysBot.Pokemon.Discord
             var result = Info.ClearTrade(userID);
             return result switch
             {
-                QueueResultRemove.CurrentlyProcessing => "Looks like you're currently being processed! Unable to remove from queue.",
+                QueueResultRemove.CurrentlyProcessing => "Looks like you're currently being processed! Removed from queue.",
                 QueueResultRemove.Removed => "Removed you from the queue.",
                 _ => "Sorry, you are not currently in the queue.",
             };

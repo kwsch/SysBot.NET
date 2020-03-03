@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using PKHeX.Core;
+using SysBot.Base;
 
 namespace SysBot.Pokemon
 {
@@ -80,10 +81,12 @@ namespace SysBot.Pokemon
 
             int removedCount = ClearTrade(details, Hub);
 
-            if (removedCount != details.Count)
-                return QueueResultRemove.CurrentlyProcessing;
+            if (removedCount == details.Count)
+                return QueueResultRemove.Removed;
 
-            return QueueResultRemove.Removed;
+            foreach (var detail in details)
+                Remove(detail);
+            return QueueResultRemove.CurrentlyProcessing;
         }
 
         public int ClearTrade(IEnumerable<TradeEntry<T>> details, PokeTradeHub<T> hub)
@@ -123,7 +126,10 @@ namespace SysBot.Pokemon
         public bool Remove(TradeEntry<T> detail)
         {
             lock (_sync)
+            {
+                LogUtil.LogInfo($"Removing {detail.Trade.Trainer.TrainerName}", nameof(TradeQueueInfo<T>));
                 return UsersInQueue.Remove(detail);
+            }
         }
 
         public QueueResultAdd AddToTradeQueue(TradeEntry<T> trade, ulong userID, bool sudo = false)
@@ -142,11 +148,7 @@ namespace SysBot.Pokemon
                 queue.Enqueue(trade.Trade, priority);
                 UsersInQueue.Add(trade);
 
-                trade.Trade.Notifier.OnFinish = r =>
-                {
-                    r.Connection.Log($"Removing {trade.Username}'s request ({trade.Trade.Type}) from the queue.");
-                    Remove(trade);
-                };
+                trade.Trade.Notifier.OnFinish = _ => Remove(trade);
                 return QueueResultAdd.Added;
             }
         }
