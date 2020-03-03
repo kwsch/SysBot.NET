@@ -67,24 +67,22 @@ namespace SysBot.Pokemon.Discord
             var set = new ShowdownSet(content);
             var sav = AutoLegalityWrapper.GetTrainerInfo(gen);
 
-            var pkm = sav.GetLegal(set, out var result);
+            var pkm = sav.GetLegal(set, out _);
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[set.Species];
-            var msg = la.Valid
-                ? $"Here's your ({result}) legalized PKM for {spec} ({la.EncounterOriginal.Name})!"
-                : $"Oops! I wasn't able to create something from that. Here's my best attempt for that {spec}!";
-
-            if ((!la.Valid && SysCordInstance.Self.Hub.Config.VerifyLegality) || !(pkm is PK8 pk8))
+            var invalid = !(pkm is PK8) || (!la.Valid && SysCordInstance.Self.Hub.Config.VerifyLegality);
+            if (invalid)
             {
-                await ReplyAsync(msg).ConfigureAwait(false);
+                var imsg = $"Oops! I wasn't able to create something from that. Here's my best attempt for that {spec}!";
+                await Context.Channel.SendPKMAsync(pkm, imsg).ConfigureAwait(false);
                 return;
             }
 
-            pk8.ResetPartyStats();
+            pkm.ResetPartyStats();
 
             var code = Info.GetRandomTradeCode();
             var sudo = Context.User.GetIsSudo();
-            await AddTradeToQueueAsync(code, Context.User.Username, pk8, sudo).ConfigureAwait(false);
+            await AddTradeToQueueAsync(code, Context.User.Username, (PK8)pkm, sudo).ConfigureAwait(false);
         }
 
         [Command("trade")]
