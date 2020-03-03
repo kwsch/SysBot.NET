@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
@@ -31,9 +32,12 @@ namespace SysBot.Pokemon.Twitch
 
             var clientOptions = new ClientOptions
             {
-                MessagesAllowedInPeriod = 20,
-                ThrottlingPeriod = TimeSpan.FromSeconds(30)
+                MessagesAllowedInPeriod = settings.ThrottleMessages,
+                ThrottlingPeriod = TimeSpan.FromSeconds(settings.ThrottleSeconds)
             };
+
+            if (settings.GenerateAssets)
+                AddAssetGeneration();
 
             Channel = settings.Channel;
             WebSocketClient customClient = new WebSocketClient(clientOptions);
@@ -52,6 +56,25 @@ namespace SysBot.Pokemon.Twitch
                 LogUtil.LogError(e.BotUsername + Environment.NewLine + e.Error.Message, "TwitchBot");
 
             client.Connect();
+        }
+
+        private void AddAssetGeneration()
+        {
+            static void Create(PokeTradeBot b, PokeTradeDetail<PK8> detail)
+            {
+                try
+                {
+                    var file = b.Connection.IP;
+                    var name = $"({detail.ID}) {detail.Trainer.TrainerName}";
+
+                    File.WriteAllText($"{file}.txt", name);
+                }
+                catch (Exception e)
+                {
+                    LogUtil.LogError(e.Message, "TwitchBot");
+                }
+            }
+            Info.Hub.Queues.Forwarders.Add(Create);
         }
 
         public void StartingDistribution(string message)

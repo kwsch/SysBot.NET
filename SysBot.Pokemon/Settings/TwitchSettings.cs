@@ -27,6 +27,15 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Message sent when the Barrier is released.")]
         public string MessageStart { get; set; } = string.Empty;
 
+        [Category(Operation), Description("Throttle the bot from sending messages if X messages have been sent in the past Y seconds.")]
+        public int ThrottleMessages { get; set; }
+
+        [Category(Operation), Description("Throttle the bot from sending messages if X messages have been sent in the past Y seconds.")]
+        public double ThrottleSeconds { get; set; }
+
+        [Category(Operation), Description("Generate files for use in OBS as overlays, etc.")]
+        public bool GenerateAssets { get; set; } = true;
+
         // Operation
 
         [Category(Operation), Description("Sudo Usernames")]
