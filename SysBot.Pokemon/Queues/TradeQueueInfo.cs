@@ -46,7 +46,7 @@ namespace SysBot.Pokemon
                 return "You are not in the queue.";
 
             var position = $"{check.Position}/{check.QueueCount}";
-            var msg = $"You are in the {check.Detail.Type} queue! Position: {position}";
+            var msg = $"You are in the {check.Detail.Type} queue! Position: {position} ({check.Detail.Trade.ID})";
             var pk = check.Detail.Trade.TradeData;
             if (pk.Species != 0)
                 msg += $", Receiving: {(Species)check.Detail.Trade.TradeData.Species}";
