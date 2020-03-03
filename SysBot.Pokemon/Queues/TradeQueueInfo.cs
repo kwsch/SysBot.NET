@@ -112,7 +112,7 @@ namespace SysBot.Pokemon
 
         public IEnumerable<string> GetUserList()
         {
-            return UsersInQueue.Select(z => $"{z.Username} - {z.Type} - {z.Trade.Type} - Code:{z.Trade.Code}");
+            return UsersInQueue.Select(z => $"({z.Trade.ID}) {z.Username} - {z.Trade.Type} - Code:{z.Trade.Code}");
         }
 
         public IList<TradeEntry<T>> GetIsUserQueued(ulong userID)

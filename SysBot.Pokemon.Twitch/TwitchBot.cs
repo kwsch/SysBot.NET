@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
@@ -60,14 +61,16 @@ namespace SysBot.Pokemon.Twitch
 
         private void AddAssetGeneration()
         {
-            static void Create(PokeTradeBot b, PokeTradeDetail<PK8> detail)
+            void Create(PokeTradeBot b, PokeTradeDetail<PK8> detail)
             {
                 try
                 {
                     var file = b.Connection.IP;
                     var name = $"({detail.ID}) {detail.Trainer.TrainerName}";
-
                     File.WriteAllText($"{file}.txt", name);
+
+                    var next = Hub.Queues.Info.GetUserList().Take(Settings.OnDeckCount);
+                    File.WriteAllText("ondeck.txt", string.Join(Environment.NewLine, next));
                 }
                 catch (Exception e)
                 {

@@ -47,6 +47,9 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Sub only mode (Restricts the bot to twitch subs only)")]
         public bool SubOnlyBot { get; set; } = false;
 
+        [Category(Operation), Description("Amount of users to show in the on-deck list.")]
+        public int OnDeckCount { get; set; } = 5;
+
         public bool IsSudo(string username)
         {
             var sudos = SudoList.Split(new[] { ",", ", ", " " }, StringSplitOptions.RemoveEmptyEntries);
