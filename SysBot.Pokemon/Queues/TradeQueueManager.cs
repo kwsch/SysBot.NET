@@ -1,4 +1,6 @@
-﻿using PKHeX.Core;
+﻿using System;
+using System.Collections.Generic;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon
 {
@@ -129,6 +131,15 @@ namespace SysBot.Pokemon
         {
             var queue = GetQueue(type);
             queue.Enqueue(detail, priority);
+        }
+
+        // hook in here if you want to forward the message elsewhere???
+        public readonly List<Action<PokeTradeBot, PokeTradeDetail<T>>> Forwarders = new List<Action<PokeTradeBot, PokeTradeDetail<T>>>();
+
+        public void StartTrade(PokeTradeBot b, PokeTradeDetail<T> detail)
+        {
+            foreach (var f in Forwarders)
+                f.Invoke(b, detail);
         }
     }
 }

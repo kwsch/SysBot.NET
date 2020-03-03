@@ -5,12 +5,16 @@ namespace SysBot.Pokemon
 {
     public class PokeTradeDetail<TPoke> : IEquatable<PokeTradeDetail<TPoke>> where TPoke : PKM, new()
     {
+        // ReSharper disable once StaticMemberInGenericType
+        private static int CreatedCount;
+
         public readonly int Code;
         public readonly TPoke TradeData;
         public readonly PokeTradeTrainerInfo Trainer;
         public readonly IPokeTradeNotifier<TPoke> Notifier;
         public readonly PokeTradeType Type;
         public readonly DateTime Time;
+        public readonly int ID; // unique incremented ID
 
         public bool IsSynchronized => Type == PokeTradeType.Random;
 
@@ -22,6 +26,8 @@ namespace SysBot.Pokemon
             Notifier = notifier;
             Type = type;
             Time = DateTime.Now;
+
+            ID = ++CreatedCount;
         }
 
         public void TradeInitialize(PokeRoutineExecutor routine) => Notifier.TradeInitialize(routine, this);

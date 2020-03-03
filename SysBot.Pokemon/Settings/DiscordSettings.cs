@@ -58,7 +58,10 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Disabling this will remove global sudo support.")]
         public bool AllowGlobalSudo { get; set; } = true;
 
-        [Category(Operation), Description("Comma separated Logger channel IDs that will persistently log bot data.")]
+        [Category(Operation), Description("Comma separated channel IDs that will echo the log bot data.")]
         public string LoggingChannels { get; set; } = string.Empty;
+
+        [Category(Operation), Description("Comma separated Logger channel IDs that will log trade start messages.")]
+        public string TradeStartingChannels { get; set; } = string.Empty;
     }
 }

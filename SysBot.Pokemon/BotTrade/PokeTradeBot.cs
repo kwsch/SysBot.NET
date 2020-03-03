@@ -79,7 +79,7 @@ namespace SysBot.Pokemon
             while (!token.IsCancellationRequested && Config.NextRoutineType != PokeRoutineType.Idle)
             {
                 var type = Config.CurrentRoutineType;
-                if (!Hub.Queues.TryDequeue(Config.CurrentRoutineType, out var detail, out var priority) && !Hub.Queues.TryDequeueLedy(out detail))
+                if (!Hub.Queues.TryDequeue(type, out var detail, out var priority) && !Hub.Queues.TryDequeueLedy(out detail))
                 {
                     if (waitCounter == 0)
                         Connection.Log("Nothing to check, waiting for new users...");
@@ -90,10 +90,12 @@ namespace SysBot.Pokemon
                         await Task.Delay(1_000, token).ConfigureAwait(false);
                     continue;
                 }
-
                 waitCounter = 0;
+
                 string tradetype = $" ({detail.Type.ToString()})";
                 Connection.Log($"Starting next {type}{tradetype} Bot Trade. Getting data...");
+                Hub.Queues.StartTrade(this, detail);
+
                 await EnsureConnectedToYComm(token).ConfigureAwait(false);
                 var result = await PerformLinkCodeTrade(sav, detail, token).ConfigureAwait(false);
                 if (result != PokeTradeResult.Success) // requeue
