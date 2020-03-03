@@ -81,24 +81,26 @@ namespace SysBot.Pokemon
         private bool GetFlexDequeueWeighted(QueueSettings cfg, out PokeTradeDetail<T> detail, out uint priority)
         {
             PokeTradeQueue<T>? preferredQueue = null;
-            long bestWeight = 0;
-            uint bestPriority = 0;
+            long bestWeight = 0; // prefer higher weights
+            uint bestPriority = uint.MaxValue; // prefer smaller
             foreach (var q in AllQueues)
             {
                 var peek = q.TryPeek(out detail, out priority);
                 if (!peek)
                     continue;
 
-                if (priority < bestPriority)
+                // priority queue is a min-queue, so prefer smaller priorities
+                if (priority > bestPriority)
                     continue;
 
                 var count = q.Count;
                 var time = detail.Time;
                 var weight = cfg.GetWeight(count, time, q.Type);
 
-                if (priority <= bestPriority && weight <= bestWeight)
+                if (priority >= bestPriority && weight <= bestWeight)
                     continue; // not good enough to be preferred over the other.
 
+                // this queue has the most preferable priority/weight so far!
                 bestWeight = weight;
                 bestPriority = priority;
                 preferredQueue = q;
