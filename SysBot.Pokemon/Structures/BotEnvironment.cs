@@ -63,9 +63,6 @@ namespace SysBot.Pokemon
                 return;
             }
 
-            var task = Hub.Queues.MonitorTradeQueueAddIfEmpty(path, token);
-            tasks.Add(task);
-
             if (Hub.Ledy.Pool.Count == 0)
                 LogUtil.LogError("Nothing to distribute for Empty Trade Queues!", "Hub");
         }

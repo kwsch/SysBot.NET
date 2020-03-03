@@ -1,7 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using PKHeX.Core;
-using SysBot.Base;
+﻿using PKHeX.Core;
 
 namespace SysBot.Pokemon
 {
@@ -34,43 +31,27 @@ namespace SysBot.Pokemon
             };
         }
 
-        /// <summary>
-        /// Spins up a loop that adds a random <see cref="T"/> to the <see cref="Trade"/> if nothing is in it.
-        /// </summary>
-        /// <param name="path">Folder to randomly distribute from</param>
-        /// <param name="token">Thread cancellation</param>
-        public async Task MonitorTradeQueueAddIfEmpty(string path, CancellationToken token)
-        {
-            if (!Hub.Ledy.Pool.LoadFolder(path))
-                LogUtil.LogError("Nothing found in pool folder!", "Hub");
-
-            var trainer = new PokeTradeTrainerInfo("Random");
-            while (!token.IsCancellationRequested)
-            {
-                await Task.Delay(1_000, token).ConfigureAwait(false);
-                if (Trade.Count != 0)
-                    continue;
-                if (Hub.Bots.All(z => (z.Config.CurrentRoutineType != PokeRoutineType.LinkTrade && z.Config.CurrentRoutineType != PokeRoutineType.FlexTrade)))
-                    continue;
-
-                var cfg = Hub.Config.Distribute;
-                if (!cfg.DistributeWhileIdle)
-                    continue;
-
-                if (Hub.Ledy.Pool.Count == 0)
-                    continue;
-
-                var random = Hub.Ledy.Pool.GetRandomPoke();
-                var code = cfg.TradeCode;
-                var detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random, code);
-                Trade.Enqueue(detail);
-            }
-        }
-
         public void ClearAll()
         {
             foreach (var q in AllQueues)
                 q.Clear();
+        }
+
+        public bool TryDequeueLedy(out PokeTradeDetail<T> detail)
+        {
+            detail = default!;
+            var cfg = Hub.Config.Distribute;
+            if (!cfg.DistributeWhileIdle)
+                return false;
+
+            if (Hub.Ledy.Pool.Count == 0)
+                return false;
+
+            var random = Hub.Ledy.Pool.GetRandomPoke();
+            var code = cfg.TradeCode;
+            var trainer = new PokeTradeTrainerInfo("Random Distribution");
+            detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random, code);
+            return true;
         }
 
         public bool TryDequeue(PokeRoutineType type, out PokeTradeDetail<T> detail, out uint priority)

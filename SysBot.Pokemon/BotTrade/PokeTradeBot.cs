@@ -79,7 +79,7 @@ namespace SysBot.Pokemon
             while (!token.IsCancellationRequested && Config.NextRoutineType != PokeRoutineType.Idle)
             {
                 var type = Config.CurrentRoutineType;
-                if (!Hub.Queues.TryDequeue(Config.CurrentRoutineType, out var detail, out var priority))
+                if (!Hub.Queues.TryDequeue(Config.CurrentRoutineType, out var detail, out var priority) && !Hub.Queues.TryDequeueLedy(out detail))
                 {
                     if (waitCounter == 0)
                         Connection.Log("Nothing to check, waiting for new users...");

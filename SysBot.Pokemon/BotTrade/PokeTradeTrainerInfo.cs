@@ -2,7 +2,7 @@
 {
     public class PokeTradeTrainerInfo
     {
-        public string TrainerName;
+        public readonly string TrainerName;
         public PokeTradeTrainerInfo(string name) => TrainerName = name;
     }
 }
