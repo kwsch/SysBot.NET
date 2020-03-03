@@ -98,7 +98,7 @@ namespace SysBot.Pokemon
                 var result = await PerformLinkCodeTrade(sav, detail, token).ConfigureAwait(false);
                 if (result != PokeTradeResult.Success) // requeue
                 {
-                    if (result == PokeTradeResult.Aborted)
+                    if (result == PokeTradeResult.Aborted && detail.Type != PokeTradeType.Random)
                     {
                         detail.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
                         Hub.Queues.Enqueue(type, detail, Math.Min(priority, PokeTradeQueue<PK8>.Tier2));
@@ -153,8 +153,7 @@ namespace SysBot.Pokemon
                 await Click(A, 1_500, token).ConfigureAwait(false);
 
             // These languages require an extra A press at this menu.
-            if (GameLang == LanguageID.Korean || GameLang == LanguageID.German ||
-                GameLang == LanguageID.ChineseS || GameLang == LanguageID.ChineseT)
+            if (GameLang == LanguageID.Korean || GameLang == LanguageID.German || GameLang == LanguageID.ChineseS || GameLang == LanguageID.ChineseT)
                 await Click(A, 1_500, token).ConfigureAwait(false);
 
             // Loading Screen

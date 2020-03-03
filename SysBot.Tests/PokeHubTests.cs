@@ -1,0 +1,28 @@
+﻿using FluentAssertions;
+using PKHeX.Core;
+using SysBot.Pokemon;
+using Xunit;
+
+namespace SysBot.Tests
+{
+    public class PokeHubTests
+    {
+        [Fact]
+        public void TestHub()
+        {
+            var cfg = new PokeTradeHubConfig {Distribute = {DistributeWhileIdle = true}};
+            var hub = new PokeTradeHub<PK8>(cfg);
+
+            var pool = hub.Ledy.Pool;
+            var a = new PK8 { Species = 5 };
+            pool.Add(a);
+
+            var trade = hub.Queues.TryDequeue(PokeRoutineType.FlexTrade, out _, out _);
+            trade.Should().BeFalse();
+
+            var ledy = hub.Queues.TryDequeueLedy(out var detail);
+            ledy.Should().BeTrue();
+            detail.TradeData.Should().Be(a);
+        }
+    }
+}
