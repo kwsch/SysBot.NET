@@ -101,5 +101,23 @@ namespace SysBot.Pokemon.Discord
             return content.Split(new[] { ",", ", ", " " }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(z => ulong.TryParse(z, out var x) ? x : 0).Where(z => z != 0);
         }
+
+        [Command("delegate")]
+        [Alias("changeTask")]
+        [Summary("Changes the routine of a bot (trades).")]
+        [RequireOwner]
+        public async Task ChangeTaskAsync([Summary("Identified name of bot (OT-ID)")]string name, [Summary("Routine enum name")]PokeRoutineType task)
+        {
+            var bot = SysCordInstance.Self.Hub.Bots.ToArray();
+            var match = bot.FirstOrDefault(z => z.Connection.Name == name);
+            if (match == null)
+            {
+                await ReplyAsync($"Could not find bot identified as {name}.").ConfigureAwait(false);
+                return;
+            }
+
+            match.Config.Change(task);
+            await ReplyAsync($"Changed {name}'s next routine to {task}.").ConfigureAwait(false);
+        }
     }
 }

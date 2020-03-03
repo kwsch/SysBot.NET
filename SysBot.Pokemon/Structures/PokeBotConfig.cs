@@ -21,5 +21,6 @@ namespace SysBot.Pokemon
         public void Initialize() => Resume();
         public void Pause() => NextRoutineType = PokeRoutineType.Idle;
         public void Resume() => NextRoutineType = InitialRoutine;
+        public void Change(PokeRoutineType type) => NextRoutineType = type;
     }
 }
