@@ -7,6 +7,7 @@ using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
 using TwitchLib.Communication.Models;
 using PKHeX.Core;
+using SysBot.Base;
 
 namespace SysBot.Pokemon.Twitch
 {
@@ -45,6 +46,10 @@ namespace SysBot.Pokemon.Twitch
             client.OnWhisperReceived += Client_OnWhisperReceived;
             client.OnNewSubscriber += Client_OnNewSubscriber;
             client.OnConnected += Client_OnConnected;
+            client.OnError += (_, e) =>
+                LogUtil.LogError(e.Exception.Message + Environment.NewLine + e.Exception.Message, "TwitchBot");
+            client.OnConnectionError += (_, e) =>
+                LogUtil.LogError(e.BotUsername + Environment.NewLine + e.Error.Message, "TwitchBot");
 
             client.Connect();
         }
