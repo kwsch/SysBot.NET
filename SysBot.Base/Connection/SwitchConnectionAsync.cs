@@ -15,6 +15,7 @@ namespace SysBot.Base
 
         public void Connect()
         {
+            Connection.Log("Connecting to device...");
             Connection.Connect(IP, Port);
             Connected = true;
             Log("Connected!");
@@ -22,6 +23,7 @@ namespace SysBot.Base
 
         public void Disconnect()
         {
+            Connection.Log("Disconnecting from device...");
             Connection.Shutdown(SocketShutdown.Both);
             Connection.BeginDisconnect(true, DisconnectCallback, Connection);
             Connected = false;
