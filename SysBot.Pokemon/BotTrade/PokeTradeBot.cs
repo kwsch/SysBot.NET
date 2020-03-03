@@ -75,10 +75,10 @@ namespace SysBot.Pokemon
 
         private async Task DoTrades(SAV8SWSH sav, CancellationToken token)
         {
+            var type = Config.CurrentRoutineType;
             int waitCounter = 0;
-            while (!token.IsCancellationRequested && Config.NextRoutineType != PokeRoutineType.Idle)
+            while (!token.IsCancellationRequested && Config.NextRoutineType == type)
             {
-                var type = Config.CurrentRoutineType;
                 if (!Hub.Queues.TryDequeue(type, out var detail, out var priority) && !Hub.Queues.TryDequeueLedy(out detail))
                 {
                     if (waitCounter == 0)
