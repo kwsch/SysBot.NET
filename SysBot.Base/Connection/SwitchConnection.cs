@@ -12,14 +12,18 @@ namespace SysBot.Base
 
         public void Connect()
         {
+            Log("Connecting to device...");
             Connection.Connect(IP, Port);
             Connected = true;
+            Log("Connected!");
         }
 
         public void Disconnect()
         {
+            Log("Disconnecting from device...");
             Connection.Disconnect(false);
             Connected = false;
+            Log("Disconnected!");
         }
 
         public int Read(byte[] buffer) => Connection.Receive(buffer);
