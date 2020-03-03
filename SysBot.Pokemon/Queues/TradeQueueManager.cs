@@ -4,12 +4,12 @@ namespace SysBot.Pokemon
 {
     public class TradeQueueManager<T> where T : PKM, new()
     {
-        public readonly PokeTradeHub<T> Hub;
+        private readonly PokeTradeHub<T> Hub;
 
-        public readonly PokeTradeQueue<T> Trade = new PokeTradeQueue<T>(PokeTradeType.Specific);
-        public readonly PokeTradeQueue<T> Dudu = new PokeTradeQueue<T>(PokeTradeType.Dudu);
-        public readonly PokeTradeQueue<T> Clone = new PokeTradeQueue<T>(PokeTradeType.Clone);
-        public readonly PokeTradeQueue<T> Dump = new PokeTradeQueue<T>(PokeTradeType.Dump);
+        private readonly PokeTradeQueue<T> Trade = new PokeTradeQueue<T>(PokeTradeType.Specific);
+        private readonly PokeTradeQueue<T> Dudu = new PokeTradeQueue<T>(PokeTradeType.Dudu);
+        private readonly PokeTradeQueue<T> Clone = new PokeTradeQueue<T>(PokeTradeType.Clone);
+        private readonly PokeTradeQueue<T> Dump = new PokeTradeQueue<T>(PokeTradeType.Dump);
         public readonly TradeQueueInfo<T> Info;
         public readonly PokeTradeQueue<T>[] AllQueues;
 

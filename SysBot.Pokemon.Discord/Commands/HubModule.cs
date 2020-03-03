@@ -10,6 +10,7 @@ namespace SysBot.Pokemon.Discord
     public class HubModule : ModuleBase<SocketCommandContext>
     {
         [Command("status")]
+        [Alias("stats")]
         [Summary("Gets the status of the bot environment.")]
         public async Task GetStatusAsync()
         {
@@ -40,52 +41,28 @@ namespace SysBot.Pokemon.Discord
                 x.IsInline = false;
             });
 
-            var count = hub.Queues.Trade.Count;
-            if (count != 0)
+            var queues = hub.Queues.AllQueues;
+            int count = 0;
+            foreach (var q in queues)
             {
-                var next = hub.Queues.Trade.TryPeek(out var detail, out _);
+                var c = q.Count;
+                if (c == 0)
+                    continue;
+
+                var next = q.TryPeek(out var detail, out _);
                 var nextMsg = next ? $"{detail.Trainer.TrainerName} - {detail.TradeData.Nickname}" : "None!";
                 builder.AddField(x =>
                 {
-                    x.Name = "Trade Queue";
+                    x.Name = $"{q.Type} Queue";
                     x.Value =
                         $"Next: {nextMsg}\n" +
-                        $"Count: {count}\n";
+                        $"Count: {c}\n";
                     x.IsInline = false;
                 });
+                count += c;
             }
 
-            var countC = hub.Queues.Clone.Count;
-            if (countC != 0)
-            {
-                var nextC = hub.Queues.Clone.TryPeek(out var detailC, out _);
-                var nextMsgC = nextC ? $"{detailC.Trainer.TrainerName}" : "None!";
-                builder.AddField(x =>
-                {
-                    x.Name = "Clone Queue";
-                    x.Value =
-                        $"Next: {nextMsgC}\n" +
-                        $"Count: {countC}\n";
-                    x.IsInline = false;
-                });
-            }
-
-            var countD = hub.Queues.Dudu.Count;
-            if (countD != 0)
-            {
-                var nextD = hub.Queues.Dudu.TryPeek(out var detailD, out _);
-                var nextMsgD = nextD ? $"{detailD.Trainer.TrainerName}" : "None!";
-                builder.AddField(x =>
-                {
-                    x.Name = "Dudu Queue";
-                    x.Value =
-                        $"Next: {nextMsgD}\n" +
-                        $"Count: {countD}\n";
-                    x.IsInline = false;
-                });
-            }
-
-            if (count + countC + countD == 0)
+            if (count == 0)
             {
                 builder.AddField(x =>
                 {
