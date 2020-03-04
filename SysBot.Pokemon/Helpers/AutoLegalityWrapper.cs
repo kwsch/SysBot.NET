@@ -32,6 +32,7 @@ namespace SysBot.Pokemon
         {
             APILegality.SetAllLegalRibbons = cfg.SetAllLegalRibbons;
             APILegality.SetMatchingBalls = cfg.SetMatchingBalls;
+            Legalizer.AllowBruteForce = cfg.AllowBruteForce;
         }
 
         private static void InitializeTrainerDatabase(LegalitySettings cfg)

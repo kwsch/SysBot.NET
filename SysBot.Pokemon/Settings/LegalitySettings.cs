@@ -32,6 +32,9 @@ namespace SysBot.Pokemon
         [Category(Generate), Description("Set a matching ball (based on color) for any generated Pokémon.")]
         public bool SetMatchingBalls { get; set; }
 
+        [Category(Generate), Description("Allow Brute Forcing to make something legal (CPU Intensive)")]
+        public bool AllowBruteForce { get; set; }
+
         // Misc
 
         [Category(Misc), Description("Zero out HOME tracker regardless of current tracker value. Applies to user requested PKM files as well.")]
