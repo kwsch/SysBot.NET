@@ -12,6 +12,10 @@ namespace SysBot.Pokemon
 
         public void IterateNextRoutine() => CurrentRoutineType = NextRoutineType;
 
+        /// <summary>
+        /// Sets the <see cref="NextRoutineType"/> so that the next iteration will perform as desired,
+        /// and updates the <see cref="InitialRoutine"/> in the event the settings are saved.
+        /// </summary>
         public void Initialize(PokeRoutineType type)
         {
             NextRoutineType = type;
@@ -21,6 +25,5 @@ namespace SysBot.Pokemon
         public void Initialize() => Resume();
         public void Pause() => NextRoutineType = PokeRoutineType.Idle;
         public void Resume() => NextRoutineType = InitialRoutine;
-        public void Change(PokeRoutineType type) => NextRoutineType = type;
     }
 }

@@ -116,7 +116,7 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            match.Config.Change(task);
+            match.Config.Initialize(task);
             await ReplyAsync($"Changed {name}'s next routine to {task}.").ConfigureAwait(false);
         }
     }
