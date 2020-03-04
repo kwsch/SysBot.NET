@@ -36,6 +36,8 @@ namespace SysBot.Pokemon.Discord
 
             // Notify in channel
             await Context.Channel.SendMessageAsync(msg).ConfigureAwait(false);
+            // Notify in PM to mirror what is said in the channel.
+            await Context.User.SendMessageAsync(msg).ConfigureAwait(false);
 
             // Clean Up
             if (result)
@@ -43,22 +45,11 @@ namespace SysBot.Pokemon.Discord
                 // Delete the user's join message for privacy
                 if (!Context.IsPrivate)
                     await Context.Message.DeleteAsync(RequestOptions.Default).ConfigureAwait(false);
-
-                var end = msg.LastIndexOf(' ');
-                var position = int.Parse(msg.Substring(end).Trim());
-                var botct = SysCordInstance.Self.Hub.Bots.Count;
-                if (position > botct)
-                {
-                    var eta = (1.1f * position) / botct;
-                    string help2 = $"Trades usually take at least a minute, so please be ready in around {eta:F1} minutes.";
-                    await Context.User.SendMessageAsync(help2).ConfigureAwait(false);
-                }
             }
             else
             {
                 // Delete our "I'm adding you!", and send the same message that we sent to the general channel.
                 await test.DeleteAsync().ConfigureAwait(false);
-                await Context.User.SendMessageAsync(msg).ConfigureAwait(false);
             }
         }
 
@@ -73,7 +64,8 @@ namespace SysBot.Pokemon.Discord
             var detail = new PokeTradeDetail<PK8>(pk8, trainer, notifier, t, code: code);
             var trade = new TradeEntry<PK8>(detail, userID, type, name);
 
-            var Info = SysCordInstance.Self.Hub.Queues.Info;
+            var hub = SysCordInstance.Self.Hub;
+            var Info = hub.Queues.Info;
             var added = Info.AddToTradeQueue(trade, userID, sudo);
 
             if (added == QueueResultAdd.AlreadyInQueue)
@@ -84,6 +76,13 @@ namespace SysBot.Pokemon.Discord
 
             var position = Info.CheckPosition(userID, type);
             msg = $"Added {user.Mention} to the queue for trade type: {type}; unique ID: {detail.ID}. Your current position is: {position.Position}";
+
+            var botct = Info.Hub.Bots.Count;
+            if (position.Position > botct)
+            {
+                var eta = Info.Hub.Config.Queues.EstimateDelay(position.Position, botct);
+                msg += $". Trades usually take at least a minute, so please be ready in around {eta:F1} minutes.";
+            }
             return true;
         }
     }

@@ -53,6 +53,9 @@ namespace SysBot.Pokemon
         [Category(TimeBias), Description("Checks time elapsed since the user joined the Dump queue, and increases the queue's weight accordingly.")]
         public int YieldMultWaitDump { get; set; } = 1;
 
+        [Category(TimeBias), Description("Multiplies the amount of users in queue to give an estimate of how much time it will take until the user is processed.")]
+        public float EstimatedDelayFactor { get; set; } = 1.1f;
+
         private int GetCountBias(PokeTradeType type)
         {
             return type switch
@@ -87,6 +90,8 @@ namespace SysBot.Pokemon
                 return cb * tb;
             return cb + tb;
         }
+
+        public float EstimateDelay(int position, int botct) => (EstimatedDelayFactor * position) / botct;
     }
 
     public enum FlexBiasMode
