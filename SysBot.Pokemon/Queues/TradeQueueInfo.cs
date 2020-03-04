@@ -42,15 +42,7 @@ namespace SysBot.Pokemon
         public string GetPositionString(ulong uid, PokeRoutineType type = PokeRoutineType.Idle)
         {
             var check = CheckPosition(uid, type);
-            if (!check.InQueue || check.Detail is null)
-                return "You are not in the queue.";
-
-            var position = $"{check.Position}/{check.QueueCount}";
-            var msg = $"You are in the {check.Detail.Type} queue! Position: {position} ({check.Detail.Trade.ID})";
-            var pk = check.Detail.Trade.TradeData;
-            if (pk.Species != 0)
-                msg += $", Receiving: {(Species)check.Detail.Trade.TradeData.Species}";
-            return msg;
+            return check.GetMessage();
         }
 
         public string GetTradeList(PokeRoutineType t)
@@ -112,7 +104,7 @@ namespace SysBot.Pokemon
 
         public IEnumerable<string> GetUserList()
         {
-            return UsersInQueue.Select(z => $"({z.Trade.ID}) {z.Username} - {z.Trade.Type} - Code:{z.Trade.Code}");
+            return UsersInQueue.Select(z => $"(ID {z.Trade.ID}) - Code: {z.Trade.Code} - {z.Trade.Type} - {z.Username}");
         }
 
         public IList<TradeEntry<T>> GetIsUserQueued(ulong userID)

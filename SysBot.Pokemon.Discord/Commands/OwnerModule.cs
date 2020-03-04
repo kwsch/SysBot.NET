@@ -109,7 +109,7 @@ namespace SysBot.Pokemon.Discord
         public async Task ChangeTaskAsync([Summary("Identified name of bot (OT-ID)")]string name, [Summary("Routine enum name")]PokeRoutineType task)
         {
             var bot = SysCordInstance.Self.Hub.Bots.ToArray();
-            var match = bot.FirstOrDefault(z => z.Connection.Name == name);
+            var match = Array.Find(bot, z => z.Connection.Name == name);
             if (match == null)
             {
                 await ReplyAsync($"Could not find bot identified as {name}.").ConfigureAwait(false);

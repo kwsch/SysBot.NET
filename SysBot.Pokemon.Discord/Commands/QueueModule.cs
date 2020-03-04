@@ -8,14 +8,14 @@ namespace SysBot.Pokemon.Discord
     [Summary("Clears and toggles Queue features.")]
     public class QueueModule : ModuleBase<SocketCommandContext>
     {
-        internal static TradeQueueInfo<PK8> Info => SysCordInstance.Self.Hub.Queues.Info;
+        private static TradeQueueInfo<PK8> Info => SysCordInstance.Self.Hub.Queues.Info;
 
         [Command("queueStatus")]
         [Alias("qs", "ts")]
         [Summary("Checks the user's position in the queue.")]
         public async Task GetTradePositionAsync()
         {
-            var msg = Info.GetPositionString(Context.User.Id);
+            var msg = Context.User.Mention + " - " + Info.GetPositionString(Context.User.Id);
             await ReplyAsync(msg).ConfigureAwait(false);
         }
 

@@ -60,7 +60,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             SysCordInstance.Self.Hub.Queues.Forwarders.Add(Logger);
-            static string GetMessage(PokeRoutineExecutor bot, PokeTradeDetail<PK8> detail) => $"> [{DateTime.Now:hh:mm:ss}] - {bot.InGameName} is now trading ({detail.ID}) {detail.Trainer.TrainerName}";
+            static string GetMessage(PokeRoutineExecutor bot, PokeTradeDetail<PK8> detail) => $"> [{DateTime.Now:hh:mm:ss}] - {bot.Connection.Name} is now trading (ID {detail.ID}) {detail.Trainer.TrainerName}";
 
             Loggers.Add(Logger);
             Channels.Add(cid, c.Name);

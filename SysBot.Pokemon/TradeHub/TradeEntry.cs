@@ -24,6 +24,6 @@ namespace SysBot.Pokemon
             return type == 0 || type == Type;
         }
 
-        public override string ToString() => $"({Trade.ID}) {Username} {UserID:D19} - {Type}";
+        public override string ToString() => $"(ID {Trade.ID}) {Username} {UserID:D19} - {Type}";
     }
 }
