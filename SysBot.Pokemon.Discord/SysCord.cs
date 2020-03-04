@@ -119,6 +119,7 @@ namespace SysBot.Pokemon.Discord
             // Restore Logging
             await Task.Delay(5_000, token).ConfigureAwait(false);
             LogModule.RestoreLogging(_client);
+            TradeStartModule.RestoreTradeStarting(_client);
 
             var game = SysCordInstance.Settings.BotGameStatus;
             if (!string.IsNullOrWhiteSpace(game))
