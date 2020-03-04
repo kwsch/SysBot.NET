@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using PKHeX.Core;
 
 namespace SysBot.Pokemon
@@ -28,7 +29,7 @@ namespace SysBot.Pokemon
             Type = type;
             Time = DateTime.Now;
 
-            ID = ++CreatedCount % 3000;
+            ID = Interlocked.Increment(ref CreatedCount) % 3000;
         }
 
         public void TradeInitialize(PokeRoutineExecutor routine) => Notifier.TradeInitialize(routine, this);
