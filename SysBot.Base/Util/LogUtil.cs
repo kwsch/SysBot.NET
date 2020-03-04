@@ -36,13 +36,13 @@ namespace SysBot.Base
 
         public static void LogError(string message, string identity)
         {
-            Logger.Log(LogLevel.Error, message);
+            Logger.Log(LogLevel.Error, $"{identity} {message}");
             Log(message, identity);
         }
 
         public static void LogInfo(string message, string identity)
         {
-            Logger.Log(LogLevel.Info, message);
+            Logger.Log(LogLevel.Info, $"{identity} {message}");
             Log(message, identity);
         }
 
