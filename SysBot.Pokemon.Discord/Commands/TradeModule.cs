@@ -62,6 +62,13 @@ namespace SysBot.Pokemon.Discord
             const int gen = 8;
             content = ReusableActions.StripCodeBlock(content);
             var set = new ShowdownSet(content);
+            if (set.InvalidLines.Count != 0)
+            {
+                var msg = $"Unable to parse Showdown Set:\n{string.Join("\n", set.InvalidLines)}";
+                await ReplyAsync(msg).ConfigureAwait(false);
+                return;
+            }
+
             var sav = AutoLegalityWrapper.GetTrainerInfo(gen);
 
             var pkm = sav.GetLegal(set, out _);

@@ -8,6 +8,13 @@ namespace SysBot.Pokemon.Twitch
         public static bool AddToWaitingList(string setstring, string display, string username, out string msg)
         {
             ShowdownSet set = TwitchShowdownUtil.ConvertToShowdown(setstring);
+
+            if (set.InvalidLines.Count != 0)
+            {
+                msg = $"Skipping trade: Unable to parse Showdown Set:\n{string.Join("\n", set.InvalidLines)}";
+                return false;
+            }
+
             var sav = AutoLegalityWrapper.GetTrainerInfo(PKX.Generation);
             PKM pkm = sav.GetLegal(set, out _);
             var valid = new LegalityAnalysis(pkm).Valid;
@@ -20,7 +27,7 @@ namespace SysBot.Pokemon.Twitch
                 return true;
             }
 
-            msg = "Unable to legalize the Pokémon. Skipping Trade.";
+            msg = "Skipping trade: Unable to legalize the Pokémon.";
             return false;
         }
 
