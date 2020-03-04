@@ -28,7 +28,7 @@ namespace SysBot.Pokemon
             Type = type;
             Time = DateTime.Now;
 
-            ID = ++CreatedCount;
+            ID = ++CreatedCount % 3000;
         }
 
         public void TradeInitialize(PokeRoutineExecutor routine) => Notifier.TradeInitialize(routine, this);
