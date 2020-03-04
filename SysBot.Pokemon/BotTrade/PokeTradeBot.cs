@@ -100,8 +100,9 @@ namespace SysBot.Pokemon
                 var result = await PerformLinkCodeTrade(sav, detail, token).ConfigureAwait(false);
                 if (result != PokeTradeResult.Success) // requeue
                 {
-                    if (result == PokeTradeResult.Aborted && detail.Type != PokeTradeType.Random)
+                    if (result.AttemptRetry() && detail.Type != PokeTradeType.Random && !detail.IsRetry)
                     {
+                        detail.IsRetry = true;
                         detail.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
                         Hub.Queues.Enqueue(type, detail, Math.Min(priority, PokeTradeQueue<PK8>.Tier2));
                     }
@@ -139,7 +140,7 @@ namespace SysBot.Pokemon
             if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
-                return PokeTradeResult.Recover;
+                return PokeTradeResult.RecoverStart;
             }
 
             Connection.Log("Opening Y-Comm Menu");
@@ -183,7 +184,7 @@ namespace SysBot.Pokemon
             if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
-                return PokeTradeResult.Recover;
+                return PokeTradeResult.RecoverPostLinkCode;
             }
 
             // Clear the shown data offset.
@@ -209,7 +210,7 @@ namespace SysBot.Pokemon
             if (!await IsCorrectScreen(CurrentScreen_Box, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
-                return PokeTradeResult.Recover;
+                return PokeTradeResult.RecoverOpenBox;
             }
 
             // Confirm Box 1 Slot 1
@@ -272,7 +273,7 @@ namespace SysBot.Pokemon
                     poke.SendNotification(this, "This Pokémon is not legal per PKHeX's legality checks. I am forbidden from cloning this. Exiting trade.");
                     poke.SendNotification(this, report);
 
-                    return PokeTradeResult.InvalidData;
+                    return PokeTradeResult.IllegalTrade;
                 }
 
                 if (Hub.Config.Legality.ResetHOMETracker)
@@ -426,7 +427,7 @@ namespace SysBot.Pokemon
             if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
-                return PokeTradeResult.Recover;
+                return PokeTradeResult.RecoverStart;
             }
 
             Connection.Log("Opening Y-Comm Menu");
@@ -447,7 +448,7 @@ namespace SysBot.Pokemon
             if (!await IsCorrectScreen(CurrentScreen_Box, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
-                return PokeTradeResult.Recover;
+                return PokeTradeResult.RecoverPostLinkCode;
             }
 
             Connection.Log("Selecting Pokémon");
@@ -471,7 +472,7 @@ namespace SysBot.Pokemon
             if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
-                return PokeTradeResult.Recover;
+                return PokeTradeResult.RecoverReturnOverworld;
             }
 
             Connection.Log("Waiting for Surprise Trade Partner...");

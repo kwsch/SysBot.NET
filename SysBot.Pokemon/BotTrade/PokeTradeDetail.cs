@@ -17,6 +17,7 @@ namespace SysBot.Pokemon
         public readonly int ID; // unique incremented ID
 
         public bool IsSynchronized => Type == PokeTradeType.Random;
+        public bool IsRetry;
 
         public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code)
         {

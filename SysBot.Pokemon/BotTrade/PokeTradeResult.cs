@@ -3,10 +3,23 @@
     public enum PokeTradeResult
     {
         Success,
-        Aborted,
+
+        // Trade Partner Failures
         NoTrainerFound,
         TrainerTooSlow,
-        InvalidData,
-        Recover,
+        IllegalTrade,
+
+        // Recovery -- General Bot Failures
+        // Anything below here should be retried once if possible.
+        Aborted,
+        RecoverStart,
+        RecoverPostLinkCode,
+        RecoverOpenBox,
+        RecoverReturnOverworld,
+    }
+
+    public static class PokeTradeResultExtensions
+    {
+        public static bool AttemptRetry(this PokeTradeResult t) => t != PokeTradeResult.Success && t >= PokeTradeResult.Aborted;
     }
 }
