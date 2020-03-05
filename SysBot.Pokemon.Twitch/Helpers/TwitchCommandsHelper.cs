@@ -11,13 +11,13 @@ namespace SysBot.Pokemon.Twitch
 
             if (set.Species < 1)
             {
-                msg = $"Please understand how to use the bot before using it, {username}. Stop trying to make a fool out of yourself. Take the time to read about what you are supposed to type as the command argument";
+                msg = $"Skipping trade, {username}: Please read what you are supposed to type as the command argument.";
                 return false;
             }
 
             if (set.InvalidLines.Count != 0)
             {
-                msg = $"Skipping trade: Unable to parse Showdown Set:\n{string.Join("\n", set.InvalidLines)}";
+                msg = $"Skipping trade, {username}: Unable to parse Showdown Set:\n{string.Join("\n", set.InvalidLines)}";
                 return false;
             }
 
@@ -28,11 +28,11 @@ namespace SysBot.Pokemon.Twitch
             {
                 var tq = new TwitchQueue(pk8, new PokeTradeTrainerInfo(display), username);
                 TwitchBot.QueuePool.Add(tq);
-                msg = "Added you to the waiting list. Please whisper to me your trade code! Your request from the waiting list will be removed if you are too slow!";
+                msg = $"{username} - added to the waiting list. Please whisper to me your trade code! Your request from the waiting list will be removed if you are too slow!";
                 return true;
             }
 
-            msg = "Skipping trade: Unable to legalize the Pokémon.";
+            msg = $"Skipping trade, {username}: Unable to legalize the Pokémon.";
             return false;
         }
 
