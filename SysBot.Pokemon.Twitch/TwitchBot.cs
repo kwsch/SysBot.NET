@@ -165,10 +165,14 @@ namespace SysBot.Pokemon.Twitch
             client.SendMessage(channel, msg);
         }
 
+        private static bool IsSubscriber(ChatMessage c) => c.IsSubscriber || IsFounder(c);
+        private static bool IsFounder(ChatMessage c) => c.BadgeInfo.Any(kvp => kvp.Key == "founder");
+
         private string HandleCommand(string c, OnMessageReceivedArgs e)
         {
-            bool sudo = Settings.IsSudo(e.ChatMessage.Username);
-            if (!e.ChatMessage.IsSubscriber && Settings.SubOnlyBot && !sudo)
+            var m = e.ChatMessage;
+            bool sudo = Settings.IsSudo(m.Username);
+            if (Settings.SubOnlyBot && !IsSubscriber(m) && !sudo)
                 return null;
 
             if (c == "trade")
