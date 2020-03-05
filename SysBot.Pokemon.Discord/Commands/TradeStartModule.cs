@@ -10,8 +10,20 @@ namespace SysBot.Pokemon.Discord
 {
     public class TradeStartModule : ModuleBase<SocketCommandContext>
     {
-        private static readonly List<Action<PokeTradeBot, PokeTradeDetail<PK8>>> Loggers = new List<Action<PokeTradeBot, PokeTradeDetail<PK8>>>();
-        private static readonly Dictionary<ulong, string> Channels = new Dictionary<ulong, string>();
+        private class TradeStartAction : ChannelAction<PokeTradeBot, PokeTradeDetail<PK8>>
+        {
+            public TradeStartAction(ulong id, Action<PokeTradeBot, PokeTradeDetail<PK8>> messager, string channel) : base(id, messager, channel)
+            {
+            }
+        }
+
+        private static readonly Dictionary<ulong, TradeStartAction> Channels = new Dictionary<ulong, TradeStartAction>();
+
+        private static void Remove(TradeStartAction entry)
+        {
+            Channels.Remove(entry.ChannelID);
+            SysCordInstance.Self.Hub.Queues.Forwarders.Remove(entry.Action);
+        }
 
         public static void RestoreTradeStarting(DiscordSocketClient discord)
         {
@@ -59,11 +71,12 @@ namespace SysBot.Pokemon.Discord
                 c.SendMessageAsync(GetMessage(bot, detail));
             }
 
-            SysCordInstance.Self.Hub.Queues.Forwarders.Add(Logger);
+            Action<PokeTradeBot, PokeTradeDetail<PK8>> l = Logger;
+            SysCordInstance.Self.Hub.Queues.Forwarders.Add(l);
             static string GetMessage(PokeRoutineExecutor bot, PokeTradeDetail<PK8> detail) => $"> [{DateTime.Now:hh:mm:ss}] - {bot.Connection.Name} is now trading (ID {detail.ID}) {detail.Trainer.TrainerName}";
 
-            Loggers.Add(Logger);
-            Channels.Add(cid, c.Name);
+            var entry = new TradeStartAction(cid, l, c.Name);
+            Channels.Add(cid, entry);
         }
 
         [Command("startInfo")]
@@ -89,7 +102,8 @@ namespace SysBot.Pokemon.Discord
                     continue;
                 if (cid != Context.Channel.Id)
                     updatedch.Add(cid.ToString());
-                else Channels.Remove(cid);
+                else if (Channels.TryGetValue(cid, out var entry))
+                    Remove(entry);
             }
             SysCordInstance.Settings.TradeStartingChannels = string.Join(", ", updatedch);
             await ReplyAsync($"Start Notifications cleared from channel: {Context.Channel.Name}").ConfigureAwait(false);
@@ -100,9 +114,12 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task ClearLogsAllAsync()
         {
-            foreach (var l in Loggers)
-                SysCordInstance.Self.Hub.Queues.Forwarders.Remove(l);
-            Loggers.Clear();
+            foreach (var l in Channels)
+            {
+                var entry = l.Value;
+                await ReplyAsync($"Logging cleared from {entry.ChannelName} ({entry.ChannelID}!").ConfigureAwait(false);
+                SysCordInstance.Self.Hub.Queues.Forwarders.Remove(entry.Action);
+            }
             Channels.Clear();
             SysCordInstance.Settings.TradeStartingChannels = string.Empty;
             await ReplyAsync("Start Notifications cleared from all channels!").ConfigureAwait(false);
