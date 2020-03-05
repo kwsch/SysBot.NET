@@ -30,7 +30,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("trade")]
         [Alias("t")]
-        [Summary("Makes the bot trade you the provided PKM by adding it to the pool.")]
+        [Summary("Makes the bot trade you the provided Pokémon file.")]
         [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
         public async Task TradeAsync([Summary("Trade Code")]int code, [Remainder][Summary("Trainer Name to trade to.")]string trainerName)
         {
@@ -55,7 +55,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("trade")]
         [Alias("t")]
-        [Summary("Makes the bot trade you the provided Showdown Set by adding it to the pool.")]
+        [Summary("Makes the bot trade you a Pokémon converted from the provided Showdown Set.")]
         [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
         public async Task TradeAsync([Summary("Showdown Set")][Remainder]string content)
         {
@@ -91,7 +91,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("trade")]
         [Alias("t")]
-        [Summary("Makes the bot trade you the attached file by adding it to the pool.")]
+        [Summary("Makes the bot trade you the attached file.")]
         [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
         public async Task TradeAsync()
         {
