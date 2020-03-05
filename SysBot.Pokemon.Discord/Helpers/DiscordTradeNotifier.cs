@@ -73,7 +73,8 @@ namespace SysBot.Pokemon.Discord
 
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result, string message)
         {
-            Context.User.SendPKMAsync(result, message).ConfigureAwait(false);
+            if (result.Species != 0 && Hub.Config.Discord.ReturnPK8s)
+                Context.User.SendPKMAsync(result, message).ConfigureAwait(false);
         }
 
         private void SendNotificationZ3(Z3SeedResult r)
