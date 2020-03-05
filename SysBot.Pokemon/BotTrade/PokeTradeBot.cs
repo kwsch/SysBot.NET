@@ -136,7 +136,6 @@ namespace SysBot.Pokemon
             if (await CheckIfSoftBanned(token).ConfigureAwait(false))
                await Unban(token).ConfigureAwait(false);
 
-            await Unban(token).ConfigureAwait(false);
             var pkm = poke.TradeData;
             if (pkm.Species != 0)
                 await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
