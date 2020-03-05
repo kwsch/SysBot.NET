@@ -9,8 +9,20 @@ namespace SysBot.Pokemon.Discord
 {
     public class LogModule : ModuleBase<SocketCommandContext>
     {
-        private static readonly List<Action<string, string>> Loggers = new List<Action<string, string>>();
-        private static readonly Dictionary<ulong, string> Channels = new Dictionary<ulong, string>();
+        private class LogAction : ChannelAction<string, string>
+        {
+            public LogAction(ulong id, Action<string, string> messager, string channel) : base(id, messager, channel)
+            {
+            }
+        }
+
+        private static readonly Dictionary<ulong, LogAction> Channels = new Dictionary<ulong, LogAction>();
+
+        private static void Remove(LogAction entry)
+        {
+            Channels.Remove(entry.ChannelID);
+            LogUtil.Forwarders.Remove(entry.Action);
+        }
 
         public static void RestoreLogging(DiscordSocketClient discord)
         {
@@ -52,11 +64,12 @@ namespace SysBot.Pokemon.Discord
         private static void AddLogChannel(ISocketMessageChannel c, ulong cid)
         {
             void Logger(string msg, string identity) => c.SendMessageAsync(GetMessage(msg, identity));
-            LogUtil.Forwarders.Add(Logger);
+            Action<string, string> l = Logger;
+            LogUtil.Forwarders.Add(l);
             static string GetMessage(string msg, string identity) => $"> [{DateTime.Now:hh:mm:ss}] - {identity}: {msg}";
 
-            Loggers.Add(Logger);
-            Channels.Add(cid, c.Name);
+            var entry = new LogAction(cid, l, c.Name);
+            Channels.Add(cid, entry);
         }
 
         [Command("logInfo")]
@@ -82,7 +95,8 @@ namespace SysBot.Pokemon.Discord
                     continue;
                 if (cid != Context.Channel.Id)
                     updatedch.Add(cid.ToString());
-                else Channels.Remove(cid);
+                else if (Channels.TryGetValue(cid, out var entry))
+                    Remove(entry);
             }
             SysCordInstance.Settings.LoggingChannels = string.Join(", ", updatedch);
             await ReplyAsync($"Logging cleared from channel: {Context.Channel.Name}").ConfigureAwait(false);
@@ -93,9 +107,12 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task ClearLogsAllAsync()
         {
-            foreach (var l in Loggers)
-                LogUtil.Forwarders.Remove(l);
-            Loggers.Clear();
+            foreach (var l in Channels)
+            {
+                var entry = l.Value;
+                await ReplyAsync($"Logging cleared from {entry.ChannelName} ({entry.ChannelID}!").ConfigureAwait(false);
+                LogUtil.Forwarders.Remove(entry.Action);
+            }
             Channels.Clear();
             SysCordInstance.Settings.LoggingChannels = string.Empty;
             await ReplyAsync("Logging cleared from all channels!").ConfigureAwait(false);

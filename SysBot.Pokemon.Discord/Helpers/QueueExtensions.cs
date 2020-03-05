@@ -75,13 +75,18 @@ namespace SysBot.Pokemon.Discord
             }
 
             var position = Info.CheckPosition(userID, type);
-            msg = $"Added {user.Mention} to the queue for trade type: {type}; unique ID: {detail.ID}. Your current position is: {position.Position}";
+
+            var ticketID = "";
+            if (TradeStartModule.IsStartChannel(Context.Channel.Id))
+                ticketID = $", unique ID: {detail.ID}";
+
+            msg = $"{user.Mention} - Added to the {type} queue{ticketID}. Current Position: {position.Position}";
 
             var botct = Info.Hub.Bots.Count;
             if (position.Position > botct)
             {
                 var eta = Info.Hub.Config.Queues.EstimateDelay(position.Position, botct);
-                msg += $". Trades usually take at least a minute, so please be ready in around {eta:F1} minutes.";
+                msg += $". Estimated: {eta:F1} minutes.";
             }
             return true;
         }

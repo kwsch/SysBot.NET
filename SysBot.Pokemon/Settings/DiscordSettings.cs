@@ -63,5 +63,8 @@ namespace SysBot.Pokemon
 
         [Category(Operation), Description("Comma separated Logger channel IDs that will log trade start messages.")]
         public string TradeStartingChannels { get; set; } = string.Empty;
+
+        [Category(Operation), Description("Returns PK8s of Pokémon shown in the trade to the user.")]
+        public bool ReturnPK8s { get; set; } = true;
     }
 }

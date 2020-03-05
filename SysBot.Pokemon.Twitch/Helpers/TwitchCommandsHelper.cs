@@ -18,10 +18,9 @@ namespace SysBot.Pokemon.Twitch
             var sav = AutoLegalityWrapper.GetTrainerInfo(PKX.Generation);
             PKM pkm = sav.GetLegal(set, out _);
             var valid = new LegalityAnalysis(pkm).Valid;
-            if (valid && pkm is PK8 p8)
+            if (valid && pkm is PK8 pk8)
             {
-                var tq = new TwitchQueue(p8, new PokeTradeTrainerInfo(display),
-                    username);
+                var tq = new TwitchQueue(pk8, new PokeTradeTrainerInfo(display), username);
                 TwitchBot.QueuePool.Add(tq);
                 msg = "Added you to the waiting list. Please whisper to me your trade code! Your request from the waiting list will be removed if you are too slow!";
                 return true;

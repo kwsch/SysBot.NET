@@ -13,6 +13,7 @@ namespace SysBot.Pokemon.Discord
         private int Code { get; }
         private SocketCommandContext Context { get; }
         public Action<PokeRoutineExecutor>? OnFinish { private get; set; }
+        public PokeTradeHub<PK8> Hub = SysCordInstance.Self.Hub;
 
         public DiscordTradeNotifier(T data, PokeTradeTrainerInfo info, int code, SocketCommandContext context)
         {
@@ -47,7 +48,7 @@ namespace SysBot.Pokemon.Discord
             var tradedToUser = Data.Species;
             var message = tradedToUser != 0 ? $"Trade finished. Enjoy your {(Species)tradedToUser}!" : "Trade finished!";
             Context.User.SendMessageAsync(message).ConfigureAwait(false);
-            if (result.Species != 0)
+            if (result.Species != 0 && Hub.Config.Discord.ReturnPK8s)
                 Context.User.SendPKMAsync(result, "Here's what you traded me!").ConfigureAwait(false);
         }
 
@@ -72,7 +73,8 @@ namespace SysBot.Pokemon.Discord
 
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result, string message)
         {
-            Context.User.SendPKMAsync(result, message).ConfigureAwait(false);
+            if (result.Species != 0 && Hub.Config.Discord.ReturnPK8s)
+                Context.User.SendPKMAsync(result, message).ConfigureAwait(false);
         }
 
         private void SendNotificationZ3(Z3SeedResult r)

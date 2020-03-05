@@ -43,12 +43,16 @@ namespace SysBot.Pokemon.Twitch
             Channel = settings.Channel;
             WebSocketClient customClient = new WebSocketClient(clientOptions);
             client = new TwitchClient(customClient);
-            client.Initialize(credentials, Channel);
+
+            var cmd = settings.CommandPrefix;
+            client.Initialize(credentials, Channel, cmd, cmd);
 
             client.OnLog += Client_OnLog;
             client.OnJoinedChannel += Client_OnJoinedChannel;
             client.OnMessageReceived += Client_OnMessageReceived;
             client.OnWhisperReceived += Client_OnWhisperReceived;
+            client.OnChatCommandReceived += Client_OnChatCommandReceived;
+            client.OnWhisperCommandReceived += Client_OnWhisperCommandReceived;
             client.OnNewSubscriber += Client_OnNewSubscriber;
             client.OnConnected += Client_OnConnected;
             client.OnError += (_, e) =>
@@ -120,86 +124,109 @@ namespace SysBot.Pokemon.Twitch
             }
 
             var position = Info.CheckPosition(userID, type);
-            msg = $"Added {name} to the queue for trade type: {type}. Your current position is: {position.Position}; unique ID: {detail.ID}";
+            msg = $"{name} - Added to the {type} queue, unique ID: {detail.ID}. Current Position: {position.Position}";
 
             var botct = Info.Hub.Bots.Count;
             if (position.Position > botct)
             {
                 var eta = Info.Hub.Config.Queues.EstimateDelay(position.Position, botct);
-                msg += $". Trades usually take at least a minute, so please be ready in around {eta:F1} minutes.";
+                msg += $". Estimated: {eta:F1} minutes.";
             }
             return true;
         }
 
         private void Client_OnLog(object sender, OnLogArgs e)
         {
-            Console.WriteLine($"{DateTime.Now,-19} [{e.BotUsername}] {e.Data}");
+            LogUtil.LogText($"[{client.TwitchUsername}] -[{e.BotUsername}] {e.Data}");
         }
 
         private void Client_OnConnected(object sender, OnConnectedArgs e)
         {
-            Console.WriteLine($"{DateTime.Now,-19} [{e.BotUsername}] Connected {e.AutoJoinChannel}");
+            LogUtil.LogText($"[{client.TwitchUsername}] - Connected {e.AutoJoinChannel} as {e.BotUsername}");
         }
 
         private void Client_OnJoinedChannel(object sender, OnJoinedChannelArgs e)
         {
-            Console.WriteLine($"{DateTime.Now,-19} [{e.BotUsername}] Joined {e.Channel}");
+            LogUtil.LogInfo($"Joined {e.Channel}", e.BotUsername);
             client.SendMessage(e.Channel, "Connected!");
         }
 
         private void Client_OnMessageReceived(object sender, OnMessageReceivedArgs e)
         {
-            var command = e.ChatMessage.Message.Split(' ')[0].Trim();
-            var p = Settings.CommandPrefix;
-
-            if (!command.StartsWith(p) || Hub.Config.Twitch.UserBlacklist.Contains(e.ChatMessage.Username))
-                return;
-
-            var c = command.Substring(p.Length).ToLower();
-
-            var msg = HandleCommand(c, e);
-            if (msg == null)
-                return;
-
-            var channel = e.ChatMessage.Channel;
-            client.SendMessage(channel, msg);
+            LogUtil.LogText($"[{client.TwitchUsername}] - @{e.ChatMessage.Username}: {e.ChatMessage.Message}");
         }
 
-        private string HandleCommand(string c, OnMessageReceivedArgs e)
+        private void Client_OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
         {
-            bool sudo = Settings.IsSudo(e.ChatMessage.Username);
-            if (!e.ChatMessage.IsSubscriber && Settings.SubOnlyBot && !sudo)
-                return null;
+            if (!Hub.Config.Twitch.AllowCommandsViaChannel || Hub.Config.Twitch.UserBlacklist.Contains(e.Command.ChatMessage.Username))
+                return;
 
-            if (c == "trade")
-            {
-                var chat = e.ChatMessage;
-                var _ = TwitchCommandsHelper.AddToWaitingList(chat.Message.Substring(6).Trim(), chat.DisplayName, chat.Username, out string msg);
-                return msg;
-            }
+            var msg = e.Command.ChatMessage;
+            var c = e.Command.CommandText.ToLower();
+            var args = e.Command.ArgumentsAsString;
+            var response = HandleCommand(msg, c, args);
+            if (response == null)
+                return;
+
+            var channel = e.Command.ChatMessage.Channel;
+            client.SendMessage(channel, response);
+        }
+
+        private void Client_OnWhisperCommandReceived(object sender, OnWhisperCommandReceivedArgs e)
+        {
+            if (!Hub.Config.Twitch.AllowCommandsViaWhisper || Hub.Config.Twitch.UserBlacklist.Contains(e.Command.WhisperMessage.Username))
+                return;
+
+            var msg = e.Command.WhisperMessage;
+            var c = e.Command.CommandText.ToLower();
+            var args = e.Command.ArgumentsAsString;
+            var response = HandleCommand(msg, c, args);
+            if (response == null)
+                return;
+
+            client.SendWhisper(msg.Username, response);
+        }
+
+        private static bool IsSubscriber(ChatMessage c) => c.IsSubscriber || IsFounder(c);
+        private static bool IsFounder(ChatMessage c) => c.BadgeInfo.Any(kvp => kvp.Key == "founder");
+
+        private string HandleCommand(TwitchLibMessage m, string c, string args)
+        {
+            bool sudo() => m is ChatMessage ch && (ch.IsBroadcaster || Settings.IsSudo(m.Username));
+            bool disallowed() => Settings.SubOnlyBot && !((m is ChatMessage ch && IsSubscriber(ch)) || sudo());
 
             switch (c)
             {
-                case "tradestatus":
-                    return Info.GetPositionString(ulong.Parse(e.ChatMessage.UserId));
-                case "tradeclear":
-                    return TwitchCommandsHelper.ClearTrade(sudo, ulong.Parse(e.ChatMessage.UserId));
+                // User Usable Commands
+                case "trade" when !disallowed():
+                    var _ = TwitchCommandsHelper.AddToWaitingList(args, m.DisplayName, m.Username, out string msg);
+                    return msg;
+                case "ts" when !disallowed():
+                    return Info.GetPositionString(ulong.Parse(m.UserId));
+                case "tc" when !disallowed():
+                    return TwitchCommandsHelper.ClearTrade(sudo(), ulong.Parse(m.UserId));
 
-                case "tradeclearall" when !sudo:
+                // Sudo Only Commands
+                case "tca" when !sudo():
+                case "pr" when !sudo():
+                case "pc" when !sudo():
+                case "tt" when !sudo():
                     return "This command is locked for sudo users only!";
-                case "tradeclearall":
+
+                case "tca":
                     Info.ClearAllQueues();
                     return "Cleared all queues!";
 
-                case "poolreload" when !sudo:
-                    return "This command is locked for sudo users only!";
-                case "poolreload":
+                case "pr":
                     return Info.Hub.Ledy.Pool.Reload() ? $"Reloaded from folder. Pool count: {Info.Hub.Ledy.Pool.Count}" : "Failed to reload from folder.";
 
-                case "poolcount" when !sudo:
-                    return "This command is locked for sudo users only!";
-                case "poolcount":
+                case "pc":
                     return $"The pool count is: {Info.Hub.Ledy.Pool.Count}";
+
+                case "tt":
+                    return Info.Hub.Queues.Info.ToggleQueue()
+                        ? "Users are now able to join the trade queue."
+                        : "Changed queue settings: **Users CANNOT join the queue until it is turned back on.**";
 
                 default: return null;
             }

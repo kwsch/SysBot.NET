@@ -101,8 +101,11 @@ namespace SysBot.Pokemon.Discord
                 _ => Console.ForegroundColor
             };
 
-            Console.WriteLine($"{DateTime.Now,-19} [{msg.Severity,8}] {msg.Source}: {msg.Message} {msg.Exception}");
+            var text = $"[{msg.Severity,8}] {msg.Source}: {msg.Message} {msg.Exception}";
+            Console.WriteLine($"{DateTime.Now,-19} {text}");
             Console.ResetColor();
+
+            LogUtil.LogText($"SysCord: {text}");
 
             return Task.CompletedTask;
         }

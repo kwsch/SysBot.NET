@@ -45,7 +45,10 @@ namespace SysBot.Pokemon.Discord
         public async Task ToggleQueueTradeAsync()
         {
             var state = Info.ToggleQueue();
-            await ReplyAsync($"CanQueue has been set to: {state}").ConfigureAwait(false);
+            var msg = state
+                ? "Users are now able to join the trade queue."
+                : "Changed queue settings: **Users CANNOT join the queue until it is turned back on.**";
+            await ReplyAsync(msg).ConfigureAwait(false);
         }
 
         [Command("queueList")]
@@ -57,7 +60,7 @@ namespace SysBot.Pokemon.Discord
             var lines = SysCordInstance.Self.Hub.Queues.Info.GetUserList();
             var msg = string.Join("\n", lines);
             if (msg.Length < 3)
-                await ReplyAsync("List is empty.").ConfigureAwait(false);
+                await ReplyAsync("Queue list is empty.").ConfigureAwait(false);
             else
                 await Context.User.SendMessageAsync(msg).ConfigureAwait(false);
         }

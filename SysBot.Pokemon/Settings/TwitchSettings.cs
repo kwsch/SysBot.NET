@@ -22,16 +22,16 @@ namespace SysBot.Pokemon
         public string Channel { get; set; } = string.Empty;
 
         [Category(Startup), Description("Bot Command Prefix")]
-        public string CommandPrefix { get; set; } = "$";
+        public char CommandPrefix { get; set; } = '$';
 
         [Category(Operation), Description("Message sent when the Barrier is released.")]
         public string MessageStart { get; set; } = string.Empty;
 
         [Category(Operation), Description("Throttle the bot from sending messages if X messages have been sent in the past Y seconds.")]
-        public int ThrottleMessages { get; set; }
+        public int ThrottleMessages { get; set; } = 100;
 
         [Category(Operation), Description("Throttle the bot from sending messages if X messages have been sent in the past Y seconds.")]
-        public double ThrottleSeconds { get; set; }
+        public double ThrottleSeconds { get; set; } = 30;
 
         [Category(Operation), Description("Generate files for use in OBS as overlays, etc.")]
         public bool GenerateAssets { get; set; } = true;
@@ -49,6 +49,12 @@ namespace SysBot.Pokemon
 
         [Category(Operation), Description("Amount of users to show in the on-deck list.")]
         public int OnDeckCount { get; set; } = 5;
+
+        [Category(Operation), Description("When enabled, the bot will process commands sent to the channel.")]
+        public bool AllowCommandsViaChannel { get; set; } = true;
+
+        [Category(Operation), Description("When enabled, the bot will allow users to send command via whisper (bypasses slow mode)")]
+        public bool AllowCommandsViaWhisper { get; set; }
 
         public bool IsSudo(string username)
         {
