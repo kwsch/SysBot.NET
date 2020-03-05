@@ -16,7 +16,8 @@ namespace SysBot.Pokemon.WinForms
         private static readonly string ConfigPath = Path.Combine(WorkingDirectory, "config.json");
         private readonly List<PokeBotConfig> Bots = new List<PokeBotConfig>();
         private readonly PokeTradeHub<PK8> Hub;
-        private readonly BotEnvironment RunningEnvironment;
+
+        private BotEnvironment? RunningEnvironment;
 
         public Main()
         {
@@ -33,8 +34,6 @@ namespace SysBot.Pokemon.WinForms
             CB_Routine.ValueMember = nameof(ComboItem.Value);
             CB_Routine.DataSource = list;
             CB_Routine.SelectedIndex = 2; // default option
-
-            RunningEnvironment = new BotEnvironmentImpl(Hub);
 
             LogUtil.Forwarders.Add(AppendLog);
         }
@@ -81,11 +80,11 @@ namespace SysBot.Pokemon.WinForms
             RTB_Logs.AppendText(line);
             RTB_Logs.ScrollToCaret();
 
-            var bot = RunningEnvironment.Bots.Find(z => line.Contains(z.Connection.Name));
+            var bot = RunningEnvironment?.Bots.Find(z => line.Contains(z.Connection.Name));
             if (bot == null)
                 return;
 
-            var index = RunningEnvironment.Bots.IndexOf(bot);
+            var index = RunningEnvironment!.Bots.IndexOf(bot);
             var start = line.IndexOf(bot.Connection.Name, StringComparison.Ordinal);
             var substring = line.Substring(start).Trim();
             LV_Bots.Items[index].SubItems[3].Text = substring;
@@ -102,7 +101,7 @@ namespace SysBot.Pokemon.WinForms
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (RunningEnvironment.IsRunning)
+            if (RunningEnvironment?.IsRunning == true)
             {
                 RunningEnvironment.Stop();
                 Thread.Sleep(100); // wait for things to abort?
@@ -123,19 +122,23 @@ namespace SysBot.Pokemon.WinForms
             SaveCurrentConfig();
 
             var cfg = GetCurrentConfiguration();
+            var env = new BotEnvironmentImpl(Hub);
             B_Start.Enabled = false;
             B_Stop.Enabled = true;
             B_New.Enabled = false;
             B_Delete.Enabled = false;
 
+            RunningEnvironment = env;
             LogUtil.LogInfo("Starting", "Form");
-            RunningEnvironment.Start(cfg);
+            env.Start(cfg);
             Tab_Logs.Select();
         }
 
         private void B_Stop_Click(object sender, EventArgs e)
         {
             var env = RunningEnvironment;
+            if (env == null)
+                throw new ArgumentNullException(nameof(RunningEnvironment), "Should have an environment before calling stop!");
             if (!env.CanStop)
                 return;
 
