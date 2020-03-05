@@ -265,7 +265,7 @@ namespace SysBot.Pokemon
                 var la = new LegalityAnalysis(clone);
                 if (!la.Valid && Hub.Config.VerifyLegality)
                 {
-                    Connection.Log("Clone request has detected an invalid Pokémon.");
+                    Connection.Log($"Clone request has detected an invalid Pokémon: {(Species)clone.Species}");
                     if (DumpSetting.Dump)
                         DumpPokemon(DumpSetting.DumpFolder, "hacked", clone);
 

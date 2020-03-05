@@ -40,6 +40,11 @@ namespace SysBot.Pokemon.Discord
             LogUtil.LogInfo("Added Start Notification to Discord channel(s) on Bot startup.", "Discord");
         }
 
+        public static bool IsStartChannel(ulong cid)
+        {
+            return Channels.TryGetValue(cid, out _);
+        }
+
         [Command("startHere")]
         [Summary("Makes the bot log trade starts to the channel.")]
         [RequireSudo]

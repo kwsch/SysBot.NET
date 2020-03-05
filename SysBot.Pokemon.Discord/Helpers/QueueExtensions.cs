@@ -75,7 +75,12 @@ namespace SysBot.Pokemon.Discord
             }
 
             var position = Info.CheckPosition(userID, type);
-            msg = $"{user.Mention} - Added to the {type} queue, unique ID: {detail.ID}. Current Position: {position.Position}";
+
+            var ticketID = "";
+            if (TradeStartModule.IsStartChannel(Context.Channel.Id))
+                ticketID = $", unique ID: {detail.ID}";
+
+            msg = $"{user.Mention} - Added to the {type} queue{ticketID}. Current Position: {position.Position}";
 
             var botct = Info.Hub.Bots.Count;
             if (position.Position > botct)
