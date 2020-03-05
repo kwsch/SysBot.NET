@@ -250,6 +250,13 @@ namespace SysBot.Pokemon
             await Connection.WriteBytesAsync(data, SoftBanUnixTimespanOffset, token).ConfigureAwait(false);
         }
 
+        public async Task<bool> CheckIfSoftBanned(CancellationToken token)
+        {
+            // Check if the Unix Timestamp isn't Zero, if so we are Softbanned.
+            var data = await Connection.ReadBytesAsync(SoftBanUnixTimespanOffset, 1, token).ConfigureAwait(false);
+            return data[0] > 1;
+        }
+
         public async Task ResetTradePosition(CancellationToken token)
         {
             Connection.Log("Reset bot position.");

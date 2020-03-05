@@ -133,6 +133,10 @@ namespace SysBot.Pokemon
             UpdateBarrier(poke.IsSynchronized);
             poke.TradeInitialize(this);
 
+            if (await CheckIfSoftBanned(token).ConfigureAwait(false))
+               await Unban(token).ConfigureAwait(false);
+
+            await Unban(token).ConfigureAwait(false);
             var pkm = poke.TradeData;
             if (pkm.Species != 0)
                 await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
@@ -420,6 +424,8 @@ namespace SysBot.Pokemon
             // 4. Repeat
 
             // Inject to b1s1
+            if (await CheckIfSoftBanned(token).ConfigureAwait(false))
+                await Unban(token).ConfigureAwait(false);
 
             Connection.Log("Starting next Surprise Trade. Getting data...");
             await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
