@@ -171,36 +171,34 @@ namespace SysBot.Pokemon.Twitch
         private string HandleCommand(string c, OnMessageReceivedArgs e)
         {
             var m = e.ChatMessage;
-            bool sudo = Settings.IsSudo(m.Username);
-            if (Settings.SubOnlyBot && !IsSubscriber(m) && !sudo)
-                return null;
-
-            if (c == "trade")
-            {
-                var chat = e.ChatMessage;
-                var _ = TwitchCommandsHelper.AddToWaitingList(chat.Message.Substring(6).Trim(), chat.DisplayName, chat.Username, out string msg);
-                return msg;
-            }
+            bool sudo() => m.IsBroadcaster || Settings.IsSudo(m.Username);
+            bool disallowed() => Settings.SubOnlyBot && !IsSubscriber(m) && !sudo();
 
             switch (c)
             {
-                case "tradestatus":
+                // User Usable Commands
+                case "trade" when !disallowed():
+                    var chat = e.ChatMessage;
+                    var _ = TwitchCommandsHelper.AddToWaitingList(chat.Message.Substring(6).Trim(), chat.DisplayName, chat.Username, out string msg);
+                    return msg;
+                case "tradestatus" when !disallowed():
                     return Info.GetPositionString(ulong.Parse(e.ChatMessage.UserId));
-                case "tradeclear":
-                    return TwitchCommandsHelper.ClearTrade(sudo, ulong.Parse(e.ChatMessage.UserId));
+                case "tradeclear" when !disallowed():
+                    return TwitchCommandsHelper.ClearTrade(sudo(), ulong.Parse(e.ChatMessage.UserId));
 
-                case "tradeclearall" when !sudo:
+                // Sudo Only Commands
+                case "tradeclearall" when !sudo():
                     return "This command is locked for sudo users only!";
                 case "tradeclearall":
                     Info.ClearAllQueues();
                     return "Cleared all queues!";
 
-                case "poolreload" when !sudo:
+                case "poolreload" when !sudo():
                     return "This command is locked for sudo users only!";
                 case "poolreload":
                     return Info.Hub.Ledy.Pool.Reload() ? $"Reloaded from folder. Pool count: {Info.Hub.Ledy.Pool.Count}" : "Failed to reload from folder.";
 
-                case "poolcount" when !sudo:
+                case "poolcount" when !sudo():
                     return "This command is locked for sudo users only!";
                 case "poolcount":
                     return $"The pool count is: {Info.Hub.Ledy.Pool.Count}";
