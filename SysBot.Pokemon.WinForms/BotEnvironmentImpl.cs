@@ -14,7 +14,7 @@ namespace SysBot.Pokemon
         public BotEnvironmentImpl(PokeTradeHub<PK8> hub) : base(hub) { }
         public BotEnvironmentImpl(PokeTradeHubConfig config) : base(config) { }
 
-        private TwitchBot? Twitch;
+        private static TwitchBot? Twitch;
 
         protected override void AddIntegrations()
         {
