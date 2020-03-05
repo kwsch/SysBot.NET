@@ -9,6 +9,12 @@ namespace SysBot.Pokemon.Twitch
         {
             ShowdownSet set = TwitchShowdownUtil.ConvertToShowdown(setstring);
 
+            if (set.Species < 1)
+            {
+                msg = $"Please understand how to use the bot before using it, {username}. Stop trying to make a fool out of yourself. Take the time to read about what you are supposed to type as the command argument";
+                return false;
+            }
+
             if (set.InvalidLines.Count != 0)
             {
                 msg = $"Skipping trade: Unable to parse Showdown Set:\n{string.Join("\n", set.InvalidLines)}";
