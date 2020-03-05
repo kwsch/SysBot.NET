@@ -259,7 +259,8 @@ namespace SysBot.Pokemon
                 // Inject the shown Pokémon.
                 var clone = (PK8)pk.Clone();
 
-                poke.SendNotification(this, clone, "Here's what you showed me!");
+                if (Hub.Config.Discord.ReturnPK8s)
+                    poke.SendNotification(this, clone, "Here's what you showed me!");
 
                 var la = new LegalityAnalysis(clone);
                 if (!la.Valid && Hub.Config.VerifyLegality)
