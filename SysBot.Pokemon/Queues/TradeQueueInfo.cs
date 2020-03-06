@@ -14,6 +14,8 @@ namespace SysBot.Pokemon
 
         public TradeQueueInfo(PokeTradeHub<T> hub) => Hub = hub;
 
+        public int Count => UsersInQueue.Count;
+
         public bool ToggleQueue() => Hub.Config.Queues.CanQueue ^= true;
         public bool GetCanQueue() => Hub.Config.Queues.CanQueue && UsersInQueue.Count < Hub.Config.Queues.MaxQueueCount;
 
@@ -147,7 +149,7 @@ namespace SysBot.Pokemon
 
         public int GetRandomTradeCode() => Hub.Config.Trade.GetRandomTradeCode();
 
-        public int Count(Func<TradeEntry<T>, bool> func)
+        public int UserCount(Func<TradeEntry<T>, bool> func)
         {
             lock (_sync)
                 return UsersInQueue.Count(func);

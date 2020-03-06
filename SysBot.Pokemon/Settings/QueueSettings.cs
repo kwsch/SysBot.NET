@@ -9,6 +9,7 @@ namespace SysBot.Pokemon
         private const string FeatureToggle = nameof(FeatureToggle);
         private const string UserBias = nameof(UserBias);
         private const string TimeBias = nameof(TimeBias);
+        private const string QueueToggle = nameof(QueueToggle);
         public override string ToString() => "Queue Joining Settings";
 
         // General
@@ -21,6 +22,23 @@ namespace SysBot.Pokemon
 
         [Category(FeatureToggle), Description("Determines how Flex Mode will process the queues.")]
         public FlexYieldMode FlexMode { get; set; } = FlexYieldMode.Weighted;
+
+        [Category(FeatureToggle), Description("Determines when the queue is turned on and off.")]
+        public QueueOpening QueueToggleMode { get; set; } = QueueOpening.Threshold;
+
+        // Queue Toggle
+
+        [Category(QueueToggle), Description("Threshold Mode: Count of users that will cause the queue to open.")]
+        public int ThresholdUnlock { get; set; } = 0;
+
+        [Category(QueueToggle), Description("Threshold Mode: Count of users that will cause the queue to close.")]
+        public int ThresholdLock { get; set; } = 30;
+
+        [Category(QueueToggle), Description("Scheduled Mode: Seconds of being open before the queue locks.")]
+        public int IntervalOpenFor { get; set; } = 5 * 60;
+
+        [Category(QueueToggle), Description("Scheduled Mode: Seconds of being closed before the queue unlocks.")]
+        public int IntervalCloseFor { get; set; } = 15 * 60;
 
         // Flex Users
 
@@ -104,5 +122,12 @@ namespace SysBot.Pokemon
     {
         LessCheatyFirst,
         Weighted,
+    }
+
+    public enum QueueOpening
+    {
+        Manual,
+        Threshold,
+        Interval,
     }
 }

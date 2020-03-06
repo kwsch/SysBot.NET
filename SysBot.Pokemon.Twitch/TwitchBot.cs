@@ -37,9 +37,6 @@ namespace SysBot.Pokemon.Twitch
                 ThrottlingPeriod = TimeSpan.FromSeconds(settings.ThrottleSeconds)
             };
 
-            if (settings.GenerateAssets)
-                AddAssetGeneration();
-
             Channel = settings.Channel;
             WebSocketClient customClient = new WebSocketClient(clientOptions);
             client = new TwitchClient(customClient);
@@ -61,6 +58,11 @@ namespace SysBot.Pokemon.Twitch
                 LogUtil.LogError(e.BotUsername + Environment.NewLine + e.Error.Message, "TwitchBot");
 
             client.Connect();
+
+            if (settings.GenerateAssets)
+                AddAssetGeneration();
+
+            EchoUtil.Forwarders.Add(msg => client.SendMessage(Channel, msg));
         }
 
         private void AddAssetGeneration()
