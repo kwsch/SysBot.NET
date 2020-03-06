@@ -51,6 +51,16 @@ namespace SysBot.Pokemon.Discord
             await ReplyAsync(msg).ConfigureAwait(false);
         }
 
+        [Command("queueMode")]
+        [Alias("qm")]
+        [Summary("Toggles on/off the ability to join the trade queue.")]
+        [RequireSudo]
+        public async Task ChangeQueueModeAsync([Summary("Queue mode")]QueueOpening mode)
+        {
+            SysCordInstance.Self.Hub.Config.Queues.QueueToggleMode = mode;
+            await ReplyAsync($"Changed queue mode to {mode}.").ConfigureAwait(false);
+        }
+
         [Command("queueList")]
         [Alias("ql")]
         [Summary("Private messages the list of users in the queue.")]
