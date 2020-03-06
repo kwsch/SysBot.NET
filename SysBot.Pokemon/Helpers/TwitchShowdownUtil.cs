@@ -37,8 +37,8 @@ namespace SysBot.Pokemon
             "Adamant Nature", "Bashful Nature", "Brave Nature", "Bold Nature", "Calm Nature",
             "Careful Nature", "Docile Nature", "Gentle Nature", "Hardy Nature", "Hasty Nature",
             "Impish Nature", "Jolly Nature", "Lax Nature", "Lonely Nature", "Mild Nature",
-            "Modest", "Naive", "Naughty", "Quiet", "Quirky",
-            "Rash", "Relaxed", "Sassy", "Serious", "Timid"
+            "Modest Nature", "Naive Nature", "Naughty Nature", "Quiet Nature", "Quirky Nature",
+            "Rash Nature", "Relaxed Nature", "Sassy Nature", "Serious Nature", "Timid Nature"
         };
     }
 }
