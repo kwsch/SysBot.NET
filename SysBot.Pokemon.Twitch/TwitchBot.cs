@@ -10,6 +10,7 @@ using TwitchLib.Communication.Clients;
 using TwitchLib.Communication.Models;
 using PKHeX.Core;
 using SysBot.Base;
+using TwitchLib.Communication.Events;
 
 namespace SysBot.Pokemon.Twitch
 {
@@ -34,7 +35,7 @@ namespace SysBot.Pokemon.Twitch
             var clientOptions = new ClientOptions
             {
                 MessagesAllowedInPeriod = settings.ThrottleMessages,
-                ThrottlingPeriod = TimeSpan.FromSeconds(settings.ThrottleSeconds)
+                ThrottlingPeriod = TimeSpan.FromSeconds(settings.ThrottleSeconds),
             };
 
             Channel = settings.Channel;
@@ -52,8 +53,15 @@ namespace SysBot.Pokemon.Twitch
             client.OnWhisperCommandReceived += Client_OnWhisperCommandReceived;
             client.OnNewSubscriber += Client_OnNewSubscriber;
             client.OnConnected += Client_OnConnected;
+            client.OnDisconnected += Client_OnDisconnected;
+
+            client.OnMessageThrottled += (_, e)
+                => LogUtil.LogError($"Message Throttled: {e.Message}", "TwitchBot");
+            client.OnWhisperThrottled += (_, e)
+                => LogUtil.LogError($"Whisper Throttled: {e.Message}", "TwitchBot");
+
             client.OnError += (_, e) =>
-                LogUtil.LogError(e.Exception.Message + Environment.NewLine + e.Exception.Message, "TwitchBot");
+                LogUtil.LogError(e.Exception.Message + Environment.NewLine + e.Exception.StackTrace, "TwitchBot");
             client.OnConnectionError += (_, e) =>
                 LogUtil.LogError(e.BotUsername + Environment.NewLine + e.Error.Message, "TwitchBot");
 
@@ -147,6 +155,11 @@ namespace SysBot.Pokemon.Twitch
             LogUtil.LogText($"[{client.TwitchUsername}] - Connected {e.AutoJoinChannel} as {e.BotUsername}");
         }
 
+        private void Client_OnDisconnected(object sender, OnDisconnectedEventArgs e)
+        {
+            LogUtil.LogText($"[{client.TwitchUsername}] - Disconnected.");
+        }
+
         private void Client_OnJoinedChannel(object sender, OnJoinedChannelArgs e)
         {
             LogUtil.LogInfo($"Joined {e.Channel}", e.BotUsername);
@@ -236,6 +249,7 @@ namespace SysBot.Pokemon.Twitch
 
         private void Client_OnWhisperReceived(object sender, OnWhisperReceivedArgs e)
         {
+            LogUtil.LogText($"[{client.TwitchUsername}] - @{e.WhisperMessage.Username}: {e.WhisperMessage.Message}");
             if (QueuePool.Count > 100)
             {
                 var removed = QueuePool[0];
