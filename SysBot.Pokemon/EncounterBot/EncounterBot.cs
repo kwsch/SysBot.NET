@@ -4,8 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Base.SwitchStick;
-using System.IO;
-
+using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
@@ -14,14 +13,12 @@ namespace SysBot.Pokemon
         private readonly BotCompleteCounts Counts;
         private readonly IDumper DumpSetting;
         private readonly EncounterSettings Settings;
-        private readonly bool ContinueEncountering;
 
         public EncounterBot(PokeBotConfig cfg, EncounterSettings encounter, IDumper dump, BotCompleteCounts count) : base(cfg)
         {
             Counts = count;
             DumpSetting = dump;
-            Settings = encounter;
-            ContinueEncountering = encounter.ContinueAfterMatch;
+            Settings = encounter; // not needed right now
         }
 
         private int encounterCount;
@@ -61,14 +58,14 @@ namespace SysBot.Pokemon
                     return;
                 } else if (pk.Ability == 119 || pk.Ability == 107) // pokemon with annouced abilites
                 {
-                    await Task.Delay(2800, token).ConfigureAwait(false);
+                    await Task.Delay(2700, token).ConfigureAwait(false);
                 }
 
                 if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
                     DumpPokemon(DumpSetting.DumpFolder, "encounters", pk);
                 
-                await Task.Delay(4500, token).ConfigureAwait(false);
-                while (!await IsCorrectScreen(0xFFFF5127, token).ConfigureAwait(false)) //uh CurrentScreen_Overworld wasn't accessible so I was lazy
+                await Task.Delay(4600, token).ConfigureAwait(false);
+                while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
                 {
                     await Click(B, 400, token).ConfigureAwait(false);
                     await Click(B, 400, token).ConfigureAwait(false);
@@ -90,7 +87,7 @@ namespace SysBot.Pokemon
             int attempts = 0;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EncounterBot)
             {
-                if (await IsCorrectScreen(0xFFFF5127, token).ConfigureAwait(false)) //uh CurrentScreen_Overworld wasn't accessible so I was lazy
+                if (await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
                 {
                     await SetStick(LEFT, 0, 30000, 2500, token).ConfigureAwait(false);
                     await SetStick(LEFT, 0, 0, 750, token).ConfigureAwait(false); // reset
@@ -99,7 +96,7 @@ namespace SysBot.Pokemon
                     await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false); // reset
                 } else
                 {
-                    while (!await IsCorrectScreen(0xFFFF5127, token).ConfigureAwait(false)) //uh CurrentScreen_Overworld wasn't accessible so I was lazy
+                    while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
                     {
                         await Click(B, 400, token).ConfigureAwait(false);
                         await Click(B, 400, token).ConfigureAwait(false);
@@ -114,7 +111,7 @@ namespace SysBot.Pokemon
                 if (pk.Species == 0)
                 {
                     continue;
-                } else if (!await IsCorrectScreen(0xFFFF5127, token).ConfigureAwait(false)) //uh CurrentScreen_Overworld wasn't accessible so I was lazy
+                } else if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
                 {
                     return attempts;
                 }
