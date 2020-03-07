@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -11,14 +12,15 @@ namespace SysBot.Base
         static LogUtil()
         {
             var config = new LoggingConfiguration();
+            Directory.CreateDirectory("logs");
             var logfile = new FileTarget("logfile")
             {
-                FileName = "SysBotLog.txt",
+                FileName = Path.Combine("logs", "SysBotLog.txt"),
                 ConcurrentWrites = true,
 
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveNumbering = ArchiveNumberingMode.Date,
-                ArchiveFileName = "SysBotLog.{#}.txt",
+                ArchiveFileName = Path.Combine("logs", "SysBotLog.{#}.txt"),
                 ArchiveDateFormat = "yyyy-MM-dd",
                 ArchiveAboveSize = 104857600, // 100MB (never)
                 MaxArchiveFiles = 14, // 2 weeks
