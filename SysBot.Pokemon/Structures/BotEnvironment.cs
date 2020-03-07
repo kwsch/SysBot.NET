@@ -95,6 +95,9 @@ namespace SysBot.Pokemon
                 case PokeRoutineType.RaidBot:
                     return new RaidBot(cfg, Hub.Config.Raid, Hub.Config.Folder, Hub.Counts);
 
+                case PokeRoutineType.EncounterBot:
+                    return new EncounterBot(cfg, Hub.Config.Encounter, Hub.Config.Folder, Hub.Counts);
+
                 default:
                     throw new ArgumentException(nameof(cfg.NextRoutineType));
             }

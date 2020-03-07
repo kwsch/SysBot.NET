@@ -15,6 +15,7 @@
         EggFetch,
         FossilBot,
         RaidBot,
+        EncounterBot,
 
         Other = 999,
     }

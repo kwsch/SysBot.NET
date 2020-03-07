@@ -60,6 +60,10 @@ namespace SysBot.Pokemon
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public RaidSettings Raid { get; set; } = new RaidSettings();
 
+        [Category(Bots)]
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public EncounterSettings Encounter { get; set; } = new EncounterSettings();
+
         // Integration
 
         [Category(Integration)]

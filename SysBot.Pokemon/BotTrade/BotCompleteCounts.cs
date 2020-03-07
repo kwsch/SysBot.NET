@@ -10,6 +10,7 @@ namespace SysBot.Pokemon
         private int CompletedTrades;
         private int CompletedEggs;
         private int CompletedFossils;
+        private int CompletedEncounters;
         private int CompletedDudu;
         private int CompletedSurprise;
         private int CompletedDistribution;
@@ -29,6 +30,7 @@ namespace SysBot.Pokemon
             CompletedEggs = Config.CompletedEggs;
             CompletedDudu = Config.CompletedDudu;
             CompletedFossils = Config.CompletedFossils;
+            CompletedEncounters = Config.CompletedEncounters;
             CompletedSurprise = Config.CompletedSurprise;
             CompletedDistribution = Config.CompletedDistribution;
             CompletedClones = Config.CompletedClones;
@@ -52,6 +54,12 @@ namespace SysBot.Pokemon
         {
             Interlocked.Increment(ref CompletedFossils);
             Config.CompletedFossils = CompletedFossils;
+        }
+        
+        public void AddCompletedEncounters()
+        {
+            Interlocked.Increment(ref CompletedEncounters);
+            Config.CompletedEncounters = CompletedEncounters;
         }
 
         public void AddCompletedDudu()
