@@ -72,7 +72,9 @@ namespace SysBot.Pokemon.Twitch
                 AddAssetGeneration();
 
             EchoUtil.Forwarders.Add(msg => client.SendMessage(Channel, msg));
-            Hub.Queues.Forwarders.Add((bot, detail) => client.SendMessage(Channel, $"{bot.Connection.Name} is now trading (ID {detail.ID}) {detail.Trainer.TrainerName}"));
+
+            // Turn on if verified
+            // Hub.Queues.Forwarders.Add((bot, detail) => client.SendMessage(Channel, $"{bot.Connection.Name} is now trading (ID {detail.ID}) {detail.Trainer.TrainerName}"));
         }
 
         private void AddAssetGeneration()
