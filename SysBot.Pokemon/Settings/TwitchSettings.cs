@@ -50,6 +50,9 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Amount of users to show in the on-deck list.")]
         public int OnDeckCount { get; set; } = 5;
 
+        [Category(Operation), Description("Amount of on-deck users to skip at the top. If you want to hide people being processed, set this to your amount of consoles.")]
+        public int OnDeckCountSkip { get; set; } = 0;
+
         [Category(Operation), Description("Separator to split the on-deck list users.")]
         public string OnDeckSeparator { get; set; } = "\n";
 
