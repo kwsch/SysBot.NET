@@ -50,6 +50,9 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Amount of users to show in the on-deck list.")]
         public int OnDeckCount { get; set; } = 5;
 
+        [Category(Operation), Description("Separator to split the on-deck list users.")]
+        public string OnDeckSeparator { get; set; } = "\n";
+
         [Category(Operation), Description("When enabled, the bot will process commands sent to the channel.")]
         public bool AllowCommandsViaChannel { get; set; } = true;
 

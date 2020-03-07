@@ -85,7 +85,8 @@ namespace SysBot.Pokemon.Twitch
                     File.WriteAllText($"{file}.txt", name);
 
                     var next = Hub.Queues.Info.GetUserList("(ID {0}) - {3}").Take(Settings.OnDeckCount);
-                    File.WriteAllText("ondeck.txt", string.Join(Environment.NewLine, next));
+                    var separator = Hub.Config.Twitch.OnDeckSeparator;
+                    File.WriteAllText("ondeck.txt", string.Join(separator, next));
                 }
                 catch (Exception e)
                 {
