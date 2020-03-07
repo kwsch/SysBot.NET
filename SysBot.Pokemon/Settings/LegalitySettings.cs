@@ -35,6 +35,9 @@ namespace SysBot.Pokemon
         [Category(Generate), Description("Allow Brute Forcing to make something legal (CPU Intensive)")]
         public bool AllowBruteForce { get; set; }
 
+        [Category(Generate), Description("Allow XOROSHIRO")]
+        public bool UseXOROSHIRO { get; set; } = true;
+
         // Misc
 
         [Category(Misc), Description("Zero out HOME tracker regardless of current tracker value. Applies to user requested PKM files as well.")]

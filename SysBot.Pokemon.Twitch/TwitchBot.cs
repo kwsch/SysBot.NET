@@ -54,6 +54,7 @@ namespace SysBot.Pokemon.Twitch
             client.OnNewSubscriber += Client_OnNewSubscriber;
             client.OnConnected += Client_OnConnected;
             client.OnDisconnected += Client_OnDisconnected;
+            client.OnLeftChannel += Client_OnLeftChannel;
 
             client.OnMessageThrottled += (_, e)
                 => LogUtil.LogError($"Message Throttled: {e.Message}", "TwitchBot");
@@ -71,7 +72,9 @@ namespace SysBot.Pokemon.Twitch
                 AddAssetGeneration();
 
             EchoUtil.Forwarders.Add(msg => client.SendMessage(Channel, msg));
-            Hub.Queues.Forwarders.Add((bot, detail) => client.SendMessage(Channel, $"{bot.Connection.Name} is now trading (ID {detail.ID}) {detail.Trainer.TrainerName}"));
+
+            // Turn on if verified
+            // Hub.Queues.Forwarders.Add((bot, detail) => client.SendMessage(Channel, $"{bot.Connection.Name} is now trading (ID {detail.ID}) {detail.Trainer.TrainerName}"));
         }
 
         private void AddAssetGeneration()
@@ -84,7 +87,8 @@ namespace SysBot.Pokemon.Twitch
                     var name = $"(ID {detail.ID}) {detail.Trainer.TrainerName}";
                     File.WriteAllText($"{file}.txt", name);
 
-                    var next = Hub.Queues.Info.GetUserList("(ID {0}) - {3}").Take(Settings.OnDeckCount);
+                    var next = Hub.Queues.Info.GetUserList("(ID {0}) - {3}");
+                    next = next.Skip(Settings.OnDeckCountSkip).Take(Settings.OnDeckCount); // filter down
                     var separator = Hub.Config.Twitch.OnDeckSeparator;
                     File.WriteAllText("ondeck.txt", string.Join(separator, next));
                 }
@@ -160,6 +164,8 @@ namespace SysBot.Pokemon.Twitch
         private void Client_OnDisconnected(object sender, OnDisconnectedEventArgs e)
         {
             LogUtil.LogText($"[{client.TwitchUsername}] - Disconnected.");
+            while (!client.IsConnected)
+                client.Reconnect();
         }
 
         private void Client_OnJoinedChannel(object sender, OnJoinedChannelArgs e)
@@ -170,7 +176,15 @@ namespace SysBot.Pokemon.Twitch
 
         private void Client_OnMessageReceived(object sender, OnMessageReceivedArgs e)
         {
-            LogUtil.LogText($"[{client.TwitchUsername}] - @{e.ChatMessage.Username}: {e.ChatMessage.Message}");
+            LogUtil.LogText($"[{client.TwitchUsername}] - Recieved message: @{e.ChatMessage.Username}: {e.ChatMessage.Message}");
+            if (client.JoinedChannels.Count <= 0)
+                client.JoinChannel(e.ChatMessage.Channel);
+        }
+
+        private void Client_OnLeftChannel(object sender, OnLeftChannelArgs e)
+        {
+            LogUtil.LogText($"[{client.TwitchUsername}] - Left channel {e.Channel}");
+            client.JoinChannel(e.Channel);
         }
 
         private void Client_OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
