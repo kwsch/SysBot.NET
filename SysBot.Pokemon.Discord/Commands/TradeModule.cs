@@ -101,6 +101,12 @@ namespace SysBot.Pokemon.Discord
 
         private async Task AddTradeToQueueAsync(int code, string trainerName, PK8 pk8, bool sudo)
         {
+            if (!pk8.CanBeTraded())
+            {
+                await ReplyAsync("Provided Pokémon content is blocked from trading!").ConfigureAwait(false);
+                return;
+            }
+
             var la = new LegalityAnalysis(pk8);
             if (!la.Valid && SysCordInstance.Self.Hub.Config.VerifyLegality)
             {
