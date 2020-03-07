@@ -54,6 +54,7 @@ namespace SysBot.Pokemon.Twitch
             client.OnNewSubscriber += Client_OnNewSubscriber;
             client.OnConnected += Client_OnConnected;
             client.OnDisconnected += Client_OnDisconnected;
+            client.OnLeftChannel += Client_OnLeftChannel;
 
             client.OnMessageThrottled += (_, e)
                 => LogUtil.LogError($"Message Throttled: {e.Message}", "TwitchBot");
@@ -159,6 +160,8 @@ namespace SysBot.Pokemon.Twitch
         private void Client_OnDisconnected(object sender, OnDisconnectedEventArgs e)
         {
             LogUtil.LogText($"[{client.TwitchUsername}] - Disconnected.");
+            while (!client.IsConnected)
+                client.Reconnect();
         }
 
         private void Client_OnJoinedChannel(object sender, OnJoinedChannelArgs e)
@@ -169,7 +172,15 @@ namespace SysBot.Pokemon.Twitch
 
         private void Client_OnMessageReceived(object sender, OnMessageReceivedArgs e)
         {
-            LogUtil.LogText($"[{client.TwitchUsername}] - @{e.ChatMessage.Username}: {e.ChatMessage.Message}");
+            LogUtil.LogText($"[{client.TwitchUsername}] - Recieved message: @{e.ChatMessage.Username}: {e.ChatMessage.Message}");
+            if (client.JoinedChannels.Count <= 0)
+                client.JoinChannel(e.ChatMessage.Channel);
+        }
+
+        private void Client_OnLeftChannel(object sender, OnLeftChannelArgs e)
+        {
+            LogUtil.LogText($"[{client.TwitchUsername}] - Left channel {e.Channel}");
+            client.JoinChannel(e.Channel);
         }
 
         private void Client_OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
