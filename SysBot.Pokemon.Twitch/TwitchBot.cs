@@ -10,6 +10,7 @@ using TwitchLib.Communication.Clients;
 using TwitchLib.Communication.Models;
 using PKHeX.Core;
 using SysBot.Base;
+using TwitchLib.Communication.Events;
 
 namespace SysBot.Pokemon.Twitch
 {
@@ -34,11 +35,8 @@ namespace SysBot.Pokemon.Twitch
             var clientOptions = new ClientOptions
             {
                 MessagesAllowedInPeriod = settings.ThrottleMessages,
-                ThrottlingPeriod = TimeSpan.FromSeconds(settings.ThrottleSeconds)
+                ThrottlingPeriod = TimeSpan.FromSeconds(settings.ThrottleSeconds),
             };
-
-            if (settings.GenerateAssets)
-                AddAssetGeneration();
 
             Channel = settings.Channel;
             WebSocketClient customClient = new WebSocketClient(clientOptions);
@@ -55,12 +53,25 @@ namespace SysBot.Pokemon.Twitch
             client.OnWhisperCommandReceived += Client_OnWhisperCommandReceived;
             client.OnNewSubscriber += Client_OnNewSubscriber;
             client.OnConnected += Client_OnConnected;
+            client.OnDisconnected += Client_OnDisconnected;
+
+            client.OnMessageThrottled += (_, e)
+                => LogUtil.LogError($"Message Throttled: {e.Message}", "TwitchBot");
+            client.OnWhisperThrottled += (_, e)
+                => LogUtil.LogError($"Whisper Throttled: {e.Message}", "TwitchBot");
+
             client.OnError += (_, e) =>
-                LogUtil.LogError(e.Exception.Message + Environment.NewLine + e.Exception.Message, "TwitchBot");
+                LogUtil.LogError(e.Exception.Message + Environment.NewLine + e.Exception.StackTrace, "TwitchBot");
             client.OnConnectionError += (_, e) =>
                 LogUtil.LogError(e.BotUsername + Environment.NewLine + e.Error.Message, "TwitchBot");
 
             client.Connect();
+
+            if (settings.GenerateAssets)
+                AddAssetGeneration();
+
+            EchoUtil.Forwarders.Add(msg => client.SendMessage(Channel, msg));
+            Hub.Queues.Forwarders.Add((bot, detail) => client.SendMessage(Channel, $"{bot.Connection.Name} is now trading (ID {detail.ID}) {detail.Trainer.TrainerName}"));
         }
 
         private void AddAssetGeneration()
@@ -73,8 +84,9 @@ namespace SysBot.Pokemon.Twitch
                     var name = $"(ID {detail.ID}) {detail.Trainer.TrainerName}";
                     File.WriteAllText($"{file}.txt", name);
 
-                    var next = Hub.Queues.Info.GetUserList().Take(Settings.OnDeckCount);
-                    File.WriteAllText("ondeck.txt", string.Join(Environment.NewLine, next));
+                    var next = Hub.Queues.Info.GetUserList("(ID {0}) - {3}").Take(Settings.OnDeckCount);
+                    var separator = Hub.Config.Twitch.OnDeckSeparator;
+                    File.WriteAllText("ondeck.txt", string.Join(separator, next));
                 }
                 catch (Exception e)
                 {
@@ -145,6 +157,11 @@ namespace SysBot.Pokemon.Twitch
             LogUtil.LogText($"[{client.TwitchUsername}] - Connected {e.AutoJoinChannel} as {e.BotUsername}");
         }
 
+        private void Client_OnDisconnected(object sender, OnDisconnectedEventArgs e)
+        {
+            LogUtil.LogText($"[{client.TwitchUsername}] - Disconnected.");
+        }
+
         private void Client_OnJoinedChannel(object sender, OnJoinedChannelArgs e)
         {
             LogUtil.LogInfo($"Joined {e.Channel}", e.BotUsername);
@@ -204,13 +221,14 @@ namespace SysBot.Pokemon.Twitch
                 case "ts" when !disallowed():
                     return Info.GetPositionString(ulong.Parse(m.UserId));
                 case "tc" when !disallowed():
-                    return TwitchCommandsHelper.ClearTrade(sudo(), ulong.Parse(m.UserId));
+                    return TwitchCommandsHelper.ClearTrade(ulong.Parse(m.UserId));
 
                 // Sudo Only Commands
                 case "tca" when !sudo():
                 case "pr" when !sudo():
                 case "pc" when !sudo():
                 case "tt" when !sudo():
+                case "tcu" when !sudo():
                     return "This command is locked for sudo users only!";
 
                 case "tca":
@@ -228,12 +246,16 @@ namespace SysBot.Pokemon.Twitch
                         ? "Users are now able to join the trade queue."
                         : "Changed queue settings: **Users CANNOT join the queue until it is turned back on.**";
 
+                case "tcu":
+                    return TwitchCommandsHelper.ClearTrade(args);
+
                 default: return null;
             }
         }
 
         private void Client_OnWhisperReceived(object sender, OnWhisperReceivedArgs e)
         {
+            LogUtil.LogText($"[{client.TwitchUsername}] - @{e.WhisperMessage.Username}: {e.WhisperMessage.Message}");
             if (QueuePool.Count > 100)
             {
                 var removed = QueuePool[0];

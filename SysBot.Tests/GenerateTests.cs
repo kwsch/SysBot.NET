@@ -10,6 +10,16 @@ namespace SysBot.Tests
         static GenerateTests() => AutoLegalityWrapper.EnsureInitialized(new LegalitySettings());
 
         [Theory]
+        [InlineData(Drednaw)]
+        public void CanGenerate(string set)
+        {
+            var sav = AutoLegalityWrapper.GetTrainerInfo(8);
+            var s = new ShowdownSet(set);
+            var pk = sav.GetLegal(s, out _);
+            pk.Should().NotBeNull();
+        }
+
+        [Theory]
         [InlineData(Torkoal2, 2)]
         [InlineData(Charizard4, 4)]
         public void TestAbility(string set, int abilNumber)
@@ -37,6 +47,17 @@ namespace SysBot.Tests
                 pk.AbilityNumber.Should().Be(abilNumber);
             }
         }
+
+        private const string Drednaw =
+@"Drednaw-Gmax @ Fossilized Drake 
+Ability: Shell Armor 
+Level: 60 
+EVs: 252 Atk / 4 SpD / 252 Spe 
+Adamant Nature 
+- Earthquake 
+- Liquidation 
+- Swords Dance 
+- Head Smash";
 
         private const string Torkoal2 =
 @"Torkoal (M) @ Assault Vest

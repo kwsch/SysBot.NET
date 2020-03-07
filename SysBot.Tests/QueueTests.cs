@@ -52,7 +52,7 @@ namespace SysBot.Tests
 
             var status = info.CheckPosition(t1.UserID, PokeRoutineType.LinkTrade);
             status.Position.Should().Be(1); // not zero indexed
-            var count = info.Count(z => z.Type == PokeRoutineType.LinkTrade);
+            var count = info.UserCount(z => z.Type == PokeRoutineType.LinkTrade);
             count.Should().Be(3);
             queue.Count.Should().Be(3);
 
@@ -67,7 +67,7 @@ namespace SysBot.Tests
 
             status = info.CheckPosition(t1.UserID, PokeRoutineType.LinkTrade);
             status.Position.Should().Be(-1);
-            count = info.Count(z => z.Type == PokeRoutineType.LinkTrade);
+            count = info.UserCount(z => z.Type == PokeRoutineType.LinkTrade);
             count.Should().Be(2);
             queue.Count.Should().Be(2);
         }

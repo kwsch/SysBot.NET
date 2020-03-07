@@ -14,6 +14,8 @@ namespace SysBot.Pokemon
 
         public TradeQueueInfo(PokeTradeHub<T> hub) => Hub = hub;
 
+        public int Count => UsersInQueue.Count;
+
         public bool ToggleQueue() => Hub.Config.Queues.CanQueue ^= true;
         public bool GetCanQueue() => Hub.Config.Queues.CanQueue && UsersInQueue.Count < Hub.Config.Queues.MaxQueueCount;
 
@@ -65,9 +67,20 @@ namespace SysBot.Pokemon
             }
         }
 
+        public QueueResultRemove ClearTrade(string userName)
+        {
+            var details = GetIsUserQueued(z => z.Username == userName);
+            return ClearTrade(details);
+        }
+
         public QueueResultRemove ClearTrade(ulong userID)
         {
-            var details = GetIsUserQueued(userID);
+            var details = GetIsUserQueued(z => z.UserID == userID);
+            return ClearTrade(details);
+        }
+
+        private QueueResultRemove ClearTrade(ICollection<TradeEntry<T>> details)
+        {
             if (details.Count == 0)
                 return QueueResultRemove.NotInQueue;
 
@@ -102,16 +115,16 @@ namespace SysBot.Pokemon
             return removedCount;
         }
 
-        public IEnumerable<string> GetUserList()
+        public IEnumerable<string> GetUserList(string fmt)
         {
-            return UsersInQueue.Select(z => $"(ID {z.Trade.ID}) - Code: {z.Trade.Code} - {z.Trade.Type} - {z.Username}");
+            return UsersInQueue.Select(z => string.Format(fmt, z.Trade.ID, z.Trade.Code, z.Trade.Type, z.Username));
         }
 
-        public IList<TradeEntry<T>> GetIsUserQueued(ulong userID)
+        public IList<TradeEntry<T>> GetIsUserQueued(Func<TradeEntry<T>, bool> match)
         {
             lock (_sync)
             {
-                return UsersInQueue.Where(z => z.UserID == userID).ToArray();
+                return UsersInQueue.Where(match).ToArray();
             }
         }
 
@@ -147,7 +160,7 @@ namespace SysBot.Pokemon
 
         public int GetRandomTradeCode() => Hub.Config.Trade.GetRandomTradeCode();
 
-        public int Count(Func<TradeEntry<T>, bool> func)
+        public int UserCount(Func<TradeEntry<T>, bool> func)
         {
             lock (_sync)
                 return UsersInQueue.Count(func);
