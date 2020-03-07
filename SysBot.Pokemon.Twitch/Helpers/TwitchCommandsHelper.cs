@@ -36,14 +36,20 @@ namespace SysBot.Pokemon.Twitch
             return false;
         }
 
-        public static string ClearTrade(bool sudo, ulong userid)
+        public static string ClearTrade(string user)
         {
-            var allowed = sudo || TwitchBot.Info.GetCanQueue();
-            if (!allowed)
-                return "Sorry, you are not permitted to use this command!";
+            var result = TwitchBot.Info.ClearTrade(user);
+            return GetClearTradeMessage(result);
+        }
 
-            var userID = userid;
+        public static string ClearTrade(ulong userID)
+        {
             var result = TwitchBot.Info.ClearTrade(userID);
+            return GetClearTradeMessage(result);
+        }
+
+        private static string GetClearTradeMessage(QueueResultRemove result)
+        {
             return result switch
             {
                 QueueResultRemove.CurrentlyProcessing => "Looks like you're currently being processed! Removed from queue.",

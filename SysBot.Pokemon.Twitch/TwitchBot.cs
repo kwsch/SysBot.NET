@@ -83,7 +83,7 @@ namespace SysBot.Pokemon.Twitch
                     var name = $"(ID {detail.ID}) {detail.Trainer.TrainerName}";
                     File.WriteAllText($"{file}.txt", name);
 
-                    var next = Hub.Queues.Info.GetUserList().Take(Settings.OnDeckCount);
+                    var next = Hub.Queues.Info.GetUserList("(ID {0}) - {3}").Take(Settings.OnDeckCount);
                     File.WriteAllText("ondeck.txt", string.Join(Environment.NewLine, next));
                 }
                 catch (Exception e)
@@ -219,13 +219,14 @@ namespace SysBot.Pokemon.Twitch
                 case "ts" when !disallowed():
                     return Info.GetPositionString(ulong.Parse(m.UserId));
                 case "tc" when !disallowed():
-                    return TwitchCommandsHelper.ClearTrade(sudo(), ulong.Parse(m.UserId));
+                    return TwitchCommandsHelper.ClearTrade(ulong.Parse(m.UserId));
 
                 // Sudo Only Commands
                 case "tca" when !sudo():
                 case "pr" when !sudo():
                 case "pc" when !sudo():
                 case "tt" when !sudo():
+                case "tcu" when !sudo():
                     return "This command is locked for sudo users only!";
 
                 case "tca":
@@ -242,6 +243,9 @@ namespace SysBot.Pokemon.Twitch
                     return Info.Hub.Queues.Info.ToggleQueue()
                         ? "Users are now able to join the trade queue."
                         : "Changed queue settings: **Users CANNOT join the queue until it is turned back on.**";
+
+                case "tcu":
+                    return TwitchCommandsHelper.ClearTrade(args);
 
                 default: return null;
             }
