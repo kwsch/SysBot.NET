@@ -81,6 +81,17 @@ namespace SysBot.Pokemon
             LegalityAnalysis.SpeciesStrings = GameInfo.Strings.specieslist;
         }
 
+        public static bool CanBeTraded(this PKM pkm)
+        {
+            switch (pkm.Species)
+            {
+                case (int)Species.Kyurem when pkm.AltForm != 0: return false;
+                case (int)Species.Necrozma when pkm.AltForm != 0: return false;
+                default:
+                    return true;
+            }
+        }
+
         public static ITrainerInfo GetTrainerInfo(int gen) => TrainerSettings.GetSavedTrainerData(gen);
 
         public static PKM GetLegal(this ITrainerInfo sav, ShowdownSet set, out string res)

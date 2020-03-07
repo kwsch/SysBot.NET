@@ -23,6 +23,13 @@ namespace SysBot.Pokemon.Twitch
 
             var sav = AutoLegalityWrapper.GetTrainerInfo(PKX.Generation);
             PKM pkm = sav.GetLegal(set, out _);
+
+            if (!pkm.CanBeTraded())
+            {
+                msg = "Provided Pokémon content is blocked from trading!";
+                return false;
+            }
+
             var valid = new LegalityAnalysis(pkm).Valid;
             if (valid && pkm is PK8 pk8)
             {

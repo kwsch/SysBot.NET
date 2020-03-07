@@ -76,6 +76,12 @@ namespace SysBot.Pokemon
                     continue;
                 }
 
+                if (!dest.CanBeTraded())
+                {
+                    LogUtil.LogInfo("SKIPPED: Provided pk8 cannot be traded: " + dest.FileName, nameof(PokemonPool<T>));
+                    continue;
+                }
+
                 var la = new LegalityAnalysis(pk8);
                 if (!la.Valid && Settings.VerifyLegality)
                 {
