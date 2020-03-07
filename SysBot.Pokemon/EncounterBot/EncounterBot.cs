@@ -13,17 +13,19 @@ namespace SysBot.Pokemon
         private readonly BotCompleteCounts Counts;
         private readonly IDumper DumpSetting;
         private readonly EncounterSettings Settings;
+        public readonly bool StopOnSinistea;
 
         public EncounterBot(PokeBotConfig cfg, EncounterSettings encounter, IDumper dump, BotCompleteCounts count) : base(cfg)
         {
             Counts = count;
             DumpSetting = dump;
-            Settings = encounter; // not needed right now
+            Settings = encounter; //not used right now
+            StopOnSinistea = encounter.StopOnSinistea;
         }
 
         private int encounterCount;
 
-        public Func<PK8, bool> StopCondition { private get; set; } = pkm => pkm.IsShiny;
+        public Func<PK8, bool, bool> StopCondition { private get; set; } = (pkm, StopOnSinistea) => StopOnSinistea ? pkm.IsShiny && pkm.Species == 854 : pkm.IsShiny;
 
         protected override async Task MainLoop(CancellationToken token)
         {
@@ -52,7 +54,7 @@ namespace SysBot.Pokemon
                 encounterCount++;
                 Connection.Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
                 Counts.AddCompletedEncounters();
-                if (StopCondition(pk))
+                if (StopCondition(pk, StopOnSinistea))
                 {
                     Connection.Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
                     return;
