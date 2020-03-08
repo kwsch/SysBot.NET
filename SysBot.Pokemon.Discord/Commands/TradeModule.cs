@@ -32,7 +32,7 @@ namespace SysBot.Pokemon.Discord
         [Alias("t")]
         [Summary("Makes the bot trade you the provided Pokémon file.")]
         [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-        public async Task TradeAsync([Summary("Trade Code")]int code, [Remainder][Summary("Trainer Name to trade to.")]string trainerName)
+        public async Task TradeAsyncAttach([Summary("Trade Code")]int code)
         {
             var sudo = Context.User.GetIsSudo();
 
@@ -50,14 +50,14 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            await AddTradeToQueueAsync(code, trainerName, pk8, sudo).ConfigureAwait(false);
+            await AddTradeToQueueAsync(code, Context.User.Username, pk8, sudo).ConfigureAwait(false);
         }
 
         [Command("trade")]
         [Alias("t")]
         [Summary("Makes the bot trade you a Pokémon converted from the provided Showdown Set.")]
         [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-        public async Task TradeAsync([Summary("Showdown Set")][Remainder]string content)
+        public async Task TradeAsync([Summary("Trade Code")]int code, [Summary("Showdown Set")][Remainder]string content)
         {
             const int gen = 8;
             content = ReusableActions.StripCodeBlock(content);
@@ -83,20 +83,28 @@ namespace SysBot.Pokemon.Discord
             }
 
             pkm.ResetPartyStats();
-
-            var code = Info.GetRandomTradeCode();
             var sudo = Context.User.GetIsSudo();
-            await AddTradeToQueueAsync(code, Context.User.Username, (PK8)pkm, sudo).ConfigureAwait(false);
+            await AddTradeToQueueAsync(code, Context.User.Username, (PK8) pkm, sudo).ConfigureAwait(false);
+        }
+
+        [Command("trade")]
+        [Alias("t")]
+        [Summary("Makes the bot trade you a Pokémon converted from the provided Showdown Set.")]
+        [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
+        public async Task TradeAsync([Summary("Showdown Set")][Remainder]string content)
+        {
+            var code = Info.GetRandomTradeCode();
+            await TradeAsync(code, content).ConfigureAwait(false);
         }
 
         [Command("trade")]
         [Alias("t")]
         [Summary("Makes the bot trade you the attached file.")]
         [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-        public async Task TradeAsync()
+        public async Task TradeAsyncAttach()
         {
             var code = Info.GetRandomTradeCode();
-            await TradeAsync(code, Context.User.Username).ConfigureAwait(false);
+            await TradeAsyncAttach(code).ConfigureAwait(false);
         }
 
         private async Task AddTradeToQueueAsync(int code, string trainerName, PK8 pk8, bool sudo)
