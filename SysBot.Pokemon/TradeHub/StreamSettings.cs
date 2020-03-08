@@ -138,7 +138,7 @@ namespace SysBot.Pokemon
                 if (CopyImageFile && File.Exists(TradeBlockFile))
                     File.Copy(TradeBlockFile, file);
                 else
-                    File.WriteAllBytes(TradeBlockFile, BlackPixel);
+                    File.WriteAllBytes(file, BlackPixel);
             }
             catch (Exception e)
             {
