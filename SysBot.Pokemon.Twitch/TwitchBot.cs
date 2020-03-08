@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TwitchLib.Client;
@@ -68,36 +67,10 @@ namespace SysBot.Pokemon.Twitch
 
             client.Connect();
 
-            if (settings.GenerateAssets)
-                AddAssetGeneration();
-
             EchoUtil.Forwarders.Add(msg => client.SendMessage(Channel, msg));
 
             // Turn on if verified
             // Hub.Queues.Forwarders.Add((bot, detail) => client.SendMessage(Channel, $"{bot.Connection.Name} is now trading (ID {detail.ID}) {detail.Trainer.TrainerName}"));
-        }
-
-        private void AddAssetGeneration()
-        {
-            void Create(PokeTradeBot b, PokeTradeDetail<PK8> detail)
-            {
-                try
-                {
-                    var file = b.Connection.IP;
-                    var name = $"(ID {detail.ID}) {detail.Trainer.TrainerName}";
-                    File.WriteAllText($"{file}.txt", name);
-
-                    var next = Hub.Queues.Info.GetUserList("(ID {0}) - {3}");
-                    next = next.Skip(Settings.OnDeckCountSkip).Take(Settings.OnDeckCount); // filter down
-                    var separator = Hub.Config.Twitch.OnDeckSeparator;
-                    File.WriteAllText("ondeck.txt", string.Join(separator, next));
-                }
-                catch (Exception e)
-                {
-                    LogUtil.LogError(e.Message, "TwitchBot");
-                }
-            }
-            Info.Hub.Queues.Forwarders.Add(Create);
         }
 
         public void StartingDistribution(string message)
@@ -176,8 +149,8 @@ namespace SysBot.Pokemon.Twitch
 
         private void Client_OnMessageReceived(object sender, OnMessageReceivedArgs e)
         {
-            LogUtil.LogText($"[{client.TwitchUsername}] - Recieved message: @{e.ChatMessage.Username}: {e.ChatMessage.Message}");
-            if (client.JoinedChannels.Count <= 0)
+            LogUtil.LogText($"[{client.TwitchUsername}] - Received message: @{e.ChatMessage.Username}: {e.ChatMessage.Message}");
+            if (client.JoinedChannels.Count == 0)
                 client.JoinChannel(e.ChatMessage.Channel);
         }
 

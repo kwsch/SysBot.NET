@@ -33,9 +33,6 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Throttle the bot from sending messages if X messages have been sent in the past Y seconds.")]
         public double ThrottleSeconds { get; set; } = 30;
 
-        [Category(Operation), Description("Generate files for use in OBS as overlays, etc.")]
-        public bool GenerateAssets { get; set; } = true;
-
         // Operation
 
         [Category(Operation), Description("Sudo Usernames")]
@@ -46,15 +43,6 @@ namespace SysBot.Pokemon
 
         [Category(Operation), Description("Sub only mode (Restricts the bot to twitch subs only)")]
         public bool SubOnlyBot { get; set; } = false;
-
-        [Category(Operation), Description("Amount of users to show in the on-deck list.")]
-        public int OnDeckCount { get; set; } = 5;
-
-        [Category(Operation), Description("Amount of on-deck users to skip at the top. If you want to hide people being processed, set this to your amount of consoles.")]
-        public int OnDeckCountSkip { get; set; } = 0;
-
-        [Category(Operation), Description("Separator to split the on-deck list users.")]
-        public string OnDeckSeparator { get; set; } = "\n";
 
         [Category(Operation), Description("When enabled, the bot will process commands sent to the channel.")]
         public bool AllowCommandsViaChannel { get; set; } = true;

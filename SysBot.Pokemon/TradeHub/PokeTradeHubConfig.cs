@@ -74,6 +74,10 @@ namespace SysBot.Pokemon
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public TwitchSettings Twitch { get; set; } = new TwitchSettings();
 
+        [Category(Integration)]
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public StreamSettings Stream { get; set; } = new StreamSettings();
+
 #if DEBUG
         // Debug
 

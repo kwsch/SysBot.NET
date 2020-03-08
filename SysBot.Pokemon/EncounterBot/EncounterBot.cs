@@ -39,11 +39,8 @@ namespace SysBot.Pokemon
                 if (attempts < 0) // aborted
                     continue;
 
-                Connection.Log($"Encounter found after {attempts} attempts!");
-
-                Connection.Log("Encountered Pokémon. Checking details.");
-                var data = await Connection.ReadBytesAsync(0x8D45C648, 0x158, token).ConfigureAwait(false);
-                var pk = new PK8(data);
+                Connection.Log($"Encounter found after {attempts} attempts! Checking details.");
+                var pk = new PK8(await Connection.ReadBytesAsync(0x8D45C648, 0x158, token).ConfigureAwait(false));
                 if (pk.Species == 0)
                 {
                     Connection.Log("Invalid data detected. Restarting loop.");
@@ -70,7 +67,7 @@ namespace SysBot.Pokemon
                 while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
                 {
                     await Click(B, 400, token).ConfigureAwait(false);
-                    await Click(B, 400, token).ConfigureAwait(false);
+                    await Click(B, 900, token).ConfigureAwait(false);
                     await Click(DUP, 500, token).ConfigureAwait(false);
                     await Click(A, 750, token).ConfigureAwait(false);
                 }
@@ -101,7 +98,7 @@ namespace SysBot.Pokemon
                     while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
                     {
                         await Click(B, 400, token).ConfigureAwait(false);
-                        await Click(B, 400, token).ConfigureAwait(false);
+                        await Click(B, 900, token).ConfigureAwait(false);
                         await Click(DUP, 500, token).ConfigureAwait(false);
                         await Click(A, 750, token).ConfigureAwait(false);
                         continue;
