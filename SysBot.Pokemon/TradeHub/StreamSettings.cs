@@ -85,6 +85,14 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Format to display the Waited Time.")]
         public string WaitedTimeFormat { get; set; } = @"hh\:mm\:ss";
 
+        // Users in Queue
+
+        [Category(Operation), Description("Create a file indicating the count of users in the queue.")]
+        public bool CreateUsersInQueue { get; set; } = true;
+
+        [Category(Operation), Description("Format to display the Users in Queue.")]
+        public string UsersInQueueFormat { get; set; } = "Users in Queue: {0}";
+
         public void StartTrade(PokeTradeBot b, PokeTradeDetail<PK8> detail, PokeTradeHub<PK8> hub)
         {
             try
@@ -93,6 +101,8 @@ namespace SysBot.Pokemon
                     GenerateBotConnection(b, detail);
                 if (CreateWaitedTime)
                     GenerateWaitedTime(detail.Time);
+                if (CreateUsersInQueue)
+                    GenerateUsersInQueue(hub.Queues.Info.Count);
                 if (CreateOnDeck)
                     GenerateOnDeck(hub);
                 if (CreateOnDeck2)
@@ -104,6 +114,12 @@ namespace SysBot.Pokemon
             {
                 LogUtil.LogError(e.Message, "Stream");
             }
+        }
+
+        private void GenerateUsersInQueue(int count)
+        {
+            var value = string.Format(UserListFormat, count);
+            File.WriteAllText("queuecount.txt", value);
         }
 
         private void GenerateWaitedTime(DateTime time)
