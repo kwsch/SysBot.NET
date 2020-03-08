@@ -77,12 +77,22 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Separator to split the on-deck list users.")]
         public string TradeBlockFormat { get; set; } = "block_{0}.png"; // {0} gets replaced with the local IP address
 
+        // Waited Time
+
+        [Category(Operation), Description("Create a file listing the amount of time the most recently dequeued user has waited.")]
+        public bool CreateWaitedTime { get; set; } = true;
+
+        [Category(Operation), Description("Format to display the Waited Time.")]
+        public string WaitedTimeFormat { get; set; } = @"hh\:mm\:ss";
+
         public void StartTrade(PokeTradeBot b, PokeTradeDetail<PK8> detail, PokeTradeHub<PK8> hub)
         {
             try
             {
                 if (CreateTradeStart)
                     GenerateBotConnection(b, detail);
+                if (CreateWaitedTime)
+                    GenerateWaitedTime(detail.Time);
                 if (CreateOnDeck)
                     GenerateOnDeck(hub);
                 if (CreateOnDeck2)
@@ -94,6 +104,14 @@ namespace SysBot.Pokemon
             {
                 LogUtil.LogError(e.Message, "Stream");
             }
+        }
+
+        private void GenerateWaitedTime(DateTime time)
+        {
+            var now = DateTime.Now;
+            var difference = now - time;
+            var value = difference.ToString(WaitedTimeFormat);
+            File.WriteAllText("waited.txt", value);
         }
 
         public void StartEnterCode(PokeTradeBot b)
@@ -128,7 +146,6 @@ namespace SysBot.Pokemon
         {
             try
             {
-
                 var file = GetBlockFileName(b);
                 if (File.Exists(file))
                     File.Delete(file);
