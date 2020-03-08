@@ -94,6 +94,7 @@ namespace SysBot.Pokemon
 
                 string tradetype = $" ({detail.Type.ToString()})";
                 Connection.Log($"Starting next {type}{tradetype} Bot Trade. Getting data...");
+                Hub.Config.Stream.StartTrade(this, detail, Hub);
                 Hub.Queues.StartTrade(this, detail);
 
                 await EnsureConnectedToYComm(token).ConfigureAwait(false);
@@ -132,6 +133,7 @@ namespace SysBot.Pokemon
             // Update Barrier Settings
             UpdateBarrier(poke.IsSynchronized);
             poke.TradeInitialize(this);
+            Hub.Config.Stream.EndEnterCode(this);
 
             if (await CheckIfSoftBanned(token).ConfigureAwait(false))
                await Unban(token).ConfigureAwait(false);
@@ -163,7 +165,9 @@ namespace SysBot.Pokemon
                 await Click(A, 1_500, token).ConfigureAwait(false);
 
             // Loading Screen
-            await Task.Delay(2_000, token).ConfigureAwait(false);
+            await Task.Delay(1_000, token).ConfigureAwait(false);
+            Hub.Config.Stream.StartEnterCode(this);
+            await Task.Delay(1_000, token).ConfigureAwait(false);
 
             var code = poke.Code;
             Connection.Log($"Entering Link Trade Code: {code:0000}...");
@@ -177,6 +181,7 @@ namespace SysBot.Pokemon
             // Confirming...
             for (int i = 0; i < 4; i++)
                 await Click(A, 1_000, token).ConfigureAwait(false);
+            Hub.Config.Stream.EndEnterCode(this);
 
             poke.TradeSearching(this);
             await Task.Delay(Util.Rand.Next(0_350, 0_750), token).ConfigureAwait(false);

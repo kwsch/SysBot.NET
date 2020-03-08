@@ -121,7 +121,7 @@ namespace SysBot.Pokemon
             await Click(A, 1200, token).ConfigureAwait(false);
             if (GameLang == LanguageID.French)
                 await Click(A, 800, token).ConfigureAwait(false);
-            await Click(A, 1200, token).ConfigureAwait(false);          
+            await Click(A, 1200, token).ConfigureAwait(false);
             await Click(A, 4500, token).ConfigureAwait(false);
 
             Connection.Log("Getting fossil! Clearing destination slot.");
