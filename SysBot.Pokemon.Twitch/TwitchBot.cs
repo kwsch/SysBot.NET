@@ -149,8 +149,8 @@ namespace SysBot.Pokemon.Twitch
 
         private void Client_OnMessageReceived(object sender, OnMessageReceivedArgs e)
         {
-            LogUtil.LogText($"[{client.TwitchUsername}] - Recieved message: @{e.ChatMessage.Username}: {e.ChatMessage.Message}");
-            if (client.JoinedChannels.Count <= 0)
+            LogUtil.LogText($"[{client.TwitchUsername}] - Received message: @{e.ChatMessage.Username}: {e.ChatMessage.Message}");
+            if (client.JoinedChannels.Count == 0)
                 client.JoinChannel(e.ChatMessage.Channel);
         }
 
