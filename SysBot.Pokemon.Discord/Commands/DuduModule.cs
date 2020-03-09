@@ -11,7 +11,7 @@ namespace SysBot.Pokemon.Discord
         private static TradeQueueInfo<PK8> Info => SysCordInstance.Self.Hub.Queues.Info;
 
         [Command("seedCheck")]
-        [Alias("dudu", "d", "sc")]
+        [Alias("dudu", "s", "sc")]
         [Summary("Checks the seed for a Pokémon.")]
         [RequireQueueRole(nameof(DiscordManager.RolesDudu))]
         public async Task SeedCheckAsync(int code)
@@ -21,7 +21,7 @@ namespace SysBot.Pokemon.Discord
         }
 
         [Command("seedCheck")]
-        [Alias("dudu", "d", "sc")]
+        [Alias("dudu", "s", "sc")]
         [Summary("Checks the seed for a Pokémon.")]
         [RequireQueueRole(nameof(DiscordManager.RolesDudu))]
         public async Task SeedCheckAsync()
@@ -31,7 +31,7 @@ namespace SysBot.Pokemon.Discord
         }
 
         [Command("duduList")]
-        [Alias("dl", "scq", "seedCheckQueue", "duduQueue", "seedList")]
+        [Alias("dl", "sl", "scq", "seedCheckQueue", "duduQueue", "seedList")]
         [Summary("Prints the users in the Seed Check queue.")]
         [RequireSudo]
         public async Task GetSeedListAsync()
