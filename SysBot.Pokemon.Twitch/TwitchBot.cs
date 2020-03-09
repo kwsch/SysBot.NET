@@ -203,7 +203,7 @@ namespace SysBot.Pokemon.Twitch
             {
                 // User Usable Commands
                 case "trade" when !disallowed():
-                    var _ = TwitchCommandsHelper.AddToWaitingList(args, m.DisplayName, m.Username, out string msg);
+                    var _ = TwitchCommandsHelper.AddToWaitingList(args, m.DisplayName, m.Username, Info.GetCanQueue(), out string msg);
                     return msg;
                 case "ts" when !disallowed():
                     return Info.GetPositionString(ulong.Parse(m.UserId));

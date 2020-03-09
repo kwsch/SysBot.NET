@@ -5,8 +5,14 @@ namespace SysBot.Pokemon.Twitch
     public static class TwitchCommandsHelper
     {
         // Helper functions for commands
-        public static bool AddToWaitingList(string setstring, string display, string username, out string msg)
+        public static bool AddToWaitingList(string setstring, string display, string username, bool canQueue, out string msg)
         {
+            if (canQueue)
+            {
+                msg = "Sorry, I am not currently accepting queue requests!";
+                return false;
+            }
+
             ShowdownSet set = TwitchShowdownUtil.ConvertToShowdown(setstring);
 
             if (set.Species < 1)
