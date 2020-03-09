@@ -31,7 +31,7 @@ namespace SysBot.Pokemon.Discord
         }
 
         [Command("duduList")]
-        [Alias("dl", "sl", "scq", "seedCheckQueue", "duduQueue", "seedList")]
+        [Alias("sl", "scq", "seedCheckQueue", "duduQueue", "seedList")]
         [Summary("Prints the users in the Seed Check queue.")]
         [RequireSudo]
         public async Task GetSeedListAsync()
