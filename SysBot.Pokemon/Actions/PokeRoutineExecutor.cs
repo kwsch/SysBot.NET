@@ -209,9 +209,9 @@ namespace SysBot.Pokemon
             }
         }
 
-        public async Task ExitDuduTrade(CancellationToken token)
+        public async Task ExitSeedCheckTrade(CancellationToken token)
         {
-            // Dudubot doesn't show anything, so it can skip the first B press.
+            // Seed Check Bot doesn't show anything, so it can skip the first B press.
             int attempts = 0;
             while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {

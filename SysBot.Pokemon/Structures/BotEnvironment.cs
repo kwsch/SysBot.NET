@@ -161,7 +161,7 @@ namespace SysBot.Pokemon
                 case PokeRoutineType.LinkTrade:
                 case PokeRoutineType.Clone:
                 case PokeRoutineType.Dump:
-                case PokeRoutineType.DuduBot:
+                case PokeRoutineType.SeedCheck:
                     return new PokeTradeBot(Hub, cfg);
 
                 case PokeRoutineType.EggFetch:

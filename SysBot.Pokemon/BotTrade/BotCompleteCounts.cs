@@ -10,7 +10,7 @@ namespace SysBot.Pokemon
         private int CompletedTrades;
         private int CompletedEggs;
         private int CompletedFossils;
-        private int CompletedDudu;
+        private int CompletedSeedChecks;
         private int CompletedSurprise;
         private int CompletedDistribution;
         private int CompletedClones;
@@ -27,7 +27,7 @@ namespace SysBot.Pokemon
         {
             CompletedTrades = Config.CompletedTrades;
             CompletedEggs = Config.CompletedEggs;
-            CompletedDudu = Config.CompletedDudu;
+            CompletedSeedChecks = Config.CompletedSeedChecks;
             CompletedFossils = Config.CompletedFossils;
             CompletedSurprise = Config.CompletedSurprise;
             CompletedDistribution = Config.CompletedDistribution;
@@ -54,10 +54,10 @@ namespace SysBot.Pokemon
             Config.CompletedFossils = CompletedFossils;
         }
 
-        public void AddCompletedDudu()
+        public void AddCompletedSeedCheck()
         {
-            Interlocked.Increment(ref CompletedDudu);
-            Config.CompletedDudu = CompletedDudu;
+            Interlocked.Increment(ref CompletedSeedChecks);
+            Config.CompletedSeedChecks = CompletedSeedChecks;
         }
 
         public void AddCompletedSurprise()
@@ -92,8 +92,8 @@ namespace SysBot.Pokemon
 
         public IEnumerable<string> Summary()
         {
-            if (CompletedDudu != 0)
-                yield return $"Dudu Trades: {CompletedDudu}";
+            if (CompletedSeedChecks != 0)
+                yield return $"Seed Check Trades: {CompletedSeedChecks}";
             if (CompletedClones != 0)
                 yield return $"Clone Trades: {CompletedClones}";
             if (CompletedDumps != 0)

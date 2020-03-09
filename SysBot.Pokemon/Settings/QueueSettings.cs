@@ -45,8 +45,8 @@ namespace SysBot.Pokemon
         [Category(UserBias), Description("Biases the Trade Queue's weight based on how many users are in the queue.")]
         public int YieldMultCountTrade { get; set; } = 100;
 
-        [Category(UserBias), Description("Biases the Dudu Queue's weight based on how many users are in the queue.")]
-        public int YieldMultCountDudu { get; set; } = 100;
+        [Category(UserBias), Description("Biases the Seed Check Queue's weight based on how many users are in the queue.")]
+        public int YieldMultCountSeedCheck { get; set; } = 100;
 
         [Category(UserBias), Description("Biases the Clone Queue's weight based on how many users are in the queue.")]
         public int YieldMultCountClone { get; set; } = 100;
@@ -62,8 +62,8 @@ namespace SysBot.Pokemon
         [Category(TimeBias), Description("Checks time elapsed since the user joined the Trade queue, and increases the queue's weight accordingly.")]
         public int YieldMultWaitTrade { get; set; } = 1;
 
-        [Category(TimeBias), Description("Checks time elapsed since the user joined the Dudu queue, and increases the queue's weight accordingly.")]
-        public int YieldMultWaitDudu { get; set; } = 1;
+        [Category(TimeBias), Description("Checks time elapsed since the user joined the Seed Check queue, and increases the queue's weight accordingly.")]
+        public int YieldMultWaitSeedCheck { get; set; } = 1;
 
         [Category(TimeBias), Description("Checks time elapsed since the user joined the Clone queue, and increases the queue's weight accordingly.")]
         public int YieldMultWaitClone { get; set; } = 1;
@@ -78,7 +78,7 @@ namespace SysBot.Pokemon
         {
             return type switch
             {
-                PokeTradeType.Dudu => YieldMultCountDudu,
+                PokeTradeType.Seed => YieldMultCountSeedCheck,
                 PokeTradeType.Clone => YieldMultCountClone,
                 PokeTradeType.Dump => YieldMultCountDump,
                 _ => YieldMultCountTrade
@@ -89,7 +89,7 @@ namespace SysBot.Pokemon
         {
             return type switch
             {
-                PokeTradeType.Dudu => YieldMultWaitDudu,
+                PokeTradeType.Seed => YieldMultWaitSeedCheck,
                 PokeTradeType.Clone => YieldMultWaitClone,
                 PokeTradeType.Dump => YieldMultWaitDump,
                 _ => YieldMultWaitTrade

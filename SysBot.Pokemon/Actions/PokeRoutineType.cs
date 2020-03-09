@@ -8,7 +8,7 @@
 
         FlexTrade,
         LinkTrade,
-        DuduBot,
+        SeedCheck,
         Clone,
         Dump,
 

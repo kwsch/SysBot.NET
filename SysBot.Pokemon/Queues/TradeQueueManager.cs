@@ -9,7 +9,7 @@ namespace SysBot.Pokemon
         private readonly PokeTradeHub<T> Hub;
 
         private readonly PokeTradeQueue<T> Trade = new PokeTradeQueue<T>(PokeTradeType.Specific);
-        private readonly PokeTradeQueue<T> Dudu = new PokeTradeQueue<T>(PokeTradeType.Dudu);
+        private readonly PokeTradeQueue<T> Seed = new PokeTradeQueue<T>(PokeTradeType.Seed);
         private readonly PokeTradeQueue<T> Clone = new PokeTradeQueue<T>(PokeTradeType.Clone);
         private readonly PokeTradeQueue<T> Dump = new PokeTradeQueue<T>(PokeTradeType.Dump);
         public readonly TradeQueueInfo<T> Info;
@@ -19,14 +19,14 @@ namespace SysBot.Pokemon
         {
             Hub = hub;
             Info = new TradeQueueInfo<T>(hub);
-            AllQueues = new[] { Dudu, Dump, Clone, Trade, };
+            AllQueues = new[] { Seed, Dump, Clone, Trade, };
         }
 
         public PokeTradeQueue<T> GetQueue(PokeRoutineType type)
         {
             return type switch
             {
-                PokeRoutineType.DuduBot => Dudu,
+                PokeRoutineType.SeedCheck => Seed,
                 PokeRoutineType.Clone => Clone,
                 PokeRoutineType.Dump => Dump,
                 _ => Trade,
@@ -118,7 +118,7 @@ namespace SysBot.Pokemon
 
         private bool GetFlexDequeueOld(out PokeTradeDetail<T> detail, out uint priority)
         {
-            if (TryDequeueInternal(PokeRoutineType.DuduBot, out detail, out priority))
+            if (TryDequeueInternal(PokeRoutineType.SeedCheck, out detail, out priority))
                 return true;
             if (TryDequeueInternal(PokeRoutineType.Clone, out detail, out priority))
                 return true;

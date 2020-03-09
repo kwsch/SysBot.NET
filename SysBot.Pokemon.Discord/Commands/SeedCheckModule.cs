@@ -5,38 +5,38 @@ using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord
 {
-    [Summary("Queues new Dudu trades")]
-    public class DuduModule : ModuleBase<SocketCommandContext>
+    [Summary("Queues new Seed Check trades")]
+    public class SeedCheckModule : ModuleBase<SocketCommandContext>
     {
         private static TradeQueueInfo<PK8> Info => SysCordInstance.Self.Hub.Queues.Info;
 
         [Command("seedCheck")]
-        [Alias("dudu", "s", "sc")]
+        [Alias("checkMySeed", "checkSeed", "seed", "s", "sc")]
         [Summary("Checks the seed for a Pokémon.")]
-        [RequireQueueRole(nameof(DiscordManager.RolesDudu))]
+        [RequireQueueRole(nameof(DiscordManager.RolesSeed))]
         public async Task SeedCheckAsync(int code)
         {
             var sudo = Context.User.GetIsSudo();
-            await Context.AddToQueueAsync(code, Context.User.Username, sudo, new PK8(), PokeRoutineType.DuduBot, PokeTradeType.Dudu).ConfigureAwait(false);
+            await Context.AddToQueueAsync(code, Context.User.Username, sudo, new PK8(), PokeRoutineType.SeedCheck, PokeTradeType.Seed).ConfigureAwait(false);
         }
 
         [Command("seedCheck")]
-        [Alias("dudu", "s", "sc")]
+        [Alias("checkMySeed", "checkSeed", "seed", "s", "sc")]
         [Summary("Checks the seed for a Pokémon.")]
-        [RequireQueueRole(nameof(DiscordManager.RolesDudu))]
+        [RequireQueueRole(nameof(DiscordManager.RolesSeed))]
         public async Task SeedCheckAsync()
         {
             var code = Info.GetRandomTradeCode();
             await SeedCheckAsync(code).ConfigureAwait(false);
         }
 
-        [Command("duduList")]
-        [Alias("sl", "scq", "seedCheckQueue", "duduQueue", "seedList")]
+        [Command("seedList")]
+        [Alias("sl", "scq", "seedCheckQueue", "seedQueue", "seedList")]
         [Summary("Prints the users in the Seed Check queue.")]
         [RequireSudo]
         public async Task GetSeedListAsync()
         {
-            string msg = Info.GetTradeList(PokeRoutineType.DuduBot);
+            string msg = Info.GetTradeList(PokeRoutineType.SeedCheck);
             var embed = new EmbedBuilder();
             embed.AddField(x =>
             {

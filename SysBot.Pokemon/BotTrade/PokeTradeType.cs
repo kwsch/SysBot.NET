@@ -4,7 +4,7 @@
     {
         Random,
         Specific,
-        Dudu,
+        Seed,
         Clone,
         Dump,
     }
