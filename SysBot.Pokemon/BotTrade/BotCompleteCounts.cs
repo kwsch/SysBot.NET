@@ -109,7 +109,7 @@ namespace SysBot.Pokemon
             if (CompletedRaids != 0)
                 yield return $"Completed Raids: {CompletedRaids}";
             if (CompletedFossils != 0)
-                yield return $"Completed Raids: {CompletedFossils}";
+                yield return $"Completed Fossils: {CompletedFossils}";
         }
     }
 }
