@@ -118,7 +118,7 @@ namespace SysBot.Pokemon
 
         private void GenerateUsersInQueue(int count)
         {
-            var value = string.Format(UserListFormat, count);
+            var value = string.Format(UsersInQueueFormat, count);
             File.WriteAllText("queuecount.txt", value);
         }
 
