@@ -136,7 +136,7 @@ namespace SysBot.Pokemon
             Hub.Config.Stream.EndEnterCode(this);
 
             if (await CheckIfSoftBanned(token).ConfigureAwait(false))
-               await Unban(token).ConfigureAwait(false);
+                await Unban(token).ConfigureAwait(false);
 
             var pkm = poke.TradeData;
             if (pkm.Species != 0)
@@ -146,6 +146,12 @@ namespace SysBot.Pokemon
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.RecoverStart;
+            }
+
+            if (await CheckIfSearchingForLinkTradePartner(token).ConfigureAwait(false))
+            {
+                Connection.Log("Still searching, reset.");
+                await ResetTradePosition(token).ConfigureAwait(false);
             }
 
             Connection.Log("Opening Y-Comm Menu");
@@ -489,7 +495,7 @@ namespace SysBot.Pokemon
             Connection.Log("Waiting for Surprise Trade Partner...");
 
             // Time we wait for a trade
-            var partnerFound = await ReadUntilChanged(SupriseTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_SLOT, 90_000, 50, token).ConfigureAwait(false);
+            var partnerFound = await ReadUntilChanged(SurpriseTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_SLOT, 90_000, 50, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
@@ -511,8 +517,8 @@ namespace SysBot.Pokemon
             // Clear out the received trade data; we want to skip the trade animation.
             // The box slot locks have been removed prior to searching.
 
-            await Connection.WriteBytesAsync(BitConverter.GetBytes(SupriseTradeSearch_Empty), SupriseTradeSearchOffset, token).ConfigureAwait(false);
-            await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, SupriseTradePartnerPokemonOffset, token).ConfigureAwait(false);
+            await Connection.WriteBytesAsync(BitConverter.GetBytes(SurpriseTradeSearch_Empty), SurpriseTradeSearchOffset, token).ConfigureAwait(false);
+            await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, SurpriseTradePartnerPokemonOffset, token).ConfigureAwait(false);
 
             // Let the game recognize our modifications before finishing this loop.
             await Task.Delay(5_000, token).ConfigureAwait(false);
@@ -520,7 +526,7 @@ namespace SysBot.Pokemon
             // Clear the Surprise Trade slot locks! We'll skip the trade animation and reuse the slot on later loops.
             // Write 8 bytes of FF to set both Int32's to -1. Regular locks are [Box32][Slot32]
 
-            await Connection.WriteBytesAsync(BitConverter.GetBytes(ulong.MaxValue), SupriseTradeLockBox, token).ConfigureAwait(false);
+            await Connection.WriteBytesAsync(BitConverter.GetBytes(ulong.MaxValue), SurpriseTradeLockBox, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;

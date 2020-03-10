@@ -33,7 +33,7 @@ namespace SysBot.Pokemon
 
         public async Task<PK8> ReadSupriseTradePokemon(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(SupriseTradePartnerPokemonOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(SurpriseTradePartnerPokemonOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
             return new PK8(data);
         }
 
@@ -255,6 +255,12 @@ namespace SysBot.Pokemon
             // Check if the Unix Timestamp isn't Zero, if so we are Softbanned.
             var data = await Connection.ReadBytesAsync(SoftBanUnixTimespanOffset, 1, token).ConfigureAwait(false);
             return data[0] > 1;
+        }
+
+        public async Task<bool> CheckIfSearchingForLinkTradePartner(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(LinkTradeSearchingOffset, 1, token).ConfigureAwait(false);
+            return data[0] == 1;
         }
 
         public async Task ResetTradePosition(CancellationToken token)
