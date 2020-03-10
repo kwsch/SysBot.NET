@@ -77,6 +77,7 @@ namespace SysBot.Pokemon
         {
             var type = Config.CurrentRoutineType;
             int waitCounter = 0;
+            await SetCurrentBox(0, token).ConfigureAwait(false);
             while (!token.IsCancellationRequested && Config.NextRoutineType == type)
             {
                 if (!Hub.Queues.TryDequeue(type, out var detail, out var priority) && !Hub.Queues.TryDequeueLedy(out detail))
@@ -120,6 +121,7 @@ namespace SysBot.Pokemon
 
         private async Task DoSurpriseTrades(SAV8SWSH sav, CancellationToken token)
         {
+            await SetCurrentBox(0, token).ConfigureAwait(false);
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.SurpriseTrade)
             {
                 var pkm = Hub.Ledy.Pool.GetRandomSurprise();
@@ -445,6 +447,13 @@ namespace SysBot.Pokemon
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.RecoverStart;
+            }
+
+
+            if (await CheckIfSearchingForSurprisePartner(token).ConfigureAwait(false))
+            {
+                Connection.Log("Still searching, reset.");
+                await ResetTradePosition(token).ConfigureAwait(false);
             }
 
             Connection.Log("Opening Y-Comm Menu");

@@ -5,6 +5,7 @@ namespace SysBot.Pokemon
     public static class PokeDataOffsets
     {
         public const uint BoxStartOffset = 0x4293D8B0;
+        public const uint CurrentBoxOffset = 0x4298e83E;
         public const uint TrainerDataOffset = 0x42935E48;
         public const uint SoftBanUnixTimespanOffset = 0x4298f9f8;
         public const uint RaidPokemonOffset = 0x85C7AB08;

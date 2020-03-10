@@ -57,6 +57,17 @@ namespace SysBot.Pokemon
             return await ReadPokemon(ofs, token, BoxFormatSlotSize).ConfigureAwait(false);
         }
 
+        public async Task SetCurrentBox(int box, CancellationToken token)
+        {
+            await Connection.WriteBytesAsync(BitConverter.GetBytes(box), CurrentBoxOffset, token).ConfigureAwait(false);
+        }
+
+        public async Task<int> GetCurrentBox(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(CurrentBoxOffset, 1, token).ConfigureAwait(false);
+            return data[0];
+        }
+
         public async Task<PK8?> ReadUntilPresent(uint offset, int waitms, int waitInterval, CancellationToken token, int size = BoxFormatSlotSize)
         {
             int msWaited = 0;
@@ -261,6 +272,12 @@ namespace SysBot.Pokemon
         {
             var data = await Connection.ReadBytesAsync(LinkTradeSearchingOffset, 1, token).ConfigureAwait(false);
             return data[0] == 1;
+        }
+
+        public async Task<bool> CheckIfSearchingForSurprisePartner(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(SurpriseTradeSearchOffset, 8, token).ConfigureAwait(false);
+            return BitConverter.ToUInt32(data,0) == SurpriseTradeSearch_Searching;
         }
 
         public async Task ResetTradePosition(CancellationToken token)
