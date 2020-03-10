@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SysBot.Pokemon.Discord
@@ -25,8 +26,6 @@ namespace SysBot.Pokemon.Discord
         public bool CanUseCommandChannel(ulong channel) => WhitelistedChannels.Count == 0 || WhitelistedChannels.Contains(channel);
         public bool CanUseCommandUser(ulong uid) => !BlacklistedUsers.Contains(uid);
 
-        private const string ALLOW_ALL = "@everyone";
-
         public DiscordManager(PokeTradeHubConfig cfg)
         {
             Config = cfg;
@@ -35,13 +34,19 @@ namespace SysBot.Pokemon.Discord
 
         public bool GetHasRoleQueue(string type, IEnumerable<string> roles)
         {
+            var set = GetSet(type);
+            return set.Count == 0 || roles.Any(set.Contains);
+        }
+
+        private SensitiveSet<string> GetSet(string type)
+        {
             return type switch
             {
-                nameof(RolesClone) => roles.Any(RolesClone.Contains) || RolesClone.Contains(ALLOW_ALL),
-                nameof(RolesTrade) => roles.Any(RolesTrade.Contains) || RolesTrade.Contains(ALLOW_ALL),
-                nameof(RolesSeed) => roles.Any(RolesSeed.Contains) || RolesSeed.Contains(ALLOW_ALL),
-                nameof(RolesDump) => roles.Any(RolesDump.Contains) || RolesDump.Contains(ALLOW_ALL),
-                _ => false
+                nameof(RolesClone) => RolesClone,
+                nameof(RolesTrade) => RolesTrade,
+                nameof(RolesSeed) => RolesSeed,
+                nameof(RolesDump) => RolesDump,
+                _ => throw new ArgumentOutOfRangeException(nameof(type)),
             };
         }
 
