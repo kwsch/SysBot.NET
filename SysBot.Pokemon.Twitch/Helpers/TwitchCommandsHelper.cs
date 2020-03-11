@@ -70,5 +70,13 @@ namespace SysBot.Pokemon.Twitch
                 _ => "Sorry, you are not currently in the queue."
             };
         }
+
+        public static string GetCode(ulong parse)
+        {
+            var detail = TwitchBot.Info.GetDetail(parse);
+            return detail == null
+                ? "Sorry, you are not currently in the queue."
+                : $"Your trade code is {detail.Trade.Code:0000}";
+        }
     }
 }
