@@ -152,7 +152,7 @@ namespace SysBot.Pokemon
 
             if (await CheckIfSearchingForLinkTradePartner(token).ConfigureAwait(false))
             {
-                Connection.Log("Still searching, reset.");
+                Connection.Log("Still searching, reset bot position.");
                 await ResetTradePosition(token).ConfigureAwait(false);
             }
 
@@ -168,8 +168,8 @@ namespace SysBot.Pokemon
             for (int i = 0; i < 2; i++)
                 await Click(A, 1_500, token).ConfigureAwait(false);
 
-            // These languages require an extra A press at this menu.
-            if (GameLang == LanguageID.Korean || GameLang == LanguageID.German || GameLang == LanguageID.ChineseS || GameLang == LanguageID.ChineseT)
+            // All other languages require an extra A press at this menu.
+            if (GameLang != LanguageID.English && GameLang != LanguageID.Spanish)
                 await Click(A, 1_500, token).ConfigureAwait(false);
 
             // Loading Screen
