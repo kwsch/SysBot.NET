@@ -10,6 +10,7 @@ namespace SysBot.Tests
         static GenerateTests() => AutoLegalityWrapper.EnsureInitialized(new LegalitySettings());
 
         [Theory]
+        [InlineData(Braviary)]
         [InlineData(Drednaw)]
         public void CanGenerate(string set)
         {
@@ -47,6 +48,16 @@ namespace SysBot.Tests
                 pk.AbilityNumber.Should().Be(abilNumber);
             }
         }
+
+        private const string Braviary =
+@"Braviary (F) @ Master Ball
+Ability: Defiant
+EVs: 252 Atk / 4 SpD / 252 Spe
+Jolly Nature
+- Brave Bird
+- Close Combat
+- Tailwind
+- Iron Head";
 
         private const string Drednaw =
 @"Drednaw-Gmax @ Fossilized Drake 
