@@ -89,7 +89,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("queueMode")]
         [Alias("qm")]
-        [Summary("Toggles on/off the ability to join the trade queue.")]
+        [Summary("Changes how queueing is controlled (manual/threshold/interval).")]
         [RequireSudo]
         public async Task ChangeQueueModeAsync([Summary("Queue mode")]QueueOpening mode)
         {
