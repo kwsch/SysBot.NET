@@ -85,6 +85,17 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Format to display the Waited Time.")]
         public string WaitedTimeFormat { get; set; } = @"hh\:mm\:ss";
 
+        // Estimated Time
+
+        [Category(Operation), Description("Create a file listing the estimated amount of time a user will have to wait if they joined the queue.")]
+        public bool CreateEstimatedTime { get; set; } = true;
+
+        [Category(Operation), Description("Format to display the Estimated Wait Time.")]
+        public string EstimatedTimeFormat { get; set; } = "Estimated time: {0:F1} minutes";
+
+        [Category(Operation), Description("Format to display the Estimated Wait Timestamp.")]
+        public string EstimatedFulfillmentFormat { get; set; } = @"hh\:mm\:ss";
+
         // Users in Queue
 
         [Category(Operation), Description("Create a file indicating the count of users in the queue.")]
@@ -101,6 +112,8 @@ namespace SysBot.Pokemon
                     GenerateBotConnection(b, detail);
                 if (CreateWaitedTime)
                     GenerateWaitedTime(detail.Time);
+                if (CreateEstimatedTime)
+                    GenerateEstimatedTime(hub);
                 if (CreateUsersInQueue)
                     GenerateUsersInQueue(hub.Queues.Info.Count);
                 if (CreateOnDeck)
@@ -128,6 +141,22 @@ namespace SysBot.Pokemon
             var difference = now - time;
             var value = difference.ToString(WaitedTimeFormat);
             File.WriteAllText("waited.txt", value);
+        }
+
+        private void GenerateEstimatedTime(PokeTradeHub<PK8> hub)
+        {
+            var count = hub.Queues.Info.Count;
+            var estimate = hub.Config.Queues.EstimateDelay(count, hub.Bots.Count);
+
+            // Minutes
+            var wait = string.Format(EstimatedTimeFormat, estimate);
+            File.WriteAllText("estimatedTime.txt", wait);
+
+            // Expected to be fulfilled at this time
+            var now = DateTime.Now;
+            var difference = now.AddMinutes(estimate);
+            var date = difference.ToString(EstimatedFulfillmentFormat);
+            File.WriteAllText("estimatedTimestamp.txt", date);
         }
 
         public void StartEnterCode(PokeTradeBot b)
