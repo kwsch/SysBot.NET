@@ -8,7 +8,7 @@ namespace SysBot.Pokemon.WinForms
     {
         public static void InitializeStubs()
         {
-            var sav8 = new SAV8SWSH();
+            var sav8 = new SAV8SWSH()
             SetUpSpriteCreator(sav8);
         }
 
