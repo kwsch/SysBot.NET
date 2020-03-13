@@ -12,8 +12,13 @@ namespace SysBot.Pokemon
     {
         private const string Operation = nameof(Operation);
 
+        public static Action<PK8, string>? CreateSpriteFile { get; set; }
+
         [Category(Operation), Description("Generate trade start details, indicating who the bot is trading with.")]
         public bool CreateTradeStart { get; set; } = true;
+
+        [Category(Operation), Description("Generate trade start details, indicating what the bot is trading.")]
+        public bool CreateTradeStartSprite { get; set; } = true;
 
         [Category(Operation), Description("Format to display the Now Trading details")]
         public string TrainerTradeStart { get; set; } = "(ID {0}) {1}";
@@ -135,6 +140,8 @@ namespace SysBot.Pokemon
                     GenerateUserList(hub);
                 if (CreateCompletedTrades)
                     GenerateCompletedTrades(hub.Config.Counts);
+                if (CreateTradeStartSprite)
+                    GenerateBotSprite(b, detail);
             }
             catch (Exception e)
             {
@@ -221,6 +228,13 @@ namespace SysBot.Pokemon
             var file = b.Connection.IP;
             var name = string.Format(TrainerTradeStart, detail.ID, detail.Trainer.TrainerName, (Species)detail.TradeData.Species);
             File.WriteAllText($"{file}.txt", name);
+        }
+
+        private void GenerateBotSprite(PokeTradeBot b, PokeTradeDetail<PK8> detail)
+        {
+            var file = b.Connection.IP;
+            var pk = detail.TradeData;
+            CreateSpriteFile?.Invoke(pk, $"sprite_{file}.png");
         }
 
         private void GenerateOnDeck(PokeTradeHub<PK8> hub)
