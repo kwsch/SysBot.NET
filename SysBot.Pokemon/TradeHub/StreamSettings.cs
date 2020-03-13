@@ -12,8 +12,11 @@ namespace SysBot.Pokemon
     {
         private const string Operation = nameof(Operation);
 
-        [Category(Operation), Description("Generate trade start details.")]
+        [Category(Operation), Description("Generate trade start details, indicating who the bot is trading with.")]
         public bool CreateTradeStart { get; set; } = true;
+
+        [Category(Operation), Description("Format to display the Now Trading details")]
+        public string TrainerTradeStart { get; set; } = "(ID {0}) {1}";
 
         // On Deck
 
@@ -29,7 +32,7 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Separator to split the on-deck list users.")]
         public string OnDeckSeparator { get; set; } = "\n";
 
-        [Category(Operation), Description("Separator to split the on-deck list users.")]
+        [Category(Operation), Description("Format to display the on-deck list users.")]
         public string OnDeckFormat { get; set; } = "(ID {0}) - {3}";
 
         // On Deck 2
@@ -46,7 +49,7 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Separator to split the on-deck #2 list users.")]
         public string OnDeckSeparator2 { get; set; } = "\n";
 
-        [Category(Operation), Description("Separator to split the on-deck #2 list users.")]
+        [Category(Operation), Description("Format to display the on-deck #2 list users.")]
         public string OnDeckFormat2 { get; set; } = "(ID {0}) - {3}";
 
         // User List
@@ -63,7 +66,7 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Separator to split the list users.")]
         public string UserListSeparator { get; set; } = ", ";
 
-        [Category(Operation), Description("Separator to split the list users.")]
+        [Category(Operation), Description("Format to display the list users.")]
         public string UserListFormat { get; set; } = "(ID {0}) - {3}";
 
         // TradeCodeBlock
@@ -104,6 +107,14 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Format to display the Users in Queue.")]
         public string UsersInQueueFormat { get; set; } = "Users in Queue: {0}";
 
+        // Completed Trades
+
+        [Category(Operation), Description("Create a file indicating the count of completed trades.")]
+        public bool CreateCompletedTrades { get; set; } = true;
+
+        [Category(Operation), Description("Format to display the Users in Queue.")]
+        public string CompletedTradesFormat { get; set; } = "Completed Trades: {0}";
+
         public void StartTrade(PokeTradeBot b, PokeTradeDetail<PK8> detail, PokeTradeHub<PK8> hub)
         {
             try
@@ -122,6 +133,8 @@ namespace SysBot.Pokemon
                     GenerateOnDeck2(hub);
                 if (CreateUserList)
                     GenerateUserList(hub);
+                if (CreateCompletedTrades)
+                    GenerateCompletedTrades(hub.Config.Counts);
             }
             catch (Exception e)
             {
@@ -203,10 +216,10 @@ namespace SysBot.Pokemon
 
         private string GetBlockFileName(PokeTradeBot b) => string.Format(TradeBlockFormat, b.Connection.IP);
 
-        private static void GenerateBotConnection(PokeTradeBot b, PokeTradeDetail<PK8> detail)
+        private void GenerateBotConnection(PokeTradeBot b, PokeTradeDetail<PK8> detail)
         {
             var file = b.Connection.IP;
-            var name = $"(ID {detail.ID}) {detail.Trainer.TrainerName}";
+            var name = string.Format(TrainerTradeStart, detail.ID, detail.Trainer.TrainerName, (Species)detail.TradeData.Species);
             File.WriteAllText($"{file}.txt", name);
         }
 
@@ -231,6 +244,12 @@ namespace SysBot.Pokemon
             if (UserListTake > 0)
                 users = users.Take(UserListTake); // filter down
             File.WriteAllText("users.txt", string.Join(UserListSeparator, users));
+        }
+
+        private void GenerateCompletedTrades(CountSettings counts)
+        {
+            var msg = string.Format(CompletedTradesFormat, counts.CompletedTrades);
+            File.WriteAllText("completed.txt", msg);
         }
     }
 }
