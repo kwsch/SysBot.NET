@@ -10,6 +10,7 @@ namespace SysBot.Tests
         static GenerateTests() => AutoLegalityWrapper.EnsureInitialized(new LegalitySettings());
 
         [Theory]
+        [InlineData(Gengar)]
         [InlineData(Braviary)]
         [InlineData(Drednaw)]
         public void CanGenerate(string set)
@@ -48,6 +49,17 @@ namespace SysBot.Tests
                 pk.AbilityNumber.Should().Be(abilNumber);
             }
         }
+
+        private const string Gengar =
+@"Gengar-Gmax @ Life Orb 
+Ability: Cursed Body 
+Shiny: Yes 
+EVs: 252 SpA / 4 SpD / 252 Spe 
+Timid Nature 
+- Dream Eater 
+- Fling 
+- Giga Impact 
+- Headbutt";
 
         private const string Braviary =
 @"Braviary (F) @ Master Ball
