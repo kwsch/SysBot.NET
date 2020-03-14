@@ -3,7 +3,7 @@
 namespace SysBot.Base
 {
     /// <summary>
-    /// Connection to a Nintendo Switch hosting the sysmodule. 
+    /// Connection to a Nintendo Switch hosting the sys-module.
     /// </summary>
     public class SwitchConnection : SwitchConnectionBase
     {

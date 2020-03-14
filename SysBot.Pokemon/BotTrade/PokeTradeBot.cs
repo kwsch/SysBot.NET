@@ -449,7 +449,6 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.RecoverStart;
             }
 
-
             if (await CheckIfSearchingForSurprisePartner(token).ConfigureAwait(false))
             {
                 Connection.Log("Still searching, reset.");

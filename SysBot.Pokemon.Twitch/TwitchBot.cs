@@ -209,12 +209,12 @@ namespace SysBot.Pokemon.Twitch
             {
                 // User Usable Commands
                 case "trade" when !disallowed():
-                    var _ = TwitchCommandsHelper.AddToWaitingList(args, m.DisplayName, $"@{m.Username}", out string msg);
+                    var _ = TwitchCommandsHelper.AddToWaitingList(args, m.DisplayName, m.Username, out string msg);
                     return msg;
                 case "ts" when !disallowed():
-                    return Info.GetPositionString(ulong.Parse(m.UserId));
+                    return $"@{m.Username}: {Info.GetPositionString(ulong.Parse(m.UserId))}";
                 case "tc" when !disallowed():
-                    return TwitchCommandsHelper.ClearTrade(ulong.Parse(m.UserId));
+                    return $"@{m.Username}: {TwitchCommandsHelper.ClearTrade(ulong.Parse(m.UserId))}";
 
                 case "code" when whisper && !disallowed():
                     return TwitchCommandsHelper.GetCode(ulong.Parse(m.UserId));

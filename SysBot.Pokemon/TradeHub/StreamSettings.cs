@@ -230,11 +230,14 @@ namespace SysBot.Pokemon
             File.WriteAllText($"{file}.txt", name);
         }
 
-        private void GenerateBotSprite(PokeTradeBot b, PokeTradeDetail<PK8> detail)
+        private static void GenerateBotSprite(PokeTradeBot b, PokeTradeDetail<PK8> detail)
         {
+            var func = CreateSpriteFile;
+            if (func == null)
+                return;
             var file = b.Connection.IP;
             var pk = detail.TradeData;
-            CreateSpriteFile?.Invoke(pk, $"sprite_{file}.png");
+            func.Invoke(pk, $"sprite_{file}.png");
         }
 
         private void GenerateOnDeck(PokeTradeHub<PK8> hub)

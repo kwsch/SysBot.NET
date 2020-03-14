@@ -34,13 +34,13 @@ namespace SysBot.Pokemon.Twitch
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, string message)
         {
             LogUtil.LogText(message);
-            SendMessage(message, Settings.NotifyDestination);
+            SendMessage($"@{info.Trainer.TrainerName}: {message}", Settings.NotifyDestination);
         }
 
         public void TradeCanceled(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeResult msg)
         {
             OnFinish?.Invoke(routine);
-            var line = $"Trade canceled: {msg}";
+            var line = $"@{info.Trainer.TrainerName}: Trade canceled, {msg}";
             LogUtil.LogText(line);
             SendMessage(line, Settings.TradeCanceledDestination);
         }
@@ -49,7 +49,7 @@ namespace SysBot.Pokemon.Twitch
         {
             OnFinish?.Invoke(routine);
             var tradedToUser = Data.Species;
-            var message = tradedToUser != 0 ? $"Trade finished. Enjoy your {(Species)tradedToUser}!" : "Trade finished!";
+            var message = $"@{info.Trainer.TrainerName}: " + (tradedToUser != 0 ? $"Trade finished. Enjoy your {(Species)tradedToUser}!" : "Trade finished!");
             LogUtil.LogText(message);
             SendMessage(message, Settings.TradeFinishDestination);
         }
@@ -57,7 +57,7 @@ namespace SysBot.Pokemon.Twitch
         public void TradeInitialize(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
         {
             var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";
-            var msg = $"Initializing trade{receive} with you, {info.Trainer.TrainerName} (ID: {info.ID}). Please be ready. Use the code you whispered me to search!";
+            var msg = $"@{info.Trainer.TrainerName} (ID: {info.ID}): Initializing trade{receive} with you. Please be ready. Use the code you whispered me to search!";
             var dest = Settings.TradeStartDestination;
             if (dest == TwitchMessageDestination.Whisper)
                 msg += $" Your trade code is: {info.Code:0000}";
@@ -68,7 +68,7 @@ namespace SysBot.Pokemon.Twitch
         public void TradeSearching(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
         {
             var name = Info.TrainerName;
-            var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", {name}";
+            var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", @{name}";
             var message = $"I'm waiting for you{trainer}! My IGN is {routine.InGameName}.";
             var dest = Settings.TradeSearchDestination;
             if (dest == TwitchMessageDestination.Channel)
@@ -76,7 +76,7 @@ namespace SysBot.Pokemon.Twitch
             else if (dest == TwitchMessageDestination.Whisper)
                 message += $" Your trade code is: {info.Code:0000}";
             LogUtil.LogText(message);
-            SendMessage(message, dest);
+            SendMessage($"@{info.Trainer.TrainerName} {message}", dest);
         }
 
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeSummary message)
