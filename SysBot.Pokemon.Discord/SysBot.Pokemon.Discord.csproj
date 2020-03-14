@@ -16,7 +16,7 @@
   <!-- this group contains references that are not platform specific -->
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.1.1" />
-    <PackageReference Include="PKHeX.Core" Version="20.2.15" />
+    <PackageReference Include="PKHeX.Core" Version="20.3.14" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
     <PackageReference Include="System.Resources.Extensions" Version="4.7.0" />
     <ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />
