@@ -119,7 +119,7 @@ namespace SysBot.Pokemon.Twitch
             }
 
             var position = Info.CheckPosition(userID, type);
-            msg = $"{name} - Added to the {type} queue, unique ID: {detail.ID}. Current Position: {position.Position}";
+            msg = $"@{name}: Added to the {type} queue, unique ID: {detail.ID}. Current Position: {position.Position}";
 
             var botct = Info.Hub.Bots.Count;
             if (position.Position > botct)
