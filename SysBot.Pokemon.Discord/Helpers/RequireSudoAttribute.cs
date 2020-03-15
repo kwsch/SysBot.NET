@@ -23,7 +23,7 @@ namespace SysBot.Pokemon.Discord
                 return Task.FromResult(PreconditionResult.FromSuccess());
 
             // Since it wasn't, fail
-            return Task.FromResult(PreconditionResult.FromError($"You are not permitted to run this command."));
+            return Task.FromResult(PreconditionResult.FromError("You are not permitted to run this command."));
         }
     }
 }
