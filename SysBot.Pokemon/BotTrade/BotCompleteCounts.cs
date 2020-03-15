@@ -119,7 +119,7 @@ namespace SysBot.Pokemon
             if (CompletedFossils != 0)
                 yield return $"Completed Fossils: {CompletedFossils}";
             if (CompletedEncounters != 0)
-                yield return $"Completed Fossils: {CompletedEncounters}";
+                yield return $"Wild Encounters: {CompletedEncounters}";
         }
     }
 }
