@@ -61,6 +61,11 @@ namespace SysBot.Pokemon.Twitch
             client.OnDisconnected += Client_OnDisconnected;
             client.OnLeftChannel += Client_OnLeftChannel;
 
+            client.OnMessageSent += (_, e)
+                => LogUtil.LogText($"{client.TwitchUsername}] - Message Sent in {e.SentMessage.Channel}: {e.SentMessage.Message}");
+            client.OnWhisperSent += (_, e)
+                => LogUtil.LogText($"{client.TwitchUsername}] - Whisper Sent to @{e.Receiver}: {e.Message}");
+
             client.OnMessageThrottled += (_, e)
                 => LogUtil.LogError($"Message Throttled: {e.Message}", "TwitchBot");
             client.OnWhisperThrottled += (_, e)
