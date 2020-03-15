@@ -21,6 +21,9 @@ namespace SysBot.Pokemon
         [Category(Dumping), Description("Link Trade: Dumping routine will stop after spending x seconds in trade.")]
         public int MaxDumpTradeTime { get; set; } = 180;
 
+        [Category(TradeCode), Description("Trade: Player will spin while searching for trade.")]
+        public bool Spin { get; set; } = true;
+
         /// <summary>
         /// Gets a random trade code based on the range settings.
         /// </summary>
