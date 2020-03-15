@@ -82,41 +82,42 @@ namespace SysBot.Pokemon
             return null;
         }
 
-        public async Task<bool> ReadUntilChanged(uint offset, byte[] original, int waitms, int waitInterval, bool spin, CancellationToken token)
+        public async Task<bool> SpinUntilChanged(uint offset, byte[] original, int waitms, CancellationToken token)
         {
             var end = DateTime.Now.AddMilliseconds(waitms);
             do
             {
-                if (spin)
+                const int delay = 100;
+                const int half = delay / 2;
+                await SetStick(SwitchStick.LEFT, 25000, 0, half, CancellationToken.None).ConfigureAwait(false);
+
+                var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
+                if (!result.SequenceEqual(original))
                 {
-                    const int delay = 100;
-                    const int half = delay / 2;
-                    await SetStick(SwitchStick.LEFT, 25000, 0, half, CancellationToken.None).ConfigureAwait(false);
-
-                    var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
-                    if (!result.SequenceEqual(original))
-                    {
-                        await Connection.SendAsync(SwitchCommand.ResetStick(SwitchStick.LEFT), CancellationToken.None).ConfigureAwait(false);
-                        return true;
-                    }
-                    await Task.Delay(half, token).ConfigureAwait(false);
-
-                    await SetStick(SwitchStick.LEFT, 0, 25000, delay, CancellationToken.None).ConfigureAwait(false);
-                    await SetStick(SwitchStick.LEFT, -25000, 0, delay, CancellationToken.None).ConfigureAwait(false);
-                    await SetStick(SwitchStick.LEFT, 0, -25000, delay, CancellationToken.None).ConfigureAwait(false);
+                    await Connection.SendAsync(SwitchCommand.ResetStick(SwitchStick.LEFT), CancellationToken.None).ConfigureAwait(false);
+                    return true;
                 }
-                else
-                {
-                    var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
-                    if (!result.SequenceEqual(original))
-                        return true;
-                    await Task.Delay(waitInterval, token).ConfigureAwait(false);
-                }
+                await Task.Delay(half, token).ConfigureAwait(false);
 
+                await SetStick(SwitchStick.LEFT, 0, 25000, delay, CancellationToken.None).ConfigureAwait(false);
+                await SetStick(SwitchStick.LEFT, -25000, 0, delay, CancellationToken.None).ConfigureAwait(false);
+                await SetStick(SwitchStick.LEFT, 0, -25000, delay, CancellationToken.None).ConfigureAwait(false);
             } while (DateTime.Now < end);
 
-            if (spin)
-                await Connection.SendAsync(SwitchCommand.ResetStick(SwitchStick.LEFT), CancellationToken.None).ConfigureAwait(false);
+            await Connection.SendAsync(SwitchCommand.ResetStick(SwitchStick.LEFT), CancellationToken.None).ConfigureAwait(false);
+            return false;
+        }
+
+        public async Task<bool> ReadUntilChanged(uint offset, byte[] original, int waitms, int waitInterval, CancellationToken token)
+        {
+            var end = DateTime.Now.AddMilliseconds(waitms);
+            do
+            {
+                var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
+                if (!result.SequenceEqual(original))
+                    return true;
+                await Task.Delay(waitInterval, token).ConfigureAwait(false);
+            } while (DateTime.Now < end);
             return false;
         }
 
