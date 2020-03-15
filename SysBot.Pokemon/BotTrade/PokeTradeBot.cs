@@ -212,7 +212,7 @@ namespace SysBot.Pokemon
             var searching = await Connection.ReadBytesAsync(ofs, 1, token).ConfigureAwait(false);
             // Wait 30 Seconds for Trainer...
 
-            var found = Task.Run(async () => !await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false), token);
+            Task<bool> found = Task.Run(() => IsCorrectScreen(CurrentScreen_Box, token), token);
 
             if (Hub.Config.Trade.Spin)
                 await SpinUntilChanged(found, 30_000, token).ConfigureAwait(false);

@@ -95,13 +95,42 @@ namespace SysBot.Pokemon
             {
                 // Spin the Left Stick in a circle counter-clockwise, starting from 0deg (polar) in increments of 90deg.
                 const int delay = 100;
+
+                if (await ReadIsChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, token).ConfigureAwait(false))
+                {
+                    changed = true;
+                    break;
+                }
+
                 await SetStick(SwitchStick.LEFT, 25000, 0, delay, token).ConfigureAwait(false); // →
+
+                if (await ReadIsChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, token).ConfigureAwait(false))
+                {
+                    changed = true;
+                    break;
+                }
+
                 await SetStick(SwitchStick.LEFT, 0, 25000, delay, token).ConfigureAwait(false); // ↑ 
+
+                if (await ReadIsChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, token).ConfigureAwait(false))
+                {
+                    changed = true;
+                    break;
+                }
+
                 await SetStick(SwitchStick.LEFT, -25000, 0, delay, token).ConfigureAwait(false); // ←
+
+                if (await ReadIsChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, token).ConfigureAwait(false))
+                {
+                    changed = true;
+                    break;
+                }
+
                 var now = sw.ElapsedMilliseconds;
+
                 await SetStick(SwitchStick.LEFT, 0, -25000, 2 * fastSleep, token).ConfigureAwait(false); // ↓
 
-                if (await escape.ConfigureAwait(false))
+                if (await ReadIsChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, token).ConfigureAwait(false))
                 {
                     changed = true;
                     break;
@@ -142,11 +171,18 @@ namespace SysBot.Pokemon
             sw.Start();
             do
             {
-                var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
-                if (!result.SequenceEqual(original))
+                if (await ReadIsChanged(offset, original, token)) 
                     return true;
                 await Task.Delay(waitInterval, token).ConfigureAwait(false);
             } while (sw.ElapsedMilliseconds < waitms);
+            return false;
+        }
+
+        private async Task<bool> ReadIsChanged(uint offset, byte[] original, CancellationToken token)
+        {
+            var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
+            if (!result.SequenceEqual(original))
+                return true;
             return false;
         }
 
