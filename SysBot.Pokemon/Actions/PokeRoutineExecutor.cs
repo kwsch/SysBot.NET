@@ -83,7 +83,7 @@ namespace SysBot.Pokemon
             return null;
         }
 
-        public async Task<bool> SpinUntilChanged(uint offset, byte[] original, int waitms, CancellationToken token)
+        public async Task<bool> SpinUntilChanged(Task<bool> escape, int waitms, CancellationToken token)
         {
             bool changed = false;
             const int fastSleep = 10;
@@ -101,8 +101,7 @@ namespace SysBot.Pokemon
                 var now = sw.ElapsedMilliseconds;
                 await SetStick(SwitchStick.LEFT, 0, -25000, 2 * fastSleep, token).ConfigureAwait(false); // ↓
 
-                var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
-                if (!result.SequenceEqual(original))
+                if (await escape.ConfigureAwait(false))
                 {
                     changed = true;
                     break;
@@ -121,6 +120,20 @@ namespace SysBot.Pokemon
             await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, defaultSleep), token).ConfigureAwait(false);
             await Task.Delay(defaultSleep, token).ConfigureAwait(false);
             return changed;
+        }
+
+        public async Task<bool> ReadUntilChanged(Task<bool> escape, int waitms, int waitInterval, CancellationToken token)
+        {
+            var sw = new Stopwatch();
+            sw.Start();
+            do
+            {
+                var result = await escape.ConfigureAwait(false);
+                if (result)
+                    return true;
+                await Task.Delay(waitInterval, token).ConfigureAwait(false);
+            } while (sw.ElapsedMilliseconds < waitms);
+            return false;
         }
 
         public async Task<bool> ReadUntilChanged(uint offset, byte[] original, int waitms, int waitInterval, CancellationToken token)
