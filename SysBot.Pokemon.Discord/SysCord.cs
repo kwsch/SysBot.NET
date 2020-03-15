@@ -119,6 +119,10 @@ namespace SysBot.Pokemon.Discord
             await _client.LoginAsync(TokenType.Bot, apiToken).ConfigureAwait(false);
             await _client.StartAsync().ConfigureAwait(false);
 
+            // Restore Echoes
+            await Task.Delay(5_000, token).ConfigureAwait(false);
+            EchoModule.RestoreChannels(_client);
+
             // Restore Logging
             await Task.Delay(5_000, token).ConfigureAwait(false);
             LogModule.RestoreLogging(_client);
