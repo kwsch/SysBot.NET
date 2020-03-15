@@ -118,6 +118,8 @@ namespace SysBot.Pokemon
                 yield return $"Completed Raids: {CompletedRaids}";
             if (CompletedFossils != 0)
                 yield return $"Completed Fossils: {CompletedFossils}";
+            if (CompletedEncounters != 0)
+                yield return $"Completed Fossils: {CompletedEncounters}";
         }
     }
 }
