@@ -78,6 +78,12 @@ namespace SysBot.Pokemon.Discord
             Channels.Add(cid, entry);
         }
 
+        public static bool IsEchoChannel(ISocketMessageChannel c)
+        {
+            var cid = c.Id;
+            return (Channels.TryGetValue(cid, out _));
+        }
+
         [Command("echoInfo")]
         [Summary("Dumps the special message (Echo) settings.")]
         [RequireSudo]
