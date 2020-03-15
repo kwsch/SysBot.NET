@@ -210,7 +210,7 @@ namespace SysBot.Pokemon
             // Wait 30 Seconds for Trainer...
             Connection.Log("Waiting for trainer ...");
             const uint ofs = LinkTradePartnerPokemonOffset;
-            if (Hub.Config.Trade.Spin)
+            if (Hub.Config.Trade.SpinTrade)
                 await SpinUntilChangedLink(30_000, token).ConfigureAwait(false);
             else
                 await ReadUntilChanged(ofs, PokeTradeBotUtil.EMPTY_SLOT, 30_000, 0_200, token).ConfigureAwait(false);
@@ -514,7 +514,7 @@ namespace SysBot.Pokemon
             Connection.Log("Waiting for Surprise Trade Partner...");
             const uint ofs = SurpriseTradeSearchOffset;
             var searching = await Connection.ReadBytesAsync(ofs, 4, token).ConfigureAwait(false);
-            if (Hub.Config.Trade.Spin)
+            if (Hub.Config.Trade.SpinSurprise)
                 await SpinUntilChangedSurprise(30_000, token).ConfigureAwait(false);
             else
                 await ReadUntilChanged(ofs, searching, 30_000, 0_200, token).ConfigureAwait(false);
