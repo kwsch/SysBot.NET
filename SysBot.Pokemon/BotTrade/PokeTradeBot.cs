@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
@@ -208,18 +207,16 @@ namespace SysBot.Pokemon
             await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
 
             // Wait until search finishes
-            const uint ofs = LinkTradeSearchingOffset;
-            var searching = await Connection.ReadBytesAsync(ofs, 1, token).ConfigureAwait(false);
             // Wait 30 Seconds for Trainer...
-
-            Task<bool> found = Task.Run(() => IsCorrectScreen(CurrentScreen_Box, token), token);
-
+            Connection.Log("Waiting for trainer ...");
+            const uint ofs = LinkTradeSearchingOffset;
             if (Hub.Config.Trade.Spin)
-                await SpinUntilChanged(found, 30_000, token).ConfigureAwait(false);
+                await SpinUntilChanged(ofs, PokeTradeBotUtil.EMPTY_SLOT, 30_000, token).ConfigureAwait(false);
             else
-                await ReadUntilChanged(ofs, searching, 30_000, 0_200, token).ConfigureAwait(false);
+                await ReadUntilChanged(ofs, PokeTradeBotUtil.EMPTY_SLOT, 30_000, 0_200, token).ConfigureAwait(false);
 
             // Wait 15 Seconds for offer...
+            Connection.Log("Waiting for offer ...");
             var partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, 15_000, 0_200, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
@@ -513,21 +510,14 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.RecoverReturnOverworld;
             }
 
-            Connection.Log("Waiting for Surprise Trade Partner...");
-
             // Wait 30 Seconds for Trainer...
+            Connection.Log("Waiting for Surprise Trade Partner...");
             const uint ofs = SurpriseTradeSearchOffset;
             var searching = await Connection.ReadBytesAsync(ofs, 4, token).ConfigureAwait(false);
-
-            var found = Task.Run(async () =>
-            {
-                var result = await Connection.ReadBytesAsync(ofs, searching.Length, token).ConfigureAwait(false);
-                return !result.SequenceEqual(searching);
-            }, token);
             if (Hub.Config.Trade.Spin)
-                await SpinUntilChanged(found, 30_000, token).ConfigureAwait(false);
+                await SpinUntilChanged(ofs, searching, 30_000, token).ConfigureAwait(false);
             else
-                await ReadUntilChanged(found, 30_000, 0_200, token).ConfigureAwait(false);
+                await ReadUntilChanged(ofs, searching, 30_000, 0_200, token).ConfigureAwait(false);
 
             // Wait 15 Seconds for offer...
             var partnerFound = await ReadUntilChanged(SurpriseTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, 15_000, 0_200, token).ConfigureAwait(false);

@@ -83,65 +83,47 @@ namespace SysBot.Pokemon
             return null;
         }
 
-        public async Task<bool> SpinUntilChanged(Task<bool> escape, int waitms, CancellationToken token)
+        public async Task<bool> SpinUntilChanged(uint ofs, byte[] data, int waitms, CancellationToken token)
         {
-            bool changed = false;
-            const int fastSleep = 10;
-            const int defaultSleep = 50;
-            await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, fastSleep), token).ConfigureAwait(false);
+            const int fastSleep = 10; // between commands
+            const int defaultSleep = 50; // original
+            const int delay = 100; // per stick command
+            const int m = 25_000; // magnitude of stick movement
             var sw = new Stopwatch();
+
+            bool changed = false;
+            await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, fastSleep), token).ConfigureAwait(false);
             sw.Start();
             do
             {
                 // Spin the Left Stick in a circle counter-clockwise, starting from 0deg (polar) in increments of 90deg.
-                const int delay = 100;
-
-                if (await ReadIsChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, token).ConfigureAwait(false))
-                {
-                    changed = true;
-                    break;
-                }
-
-                await SetStick(SwitchStick.LEFT, 25000, 0, delay, token).ConfigureAwait(false); // →
-
-                if (await ReadIsChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, token).ConfigureAwait(false))
-                {
-                    changed = true;
-                    break;
-                }
-
-                await SetStick(SwitchStick.LEFT, 0, 25000, delay, token).ConfigureAwait(false); // ↑ 
-
-                if (await ReadIsChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, token).ConfigureAwait(false))
-                {
-                    changed = true;
-                    break;
-                }
-
-                await SetStick(SwitchStick.LEFT, -25000, 0, delay, token).ConfigureAwait(false); // ←
-
-                if (await ReadIsChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, token).ConfigureAwait(false))
-                {
-                    changed = true;
-                    break;
-                }
-
-                var now = sw.ElapsedMilliseconds;
-
-                await SetStick(SwitchStick.LEFT, 0, -25000, 2 * fastSleep, token).ConfigureAwait(false); // ↓
-
-                if (await ReadIsChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, token).ConfigureAwait(false))
-                {
-                    changed = true;
-                    break;
-                }
-
-                // wait the rest of this step's delay
-                var wait = delay - (sw.ElapsedMilliseconds - now);
-                if (wait > 0)
-                    await Task.Delay((int)wait, token).ConfigureAwait(false);
-
+                if (!await SpinCircle().ConfigureAwait(false))
+                    continue;
+                changed = true;
+                break;
             } while (sw.ElapsedMilliseconds < waitms);
+
+            async Task<bool> SpinCircle()
+            {
+                return    await Step( m,  0).ConfigureAwait(false) // →
+                       || await Step( 0,  m).ConfigureAwait(false) // ↑ 
+                       || await Step(-m,  0).ConfigureAwait(false) // ←
+                       || await Step( 0, -m).ConfigureAwait(false);// ↓
+
+                async Task<bool> Step(short x, short y)
+                {
+                    var now = sw.ElapsedMilliseconds;
+                    await SetStick(SwitchStick.LEFT, x, y, 2 * fastSleep, token).ConfigureAwait(false);
+                    if (await ReadIsChanged(ofs, data, token).ConfigureAwait(false))
+                        return true;
+
+                    // wait the rest of this step's delay
+                    var wait = delay - (sw.ElapsedMilliseconds - now);
+                    if (wait > 0)
+                        await Task.Delay((int)wait, token).ConfigureAwait(false);
+                    return false;
+                }
+            }
 
             // Gracefully clean up
             await Connection.SendAsync(SwitchCommand.ResetStick(SwitchStick.LEFT), token).ConfigureAwait(false);
@@ -151,27 +133,13 @@ namespace SysBot.Pokemon
             return changed;
         }
 
-        public async Task<bool> ReadUntilChanged(Task<bool> escape, int waitms, int waitInterval, CancellationToken token)
-        {
-            var sw = new Stopwatch();
-            sw.Start();
-            do
-            {
-                var result = await escape.ConfigureAwait(false);
-                if (result)
-                    return true;
-                await Task.Delay(waitInterval, token).ConfigureAwait(false);
-            } while (sw.ElapsedMilliseconds < waitms);
-            return false;
-        }
-
         public async Task<bool> ReadUntilChanged(uint offset, byte[] original, int waitms, int waitInterval, CancellationToken token)
         {
             var sw = new Stopwatch();
             sw.Start();
             do
             {
-                if (await ReadIsChanged(offset, original, token)) 
+                if (await ReadIsChanged(offset, original, token).ConfigureAwait(false))
                     return true;
                 await Task.Delay(waitInterval, token).ConfigureAwait(false);
             } while (sw.ElapsedMilliseconds < waitms);
@@ -181,9 +149,7 @@ namespace SysBot.Pokemon
         private async Task<bool> ReadIsChanged(uint offset, byte[] original, CancellationToken token)
         {
             var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
-            if (!result.SequenceEqual(original))
-                return true;
-            return false;
+            return !result.SequenceEqual(original);
         }
 
         public async Task<SAV8SWSH> IdentifyTrainer(CancellationToken token)
