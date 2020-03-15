@@ -93,11 +93,11 @@ namespace SysBot.Pokemon
             do
             {
                 const int delay = 100;
-                await SetStick(SwitchStick.LEFT, 25000, 0, delay, CancellationToken.None).ConfigureAwait(false);
-                await SetStick(SwitchStick.LEFT, 0, 25000, delay, CancellationToken.None).ConfigureAwait(false);
-                await SetStick(SwitchStick.LEFT, -25000, 0, delay, CancellationToken.None).ConfigureAwait(false);
+                await SetStick(SwitchStick.LEFT, 25000, 0, delay, token).ConfigureAwait(false);
+                await SetStick(SwitchStick.LEFT, 0, 25000, delay, token).ConfigureAwait(false);
+                await SetStick(SwitchStick.LEFT, -25000, 0, delay, token).ConfigureAwait(false);
                 var now = sw.ElapsedMilliseconds;
-                await SetStick(SwitchStick.LEFT, 0, -25000, 2 * interval, CancellationToken.None).ConfigureAwait(false);
+                await SetStick(SwitchStick.LEFT, 0, -25000, 2 * interval, token).ConfigureAwait(false);
 
                 var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
                 if (!result.SequenceEqual(original))
@@ -114,21 +114,22 @@ namespace SysBot.Pokemon
 
             await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, 50), token).ConfigureAwait(false);
             await Task.Delay(50, token).ConfigureAwait(false);
-            await Connection.SendAsync(SwitchCommand.ResetStick(SwitchStick.LEFT), CancellationToken.None).ConfigureAwait(false);
+            await Connection.SendAsync(SwitchCommand.ResetStick(SwitchStick.LEFT), token).ConfigureAwait(false);
             await Task.Delay(50, token).ConfigureAwait(false);
             return changed;
         }
 
         public async Task<bool> ReadUntilChanged(uint offset, byte[] original, int waitms, int waitInterval, CancellationToken token)
         {
-            var end = DateTime.Now.AddMilliseconds(waitms);
+            var sw = new Stopwatch();
+            sw.Start();
             do
             {
                 var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
                 if (!result.SequenceEqual(original))
                     return true;
                 await Task.Delay(waitInterval, token).ConfigureAwait(false);
-            } while (DateTime.Now < end);
+            } while (sw.ElapsedMilliseconds < waitms);
             return false;
         }
 
