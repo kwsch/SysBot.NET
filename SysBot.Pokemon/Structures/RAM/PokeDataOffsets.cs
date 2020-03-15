@@ -5,27 +5,30 @@ namespace SysBot.Pokemon
     public static class PokeDataOffsets
     {
         public const uint BoxStartOffset = 0x4293D8B0;
+        public const uint CurrentBoxOffset = 0x4298e83E;
         public const uint TrainerDataOffset = 0x42935E48;
         public const uint SoftBanUnixTimespanOffset = 0x4298f9f8;
+        public const uint RaidPokemonOffset = 0x85C7AB08;
 
         public const uint IsConnectedOffset = 0x2f865c78;
 
         /* Link Trade Offsets */
         public const uint LinkTradePartnerPokemonOffset = 0x2E32206A;
         public const uint LinkTradePartnerNameOffset = 0xAC84173C;
+        public const uint LinkTradeSearchingOffset = 0x41d8e17c;
 
         /* Suprise Trade Offsets */
-        public const uint SupriseTradePartnerPokemonOffset = 0x429344d0;
+        public const uint SurpriseTradePartnerPokemonOffset = 0x429344d0;
 
-        public const uint SupriseTradeLockSlot = 0x4293462c;
-        public const uint SupriseTradeLockBox = 0x42934628;
+        public const uint SurpriseTradeLockSlot = 0x4293462c;
+        public const uint SurpriseTradeLockBox = 0x42934628;
 
-        public const uint SupriseTradeSearchOffset = 0x42934634;
-        public const uint SupriseTradeSearch_Empty = 0x00000000;
-        public const uint SupriseTradeSearch_Searching = 0x01000000;
-        public const uint SupriseTradeSearch_Found = 0x0200012C;
+        public const uint SurpriseTradeSearchOffset = 0x42934634;
+        public const uint SurpriseTradeSearch_Empty = 0x00000000;
+        public const uint SurpriseTradeSearch_Searching = 0x01000000;
+        public const uint SurpriseTradeSearch_Found = 0x0200012C;
 
-        public const uint SupriseTradePartnerNameOffset = 0x42934638;
+        public const uint SurpriseTradePartnerNameOffset = 0x42934638;
         public const uint ItemTreasureAddress = 0x429358A0;
 
         /* Route 5 Daycare */
@@ -79,6 +82,7 @@ namespace SysBot.Pokemon
 
         //public const uint CurrentScreen_YMenu = 0xFFFF7983;
         public const uint CurrentScreen_WildArea = 0xFFFFFFFF;
+        public const uint CurrentScreen_RaidParty = 0xFF1461DB;
         #endregion
 
         public static uint GetTrainerNameOffset(TradeMethod tradeMethod)
@@ -86,7 +90,7 @@ namespace SysBot.Pokemon
             return tradeMethod switch
             {
                 TradeMethod.LinkTrade => LinkTradePartnerNameOffset,
-                TradeMethod.SupriseTrade => SupriseTradePartnerNameOffset,
+                TradeMethod.SupriseTrade => SurpriseTradePartnerNameOffset,
                 _ => throw new ArgumentException(nameof(tradeMethod)),
             };
         }

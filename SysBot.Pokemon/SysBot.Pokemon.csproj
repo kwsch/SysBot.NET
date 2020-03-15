@@ -9,7 +9,7 @@
 
   <!-- this group contains references that are not platform specific -->
   <ItemGroup>
-    <PackageReference Include="PKHeX.Core" Version="20.2.15" />
+    <PackageReference Include="PKHeX.Core" Version="20.3.14" />
     <ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />
   </ItemGroup>
 

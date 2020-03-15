@@ -19,6 +19,8 @@ namespace SysBot.Pokemon
         public bool ToggleQueue() => Hub.Config.Queues.CanQueue ^= true;
         public bool GetCanQueue() => Hub.Config.Queues.CanQueue && UsersInQueue.Count < Hub.Config.Queues.MaxQueueCount;
 
+        public TradeEntry<T>? GetDetail(ulong uid) => UsersInQueue.Find(z => z.UserID == uid);
+
         public QueueCheckResult<T> CheckPosition(ulong uid, PokeRoutineType type = 0)
         {
             lock (_sync)
@@ -117,7 +119,7 @@ namespace SysBot.Pokemon
 
         public IEnumerable<string> GetUserList(string fmt)
         {
-            return UsersInQueue.Select(z => string.Format(fmt, z.Trade.ID, z.Trade.Code, z.Trade.Type, z.Username));
+            return UsersInQueue.Select(z => string.Format(fmt, z.Trade.ID, z.Trade.Code, z.Trade.Type, z.Username, (Species)z.Trade.TradeData.Species));
         }
 
         public IList<TradeEntry<T>> GetIsUserQueued(Func<TradeEntry<T>, bool> match)

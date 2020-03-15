@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SysBot.Pokemon.Discord
@@ -16,7 +17,7 @@ namespace SysBot.Pokemon.Discord
 
         public readonly SensitiveSet<string> RolesClone = new SensitiveSet<string>();
         public readonly SensitiveSet<string> RolesTrade = new SensitiveSet<string>();
-        public readonly SensitiveSet<string> RolesDudu = new SensitiveSet<string>();
+        public readonly SensitiveSet<string> RolesSeed = new SensitiveSet<string>();
         public readonly SensitiveSet<string> RolesDump = new SensitiveSet<string>();
 
         public bool CanUseSudo(ulong uid) => SudoDiscord.Contains(uid);
@@ -24,8 +25,6 @@ namespace SysBot.Pokemon.Discord
 
         public bool CanUseCommandChannel(ulong channel) => WhitelistedChannels.Count == 0 || WhitelistedChannels.Contains(channel);
         public bool CanUseCommandUser(ulong uid) => !BlacklistedUsers.Contains(uid);
-
-        private const string ALLOW_ALL = "@everyone";
 
         public DiscordManager(PokeTradeHubConfig cfg)
         {
@@ -35,13 +34,19 @@ namespace SysBot.Pokemon.Discord
 
         public bool GetHasRoleQueue(string type, IEnumerable<string> roles)
         {
+            var set = GetSet(type);
+            return set.Count == 0 || roles.Any(set.Contains);
+        }
+
+        private SensitiveSet<string> GetSet(string type)
+        {
             return type switch
             {
-                nameof(RolesClone) => roles.Any(RolesClone.Contains) || RolesClone.Contains(ALLOW_ALL),
-                nameof(RolesTrade) => roles.Any(RolesTrade.Contains) || RolesTrade.Contains(ALLOW_ALL),
-                nameof(RolesDudu) => roles.Any(RolesDudu.Contains) || RolesDudu.Contains(ALLOW_ALL),
-                nameof(RolesDump) => roles.Any(RolesDump.Contains) || RolesDump.Contains(ALLOW_ALL),
-                _ => false
+                nameof(RolesClone) => RolesClone,
+                nameof(RolesTrade) => RolesTrade,
+                nameof(RolesSeed) => RolesSeed,
+                nameof(RolesDump) => RolesDump,
+                _ => throw new ArgumentOutOfRangeException(nameof(type)),
             };
         }
 
@@ -56,7 +61,7 @@ namespace SysBot.Pokemon.Discord
 
             RolesClone.Read(cfg.Discord.RoleCanClone, z => z);
             RolesTrade.Read(cfg.Discord.RoleCanTrade, z => z);
-            RolesDudu.Read(cfg.Discord.RoleCanDudu, z => z);
+            RolesSeed.Read(cfg.Discord.RoleCanSeedCheck, z => z);
             RolesDump.Read(cfg.Discord.RoleCanDump, z => z);
         }
 
@@ -69,7 +74,7 @@ namespace SysBot.Pokemon.Discord
 
             Config.Discord.RoleCanClone = RolesClone.Write();
             Config.Discord.RoleCanTrade = RolesTrade.Write();
-            Config.Discord.RoleCanDudu = RolesDudu.Write();
+            Config.Discord.RoleCanSeedCheck = RolesSeed.Write();
             Config.Discord.RoleCanDump = RolesDump.Write();
         }
     }

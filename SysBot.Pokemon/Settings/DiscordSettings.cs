@@ -32,8 +32,8 @@ namespace SysBot.Pokemon
         [Category(Whitelists), Description("Users with this role are allowed to enter the Trade queue.")]
         public string RoleCanTrade { get; set; } = DefaultDisable;
 
-        [Category(Whitelists), Description("Users with this role are allowed to enter the Dudu queue.")]
-        public string RoleCanDudu { get; set; } = DefaultDisable;
+        [Category(Whitelists), Description("Users with this role are allowed to enter the Seed Check queue.")]
+        public string RoleCanSeedCheck { get; set; } = DefaultDisable;
 
         [Category(Whitelists), Description("Users with this role are allowed to enter the Clone queue.")]
         public string RoleCanClone { get; set; } = DefaultDisable;

@@ -2,6 +2,7 @@
 using Discord;
 using Discord.Commands;
 using PKHeX.Core;
+using SysBot.Base;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -84,12 +85,15 @@ namespace SysBot.Pokemon.Discord
             var msg = state
                 ? "Users are now able to join the trade queue."
                 : "Changed queue settings: **Users CANNOT join the queue until it is turned back on.**";
-            await ReplyAsync(msg).ConfigureAwait(false);
+            // Announce it in the channel the command was entered only if it's not already an echo channel.
+            if (!EchoModule.IsEchoChannel(Context.Channel))
+                await ReplyAsync(msg).ConfigureAwait(false);
+            EchoUtil.Echo(msg);
         }
 
         [Command("queueMode")]
         [Alias("qm")]
-        [Summary("Toggles on/off the ability to join the trade queue.")]
+        [Summary("Changes how queueing is controlled (manual/threshold/interval).")]
         [RequireSudo]
         public async Task ChangeQueueModeAsync([Summary("Queue mode")]QueueOpening mode)
         {

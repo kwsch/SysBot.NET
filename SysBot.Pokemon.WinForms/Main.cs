@@ -162,6 +162,7 @@ namespace SysBot.Pokemon.WinForms
             B_Stop.Enabled = false;
             B_New.Enabled = true;
             B_Delete.Enabled = true;
+            EchoUtil.Echo("All bots have been stopped.");
         }
 
         private void B_New_Click(object sender, EventArgs e)

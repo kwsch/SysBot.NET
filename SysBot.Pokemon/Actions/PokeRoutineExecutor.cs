@@ -33,7 +33,7 @@ namespace SysBot.Pokemon
 
         public async Task<PK8> ReadSupriseTradePokemon(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(SupriseTradePartnerPokemonOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(SurpriseTradePartnerPokemonOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
             return new PK8(data);
         }
 
@@ -55,6 +55,17 @@ namespace SysBot.Pokemon
         {
             var ofs = GetBoxSlotOffset(box, slot);
             return await ReadPokemon(ofs, token, BoxFormatSlotSize).ConfigureAwait(false);
+        }
+
+        public async Task SetCurrentBox(int box, CancellationToken token)
+        {
+            await Connection.WriteBytesAsync(BitConverter.GetBytes(box), CurrentBoxOffset, token).ConfigureAwait(false);
+        }
+
+        public async Task<int> GetCurrentBox(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(CurrentBoxOffset, 1, token).ConfigureAwait(false);
+            return data[0];
         }
 
         public async Task<PK8?> ReadUntilPresent(uint offset, int waitms, int waitInterval, CancellationToken token, int size = BoxFormatSlotSize)
@@ -209,9 +220,9 @@ namespace SysBot.Pokemon
             }
         }
 
-        public async Task ExitDuduTrade(CancellationToken token)
+        public async Task ExitSeedCheckTrade(CancellationToken token)
         {
-            // Dudubot doesn't show anything, so it can skip the first B press.
+            // Seed Check Bot doesn't show anything, so it can skip the first B press.
             int attempts = 0;
             while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
             {
@@ -257,14 +268,29 @@ namespace SysBot.Pokemon
             return data[0] > 1;
         }
 
+        public async Task<bool> CheckIfSearchingForLinkTradePartner(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(LinkTradeSearchingOffset, 1, token).ConfigureAwait(false);
+            return data[0] == 1;
+        }
+
+        public async Task<bool> CheckIfSearchingForSurprisePartner(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(SurpriseTradeSearchOffset, 8, token).ConfigureAwait(false);
+            return BitConverter.ToUInt32(data,0) == SurpriseTradeSearch_Searching;
+        }
+
         public async Task ResetTradePosition(CancellationToken token)
         {
-            Connection.Log("Reset bot position.");
-            await Click(Y, 1_000, token).ConfigureAwait(false);
+            Connection.Log("Resetting bot position.");
+            await Click(Y, 1_250, token).ConfigureAwait(false);
             for (int i = 0; i < 5; i++)
-                await Click(A, 1_000, token).ConfigureAwait(false);
-            await Click(B, 1_000, token).ConfigureAwait(false);
-            await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(A, 1_250, token).ConfigureAwait(false);
+            // Extra A press for Japanese.
+            if (GameLang == LanguageID.Japanese)
+                await Click(A, 1_250, token).ConfigureAwait(false);
+            await Click(B, 1_250, token).ConfigureAwait(false);
+            await Click(B, 1_250, token).ConfigureAwait(false);
         }
 
         public async Task<bool> IsEggReady(SwordShieldDaycare daycare, CancellationToken token)

@@ -11,7 +11,7 @@ namespace SysBot.Pokemon
         private int CompletedEggs;
         private int CompletedFossils;
         private int CompletedEncounters;
-        private int CompletedDudu;
+        private int CompletedSeedChecks;
         private int CompletedSurprise;
         private int CompletedDistribution;
         private int CompletedClones;
@@ -28,9 +28,9 @@ namespace SysBot.Pokemon
         {
             CompletedTrades = Config.CompletedTrades;
             CompletedEggs = Config.CompletedEggs;
-            CompletedDudu = Config.CompletedDudu;
             CompletedFossils = Config.CompletedFossils;
             CompletedEncounters = Config.CompletedEncounters;
+            CompletedSeedChecks = Config.CompletedSeedChecks;
             CompletedSurprise = Config.CompletedSurprise;
             CompletedDistribution = Config.CompletedDistribution;
             CompletedClones = Config.CompletedClones;
@@ -62,10 +62,10 @@ namespace SysBot.Pokemon
             Config.CompletedEncounters = CompletedEncounters;
         }
 
-        public void AddCompletedDudu()
+        public void AddCompletedSeedCheck()
         {
-            Interlocked.Increment(ref CompletedDudu);
-            Config.CompletedDudu = CompletedDudu;
+            Interlocked.Increment(ref CompletedSeedChecks);
+            Config.CompletedSeedChecks = CompletedSeedChecks;
         }
 
         public void AddCompletedSurprise()
@@ -100,8 +100,8 @@ namespace SysBot.Pokemon
 
         public IEnumerable<string> Summary()
         {
-            if (CompletedDudu != 0)
-                yield return $"Dudu Trades: {CompletedDudu}";
+            if (CompletedSeedChecks != 0)
+                yield return $"Seed Check Trades: {CompletedSeedChecks}";
             if (CompletedClones != 0)
                 yield return $"Clone Trades: {CompletedClones}";
             if (CompletedDumps != 0)
@@ -117,7 +117,7 @@ namespace SysBot.Pokemon
             if (CompletedRaids != 0)
                 yield return $"Completed Raids: {CompletedRaids}";
             if (CompletedFossils != 0)
-                yield return $"Completed Raids: {CompletedFossils}";
+                yield return $"Completed Fossils: {CompletedFossils}";
         }
     }
 }

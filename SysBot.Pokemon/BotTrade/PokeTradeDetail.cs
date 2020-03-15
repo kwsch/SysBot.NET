@@ -10,7 +10,7 @@ namespace SysBot.Pokemon
         private static int CreatedCount;
 
         public readonly int Code;
-        public readonly TPoke TradeData;
+        public TPoke TradeData;
         public readonly PokeTradeTrainerInfo Trainer;
         public readonly IPokeTradeNotifier<TPoke> Notifier;
         public readonly PokeTradeType Type;

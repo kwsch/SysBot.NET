@@ -46,7 +46,7 @@ namespace SysBot.Pokemon
 
         [Category(Bots)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
-        public DuduSettings Dudu { get; set; } = new DuduSettings();
+        public SeedCheckSettings SeedCheck { get; set; } = new SeedCheckSettings();
 
         [Category(Bots)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
