@@ -18,7 +18,7 @@ namespace SysBot.Base
             IP = ipaddress;
             Port = port;
             Name = $"{IP}: {GetType().Name}";
-            Log($"Connection details created!");
+            Log("Connection details created!");
         }
     }
 }
