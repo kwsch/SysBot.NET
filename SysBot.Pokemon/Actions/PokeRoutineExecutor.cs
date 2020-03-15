@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -82,18 +83,130 @@ namespace SysBot.Pokemon
             return null;
         }
 
+        public async Task<bool> SpinUntilChangedLink(int waitms, CancellationToken token)
+        {
+            const int fastSleep = 10; // between commands
+            const int defaultSleep = 50; // original
+            const int delay = 100; // per stick command
+            const int m = 25_000; // magnitude of stick movement
+            var sw = new Stopwatch();
+
+            bool changed = false;
+            await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, fastSleep), token).ConfigureAwait(false);
+            sw.Start();
+            do
+            {
+                // Spin the Left Stick in a circle counter-clockwise, starting from 0deg (polar) in increments of 90deg.
+                if (!await SpinCircle().ConfigureAwait(false))
+                    continue;
+                changed = true;
+                break;
+            } while (sw.ElapsedMilliseconds < waitms);
+
+            async Task<bool> SpinCircle()
+            {
+                return    await Step( m,  0).ConfigureAwait(false) // →
+                       || await Step( 0,  m).ConfigureAwait(false) // ↑ 
+                       || await Step(-m,  0).ConfigureAwait(false) // ←
+                       || await Step( 0, -m).ConfigureAwait(false);// ↓
+
+                async Task<bool> Step(short x, short y)
+                {
+                    var now = sw.ElapsedMilliseconds;
+                    await SetStick(SwitchStick.LEFT, x, y, 2 * fastSleep, token).ConfigureAwait(false);
+                    if (await LinkTradePartnerFound(token).ConfigureAwait(false))
+                        return true;
+
+                    // wait the rest of this step's delay
+                    var wait = delay - (sw.ElapsedMilliseconds - now);
+                    if (wait > 0)
+                        await Task.Delay((int)wait, token).ConfigureAwait(false);
+                    return false;
+                }
+            }
+
+            // Gracefully clean up
+            await Connection.SendAsync(SwitchCommand.ResetStick(SwitchStick.LEFT), token).ConfigureAwait(false);
+            await Task.Delay(fastSleep, token).ConfigureAwait(false);
+            await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, defaultSleep), token).ConfigureAwait(false);
+            await Task.Delay(defaultSleep, token).ConfigureAwait(false);
+            return changed;
+        }
+
+        public async Task<bool> SpinUntilChangedSurprise(int waitms, CancellationToken token)
+        {
+            const int fastSleep = 10; // between commands
+            const int defaultSleep = 50; // original
+            const int delay = 100; // per stick command
+            const int m = 25_000; // magnitude of stick movement
+            var sw = new Stopwatch();
+
+            bool changed = false;
+            var searching = await Connection.ReadBytesAsync(SurpriseTradeSearchOffset, 4, token).ConfigureAwait(false);
+            await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, fastSleep), token).ConfigureAwait(false);
+            sw.Start();
+            do
+            {
+                // Spin the Left Stick in a circle counter-clockwise, starting from 0deg (polar) in increments of 90deg.
+                if (!await SpinCircle().ConfigureAwait(false))
+                    continue;
+                changed = true;
+                break;
+            } while (sw.ElapsedMilliseconds < waitms);
+
+            async Task<bool> SpinCircle()
+            {
+                return await Step(m, 0).ConfigureAwait(false) // →
+                       || await Step(0, m).ConfigureAwait(false) // ↑ 
+                       || await Step(-m, 0).ConfigureAwait(false) // ←
+                       || await Step(0, -m).ConfigureAwait(false);// ↓
+
+                async Task<bool> Step(short x, short y)
+                {
+                    var now = sw.ElapsedMilliseconds;
+                    await SetStick(SwitchStick.LEFT, x, y, 2 * fastSleep, token).ConfigureAwait(false);
+                    if (await ReadIsChanged(SurpriseTradeSearchOffset, searching, token).ConfigureAwait(false))
+                        return true;
+
+                    // wait the rest of this step's delay
+                    var wait = delay - (sw.ElapsedMilliseconds - now);
+                    if (wait > 0)
+                        await Task.Delay((int)wait, token).ConfigureAwait(false);
+                    return false;
+                }
+            }
+
+            // Gracefully clean up
+            await Connection.SendAsync(SwitchCommand.ResetStick(SwitchStick.LEFT), token).ConfigureAwait(false);
+            await Task.Delay(fastSleep, token).ConfigureAwait(false);
+            await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, defaultSleep), token).ConfigureAwait(false);
+            await Task.Delay(defaultSleep, token).ConfigureAwait(false);
+            return changed;
+        }
+
         public async Task<bool> ReadUntilChanged(uint offset, byte[] original, int waitms, int waitInterval, CancellationToken token)
         {
-            int msWaited = 0;
-            while (msWaited < waitms)
+            var sw = new Stopwatch();
+            sw.Start();
+            do
             {
-                var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
-                if (!result.SequenceEqual(original))
+                if (await ReadIsChanged(offset, original, token).ConfigureAwait(false))
                     return true;
                 await Task.Delay(waitInterval, token).ConfigureAwait(false);
-                msWaited += waitInterval + 120;
-            }
+            } while (sw.ElapsedMilliseconds < waitms);
             return false;
+        }
+
+        public async Task<bool> ReadIsChanged(uint offset, byte[] original, CancellationToken token)
+        {
+            var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
+            return !result.SequenceEqual(original);
+        }
+
+        public async Task<bool> LinkTradePartnerFound(CancellationToken token)
+        {
+            var result = await Connection.ReadBytesAsync(LinkTradeFoundOffset, 1, token).ConfigureAwait(false);
+            return (result[0] & 0xF) == 8;
         }
 
         public async Task<SAV8SWSH> IdentifyTrainer(CancellationToken token)

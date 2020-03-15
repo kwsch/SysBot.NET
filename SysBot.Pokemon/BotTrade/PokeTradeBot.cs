@@ -206,8 +206,18 @@ namespace SysBot.Pokemon
             // Clear the shown data offset.
             await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
 
-            // Wait 40 Seconds for Trainer...
-            var partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, 90_000, 0_200, token).ConfigureAwait(false);
+            // Wait until search finishes
+            // Wait 30 Seconds for Trainer...
+            Connection.Log("Waiting for trainer ...");
+            const uint ofs = LinkTradePartnerPokemonOffset;
+            if (Hub.Config.Trade.SpinTrade)
+                await SpinUntilChangedLink(30_000, token).ConfigureAwait(false);
+            else
+                await ReadUntilChanged(ofs, PokeTradeBotUtil.EMPTY_SLOT, 30_000, 0_200, token).ConfigureAwait(false);
+
+            // Wait 15 Seconds for offer...
+            Connection.Log("Waiting for offer ...");
+            var partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, 15_000, 0_200, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
@@ -501,10 +511,17 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.RecoverReturnOverworld;
             }
 
+            // Wait 30 Seconds for Trainer...
             Connection.Log("Waiting for Surprise Trade Partner...");
+            const uint ofs = SurpriseTradeSearchOffset;
+            var searching = await Connection.ReadBytesAsync(ofs, 4, token).ConfigureAwait(false);
+            if (Hub.Config.Trade.SpinSurprise)
+                await SpinUntilChangedSurprise(30_000, token).ConfigureAwait(false);
+            else
+                await ReadUntilChanged(ofs, searching, 30_000, 0_200, token).ConfigureAwait(false);
 
-            // Time we wait for a trade
-            var partnerFound = await ReadUntilChanged(SurpriseTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_SLOT, 90_000, 50, token).ConfigureAwait(false);
+            // Wait 15 Seconds for offer...
+            var partnerFound = await ReadUntilChanged(SurpriseTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, 15_000, 0_200, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
