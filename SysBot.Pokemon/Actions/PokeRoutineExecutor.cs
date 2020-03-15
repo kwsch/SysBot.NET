@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -84,12 +85,18 @@ namespace SysBot.Pokemon
 
         public async Task<bool> SpinUntilChanged(uint offset, byte[] original, int waitms, CancellationToken token)
         {
-            var end = DateTime.Now.AddMilliseconds(waitms);
+            const int interval = 10;
+            await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, interval), token).ConfigureAwait(false);
+            var sw = new Stopwatch();
+            sw.Start();
             do
             {
-                const int delay = 100;
-                const int half = delay / 2;
-                await SetStick(SwitchStick.LEFT, 25000, 0, half, CancellationToken.None).ConfigureAwait(false);
+                const int delay = 105;
+                await SetStick(SwitchStick.LEFT, 25000, 0, delay, CancellationToken.None).ConfigureAwait(false);
+                await SetStick(SwitchStick.LEFT, 0, 25000, delay, CancellationToken.None).ConfigureAwait(false);
+                await SetStick(SwitchStick.LEFT, -25000, 0, delay, CancellationToken.None).ConfigureAwait(false);
+                var now = sw.ElapsedMilliseconds;
+                await SetStick(SwitchStick.LEFT, 0, -25000, 2 * interval, CancellationToken.None).ConfigureAwait(false);
 
                 var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
                 if (!result.SequenceEqual(original))
@@ -97,13 +104,14 @@ namespace SysBot.Pokemon
                     await Connection.SendAsync(SwitchCommand.ResetStick(SwitchStick.LEFT), CancellationToken.None).ConfigureAwait(false);
                     return true;
                 }
-                await Task.Delay(half, token).ConfigureAwait(false);
 
-                await SetStick(SwitchStick.LEFT, 0, 25000, delay, CancellationToken.None).ConfigureAwait(false);
-                await SetStick(SwitchStick.LEFT, -25000, 0, delay, CancellationToken.None).ConfigureAwait(false);
-                await SetStick(SwitchStick.LEFT, 0, -25000, delay, CancellationToken.None).ConfigureAwait(false);
-            } while (DateTime.Now < end);
+                var wait = delay - (sw.ElapsedMilliseconds - now);
+                if (wait > 0)
+                    await Task.Delay((int)wait, token).ConfigureAwait(false);
 
+            } while (sw.ElapsedMilliseconds < waitms);
+
+            await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, 50), token).ConfigureAwait(false);
             await Connection.SendAsync(SwitchCommand.ResetStick(SwitchStick.LEFT), CancellationToken.None).ConfigureAwait(false);
             return false;
         }
