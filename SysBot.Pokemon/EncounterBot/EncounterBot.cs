@@ -13,19 +13,20 @@ namespace SysBot.Pokemon
         private readonly BotCompleteCounts Counts;
         private readonly IDumper DumpSetting;
         private readonly EncounterSettings Settings;
-        public readonly bool StopOnSinistea;
+        private readonly Species StopOnSpecies;
+        private readonly EncounterMode Mode;
 
         public EncounterBot(PokeBotConfig cfg, EncounterSettings encounter, IDumper dump, BotCompleteCounts count) : base(cfg)
         {
             Counts = count;
             DumpSetting = dump;
             Settings = encounter; //not used right now
-            StopOnSinistea = encounter.StopOnSinistea;
+            StopOnSpecies = encounter.StopOnSpecies;
+            Mode = encounter.EncounteringType;
         }
 
         private int encounterCount;
-
-        public Func<PK8, bool, bool> StopCondition { private get; set; } = (pkm, StopOnSinistea) => StopOnSinistea ? pkm.IsShiny && pkm.Species == 854 : pkm.IsShiny;
+        public Func<PK8, Species, bool> StopCondition { private get; set; } = (pkm, StopOnSpecies) => StopOnSpecies == Species.None ? pkm.IsShiny : pkm.IsShiny && pkm.Species == (int)StopOnSpecies;
 
         protected override async Task MainLoop(CancellationToken token)
         {
@@ -51,7 +52,7 @@ namespace SysBot.Pokemon
                 encounterCount++;
                 Connection.Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
                 Counts.AddCompletedEncounters();
-                if (StopCondition(pk, StopOnSinistea))
+                if (StopCondition(pk, StopOnSpecies))
                 {
                     Connection.Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
                     return;
@@ -88,11 +89,23 @@ namespace SysBot.Pokemon
             {
                 if (await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
                 {
-                    await SetStick(LEFT, 0, 30000, 2500, token).ConfigureAwait(false);
-                    await SetStick(LEFT, 0, 0, 750, token).ConfigureAwait(false); // reset
+                    switch (Mode)
+                    {
+                        case EncounterMode.VerticalLine:
+                            await SetStick(LEFT, 0, 30000, 2500, token).ConfigureAwait(false);
+                            await SetStick(LEFT, 0, 0, 750, token).ConfigureAwait(false); // reset
 
-                    await SetStick(LEFT, 0, -30000, 2500, token).ConfigureAwait(false);
-                    await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false); // reset
+                            await SetStick(LEFT, 0, -30000, 2500, token).ConfigureAwait(false);
+                            await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false); // reset
+                            break;
+                        case EncounterMode.HorizontalLine:
+                            await SetStick(LEFT, 30000, 0, 2500, token).ConfigureAwait(false);
+                            await SetStick(LEFT, 0, 0, 750, token).ConfigureAwait(false); // reset
+
+                            await SetStick(LEFT, -30000, 0, 2500, token).ConfigureAwait(false);
+                            await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false); // reset
+                            break;
+                    }
                 } else
                 {
                     while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
