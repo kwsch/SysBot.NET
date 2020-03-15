@@ -34,6 +34,9 @@ namespace SysBot.Pokemon
         [Category(Received), Description("Fossil Pokémon Revived")]
         public int CompletedFossils { get; set; }
 
+        [Category(Received), Description("Encountered Pokémon")]
+        public int CompletedEncounters { get; set; }
+
         [Category(Received), Description("Raids Started")]
         public int CompletedRaids { get; set; }
     }
