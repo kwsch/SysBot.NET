@@ -91,7 +91,7 @@ namespace SysBot.Pokemon
             sw.Start();
             do
             {
-                const int delay = 105;
+                const int delay = 100;
                 await SetStick(SwitchStick.LEFT, 25000, 0, delay, CancellationToken.None).ConfigureAwait(false);
                 await SetStick(SwitchStick.LEFT, 0, 25000, delay, CancellationToken.None).ConfigureAwait(false);
                 await SetStick(SwitchStick.LEFT, -25000, 0, delay, CancellationToken.None).ConfigureAwait(false);
