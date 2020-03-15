@@ -260,6 +260,7 @@ namespace SysBot.Pokemon
                 // Allow the trade partner to do a Ledy swap.
                 var trade = Hub.Ledy.GetLedyTrade(pk, Hub.Config.Distribute.LedySpecies);
                 pkm = trade.Receive;
+                poke.TradeData = pkm;
                 if (trade.Type != LedyResponseType.Random)
                 {
                     poke.SendNotification(this, "Injecting your requested Pokémon.");
