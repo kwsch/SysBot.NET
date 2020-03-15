@@ -86,18 +86,20 @@ namespace SysBot.Pokemon
         public async Task<bool> SpinUntilChanged(uint offset, byte[] original, int waitms, CancellationToken token)
         {
             bool changed = false;
-            const int interval = 10;
-            await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, interval), token).ConfigureAwait(false);
+            const int fastSleep = 10;
+            const int defaultSleep = 50;
+            await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, fastSleep), token).ConfigureAwait(false);
             var sw = new Stopwatch();
             sw.Start();
             do
             {
+                // Spin the Left Stick in a circle counter-clockwise, starting from 0deg (polar) in increments of 90deg.
                 const int delay = 100;
-                await SetStick(SwitchStick.LEFT, 25000, 0, delay, token).ConfigureAwait(false);
-                await SetStick(SwitchStick.LEFT, 0, 25000, delay, token).ConfigureAwait(false);
-                await SetStick(SwitchStick.LEFT, -25000, 0, delay, token).ConfigureAwait(false);
+                await SetStick(SwitchStick.LEFT, 25000, 0, delay, token).ConfigureAwait(false); // →
+                await SetStick(SwitchStick.LEFT, 0, 25000, delay, token).ConfigureAwait(false); // ↑ 
+                await SetStick(SwitchStick.LEFT, -25000, 0, delay, token).ConfigureAwait(false); // ←
                 var now = sw.ElapsedMilliseconds;
-                await SetStick(SwitchStick.LEFT, 0, -25000, 2 * interval, token).ConfigureAwait(false);
+                await SetStick(SwitchStick.LEFT, 0, -25000, 2 * fastSleep, token).ConfigureAwait(false); // ↓
 
                 var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
                 if (!result.SequenceEqual(original))
@@ -106,16 +108,18 @@ namespace SysBot.Pokemon
                     break;
                 }
 
+                // wait the rest of this step's delay
                 var wait = delay - (sw.ElapsedMilliseconds - now);
                 if (wait > 0)
                     await Task.Delay((int)wait, token).ConfigureAwait(false);
 
             } while (sw.ElapsedMilliseconds < waitms);
 
-            await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, 50), token).ConfigureAwait(false);
-            await Task.Delay(50, token).ConfigureAwait(false);
+            // Gracefully clean up
             await Connection.SendAsync(SwitchCommand.ResetStick(SwitchStick.LEFT), token).ConfigureAwait(false);
-            await Task.Delay(50, token).ConfigureAwait(false);
+            await Task.Delay(fastSleep, token).ConfigureAwait(false);
+            await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, defaultSleep), token).ConfigureAwait(false);
+            await Task.Delay(defaultSleep, token).ConfigureAwait(false);
             return changed;
         }
 
