@@ -85,6 +85,7 @@ namespace SysBot.Pokemon
 
         public async Task<bool> SpinUntilChanged(uint offset, byte[] original, int waitms, CancellationToken token)
         {
+            bool changed = false;
             const int interval = 10;
             await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, interval), token).ConfigureAwait(false);
             var sw = new Stopwatch();
@@ -101,8 +102,8 @@ namespace SysBot.Pokemon
                 var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
                 if (!result.SequenceEqual(original))
                 {
-                    await Connection.SendAsync(SwitchCommand.ResetStick(SwitchStick.LEFT), CancellationToken.None).ConfigureAwait(false);
-                    return true;
+                    changed = true;
+                    break;
                 }
 
                 var wait = delay - (sw.ElapsedMilliseconds - now);
@@ -112,8 +113,10 @@ namespace SysBot.Pokemon
             } while (sw.ElapsedMilliseconds < waitms);
 
             await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, 50), token).ConfigureAwait(false);
+            await Task.Delay(50, token).ConfigureAwait(false);
             await Connection.SendAsync(SwitchCommand.ResetStick(SwitchStick.LEFT), CancellationToken.None).ConfigureAwait(false);
-            return false;
+            await Task.Delay(50, token).ConfigureAwait(false);
+            return changed;
         }
 
         public async Task<bool> ReadUntilChanged(uint offset, byte[] original, int waitms, int waitInterval, CancellationToken token)
