@@ -12,7 +12,6 @@ namespace SysBot.Pokemon
     {
         private readonly BotCompleteCounts Counts;
         private readonly IDumper DumpSetting;
-        private readonly EncounterSettings Settings;
         private readonly Species StopOnSpecies;
         private readonly EncounterMode Mode;
         private readonly Nature DesiredNature;
@@ -22,7 +21,6 @@ namespace SysBot.Pokemon
         {
             Counts = count;
             DumpSetting = dump;
-            Settings = encounter; //not used right now
             StopOnSpecies = encounter.StopOnSpecies;
             Mode = encounter.EncounteringType;
             DesiredNature = encounter.DesiredNature;
@@ -134,16 +132,58 @@ namespace SysBot.Pokemon
                 while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
                     await FleeToOverworld(token);
 
-                await SetStick(LEFT, 0, -30000, 2500, token).ConfigureAwait(false);
+                if (Mode == EncounterMode.VerticalLine) await SetStick(LEFT, 0, -30000, 2500, token).ConfigureAwait(false);
+                else if (Mode == EncounterMode.HorizontalLine) await SetStick(LEFT, -30000, 0, 2500, token).ConfigureAwait(false);
                 await ResetStick();
             }
         }
 
         private async Task DoEternatusEncounter(CancellationToken token)
         {
-            Log("Not yet implemented!");
-            await ResetStick();
-            return;
+            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EncounterBot)
+            {
+                await SetStick(LEFT, 0, 20000, 500, token).ConfigureAwait(false);
+                await SetStick(LEFT, 0, 0, 1000, token).ConfigureAwait(false);
+
+                var pk = new PK8(await Connection.ReadBytesAsync(RaidPokemonOffset, 0x158, token).ConfigureAwait(false));
+                if (pk.Species == 0)
+                {
+                    Connection.Log("Invalid data detected. Restarting loop.");
+                    // add stuff for recovering
+                    continue;
+                }
+
+                encounterCount++;
+                Connection.Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
+                Counts.AddCompletedLegends();
+                if (StopCondition(pk))
+                {
+                    Connection.Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
+                    return;
+                }
+
+                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                    DumpPokemon(DumpSetting.DumpFolder, "legends", pk);
+
+                Connection.Log("Resetting raid by restarting the game");
+                // Close out of the game
+                await Click(HOME, 1600, token).ConfigureAwait(false);
+                await Click(X, 800, token).ConfigureAwait(false);
+                await Click(A, 4000, token).ConfigureAwait(false); // Closing software prompt
+                Connection.Log("Closed out of the game!");
+
+                // Open game and select profile
+                await Click(A, 1000, token).ConfigureAwait(false);
+                await Click(A, 1000, token).ConfigureAwait(false);
+                Connection.Log("Restarting the game!");
+
+                // Switch Logo lag, skip cutscene, game load screen
+                await Task.Delay(14000, token).ConfigureAwait(false);
+                await Click(A, 1000, token).ConfigureAwait(false);
+                await Task.Delay(3500, token).ConfigureAwait(false);
+                Connection.Log("Back in the overworld!");
+                await ResetStick();
+            }
         }
 
         private async Task DoDogEncounter(CancellationToken token)
@@ -235,7 +275,7 @@ namespace SysBot.Pokemon
             int attempts = 0;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EncounterBot)
             {
-                if (await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+                if (await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false) || await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
                 {
                     switch (Mode)
                     {
