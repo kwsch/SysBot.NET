@@ -24,10 +24,10 @@ namespace SysBot.Pokemon
 
         protected override async Task MainLoop(CancellationToken token)
         {
-            Connection.Log("Identifying trainer data of the host console.");
+            Log("Identifying trainer data of the host console.");
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
 
-            Connection.Log("Starting main RaidBot loop.");
+            Log("Starting main RaidBot loop.");
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.RaidBot)
             {
                 int code = Settings.RaidCode;
@@ -35,7 +35,7 @@ namespace SysBot.Pokemon
                 await ResetGameAsync(airplane, token).ConfigureAwait(false);
 
                 encounterCount++;
-                Connection.Log($"Raid host {encounterCount} finished.");
+                Log($"Raid host {encounterCount} finished.");
                 Counts.AddCompletedRaids();
             }
         }
@@ -78,16 +78,16 @@ namespace SysBot.Pokemon
 
             if (timetowait > 0)
             {
-                Connection.Log("All participants have joined.");
+                Log("All participants have joined.");
                 await Click(A, 3000, token).ConfigureAwait(false);
             }
             else
             {
-                Connection.Log("Not all participants have joined. Continuing anyway!");
+                Log("Not all participants have joined. Continuing anyway!");
                 await Click(A, 3000, token).ConfigureAwait(false);
             }
 
-            Connection.Log($"Hosting raid as {sav.OT} with code: {code:0000}.");
+            Log($"Hosting raid as {sav.OT} with code: {code:0000}.");
             await Task.Delay(10_000, token).ConfigureAwait(false);
 
             return false;
@@ -112,17 +112,17 @@ namespace SysBot.Pokemon
 
         private async Task ResetRaidCloseGameLDN(CancellationToken token)
         {
-            Connection.Log("Resetting raid by restarting the game");
+            Log("Resetting raid by restarting the game");
             // Close out of the game
             await Click(HOME, 3_000, token).ConfigureAwait(false);
             await Click(X, 1_000, token).ConfigureAwait(false);
             await Click(A, 5_000, token).ConfigureAwait(false); // Closing software prompt
-            Connection.Log("Closed out of the game!");
+            Log("Closed out of the game!");
 
             // Open game and select profile
             await Click(A, 1_000, token).ConfigureAwait(false);
             await Click(A, 1_000, token).ConfigureAwait(false);
-            Connection.Log("Restarting the game!");
+            Log("Restarting the game!");
 
             // Switch Logo lag, skip cutscene, game load screen
             await Task.Delay(25_000, token).ConfigureAwait(false);
@@ -134,16 +134,16 @@ namespace SysBot.Pokemon
                 await Task.Delay(1_000, token).ConfigureAwait(false);
             }
 
-            Connection.Log("Back in the overworld!");
+            Log("Back in the overworld!");
 
             // Reconnect to ycomm.
             await EnsureConnectedToYComm(token).ConfigureAwait(false);
-            Connection.Log("Reconnected to Y-Comm!");
+            Log("Reconnected to Y-Comm!");
         }
 
         private async Task ResetRaidAirplaneLDN(CancellationToken token)
         {
-            Connection.Log("Resetting raid using Airplane Mode method");
+            Log("Resetting raid using Airplane Mode method");
             // Airplane mode method (only works when you connect with someone but faster)
             // Need to test if ldn_mitm crashes
             // Side menu
@@ -157,7 +157,7 @@ namespace SysBot.Pokemon
             await Click(A, 1_200, token).ConfigureAwait(false);
             await Click(A, 1_200, token).ConfigureAwait(false);
             await Click(B, 1_200, token).ConfigureAwait(false);
-            Connection.Log("Toggled Airplane Mode!");
+            Log("Toggled Airplane Mode!");
 
             // Press OK on the error
             await Click(A, 1_200, token).ConfigureAwait(false);
@@ -166,11 +166,11 @@ namespace SysBot.Pokemon
             {
                 await Task.Delay(1_000, token).ConfigureAwait(false);
             }
-            Connection.Log("Back in the overworld!");
+            Log("Back in the overworld!");
 
             // Reconnect to ycomm.
             await EnsureConnectedToYComm(token).ConfigureAwait(false);
-            Connection.Log("Reconnected to Y-Comm!");
+            Log("Reconnected to Y-Comm!");
         }
 
         private async Task ResetRaidCloseGame(CancellationToken token)

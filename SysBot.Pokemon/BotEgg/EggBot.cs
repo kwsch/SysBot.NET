@@ -30,10 +30,10 @@ namespace SysBot.Pokemon
 
         protected override async Task MainLoop(CancellationToken token)
         {
-            Connection.Log("Identifying trainer data of the host console.");
+            Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);
 
-            Connection.Log("Checking destination slot for eggs to see if anything is in the slot...");
+            Log("Checking destination slot for eggs to see if anything is in the slot...");
             var existing = await GetBoxSlotQuality(InjectBox, InjectSlot, token).ConfigureAwait(false);
             if (existing.Quality != SlotQuality.Overwritable)
             {
@@ -41,7 +41,7 @@ namespace SysBot.Pokemon
                 return;
             }
 
-            Connection.Log("Starting main EggBot loop.");
+            Log("Starting main EggBot loop.");
             var blank = new PK8();
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EggFetch)
             {
@@ -52,7 +52,7 @@ namespace SysBot.Pokemon
                 if (attempts < 0) // aborted
                     continue;
 
-                Connection.Log($"Egg available after {attempts} attempts! Clearing destination slot.");
+                Log($"Egg available after {attempts} attempts! Clearing destination slot.");
                 await SetBoxPokemon(blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
 
                 for (int i = 0; i < 4; i++)
@@ -63,16 +63,16 @@ namespace SysBot.Pokemon
                 await Click(A, 1950, token).ConfigureAwait(false);
                 await Click(A, 450, token).ConfigureAwait(false);
 
-                Connection.Log("Egg received. Checking details.");
+                Log("Egg received. Checking details.");
                 var pk = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
                 if (pk.Species == 0)
                 {
-                    Connection.Log("Invalid data detected in destination slot. Restarting loop.");
+                    Log("Invalid data detected in destination slot. Restarting loop.");
                     continue;
                 }
 
                 encounterCount++;
-                Connection.Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
+                Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
                 Counts.AddCompletedEggs();
 
                 if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
@@ -82,10 +82,10 @@ namespace SysBot.Pokemon
                 {
                     if (ContinueGettingEggs)
                     {
-                        Connection.Log("Restult found! Continuing to collect more eggs.");
+                        Log("Restult found! Continuing to collect more eggs.");
                         continue;
                     }
-                    Connection.Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
+                    Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
                     return;
                 }
             }
@@ -96,7 +96,7 @@ namespace SysBot.Pokemon
 
         private async Task<int> StepUntilEgg(CancellationToken token)
         {
-            Connection.Log("Walking around until an egg is ready...");
+            Log("Walking around until an egg is ready...");
             int attempts = 0;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EggFetch)
             {
@@ -116,7 +116,7 @@ namespace SysBot.Pokemon
 
                 attempts++;
                 if (attempts % 10 == 0)
-                    Connection.Log($"Tried {attempts} times, still no egg.");
+                    Log($"Tried {attempts} times, still no egg.");
 
                 if (attempts > 10)
                     await Click(B, 500, token).ConfigureAwait(false);

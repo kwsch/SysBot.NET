@@ -213,12 +213,12 @@ namespace SysBot.Pokemon
 
         public async Task<SAV8SWSH> IdentifyTrainer(CancellationToken token)
         {
-            Connection.Log("Grabbing trainer data of host console...");
+            Log("Grabbing trainer data of host console...");
             var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
             GameLang = (LanguageID)sav.Language;
             InGameName = sav.OT;
             Connection.Name = $"{InGameName}-{sav.DisplayTID:000000}";
-            Connection.Log($"{Connection.IP} identified as {Connection.Name}, using {GameLang}.");
+            Log($"{Connection.IP} identified as {Connection.Name}, using {GameLang}.");
             return sav;
         }
 
@@ -259,7 +259,7 @@ namespace SysBot.Pokemon
         {
             if (!await IsGameConnectedToYComm(token).ConfigureAwait(false))
             {
-                Connection.Log("Reconnecting to Y-Comm...");
+                Log("Reconnecting to Y-Comm...");
                 await ReconnectToYComm(token).ConfigureAwait(false);
             }
         }
@@ -310,7 +310,7 @@ namespace SysBot.Pokemon
         public async Task ExitTrade(bool unexpected, CancellationToken token)
         {
             if (unexpected)
-                Connection.Log("Unexpected behavior, recover position");
+                Log("Unexpected behavior, recover position");
 
             int attempts = 0;
             uint screenID = 0;
@@ -355,7 +355,7 @@ namespace SysBot.Pokemon
         public async Task ReOpenGame(CancellationToken token)
         {
             // Reopen The Game if we got a Soft-ban
-            Connection.Log("Potential Soft-ban detected, Reopen Game just in case!");
+            Log("Potential Soft-ban detected, Reopen Game just in case!");
             await Click(HOME, 2000, token).ConfigureAwait(false);
             await Click(X, 1000, token).ConfigureAwait(false);
             await Click(A, 5000, token).ConfigureAwait(false);
@@ -397,7 +397,7 @@ namespace SysBot.Pokemon
 
         public async Task ResetTradePosition(CancellationToken token)
         {
-            Connection.Log("Resetting bot position.");
+            Log("Resetting bot position.");
             await Click(Y, 1_250, token).ConfigureAwait(false);
             for (int i = 0; i < 5; i++)
                 await Click(A, 1_250, token).ConfigureAwait(false);
@@ -451,11 +451,11 @@ namespace SysBot.Pokemon
             switch (q.Quality)
             {
                 case SlotQuality.BadData:
-                    Connection.Log("Garbage detected in required Box Slot. Preventing execution.");
+                    Log("Garbage detected in required Box Slot. Preventing execution.");
                     return;
                 case SlotQuality.HasData:
-                    Connection.Log("Required Box Slot not empty. Move this Pokémon before using the bot!");
-                    Connection.Log(new ShowdownSet(q.Data!).Text);
+                    Log("Required Box Slot not empty. Move this Pokémon before using the bot!");
+                    Log(new ShowdownSet(q.Data!).Text);
                     return;
             }
         }

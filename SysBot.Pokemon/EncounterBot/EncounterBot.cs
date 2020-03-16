@@ -75,10 +75,10 @@ namespace SysBot.Pokemon
 
         protected override async Task MainLoop(CancellationToken token)
         {
-            Connection.Log("Identifying trainer data of the host console.");
+            Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);
 
-            Connection.Log("Starting main EncounterBot loop.");
+            Log("Starting main EncounterBot loop.");
 
             // Clear out any residual stick weirdness.
             await ResetStick();
@@ -104,22 +104,22 @@ namespace SysBot.Pokemon
                 if (attempts < 0) // aborted
                     continue;
 
-                Connection.Log($"Encounter found after {attempts} attempts! Checking details.");
+                Log($"Encounter found after {attempts} attempts! Checking details.");
 
                 var pk = await ReadPokemon(WildPokemonOffset, token).ConfigureAwait(false);
                 if (pk.Species == 0)
                 {
-                    Connection.Log("Invalid data detected. Restarting loop.");
+                    Log("Invalid data detected. Restarting loop.");
                     // add stuff for recovering
                     continue;
                 }
 
                 encounterCount++;
-                Connection.Log($"Encounter: {encounterCount}{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}");
+                Log($"Encounter: {encounterCount}{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}");
                 Counts.AddCompletedEncounters();
                 if (StopCondition(pk))
                 {
-                    Connection.Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
+                    Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
                     return;
                 }
                 else if (pk.Ability == 119 || pk.Ability == 107) // pokemon with announced abilites
@@ -141,7 +141,7 @@ namespace SysBot.Pokemon
 
         private async Task DoEternatusEncounter(CancellationToken token)
         {
-            Connection.Log("Not yet implemented!");
+            Log("Not yet implemented!");
             await ResetStick();
             return;
         }
@@ -151,7 +151,7 @@ namespace SysBot.Pokemon
 
             while (!token.IsCancellationRequested)
             {
-                Connection.Log("Looking for a new dog...");
+                Log("Looking for a new dog...");
 
                 // At the start of each loop, an A press is needed to exit out of a prompt.
                 await Click(A, 0_500, token).ConfigureAwait(false);
@@ -168,10 +168,10 @@ namespace SysBot.Pokemon
                     await Click(A, 1_000, token).ConfigureAwait(false);
 
                 if (await IsCorrectDogScreen(false, token).ConfigureAwait(false))
-                    Connection.Log("Encounter started! Checking details.");
+                    Log("Encounter started! Checking details.");
                 else
                 {
-                    Connection.Log("Something went wrong. Reposition and restart the bot.");
+                    Log("Something went wrong. Reposition and restart the bot.");
                     return;
                 }
 
@@ -180,16 +180,16 @@ namespace SysBot.Pokemon
                 var pk = await ReadPokemon(LegendaryPokemonOffset, token).ConfigureAwait(false);
                 if (pk.Species == 0)
                 {
-                    Connection.Log("Invalid data detected. Restarting loop.");
+                    Log("Invalid data detected. Restarting loop.");
                     continue;
                 }
 
                 encounterCount++;
-                Connection.Log($"Encounter: {encounterCount}{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}");
+                Log($"Encounter: {encounterCount}{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}");
                 Counts.AddCompletedLegends();
                 if (StopCondition(pk))
                 {
-                    Connection.Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
+                    Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
                     return;
                 }
 
@@ -231,7 +231,7 @@ namespace SysBot.Pokemon
         }
         private async Task<int> StepUntilEncounter(CancellationToken token)
         {
-            Connection.Log("Walking around until an encounter...");
+            Log("Walking around until an encounter...");
             int attempts = 0;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EncounterBot)
             {
@@ -270,7 +270,7 @@ namespace SysBot.Pokemon
 
                 attempts++;
                 if (attempts % 10 == 0)
-                    Connection.Log($"Tried {attempts} times, still no encounters.");
+                    Log($"Tried {attempts} times, still no encounters.");
             }
 
             return -1; // aborted

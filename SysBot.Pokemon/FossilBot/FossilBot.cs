@@ -32,10 +32,10 @@ namespace SysBot.Pokemon
 
         protected override async Task MainLoop(CancellationToken token)
         {
-            Connection.Log("Identifying trainer data of the host console.");
+            Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);
 
-            Connection.Log("Checking destination slot for revived fossil Pokémon to see if anything is in the slot...");
+            Log("Checking destination slot for revived fossil Pokémon to see if anything is in the slot...");
             var existing = await GetBoxSlotQuality(InjectBox, InjectSlot, token).ConfigureAwait(false);
             if (existing.Quality != SlotQuality.Overwritable)
             {
@@ -43,31 +43,31 @@ namespace SysBot.Pokemon
                 return;
             }
 
-            Connection.Log("Checking item counts...");
+            Log("Checking item counts...");
             var pouchData = await Connection.ReadBytesAsync(PokeDataOffsets.ItemTreasureAddress, 80, token).ConfigureAwait(false);
             var counts = FossilCount.GetFossilCounts(pouchData);
             int reviveCount = counts.PossibleRevives(FossilSpecies);
             if (reviveCount == 0)
             {
-                Connection.Log("Insufficient fossil pieces to start. Please obtain at least one of each required fossil piece before starting.");
+                Log("Insufficient fossil pieces to start. Please obtain at least one of each required fossil piece before starting.");
                 return;
             }
 
-            Connection.Log("Starting main FossilBot loop.");
+            Log("Starting main FossilBot loop.");
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.FossilBot)
             {
                 await ReviveFossil(counts, token).ConfigureAwait(false);
-                Connection.Log("Fossil revived. Checking details.");
+                Log("Fossil revived. Checking details.");
 
                 var pk = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
                 if (pk.Species == 0 || !pk.ChecksumValid)
                 {
-                    Connection.Log("Invalid data detected in destination slot. Restarting loop.");
+                    Log("Invalid data detected in destination slot. Restarting loop.");
                     continue;
                 }
 
                 encounterCount++;
-                Connection.Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
+                Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
                 if (DumpSetting.Dump)
                     DumpPokemon(DumpSetting.DumpFolder, "fossil", pk);
 
@@ -77,26 +77,26 @@ namespace SysBot.Pokemon
                 {
                     if (Settings.ContinueAfterMatch)
                     {
-                        Connection.Log("Result found! Continuing to collect more fossils.");
+                        Log("Result found! Continuing to collect more fossils.");
                         continue;
                     }
-                    Connection.Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
+                    Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
                     return;
                 }
 
                 if (encounterCount % reviveCount != 0)
                     continue;
 
-                Connection.Log($"Ran out of fossils to revive {FossilSpecies}.");
+                Log($"Ran out of fossils to revive {FossilSpecies}.");
                 if (Settings.InjectWhenEmpty)
                 {
-                    Connection.Log("Restoring original pouch data.");
+                    Log("Restoring original pouch data.");
                     await Connection.WriteBytesAsync(pouchData, PokeDataOffsets.ItemTreasureAddress, token).ConfigureAwait(false);
                     await Task.Delay(200, token).ConfigureAwait(false);
                 }
                 else
                 {
-                    Connection.Log("Re-start the game then re-start the bot(s), or set \"Inject Fossils\" to True in the config.");
+                    Log("Re-start the game then re-start the bot(s), or set \"Inject Fossils\" to True in the config.");
                     return;
                 }
             }
@@ -124,7 +124,7 @@ namespace SysBot.Pokemon
             await Click(A, 1200, token).ConfigureAwait(false);
             await Click(A, 4500, token).ConfigureAwait(false);
 
-            Connection.Log("Getting fossil! Clearing destination slot.");
+            Log("Getting fossil! Clearing destination slot.");
             await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
 
             await Click(A, 2400, token).ConfigureAwait(false);
