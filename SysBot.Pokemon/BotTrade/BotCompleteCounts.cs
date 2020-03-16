@@ -57,7 +57,7 @@ namespace SysBot.Pokemon
             Interlocked.Increment(ref CompletedFossils);
             Config.CompletedFossils = CompletedFossils;
         }
-        
+
         public void AddCompletedEncounters()
         {
             Interlocked.Increment(ref CompletedEncounters);

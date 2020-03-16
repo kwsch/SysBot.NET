@@ -18,20 +18,13 @@ For support on setting up your own instance of SysBot.NET, feel free to join the
 
 # Example Implementations
 
-The driving force to develop this project is automated bots for Nintendo Switch Pokémon games. An example implementation is provided in this repo to demonstrate interesting tasks this framework is capable of performing.
+The driving force to develop this project is automated bots for Nintendo Switch Pokémon games. An example implementation is provided in this repo to demonstrate interesting tasks this framework is capable of performing. Refer to the [Wiki](https://github.com/kwsch/SysBot.NET/wiki) for more details on the supported Pokémon features.
 
 ## SysBot.Pokemon:
-- Class library using SysBot.Base to contain logic related to Sword/Shield bots.
-
-Supported Pokémon Sword/Shield Bots:
-- Surprise Trade Bot: Surprise Trades random Pokémon files from a folder.
-- Link Trade Bot: Trades out Pokémon files to specific Link Codes, and can randomly distribute when no priority trades are needed.
-- Shiny Egg Finding Bot: Repeatedly grabs eggs until a shiny egg is received.
-- Dudu Bot: Hosts link trades and quits when the trade partner offers a Pokémon, and prints any Raid RNG details to the log.
+- Class library using SysBot.Base to contain logic related to creating & running Sword/Shield bots.
 
 ## SysBot.Pokemon.WinForms:
-- Simple GUI Launcher for spinning up Pokémon bots.
-- Is currently set up to spin up Pokémon bots (as described above). Refer to the Wiki for details on how to use.
+- Simple GUI Launcher for adding, starting, and stopping Pokémon bots (as described above).
 - Configuration of program settings is performed in-app and is saved as a local json file.
 
 ## SysBot.Pokemon.Discord:
@@ -45,7 +38,7 @@ Supported Pokémon Sword/Shield Bots:
 
 Uses [Discord.Net](https://github.com/discord-net/Discord.Net) and [TwitchLib](https://github.com/TwitchLib/TwitchLib) as a dependency via Nuget.
 
-## Dependencies
+## Other Dependencies
 Pokémon API logic is provided by [PKHeX](https://github.com/kwsch/PKHeX/), and template generation is provided by [AutoMod](https://github.com/architdate/PKHeX-Plugins/).
 
 # License

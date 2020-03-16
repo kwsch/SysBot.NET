@@ -35,14 +35,13 @@ namespace SysBot.Pokemon
             {
                 if (splitIVs[i] == "x" || splitIVs[i] == "X")
                     continue;
-                else
-                    DesiredIVs[i] = Convert.ToInt32(splitIVs[i]);
+                DesiredIVs[i] = Convert.ToInt32(splitIVs[i]);
             }
         }
 
         private int encounterCount;
 
-        private bool StopCondition (PK8 pk)
+        private bool StopCondition(PK8 pk)
         {
             /*  Match species and look for a shiny. This is only checked for walking encounters.
              *  If they specified a species, it has to match. */
@@ -66,7 +65,6 @@ namespace SysBot.Pokemon
                 // Wild cards should be -1, so they will always be less than the Pokemon's IVs.
                 if (DesiredIVs[i] > pkIVList[i])
                     return false;
-
             }
             return true;
         }
@@ -79,7 +77,7 @@ namespace SysBot.Pokemon
             Log("Starting main EncounterBot loop.");
 
             // Clear out any residual stick weirdness.
-            await ResetStick();
+            await ResetStick(token).ConfigureAwait(false);
 
             var task = Mode switch
             {
@@ -91,7 +89,7 @@ namespace SysBot.Pokemon
             };
             await task.ConfigureAwait(false);
 
-            await ResetStick();
+            await ResetStick(token).ConfigureAwait(false);
         }
 
         private async Task WalkInLine(CancellationToken token)
@@ -130,11 +128,12 @@ namespace SysBot.Pokemon
 
                 await Task.Delay(4600, token).ConfigureAwait(false);
                 while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
-                    await FleeToOverworld(token);
+                    await FleeToOverworld(token).ConfigureAwait(false);
 
                 if (Mode == EncounterMode.VerticalLine) await SetStick(LEFT, 0, -30000, 2500, token).ConfigureAwait(false);
                 else if (Mode == EncounterMode.HorizontalLine) await SetStick(LEFT, -30000, 0, 2500, token).ConfigureAwait(false);
-                await ResetStick();
+                await ResetStick(token).ConfigureAwait(false);
+
             }
         }
 
@@ -182,13 +181,12 @@ namespace SysBot.Pokemon
                 await Click(A, 1000, token).ConfigureAwait(false);
                 await Task.Delay(3500, token).ConfigureAwait(false);
                 Connection.Log("Back in the overworld!");
-                await ResetStick();
+                await ResetStick(token).ConfigureAwait(false);
             }
         }
 
         private async Task DoDogEncounter(CancellationToken token)
         {
-
             while (!token.IsCancellationRequested)
             {
                 Log("Looking for a new dog...");
@@ -208,7 +206,9 @@ namespace SysBot.Pokemon
                     await Click(A, 1_000, token).ConfigureAwait(false);
 
                 if (await IsCorrectDogScreen(false, token).ConfigureAwait(false))
+                {
                     Log("Encounter started! Checking details.");
+                }
                 else
                 {
                     Log("Something went wrong. Reposition and restart the bot.");
@@ -240,10 +240,10 @@ namespace SysBot.Pokemon
                     DumpPokemon(DumpSetting.DumpFolder, "legends", pk);
 
                 // Get rid of any stick stuff left over so we can flee properly.
-                await ResetStick();
+                await ResetStick(token).ConfigureAwait(false);
 
                 while (!await IsCorrectDogScreen(true, token).ConfigureAwait(false))
-                    await FleeToOverworld(token);
+                    await FleeToOverworld(token).ConfigureAwait(false);
             }
         }
 
@@ -251,24 +251,33 @@ namespace SysBot.Pokemon
         {
             var screen = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
             uint currentscreen = BitConverter.ToUInt32(screen, 0);
-            if (!flee &&
-                (currentscreen == CurrentScreen_Dog_Daytime_StartBattle
-                    || currentscreen == CurrentScreen_Dog_Sunset_StartBattle
-                    || currentscreen == CurrentScreen_Dog_Night_StartBattle
-                    || currentscreen == CurrentScreen_Dog_Dawn_StartBattle))
+            if (!flee && ScreenIsStart(currentscreen))
                 return true;
-            else if (flee &&
-                (currentscreen == CurrentScreen_Dog_Daytime_FleeBattle_1
-                    || currentscreen == CurrentScreen_Dog_Daytime_FleeBattle_2
-                    || currentscreen == CurrentScreen_Dog_Sunset_FleeBattle_1
-                    || currentscreen == CurrentScreen_Dog_Sunset_FleeBattle_2
-                    || currentscreen == CurrentScreen_Dog_Dawn_FleeBattle_1
-                    || currentscreen == CurrentScreen_Dog_Dawn_FleeBattle_2
-                    || currentscreen == CurrentScreen_Dog_Night_FleeBattle_1
-                    || currentscreen == CurrentScreen_Dog_Night_FleeBattle_2))
+            if (flee && ScreenIsFlee(currentscreen))
                 return true;
             return false;
         }
+
+        private static bool ScreenIsStart(uint currentscreen)
+        {
+            return    currentscreen == CurrentScreen_Dog_Daytime_StartBattle
+                   || currentscreen == CurrentScreen_Dog_Sunset_StartBattle
+                   || currentscreen == CurrentScreen_Dog_Night_StartBattle
+                   || currentscreen == CurrentScreen_Dog_Dawn_StartBattle;
+        }
+
+        private static bool ScreenIsFlee(uint currentscreen)
+        {
+            return    currentscreen == CurrentScreen_Dog_Daytime_FleeBattle_1
+                   || currentscreen == CurrentScreen_Dog_Daytime_FleeBattle_2
+                   || currentscreen == CurrentScreen_Dog_Sunset_FleeBattle_1
+                   || currentscreen == CurrentScreen_Dog_Sunset_FleeBattle_2
+                   || currentscreen == CurrentScreen_Dog_Dawn_FleeBattle_1
+                   || currentscreen == CurrentScreen_Dog_Dawn_FleeBattle_2
+                   || currentscreen == CurrentScreen_Dog_Night_FleeBattle_1
+                   || currentscreen == CurrentScreen_Dog_Night_FleeBattle_2;
+        }
+
         private async Task<int> StepUntilEncounter(CancellationToken token)
         {
             Log("Walking around until an encounter...");
@@ -298,14 +307,14 @@ namespace SysBot.Pokemon
                 else
                 {
                     while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
-                        await FleeToOverworld(token);
+                        await FleeToOverworld(token).ConfigureAwait(false);
                 }
 
                 var data = await Connection.ReadBytesAsync(0x8D45C648, 0x158, token).ConfigureAwait(false);
                 var pk = new PK8(data);
                 if (pk.Species == 0)
                     continue;
-                else if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+                if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
                     return attempts;
 
                 attempts++;
@@ -316,10 +325,10 @@ namespace SysBot.Pokemon
             return -1; // aborted
         }
 
-        private async Task ResetStick()
+        private async Task ResetStick(CancellationToken token)
         {
             // If aborting the sequence, we might have the stick set at some position. Clear it just in case.
-            await SetStick(LEFT, 0, 0, 1_000, CancellationToken.None).ConfigureAwait(false); // reset
+            await SetStick(LEFT, 0, 0, 1_000, token).ConfigureAwait(false); // reset
         }
 
         private async Task FleeToOverworld(CancellationToken token)

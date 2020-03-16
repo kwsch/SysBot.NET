@@ -141,11 +141,14 @@ namespace SysBot.Pokemon.WinForms
         {
             var env = RunningEnvironment;
             if (!env.IsRunning && (ModifierKeys & Keys.Alt) == 0)
+            {
+                WinFormsUtil.Alert("Nothing is currently running.");
                 return;
+            }
 
             var cmd = BotControlCommand.Stop;
 
-            if (ModifierKeys == Keys.Control || ModifierKeys == Keys.Shift) // either, because remembering which can be hard
+            if ((ModifierKeys & Keys.Control) != 0 || (ModifierKeys & Keys.Shift) != 0) // either, because remembering which can be hard
             {
                 if (env.IsRunning)
                 {
@@ -199,6 +202,12 @@ namespace SysBot.Pokemon.WinForms
             row.Initialize(RunningEnvironment, cfg);
             FLP_Bots.Controls.Add(row);
             FLP_Bots.SetFlowBreak(row, true);
+            row.Click += (s, e) =>
+            {
+                TB_IP.Text = cfg.IP;
+                NUD_Port.Value = cfg.Port;
+                CB_Routine.SelectedValue = (int)cfg.InitialRoutine;
+            };
 
             row.Remove += (s, e) =>
             {
