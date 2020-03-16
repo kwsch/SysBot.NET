@@ -24,13 +24,13 @@ namespace SysBot.Pokemon.WinForms
                 var item = new ToolStripMenuItem(cmd.ToString());
                 item.Click += (_, __) => SendCommand(cmd);
 
-                contextMenuStrip1.Items.Add(item);
+                RCMenu.Items.Add(item);
             }
 
             var remove = new ToolStripMenuItem("Remove");
             remove.Click += (_, __) => TryRemove();
-            contextMenuStrip1.Items.Add(remove);
-            contextMenuStrip1.Opening += ContextMenuStrip1OnOpening;
+            RCMenu.Items.Add(remove);
+            RCMenu.Opening += RcMenuOnOpening;
 
             var controls = Controls;
             foreach (var c in controls.OfType<Control>())
@@ -40,7 +40,7 @@ namespace SysBot.Pokemon.WinForms
             }
         }
 
-        private void ContextMenuStrip1OnOpening(object sender, CancelEventArgs e)
+        private void RcMenuOnOpening(object sender, CancelEventArgs e)
         {
             if (Runner == null)
                 return;
@@ -50,7 +50,7 @@ namespace SysBot.Pokemon.WinForms
             if (bot == null)
                 return;
 
-            foreach (var tsi in contextMenuStrip1.Items.OfType<ToolStripMenuItem>())
+            foreach (var tsi in RCMenu.Items.OfType<ToolStripMenuItem>())
             {
                 var text = tsi.Text;
                 tsi.Enabled = Enum.TryParse(text, out BotControlCommand cmd)
@@ -72,34 +72,47 @@ namespace SysBot.Pokemon.WinForms
             L_Left.Text = $"{Config.IP}{Environment.NewLine}{Config.InitialRoutine}";
         }
 
+        private DateTime LastUpdateStatus = DateTime.Now;
+
         public void ReloadStatus(SwitchRoutineExecutor<PokeBotConfig> bot)
         {
             ReloadStatus();
             L_Description.Text = $"[{bot.LastTime:hh:mm:ss}] {bot.Connection.Name}: {bot.LastLogged}";
             L_Left.Text = $"{Config.IP}{Environment.NewLine}{Config.InitialRoutine}";
 
+            var lastTime = bot.LastTime;
             if (bot.Config.CurrentRoutineType == PokeRoutineType.Idle)
             {
-                pictureBox1.BackColor = Color.Yellow;
+                PB_Lamp.BackColor = Color.Yellow;
+                return;
+            }
+            if (LastUpdateStatus == lastTime)
+                return;
+
+            // Color decay from Green based on time
+            const int threshold = 100;
+            Color good = Color.Green;
+            Color bad = Color.Red;
+
+            var delta = DateTime.Now - bot.LastTime;
+            var seconds = delta.Seconds;
+
+            LastUpdateStatus = lastTime;
+            if (seconds > 2 * threshold)
+                return; // already changed by now
+
+            if (seconds > threshold)
+            {
+                if (PB_Lamp.BackColor == bad)
+                    return; // should we notify on change instead?
+                PB_Lamp.BackColor = bad;
             }
             else
             {
-                var delta = DateTime.Now - bot.LastTime;
-                var seconds = delta.Seconds;
-                const int threshold = 100;
-                if (seconds > threshold)
-                {
-                    if (pictureBox1.BackColor == Color.Red)
-                        return; // should we notify on change instead?
-                    pictureBox1.BackColor = Color.Red;
-                }
-                else
-                {
-                    // blend from green->red, favoring green until near saturation
-                    var factor = seconds / (double) threshold;
-                    var blend = Blend(Color.Green, Color.Red, factor * factor);
-                    pictureBox1.BackColor = blend;
-                }
+                // blend from green->red, favoring green until near saturation
+                var factor = seconds / (double) threshold;
+                var blend = Blend(bad, good, factor * factor);
+                PB_Lamp.BackColor = blend;
             }
         }
 

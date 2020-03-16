@@ -31,9 +31,9 @@
             this.components = new System.ComponentModel.Container();
             this.L_Description = new System.Windows.Forms.Label();
             this.L_Left = new System.Windows.Forms.Label();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.PB_Lamp = new System.Windows.Forms.PictureBox();
+            this.RCMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this.PB_Lamp)).BeginInit();
             this.SuspendLayout();
             // 
             // L_Description
@@ -58,26 +58,26 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBox1.Location = new System.Drawing.Point(3, 3);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(26, 26);
-            this.pictureBox1.TabIndex = 4;
-            this.pictureBox1.TabStop = false;
+            this.PB_Lamp.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.PB_Lamp.Location = new System.Drawing.Point(3, 3);
+            this.PB_Lamp.Name = "PB_Lamp";
+            this.PB_Lamp.Size = new System.Drawing.Size(26, 26);
+            this.PB_Lamp.TabIndex = 4;
+            this.PB_Lamp.TabStop = false;
             // 
             // contextMenuStrip1
             // 
-            this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.ShowImageMargin = false;
-            this.contextMenuStrip1.ShowItemToolTips = false;
-            this.contextMenuStrip1.Size = new System.Drawing.Size(36, 4);
+            this.RCMenu.Name = "RCMenu";
+            this.RCMenu.ShowImageMargin = false;
+            this.RCMenu.ShowItemToolTips = false;
+            this.RCMenu.Size = new System.Drawing.Size(36, 4);
             // 
             // BotController
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ContextMenuStrip = this.contextMenuStrip1;
-            this.Controls.Add(this.pictureBox1);
+            this.ContextMenuStrip = this.RCMenu;
+            this.Controls.Add(this.PB_Lamp);
             this.Controls.Add(this.L_Left);
             this.Controls.Add(this.L_Description);
             this.Margin = new System.Windows.Forms.Padding(0);
@@ -85,7 +85,7 @@
             this.Size = new System.Drawing.Size(410, 32);
             this.MouseEnter += new System.EventHandler(this.BotController_MouseEnter);
             this.MouseLeave += new System.EventHandler(this.BotController_MouseLeave);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PB_Lamp)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -94,7 +94,7 @@
         #endregion
         private System.Windows.Forms.Label L_Description;
         private System.Windows.Forms.Label L_Left;
-        private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.PictureBox PB_Lamp;
+        private System.Windows.Forms.ContextMenuStrip RCMenu;
     }
 }
