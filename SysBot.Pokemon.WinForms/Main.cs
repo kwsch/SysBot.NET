@@ -193,7 +193,7 @@ namespace SysBot.Pokemon.WinForms
 
         private void AddBotControl(PokeBotConfig cfg)
         {
-            var row = new BotController();
+            var row = new BotController {Width = FLP_Bots.Width};
             row.Initialize(RunningEnvironment, cfg);
             FLP_Bots.Controls.Add(row);
             FLP_Bots.SetFlowBreak(row, true);

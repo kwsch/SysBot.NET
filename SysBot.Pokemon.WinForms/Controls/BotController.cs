@@ -31,6 +31,13 @@ namespace SysBot.Pokemon.WinForms
             remove.Click += (_, __) => TryRemove();
             contextMenuStrip1.Items.Add(remove);
             contextMenuStrip1.Opening += ContextMenuStrip1OnOpening;
+
+            var controls = Controls;
+            foreach (var c in controls.OfType<Control>())
+            {
+                c.MouseEnter += BotController_MouseEnter;
+                c.MouseLeave += BotController_MouseLeave;
+            }
         }
 
         private void ContextMenuStrip1OnOpening(object sender, CancelEventArgs e)
@@ -108,8 +115,8 @@ namespace SysBot.Pokemon.WinForms
             return bot;
         }
 
-        private void BotController_MouseEnter(object sender, EventArgs e) => BackColor = Color.LightSkyBlue;
-        private void BotController_MouseLeave(object sender, EventArgs e) => BackColor = Color.Transparent;
+        private void BotController_MouseEnter(object? sender, EventArgs e) => BackColor = Color.LightSkyBlue;
+        private void BotController_MouseLeave(object? sender, EventArgs e) => BackColor = Color.Transparent;
 
         public void ReadState()
         {
