@@ -8,17 +8,20 @@ namespace SysBot.Pokemon
         public const uint CurrentBoxOffset = 0x4298e83E;
         public const uint TrainerDataOffset = 0x42935E48;
         public const uint SoftBanUnixTimespanOffset = 0x4298f9f8;
-        public const uint RaidPokemonOffset = 0x85C7AB08;
-
         public const uint IsConnectedOffset = 0x2f865c78;
 
-        /* Link Trade Offsets */
+        // Pokemon Encounter Offsets
+        public const uint WildPokemonOffset = 0x8D45C648;
+        public const uint RaidPokemonOffset = 0x85C7AB08;
+        public const uint LegendaryPokemonOffset = 0x85C74F88;
+
+        // Link Trade Offsets
         public const uint LinkTradePartnerPokemonOffset = 0x2E32206A;
         public const uint LinkTradePartnerNameOffset = 0xAC84173C;
         public const uint LinkTradeSearchingOffset = 0x41d8e17c;
         public const uint LinkTradeFoundOffset = 0x4293aca4; // byte[0] & 0xF = 8
 
-        /* Suprise Trade Offsets */
+        // Suprise Trade Offsets
         public const uint SurpriseTradePartnerPokemonOffset = 0x429344d0;
 
         public const uint SurpriseTradeLockSlot = 0x4293462c;
@@ -79,11 +82,29 @@ namespace SysBot.Pokemon
         public const uint CurrentScreen_Box_WaitingForOffer = 0xC800B483;
         public const uint CurrentScreen_Box_ConfirmOffer = 0xFF00B483;
 
-        public const uint CurrentScreen_Softbann = 0xFF000000;
+        public const uint CurrentScreen_Softban = 0xFF000000;
 
         //public const uint CurrentScreen_YMenu = 0xFFFF7983;
         public const uint CurrentScreen_WildArea = 0xFFFFFFFF;
         public const uint CurrentScreen_RaidParty = 0xFF1461DB;
+
+        /* Offset values for getting into a battle with Zacian/Zamazenta and fleeing to Tower.
+         * After fleeing the battle, the current screen offset flickers between 2 values. */
+        public const uint CurrentScreen_Dog_Daytime_StartBattle = 0xFFC97AF8;
+        public const uint CurrentScreen_Dog_Daytime_FleeBattle_1 = 0xFF642E32;
+        public const uint CurrentScreen_Dog_Daytime_FleeBattle_2 = 0xFF652E32;
+
+        public const uint CurrentScreen_Dog_Sunset_StartBattle = 0xFF813FDC;
+        public const uint CurrentScreen_Dog_Sunset_FleeBattle_1 = 0xFF3B002D;
+        public const uint CurrentScreen_Dog_Sunset_FleeBattle_2 = 0xFF3B002E;
+
+        public const uint CurrentScreen_Dog_Night_StartBattle = 0xFF925EDB;
+        public const uint CurrentScreen_Dog_Night_FleeBattle_1 = 0xFF431424;
+        public const uint CurrentScreen_Dog_Night_FleeBattle_2 = 0xFF431525;
+
+        public const uint CurrentScreen_Dog_Dawn_StartBattle = 0xFF6D3AC4;
+        public const uint CurrentScreen_Dog_Dawn_FleeBattle_1 = 0xFF20001C;
+        public const uint CurrentScreen_Dog_Dawn_FleeBattle_2 = 0xFF22001E;
         #endregion
 
         public static uint GetTrainerNameOffset(TradeMethod tradeMethod)

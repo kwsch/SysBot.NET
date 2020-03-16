@@ -318,7 +318,7 @@ namespace SysBot.Pokemon
             while (screenID != CurrentScreen_Overworld)
             {
                 screenID = await GetCurrentScreen(token).ConfigureAwait(false);
-                if (screenID == CurrentScreen_Softbann)
+                if (screenID == CurrentScreen_Softban)
                 {
                     softBanAttempts++;
                     if (softBanAttempts > 10)

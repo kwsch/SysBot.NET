@@ -11,6 +11,7 @@ namespace SysBot.Pokemon
         private int CompletedEggs;
         private int CompletedFossils;
         private int CompletedEncounters;
+        private int CompletedLegends;
         private int CompletedSeedChecks;
         private int CompletedSurprise;
         private int CompletedDistribution;
@@ -30,6 +31,7 @@ namespace SysBot.Pokemon
             CompletedEggs = Config.CompletedEggs;
             CompletedFossils = Config.CompletedFossils;
             CompletedEncounters = Config.CompletedEncounters;
+            CompletedEncounters = Config.CompletedLegends;
             CompletedSeedChecks = Config.CompletedSeedChecks;
             CompletedSurprise = Config.CompletedSurprise;
             CompletedDistribution = Config.CompletedDistribution;
@@ -60,6 +62,11 @@ namespace SysBot.Pokemon
         {
             Interlocked.Increment(ref CompletedEncounters);
             Config.CompletedEncounters = CompletedEncounters;
+        }
+        public void AddCompletedLegends()
+        {
+            Interlocked.Increment(ref CompletedLegends);
+            Config.CompletedLegends = CompletedLegends;
         }
 
         public void AddCompletedSeedCheck()
@@ -120,6 +127,8 @@ namespace SysBot.Pokemon
                 yield return $"Completed Fossils: {CompletedFossils}";
             if (CompletedEncounters != 0)
                 yield return $"Wild Encounters: {CompletedEncounters}";
+            if (CompletedLegends != 0)
+                yield return $"Legendary Encounters: {CompletedEncounters}";
         }
     }
 }

@@ -34,8 +34,11 @@ namespace SysBot.Pokemon
         [Category(Received), Description("Fossil Pokémon Revived")]
         public int CompletedFossils { get; set; }
 
-        [Category(Received), Description("Encountered Pokémon")]
+        [Category(Received), Description("Encountered Wild Pokémon")]
         public int CompletedEncounters { get; set; }
+
+        [Category(Received), Description("Encountered Legendary Pokémon")]
+        public int CompletedLegends { get; set; }
 
         [Category(Received), Description("Raids Started")]
         public int CompletedRaids { get; set; }

@@ -25,6 +25,6 @@
         /// <summary>
         /// Bot will soft reset the Legendary Dogs
         /// </summary>
-        //LegendaryDogs, // to be implemented
+        LegendaryDogs, // to be implemented
     }
 }
