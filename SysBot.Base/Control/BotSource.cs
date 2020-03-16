@@ -25,7 +25,6 @@ namespace SysBot.Base
         public void Pause()
         {
             Bot.SoftStop();
-            IsRunning = false;
         }
 
         public void Start()
@@ -38,7 +37,6 @@ namespace SysBot.Base
         public void Resume()
         {
             Start();
-            IsRunning = true;
         }
     }
 }

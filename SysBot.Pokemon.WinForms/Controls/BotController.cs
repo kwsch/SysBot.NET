@@ -74,13 +74,19 @@ namespace SysBot.Pokemon.WinForms
 
         private DateTime LastUpdateStatus = DateTime.Now;
 
-        public void ReloadStatus(SwitchRoutineExecutor<PokeBotConfig> bot)
+        public void ReloadStatus(BotSource<PokeBotConfig> b)
         {
             ReloadStatus();
+            var bot = b.Bot;
             L_Description.Text = $"[{bot.LastTime:hh:mm:ss}] {bot.Connection.Name}: {bot.LastLogged}";
             L_Left.Text = $"{Config.IP}{Environment.NewLine}{Config.InitialRoutine}";
 
             var lastTime = bot.LastTime;
+            if (!b.IsRunning)
+            {
+                PB_Lamp.BackColor = Color.Transparent;
+                return;
+            }
             if (bot.Config.CurrentRoutineType == PokeRoutineType.Idle)
             {
                 PB_Lamp.BackColor = Color.Yellow;
@@ -169,11 +175,11 @@ namespace SysBot.Pokemon.WinForms
 
             if (InvokeRequired)
             {
-                Invoke((MethodInvoker)(() => ReloadStatus(bot.Bot)));
+                Invoke((MethodInvoker)(() => ReloadStatus(bot)));
             }
             else
             {
-                ReloadStatus(bot.Bot);
+                ReloadStatus(bot);
             }
         }
     }
