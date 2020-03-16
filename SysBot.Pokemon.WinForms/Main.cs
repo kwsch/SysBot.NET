@@ -138,7 +138,7 @@ namespace SysBot.Pokemon.WinForms
         private void B_Stop_Click(object sender, EventArgs e)
         {
             var env = RunningEnvironment;
-            if (!env.CanStop && (ModifierKeys & Keys.Alt) == 0)
+            if (!env.IsRunning && (ModifierKeys & Keys.Alt) == 0)
                 return;
 
             var cmd = BotControlCommand.Stop;

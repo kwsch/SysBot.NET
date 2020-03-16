@@ -8,8 +8,7 @@ namespace SysBot.Base
     {
         public readonly List<BotSource<T>> Bots = new List<BotSource<T>>();
 
-        public bool IsRunning { get; private set; }
-        public bool CanStop => IsRunning;
+        public bool IsRunning => Bots.Any(z => z.IsRunning);
         public bool RunOnce { get; private set; }
 
         public virtual void Add(SwitchRoutineExecutor<T> bot)
@@ -34,14 +33,13 @@ namespace SysBot.Base
         {
             foreach (var b in Bots)
                 b.Start();
-            RunOnce = IsRunning = true;
+            RunOnce = true;
         }
 
         public virtual void StopAll()
         {
             foreach (var b in Bots)
                 b.Stop();
-            IsRunning = false;
         }
 
         public virtual void PauseAll()
@@ -53,7 +51,6 @@ namespace SysBot.Base
 
         public virtual void ResumeAll()
         {
-            IsRunning = true;
             // Tell all the bots to go to Idle after finishing.
             foreach (var b in Bots)
                 b.Resume();

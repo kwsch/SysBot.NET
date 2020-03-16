@@ -62,7 +62,7 @@ namespace SysBot.Pokemon
         public override void PauseAll()
         {
             if (!Hub.Config.SkipConsoleBotCreation)
-                base.ResumeAll();
+                base.PauseAll();
         }
 
         public override void ResumeAll()
