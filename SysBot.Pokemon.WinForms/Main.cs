@@ -141,11 +141,14 @@ namespace SysBot.Pokemon.WinForms
         {
             var env = RunningEnvironment;
             if (!env.IsRunning && (ModifierKeys & Keys.Alt) == 0)
+            {
+                WinFormsUtil.Alert("Nothing is currently running.");
                 return;
+            }
 
             var cmd = BotControlCommand.Stop;
 
-            if (ModifierKeys == Keys.Control || ModifierKeys == Keys.Shift) // either, because remembering which can be hard
+            if ((ModifierKeys & Keys.Control) != 0 || (ModifierKeys & Keys.Shift) != 0) // either, because remembering which can be hard
             {
                 if (env.IsRunning)
                 {
