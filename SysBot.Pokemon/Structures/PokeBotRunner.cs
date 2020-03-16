@@ -39,13 +39,16 @@ namespace SysBot.Pokemon
                 base.StartAll();
         }
 
-        public void InitializeStart()
+        public override void InitializeStart()
         {
             Hub.Counts.LoadCountsFromConfig(); // if user modified them prior to start
             if (RunOnce)
                 return;
+
             AddIntegrations();
             AddTradeBotMonitors();
+
+            base.InitializeStart();
         }
 
         public override void StopAll()

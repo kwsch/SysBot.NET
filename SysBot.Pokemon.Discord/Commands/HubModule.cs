@@ -80,39 +80,8 @@ namespace SysBot.Pokemon.Discord
             var bots = hub.Bots.ToArray();
             if (bots.Length == 0)
                 return "No bots configured.";
-            var summaries = bots.Select(z => $"- {z.Connection.IP} | {z.Connection.Name} - {z.Config.CurrentRoutineType} ~ {z.LastTime:hh:mm:ss}");
+            var summaries = bots.Select(z => $"- {z.Connection.Name} - {z.Config.CurrentRoutineType}");
             return Environment.NewLine + string.Join(Environment.NewLine, summaries);
-        }
-
-        [Command("startBot")]
-        [Summary("Starts a bot by IP address.")]
-        [RequireSudo]
-        public async Task StartBotAsync(string ip)
-        {
-            var bot = SysCordInstance.Runner.GetBot(ip);
-            if (bot == null)
-            {
-                await ReplyAsync($"No bot has that IP address ({ip}).").ConfigureAwait(false);
-                return;
-            }
-
-            bot.Start();
-            await ReplyAsync($"The bot at {ip} has been commanded to start.").ConfigureAwait(false);
-        }
-
-        [Command("stopBot")]
-        [Summary("Stops a bot by IP address.")]
-        public async Task StopBotAsync(string ip)
-        {
-            var bot = SysCordInstance.Runner.GetBot(ip);
-            if (bot == null)
-            {
-                await ReplyAsync($"No bot has that IP address ({ip}).").ConfigureAwait(false);
-                return;
-            }
-
-            bot.Stop();
-            await ReplyAsync($"The bot at {ip} has been commanded to start.").ConfigureAwait(false);
         }
     }
 }

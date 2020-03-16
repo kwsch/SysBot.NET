@@ -18,7 +18,7 @@ namespace SysBot.Pokemon.Discord
         public static SysCord Self;
         public static DiscordManager Manager;
         public static DiscordSettings Settings => Self.Hub.Config.Discord;
-        public static BotRunner<PokeBotConfig> Runner { get; set; }
+        public static BotRunner<PokeBotConfig> Runner;
 #pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
     }
 

@@ -29,11 +29,15 @@ namespace SysBot.Base
             return Bots.Remove(match);
         }
 
+        public virtual void InitializeStart()
+        {
+            RunOnce = true;
+        }
+
         public virtual void StartAll()
         {
             foreach (var b in Bots)
                 b.Start();
-            RunOnce = true;
         }
 
         public virtual void StopAll()

@@ -43,12 +43,7 @@ namespace SysBot.Pokemon
 
         private void AddDiscordBot(string apiToken)
         {
-            if (SysCordInstance.Self != null)
-            {
-                SysCordInstance.Self.Hub = Hub;
-                SysCordInstance.Runner = this;
-                return;
-            }
+            SysCordInstance.Runner = this;
             var bot = new SysCord(Hub);
             Task.Run(() => bot.MainAsync(apiToken, CancellationToken.None));
         }
