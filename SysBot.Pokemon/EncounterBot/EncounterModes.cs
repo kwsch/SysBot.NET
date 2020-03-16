@@ -13,11 +13,6 @@
         HorizontalLine,
 
         /// <summary>
-        /// Bot will move in a circular path to encounter Pokémon
-        /// </summary>
-        //Circle, // unused right now
-
-        /// <summary>
         /// Bot will soft reset Eternatus
         /// </summary>
         Eternatus,
@@ -26,5 +21,10 @@
         /// Bot will soft reset the Legendary Dogs
         /// </summary>
         LegendaryDogs, // to be implemented
+
+        /// <summary>
+        /// Bot will move in a circular path to encounter Pokémon
+        /// </summary>
+        Circle, // unused right now
     }
 }
