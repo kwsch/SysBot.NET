@@ -30,7 +30,7 @@ namespace SysBot.Pokemon
             /* Populate DesiredIVs array.  Bot matches 0 and 31 IVs.
              * Any other nonzero IV is treated as a minimum accepted value.
              * If they put "x", this is a wild card so we can leave -1. */
-            string[] splitIVs = encounter.DesiredIVs.Split('/');
+            string[] splitIVs = encounter.DesiredIVs.Split(new [] {'/'}, StringSplitOptions.RemoveEmptyEntries);
 
             // Only accept up to 6 values in case people can't count.
             for (int i = 0; i < 6 && i < splitIVs.Length; i++)
