@@ -31,7 +31,7 @@ namespace SysBot.Pokemon
             CompletedEggs = Config.CompletedEggs;
             CompletedFossils = Config.CompletedFossils;
             CompletedEncounters = Config.CompletedEncounters;
-            CompletedEncounters = Config.CompletedLegends;
+            CompletedLegends = Config.CompletedLegends;
             CompletedSeedChecks = Config.CompletedSeedChecks;
             CompletedSurprise = Config.CompletedSurprise;
             CompletedDistribution = Config.CompletedDistribution;
@@ -128,7 +128,7 @@ namespace SysBot.Pokemon
             if (CompletedEncounters != 0)
                 yield return $"Wild Encounters: {CompletedEncounters}";
             if (CompletedLegends != 0)
-                yield return $"Legendary Encounters: {CompletedEncounters}";
+                yield return $"Legendary Encounters: {CompletedLegends}";
         }
     }
 }
