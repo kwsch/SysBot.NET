@@ -132,7 +132,9 @@ namespace SysBot.Pokemon.WinForms
         private void SendAll(BotControlCommand cmd)
         {
             foreach (var c in FLP_Bots.Controls.OfType<BotController>())
-                c.SendCommand(cmd);
+                c.SendCommand(cmd, false);
+
+            EchoUtil.Echo($"All bots have been issued a command to {cmd}.");
         }
 
         private void B_Stop_Click(object sender, EventArgs e)

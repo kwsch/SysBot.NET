@@ -138,21 +138,23 @@ namespace SysBot.Pokemon.WinForms
             Remove?.Invoke(this, EventArgs.Empty);
         }
 
-        public void SendCommand(BotControlCommand index)
+        public void SendCommand(BotControlCommand cmd, bool echo = true)
         {
             if (Runner?.Hub.Config.SkipConsoleBotCreation != false)
                 return;
             var bot = GetBot();
-            switch (index)
+            switch (cmd)
             {
                 case BotControlCommand.Idle: bot.Pause(); break;
                 case BotControlCommand.Start: bot.Start(); break;
                 case BotControlCommand.Stop: bot.Stop(); break;
                 case BotControlCommand.Resume: bot.Resume(); break;
                 default:
-                    WinFormsUtil.Alert($"{index} is not a command that can be sent to the Bot.");
-                    break;
+                    WinFormsUtil.Alert($"{cmd} is not a command that can be sent to the Bot.");
+                    return;
             }
+            if (echo)
+                EchoUtil.Echo($"{bot.Bot.Connection.Name} has been issued a command to {cmd}.");
         }
 
         private BotSource<PokeBotConfig> GetBot()
