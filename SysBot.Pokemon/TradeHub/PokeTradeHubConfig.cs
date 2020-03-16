@@ -78,11 +78,7 @@ namespace SysBot.Pokemon
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public StreamSettings Stream { get; set; } = new StreamSettings();
 
-#if DEBUG
-        // Debug
-
         [Category(Debug), Description("Skips creating bots when the program is started; helpful for testing integrations.")]
         public bool SkipConsoleBotCreation { get; set; }
-#endif
     }
 }

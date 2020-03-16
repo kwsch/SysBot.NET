@@ -76,6 +76,7 @@ namespace SysBot.Tests
         {
             public MockExecutor(PokeBotConfig cfg) : base(cfg) { }
             protected override Task MainLoop(CancellationToken token) => Task.CompletedTask;
+            public override void SoftStop() { }
         }
 
         private static TradeEntry<PK8> GetTestTrade(TradeQueueInfo<PK8> info, int tag)

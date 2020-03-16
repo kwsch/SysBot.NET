@@ -18,6 +18,8 @@ namespace SysBot.Pokemon
         public LanguageID GameLang;
         public string InGameName = "SysBot.NET";
 
+        public override void SoftStop() => Config.Pause();
+
         public async Task Click(SwitchButton b, int delayMin, int delayMax, CancellationToken token) =>
             await Click(b, Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
 

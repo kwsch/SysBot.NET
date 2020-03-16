@@ -9,10 +9,10 @@ namespace SysBot.Pokemon
     /// <summary>
     /// Bot Environment implementation with Integrations added.
     /// </summary>
-    public class BotEnvironmentImpl : BotEnvironment
+    public class PokeBotRunnerImpl : PokeBotRunner
     {
-        public BotEnvironmentImpl(PokeTradeHub<PK8> hub) : base(hub) { }
-        public BotEnvironmentImpl(PokeTradeHubConfig config) : base(config) { }
+        public PokeBotRunnerImpl(PokeTradeHub<PK8> hub) : base(hub) { }
+        public PokeBotRunnerImpl(PokeTradeHubConfig config) : base(config) { }
 
         private static TwitchBot? Twitch;
 

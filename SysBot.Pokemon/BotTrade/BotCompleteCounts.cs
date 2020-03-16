@@ -21,10 +21,10 @@ namespace SysBot.Pokemon
         public BotCompleteCounts(CountSettings config)
         {
             Config = config;
-            ReloadCounts();
+            LoadCountsFromConfig();
         }
 
-        public void ReloadCounts()
+        public void LoadCountsFromConfig()
         {
             CompletedTrades = Config.CompletedTrades;
             CompletedEggs = Config.CompletedEggs;

@@ -32,6 +32,7 @@ namespace SysBot.Base
         }
 
         protected abstract Task MainLoop(CancellationToken token);
+        public abstract void SoftStop();
 
         public async Task Click(SwitchButton b, int delay, CancellationToken token)
         {

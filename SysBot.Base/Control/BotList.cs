@@ -1,11 +1,12 @@
 ﻿using System;
 
-namespace SysBot.Pokemon
+namespace SysBot.Base
 {
-    public class BotList
+    public class BotList<T> where T : SwitchBotConfig
     {
+
 #pragma warning disable CA1819 // Properties should not return arrays
-        public PokeBotConfig[] Bots { get; set; } = Array.Empty<PokeBotConfig>();
+        public T[] Bots { get; set; } = Array.Empty<T>();
 #pragma warning restore CA1819 // Properties should not return arrays
     }
 }

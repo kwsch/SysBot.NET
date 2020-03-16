@@ -1,6 +1,8 @@
-﻿namespace SysBot.Pokemon
+﻿using SysBot.Base;
+
+namespace SysBot.Pokemon
 {
-    public class ProgramConfig : BotList
+    public class ProgramConfig : BotList<PokeBotConfig>
     {
         public PokeTradeHubConfig Hub { get; set; } = new PokeTradeHubConfig();
     }
