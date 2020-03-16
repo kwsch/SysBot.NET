@@ -65,6 +65,13 @@ namespace SysBot.Pokemon.WinForms
             L_Left.Text = $"{Config.IP}{Environment.NewLine}{Config.InitialRoutine}";
         }
 
+        public void ReloadStatus(SwitchRoutineExecutor<PokeBotConfig> bot)
+        {
+            ReloadStatus();
+            L_Description.Text = $"[{bot.LastTime:hh:mm:ss}] {bot.Connection.Name}: {bot.LastLogged}";
+            L_Left.Text = $"{Config.IP}{Environment.NewLine}{Config.InitialRoutine}";
+        }
+
         public void TryRemove()
         {
             var bot = GetBot();
@@ -103,6 +110,20 @@ namespace SysBot.Pokemon.WinForms
 
         private void BotController_MouseEnter(object sender, EventArgs e) => BackColor = Color.LightSkyBlue;
         private void BotController_MouseLeave(object sender, EventArgs e) => BackColor = Color.Transparent;
+
+        public void ReadState()
+        {
+            var bot = GetBot();
+
+            if (InvokeRequired)
+            {
+                Invoke((MethodInvoker)(() => ReloadStatus(bot.Bot)));
+            }
+            else
+            {
+                ReloadStatus(bot.Bot);
+            }
+        }
     }
 
     public enum BotControlCommand

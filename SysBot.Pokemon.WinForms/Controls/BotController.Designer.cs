@@ -68,7 +68,7 @@
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.ShowImageMargin = false;
             this.contextMenuStrip1.ShowItemToolTips = false;
-            this.contextMenuStrip1.Size = new System.Drawing.Size(156, 26);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(36, 4);
             // 
             // BotController
             // 
@@ -78,6 +78,7 @@
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.L_Left);
             this.Controls.Add(this.L_Description);
+            this.Margin = new System.Windows.Forms.Padding(0);
             this.Name = "BotController";
             this.Size = new System.Drawing.Size(410, 32);
             this.MouseEnter += new System.EventHandler(this.BotController_MouseEnter);

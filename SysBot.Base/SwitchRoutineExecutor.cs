@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,6 +17,16 @@ namespace SysBot.Base
         {
             Config = cfg;
             Connection = new SwitchConnectionAsync(cfg.IP, cfg.Port);
+        }
+
+        public string LastLogged { get; private set; } = "Not Started";
+        public DateTime LastTime { get; private set; } = DateTime.Now;
+
+        public void Log(string message)
+        {
+            Connection.Log(message);
+            LastLogged = message;
+            LastTime = DateTime.Now;
         }
 
         /// <summary>

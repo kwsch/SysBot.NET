@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 using PKHeX.Core;
@@ -40,6 +41,17 @@ namespace SysBot.Pokemon.WinForms
             }
 
             LoadControls();
+            Task.Run(BotMonitor);
+        }
+
+        private async Task BotMonitor()
+        {
+            while (!Disposing)
+            {
+                foreach (var c in FLP_Bots.Controls.OfType<BotController>())
+                    c.ReadState();
+                await Task.Delay(2_000).ConfigureAwait(false);
+            }
         }
 
         private void LoadControls()
@@ -203,6 +215,12 @@ namespace SysBot.Pokemon.WinForms
             var cfg = SwitchBotConfig.GetConfig<PokeBotConfig>(ip, port);
             cfg.Initialize(type);
             return cfg;
+        }
+
+        private void FLP_Bots_Resize(object sender, EventArgs e)
+        {
+            foreach (var c in FLP_Bots.Controls.OfType<BotController>())
+                c.Width = FLP_Bots.Width;
         }
     }
 }
