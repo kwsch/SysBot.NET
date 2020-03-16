@@ -42,7 +42,6 @@ namespace SysBot.Pokemon
         {
             Log("Identifying trainer data of the host console.");
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
-            Hub.Bots.Add(this);
             Log("Starting main TradeBot loop.");
             while (!token.IsCancellationRequested)
             {
