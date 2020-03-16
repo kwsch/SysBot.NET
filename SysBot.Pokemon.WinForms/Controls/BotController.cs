@@ -77,6 +77,25 @@ namespace SysBot.Pokemon.WinForms
             ReloadStatus();
             L_Description.Text = $"[{bot.LastTime:hh:mm:ss}] {bot.Connection.Name}: {bot.LastLogged}";
             L_Left.Text = $"{Config.IP}{Environment.NewLine}{Config.InitialRoutine}";
+
+            if (bot.Config.CurrentRoutineType == PokeRoutineType.Idle)
+            {
+                pictureBox1.BackColor = Color.Yellow;
+            }
+            else
+            {
+                var delta = DateTime.Now - bot.LastTime;
+                if (delta.Seconds > 100)
+                {
+                    if (pictureBox1.BackColor == Color.Red)
+                        return; // should we notify on change instead?
+                    pictureBox1.BackColor = Color.Red;
+                }
+                else
+                {
+                    pictureBox1.BackColor = Color.Green;
+                }
+            }
         }
 
         public void TryRemove()
