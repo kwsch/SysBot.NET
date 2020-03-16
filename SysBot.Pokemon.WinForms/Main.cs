@@ -199,6 +199,12 @@ namespace SysBot.Pokemon.WinForms
             row.Initialize(RunningEnvironment, cfg);
             FLP_Bots.Controls.Add(row);
             FLP_Bots.SetFlowBreak(row, true);
+            row.Click += (s, e) =>
+            {
+                TB_IP.Text = cfg.IP;
+                NUD_Port.Value = cfg.Port;
+                CB_Routine.SelectedValue = (int)cfg.InitialRoutine;
+            };
 
             row.Remove += (s, e) =>
             {
