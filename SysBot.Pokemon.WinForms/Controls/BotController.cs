@@ -85,7 +85,9 @@ namespace SysBot.Pokemon.WinForms
             else
             {
                 var delta = DateTime.Now - bot.LastTime;
-                if (delta.Seconds > 100)
+                var seconds = delta.Seconds;
+                const int threshold = 100;
+                if (seconds > threshold)
                 {
                     if (pictureBox1.BackColor == Color.Red)
                         return; // should we notify on change instead?
@@ -93,9 +95,20 @@ namespace SysBot.Pokemon.WinForms
                 }
                 else
                 {
-                    pictureBox1.BackColor = Color.Green;
+                    // blend from green->red, favoring green until near saturation
+                    var factor = seconds / (double) threshold;
+                    var blend = Blend(Color.Green, Color.Red, factor * factor);
+                    pictureBox1.BackColor = blend;
                 }
             }
+        }
+
+        private static Color Blend(Color color, Color backColor, double amount)
+        {
+            byte r = (byte)((color.R * amount) + (backColor.R * (1 - amount)));
+            byte g = (byte)((color.G * amount) + (backColor.G * (1 - amount)));
+            byte b = (byte)((color.B * amount) + (backColor.B * (1 - amount)));
+            return Color.FromArgb(r, g, b);
         }
 
         public void TryRemove()
