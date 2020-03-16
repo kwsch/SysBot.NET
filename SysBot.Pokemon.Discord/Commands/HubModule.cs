@@ -80,7 +80,7 @@ namespace SysBot.Pokemon.Discord
             var bots = hub.Bots.ToArray();
             if (bots.Length == 0)
                 return "No bots configured.";
-            var summaries = bots.Select(z => $"- {z.Connection.IP} | {z.Connection.Name} - {z.Config.CurrentRoutineType}");
+            var summaries = bots.Select(z => $"- {z.Connection.IP} | {z.Connection.Name} - {z.Config.CurrentRoutineType} ~ {z.LastTime:hh:mm:ss}");
             return Environment.NewLine + string.Join(Environment.NewLine, summaries);
         }
 
