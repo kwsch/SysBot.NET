@@ -190,20 +190,19 @@ namespace SysBot.Pokemon
                 await Click(A, 1_000, token).ConfigureAwait(false);
             Hub.Config.Stream.EndEnterCode(this);
 
+            // Clear the shown data offset right as we start waiting on overworld.
+            await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
+
             poke.TradeSearching(this);
-            await Task.Delay(Util.Rand.Next(0_350, 0_750), token).ConfigureAwait(false);
+            await Task.Delay(0_500, token).ConfigureAwait(false);
 
-            for (int i = 0; i < 5; i++)
-                await Click(A, 0_500, token).ConfigureAwait(false);
-
-            if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            // We're fine as long as we made it into the box or overworld.
+            var screenPostLinkCode = await GetCurrentScreen(token).ConfigureAwait(false);
+            if (screenPostLinkCode != CurrentScreen_Overworld && screenPostLinkCode != CurrentScreen_Box)
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.RecoverPostLinkCode;
             }
-
-            // Clear the shown data offset.
-            await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
 
             // Wait until search finishes
             // Wait 30 Seconds for Trainer...
