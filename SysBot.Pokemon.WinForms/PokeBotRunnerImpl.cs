@@ -46,6 +46,7 @@ namespace SysBot.Pokemon
             if (SysCordInstance.Self != null)
             {
                 SysCordInstance.Self.Hub = Hub;
+                SysCordInstance.Runner = this;
                 return;
             }
             var bot = new SysCord(Hub);
