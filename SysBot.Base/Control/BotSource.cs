@@ -29,7 +29,8 @@ namespace SysBot.Base
 
         public void Start()
         {
-            Stop();
+            if (IsRunning)
+                Stop();
             Task.Run(() => Bot.RunAsync(Source.Token), Source.Token);
             IsRunning = true;
         }
