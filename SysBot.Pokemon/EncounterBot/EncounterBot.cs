@@ -313,8 +313,7 @@ namespace SysBot.Pokemon
                         await FleeToOverworld(token).ConfigureAwait(false);
                 }
 
-                var data = await Connection.ReadBytesAsync(0x8D45C648, 0x158, token).ConfigureAwait(false);
-                var pk = new PK8(data);
+                var pk = await ReadPokemon(WildPokemonOffset, token).ConfigureAwait(false);
                 if (pk.Species == 0)
                     continue;
                 if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
