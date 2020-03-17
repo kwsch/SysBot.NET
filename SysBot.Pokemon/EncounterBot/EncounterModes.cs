@@ -20,7 +20,7 @@
         /// <summary>
         /// Bot will soft reset the Legendary Dogs
         /// </summary>
-        LegendaryDogs, // to be implemented
+        LegendaryDogs,
 
         /// <summary>
         /// Bot will move in a circular path to encounter Pokémon

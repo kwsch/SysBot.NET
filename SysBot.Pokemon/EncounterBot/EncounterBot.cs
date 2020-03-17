@@ -113,6 +113,10 @@ namespace SysBot.Pokemon
                 encounterCount++;
                 Log($"Encounter: {encounterCount}{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}");
                 Counts.AddCompletedEncounters();
+
+                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                    DumpPokemon(DumpSetting.DumpFolder, "encounters", pk);
+
                 if (StopCondition(pk))
                 {
                     Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
@@ -122,9 +126,6 @@ namespace SysBot.Pokemon
                 {
                     await Task.Delay(2700, token).ConfigureAwait(false);
                 }
-
-                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                    DumpPokemon(DumpSetting.DumpFolder, "encounters", pk);
 
                 await Task.Delay(4600, token).ConfigureAwait(false);
                 while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
@@ -144,7 +145,7 @@ namespace SysBot.Pokemon
                 await SetStick(LEFT, 0, 20000, 500, token).ConfigureAwait(false);
                 await SetStick(LEFT, 0, 0, 1000, token).ConfigureAwait(false);
 
-                var pk = new PK8(await Connection.ReadBytesAsync(RaidPokemonOffset, 0x158, token).ConfigureAwait(false));
+                var pk = await ReadPokemon(RaidPokemonOffset, token).ConfigureAwait(false);
                 if (pk.Species == 0)
                 {
                     Connection.Log("Invalid data detected. Restarting loop.");
@@ -155,14 +156,15 @@ namespace SysBot.Pokemon
                 encounterCount++;
                 Connection.Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
                 Counts.AddCompletedLegends();
-                if (StopCondition(pk))
-                {
-                    Connection.Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
-                    return;
-                }
 
                 if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
                     DumpPokemon(DumpSetting.DumpFolder, "legends", pk);
+
+                if (StopCondition(pk))
+                {
+                    Connection.Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
+                    return;
+                }
 
                 Connection.Log("Resetting raid by restarting the game");
                 // Close out of the game
@@ -227,6 +229,10 @@ namespace SysBot.Pokemon
                 encounterCount++;
                 Log($"Encounter: {encounterCount}{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}");
                 Counts.AddCompletedLegends();
+
+                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                    DumpPokemon(DumpSetting.DumpFolder, "legends", pk);
+
                 if (StopCondition(pk))
                 {
                     Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
@@ -235,9 +241,6 @@ namespace SysBot.Pokemon
 
                 // Wait for the entire cutscene until we can flee.
                 await Task.Delay(21_000, token).ConfigureAwait(false);
-
-                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                    DumpPokemon(DumpSetting.DumpFolder, "legends", pk);
 
                 // Get rid of any stick stuff left over so we can flee properly.
                 await ResetStick(token).ConfigureAwait(false);
