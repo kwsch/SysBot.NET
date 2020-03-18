@@ -1,6 +1,7 @@
 ﻿using PKHeX.Core;
 using System.Threading;
 using System.Threading.Tasks;
+using SysBot.Base;
 using static SysBot.Base.SwitchButton;
 
 namespace SysBot.Pokemon
@@ -11,7 +12,7 @@ namespace SysBot.Pokemon
         private readonly RaidSettings Settings;
         public readonly IDumper Dump;
         private readonly bool ldn;
-
+        
         public RaidBot(PokeBotConfig cfg, RaidSettings raid, IDumper folder, BotCompleteCounts counts) : base(cfg)
         {
             Settings = raid;
@@ -30,7 +31,7 @@ namespace SysBot.Pokemon
             Log("Starting main RaidBot loop.");
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.RaidBot)
             {
-                int code = Settings.RaidCode;
+                int code = Settings.GetRandomRaidCode();
                 bool airplane = await HostRaidAsync(sav, code, token).ConfigureAwait(false);
                 await ResetGameAsync(airplane, token).ConfigureAwait(false);
 
@@ -53,6 +54,7 @@ namespace SysBot.Pokemon
                 // Set Link code
                 await Click(PLUS, 1000, token).ConfigureAwait(false);
                 await EnterTradeCode(code, token).ConfigureAwait(false);
+                EchoUtil.Echo($"Raid code is {code}.");
 
                 // Raid barrier here maybe?
                 await Click(PLUS, 2_000, token).ConfigureAwait(false);
