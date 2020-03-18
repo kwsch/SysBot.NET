@@ -128,7 +128,7 @@ namespace SysBot.Pokemon
                 }
 
                 await Task.Delay(4600, token).ConfigureAwait(false);
-                while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false) || !await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
+                while (!await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
                     await FleeToOverworld(token).ConfigureAwait(false);
 
                 if (Mode == EncounterMode.VerticalLine) await SetStick(LEFT, 0, -30000, 2500, token).ConfigureAwait(false);
@@ -287,7 +287,7 @@ namespace SysBot.Pokemon
             int attempts = 0;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EncounterBot)
             {
-                if (await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false) || await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
+                if (await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
                 {
                     switch (Mode)
                     {
@@ -309,14 +309,14 @@ namespace SysBot.Pokemon
                 }
                 else
                 {
-                    while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false) || !await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
+                    while (!await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
                         await FleeToOverworld(token).ConfigureAwait(false);
                 }
 
                 var pk = await ReadPokemon(WildPokemonOffset, token).ConfigureAwait(false);
                 if (pk.Species == 0)
                     continue;
-                if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false) || !await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
+                if (!await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
                     return attempts;
 
                 attempts++;
