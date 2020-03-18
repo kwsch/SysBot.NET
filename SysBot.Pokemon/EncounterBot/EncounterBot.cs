@@ -207,15 +207,7 @@ namespace SysBot.Pokemon
                 for (int i = 0; i < 4; i++)
                     await Click(A, 1_000, token).ConfigureAwait(false);
 
-                if (await IsCorrectDogScreen(false, token).ConfigureAwait(false))
-                {
-                    Log("Encounter started! Checking details.");
-                }
-                else
-                {
-                    Log("Something went wrong. Reposition and restart the bot.");
-                    return;
-                }
+                Log("Encounter started! Checking details.");
 
                 await Task.Delay(4_000, token).ConfigureAwait(false);
 
@@ -245,40 +237,20 @@ namespace SysBot.Pokemon
                 // Get rid of any stick stuff left over so we can flee properly.
                 await ResetStick(token).ConfigureAwait(false);
 
-                while (!await IsCorrectDogScreen(true, token).ConfigureAwait(false))
+                while (!await IsCorrectDogScreen(token).ConfigureAwait(false))
                     await FleeToOverworld(token).ConfigureAwait(false);
             }
         }
 
-        private async Task<bool> IsCorrectDogScreen(bool flee, CancellationToken token)
+        private async Task<bool> IsCorrectDogScreen(CancellationToken token)
         {
             var screen = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
             uint currentscreen = BitConverter.ToUInt32(screen, 0);
-            if (!flee && ScreenIsStart(currentscreen))
-                return true;
-            if (flee && ScreenIsFlee(currentscreen))
-                return true;
-            return false;
-        }
-
-        private static bool ScreenIsStart(uint currentscreen)
-        {
-            return    currentscreen == CurrentScreen_Dog_Daytime_StartBattle
-                   || currentscreen == CurrentScreen_Dog_Sunset_StartBattle
-                   || currentscreen == CurrentScreen_Dog_Night_StartBattle
-                   || currentscreen == CurrentScreen_Dog_Dawn_StartBattle;
-        }
-
-        private static bool ScreenIsFlee(uint currentscreen)
-        {
-            return    currentscreen == CurrentScreen_Dog_Daytime_FleeBattle_1
-                   || currentscreen == CurrentScreen_Dog_Daytime_FleeBattle_2
-                   || currentscreen == CurrentScreen_Dog_Sunset_FleeBattle_1
-                   || currentscreen == CurrentScreen_Dog_Sunset_FleeBattle_2
-                   || currentscreen == CurrentScreen_Dog_Dawn_FleeBattle_1
-                   || currentscreen == CurrentScreen_Dog_Dawn_FleeBattle_2
-                   || currentscreen == CurrentScreen_Dog_Night_FleeBattle_1
-                   || currentscreen == CurrentScreen_Dog_Night_FleeBattle_2;
+            return currentscreen == CurrentScreen_Dog_0_3_FleeBattle
+                || currentscreen == CurrentScreen_Dog_4_5_20_23_FleeBattle
+                || currentscreen == CurrentScreen_Dog_6_8_FleeBattle
+                || currentscreen == CurrentScreen_Dog_9_18_FleeBattle
+                || currentscreen == CurrentScreen_Dog_19_FleeBattle;
         }
 
         private async Task<int> StepUntilEncounter(CancellationToken token)

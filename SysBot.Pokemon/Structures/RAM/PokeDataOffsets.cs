@@ -89,22 +89,12 @@ namespace SysBot.Pokemon
         public const uint CurrentScreen_RaidParty = 0xFF1461DB;
 
         /* Offset values for getting into a battle with Zacian/Zamazenta and fleeing to Tower.
-         * After fleeing the battle, the current screen offset flickers between 2 values. */
-        public const uint CurrentScreen_Dog_Daytime_StartBattle = 0xFFC97AF8;
-        public const uint CurrentScreen_Dog_Daytime_FleeBattle_1 = 0xFF642E32;
-        public const uint CurrentScreen_Dog_Daytime_FleeBattle_2 = 0xFF652E32;
-
-        public const uint CurrentScreen_Dog_Sunset_StartBattle = 0xFF813FDC;
-        public const uint CurrentScreen_Dog_Sunset_FleeBattle_1 = 0xFF3B002D;
-        public const uint CurrentScreen_Dog_Sunset_FleeBattle_2 = 0xFF3B002E;
-
-        public const uint CurrentScreen_Dog_Night_StartBattle = 0xFF925EDB;
-        public const uint CurrentScreen_Dog_Night_FleeBattle_1 = 0xFF431424;
-        public const uint CurrentScreen_Dog_Night_FleeBattle_2 = 0xFF431525;
-
-        public const uint CurrentScreen_Dog_Dawn_StartBattle = 0xFF6D3AC4;
-        public const uint CurrentScreen_Dog_Dawn_FleeBattle_1 = 0xFF20001C;
-        public const uint CurrentScreen_Dog_Dawn_FleeBattle_2 = 0xFF22001E;
+         * There are 5 different colors of the sky, and we use the most common post-flee value. */
+        public const uint CurrentScreen_Dog_0_3_FleeBattle = 0xFF390023;
+        public const uint CurrentScreen_Dog_4_5_20_23_FleeBattle = 0xFF431424;
+        public const uint CurrentScreen_Dog_6_8_FleeBattle = 0xFF20001C;
+        public const uint CurrentScreen_Dog_9_18_FleeBattle = 0xFF642E32;
+        public const uint CurrentScreen_Dog_19_FleeBattle = 0xFF3B002E;
         #endregion
 
         public static uint GetTrainerNameOffset(TradeMethod tradeMethod)
