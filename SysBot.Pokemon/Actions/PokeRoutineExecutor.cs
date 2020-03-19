@@ -208,7 +208,7 @@ namespace SysBot.Pokemon
         public async Task<bool> LinkTradePartnerFound(CancellationToken token)
         {
             var result = await Connection.ReadBytesAsync(LinkTradeFoundOffset, 1, token).ConfigureAwait(false);
-            return (result[0] & 0xF) == 8;
+            return (result[0] & 0xF) != 1;
         }
 
         public async Task<SAV8SWSH> IdentifyTrainer(CancellationToken token)
