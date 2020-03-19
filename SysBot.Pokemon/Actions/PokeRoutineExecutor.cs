@@ -398,14 +398,14 @@ namespace SysBot.Pokemon
         public async Task ResetTradePosition(CancellationToken token)
         {
             Log("Resetting bot position.");
-            await Click(Y, 1_250, token).ConfigureAwait(false);
+            await Click(Y, 2_000, token).ConfigureAwait(false);
             for (int i = 0; i < 5; i++)
-                await Click(A, 1_250, token).ConfigureAwait(false);
+                await Click(A, 1_500, token).ConfigureAwait(false);
             // Extra A press for Japanese.
             if (GameLang == LanguageID.Japanese)
-                await Click(A, 1_250, token).ConfigureAwait(false);
-            await Click(B, 1_250, token).ConfigureAwait(false);
-            await Click(B, 1_250, token).ConfigureAwait(false);
+                await Click(A, 1_500, token).ConfigureAwait(false);
+            await Click(B, 1_500, token).ConfigureAwait(false);
+            await Click(B, 1_500, token).ConfigureAwait(false);
         }
 
         public async Task<bool> IsEggReady(SwordShieldDaycare daycare, CancellationToken token)
