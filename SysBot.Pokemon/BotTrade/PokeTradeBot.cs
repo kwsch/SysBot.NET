@@ -212,14 +212,14 @@ namespace SysBot.Pokemon
             if (Hub.Config.Trade.SpinTrade)
                 partnerFound = await SpinUntilChangedLink(30_000, token).ConfigureAwait(false);
             else
-                partnerFound = await ReadUntilChanged(ofs, PokeTradeBotUtil.EMPTY_SLOT, 30_000, 0_200, token).ConfigureAwait(false);
+                partnerFound = await ReadUntilChanged(ofs, PokeTradeBotUtil.EMPTY_EC, 30_000, 0_200, token).ConfigureAwait(false);
 
             // Wait 15 more seconds. First 30 seconds is for spin
             if (!partnerFound)
             {
                 Log("Still no partner found.. waiting 15 more seconds");
                 partnerFound =
-                    await ReadUntilChanged(LinkTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, 15_000, 0_200, token).ConfigureAwait(false);
+                    await ReadUntilChanged(ofs, PokeTradeBotUtil.EMPTY_EC, 15_000, 0_200, token).ConfigureAwait(false);
             }
 
             if (token.IsCancellationRequested)
