@@ -15,6 +15,12 @@ namespace SysBot.Base
 
         public void Connect()
         {
+            if (Connected)
+            {
+                Log("Already connected prior, skipping initial connection.");
+                return;
+            }
+
             Log("Connecting to device...");
             Connection.Connect(IP, Port);
             Connected = true;
