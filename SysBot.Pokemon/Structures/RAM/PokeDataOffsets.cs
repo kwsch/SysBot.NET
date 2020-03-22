@@ -10,6 +10,10 @@ namespace SysBot.Pokemon
         public const uint SoftBanUnixTimespanOffset = 0x4298f9f8;
         public const uint IsConnectedOffset = 0x2f865c78;
 
+        // Vary by game. They are 1 when in a battle or raid, 0 otherwise.
+        public const uint InBattleRaidOffsetSH = 0x3DD26104;
+        public const uint InBattleRaidOffsetSW = 0x3DD26109;
+
         // Pokemon Encounter Offsets
         public const uint WildPokemonOffset = 0x8D45C648;
         public const uint RaidPokemonOffset = 0x85C7AB08;
@@ -87,14 +91,6 @@ namespace SysBot.Pokemon
         //public const uint CurrentScreen_YMenu = 0xFFFF7983;
         public const uint CurrentScreen_WildArea = 0xFFFFFFFF;
         public const uint CurrentScreen_RaidParty = 0xFF1461DB;
-
-        /* Offset values for getting into a battle with Zacian/Zamazenta and fleeing to Tower.
-         * There are 5 different colors of the sky, and we use the most common post-flee value. */
-        public const uint CurrentScreen_Dog_0_3_FleeBattle = 0xFF390023;
-        public const uint CurrentScreen_Dog_4_5_20_23_FleeBattle = 0xFF431424;
-        public const uint CurrentScreen_Dog_6_8_FleeBattle = 0xFF20001C;
-        public const uint CurrentScreen_Dog_9_18_FleeBattle = 0xFF642E32;
-        public const uint CurrentScreen_Dog_19_FleeBattle = 0xFF3B002E;
         #endregion
 
         public static uint GetTrainerNameOffset(TradeMethod tradeMethod)

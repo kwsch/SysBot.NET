@@ -128,7 +128,7 @@ namespace SysBot.Pokemon
                 }
 
                 await Task.Delay(4600, token).ConfigureAwait(false);
-                while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false) || !await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
+                while (await IsInBattle(token).ConfigureAwait(false))
                     await FleeToOverworld(token).ConfigureAwait(false);
 
                 if (Mode == EncounterMode.VerticalLine) await SetStick(LEFT, 0, -30000, 2500, token).ConfigureAwait(false);
@@ -237,20 +237,9 @@ namespace SysBot.Pokemon
                 // Get rid of any stick stuff left over so we can flee properly.
                 await ResetStick(token).ConfigureAwait(false);
 
-                while (!await IsCorrectDogScreen(token).ConfigureAwait(false))
+                while (await IsInBattle(token).ConfigureAwait(false))
                     await FleeToOverworld(token).ConfigureAwait(false);
             }
-        }
-
-        private async Task<bool> IsCorrectDogScreen(CancellationToken token)
-        {
-            var screen = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
-            uint currentscreen = BitConverter.ToUInt32(screen, 0);
-            return currentscreen == CurrentScreen_Dog_0_3_FleeBattle
-                || currentscreen == CurrentScreen_Dog_4_5_20_23_FleeBattle
-                || currentscreen == CurrentScreen_Dog_6_8_FleeBattle
-                || currentscreen == CurrentScreen_Dog_9_18_FleeBattle
-                || currentscreen == CurrentScreen_Dog_19_FleeBattle;
         }
 
         private async Task<int> StepUntilEncounter(CancellationToken token)
@@ -259,7 +248,7 @@ namespace SysBot.Pokemon
             int attempts = 0;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EncounterBot)
             {
-                if (await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false) || await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
+                if (!await IsInBattle(token).ConfigureAwait(false))
                 {
                     switch (Mode)
                     {
@@ -281,14 +270,14 @@ namespace SysBot.Pokemon
                 }
                 else
                 {
-                    while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false) || !await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
+                    while (await IsInBattle(token).ConfigureAwait(false))
                         await FleeToOverworld(token).ConfigureAwait(false);
                 }
 
                 var pk = await ReadPokemon(WildPokemonOffset, token).ConfigureAwait(false);
                 if (pk.Species == 0)
                     continue;
-                if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false) || !await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
+                if (await IsInBattle(token).ConfigureAwait(false))
                     return attempts;
 
                 attempts++;

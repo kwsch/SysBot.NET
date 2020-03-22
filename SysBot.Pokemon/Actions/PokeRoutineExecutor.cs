@@ -16,6 +16,7 @@ namespace SysBot.Pokemon
         protected PokeRoutineExecutor(PokeBotConfig cfg) : base(cfg) { }
 
         public LanguageID GameLang;
+        private GameVersion Version;
         public string InGameName = "SysBot.NET";
 
         public override void SoftStop() => Config.Pause();
@@ -216,6 +217,7 @@ namespace SysBot.Pokemon
             Log("Grabbing trainer data of host console...");
             var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
             GameLang = (LanguageID)sav.Language;
+            Version = sav.Version;
             InGameName = sav.OT;
             Connection.Name = $"{InGameName}-{sav.DisplayTID:000000}";
             Log($"{Connection.IP} identified as {Connection.Name}, using {GameLang}.");
@@ -441,6 +443,12 @@ namespace SysBot.Pokemon
         {
             var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
             return BitConverter.ToUInt32(data, 0);
+        }
+
+        public async Task<bool> IsInBattle(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(Version == GameVersion.SH ? InBattleRaidOffsetSH : InBattleRaidOffsetSW, 1, token).ConfigureAwait(false);
+            return data[0] == 1;
         }
 
         public async Task<SlotQualityCheck> GetBoxSlotQuality(int box, int slot, CancellationToken token)
