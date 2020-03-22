@@ -127,7 +127,7 @@ namespace SysBot.Pokemon
                     await Task.Delay(2700, token).ConfigureAwait(false);
                 }
 
-                await Task.Delay(4600, token).ConfigureAwait(false);
+                await Task.Delay(2600, token).ConfigureAwait(false);
                 while (await IsInBattle(token).ConfigureAwait(false))
                     await FleeToOverworld(token).ConfigureAwait(false);
 
@@ -232,7 +232,7 @@ namespace SysBot.Pokemon
                 }
 
                 // Wait for the entire cutscene until we can flee.
-                await Task.Delay(21_000, token).ConfigureAwait(false);
+                await Task.Delay(18_000, token).ConfigureAwait(false);
 
                 // Get rid of any stick stuff left over so we can flee properly.
                 await ResetStick(token).ConfigureAwait(false);
