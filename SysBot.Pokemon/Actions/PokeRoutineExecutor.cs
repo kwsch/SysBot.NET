@@ -398,6 +398,11 @@ namespace SysBot.Pokemon
         public async Task ResetTradePosition(CancellationToken token)
         {
             Log("Resetting bot position.");
+
+            // Shouldn't ever be used while not on overworld.
+            if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+                await ExitTrade(true, token).ConfigureAwait(false);
+
             await Click(Y, 2_000, token).ConfigureAwait(false);
             for (int i = 0; i < 5; i++)
                 await Click(A, 1_500, token).ConfigureAwait(false);
