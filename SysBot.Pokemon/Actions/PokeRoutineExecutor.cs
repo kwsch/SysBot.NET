@@ -292,7 +292,7 @@ namespace SysBot.Pokemon
             await Click(B, 2000, token).ConfigureAwait(false);
 
             // Return to Overworld
-            if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            if (!await IsOnOverworld(token).ConfigureAwait(false))
             {
                 for (int i = 0; i < 5; i++)
                 {
@@ -341,7 +341,7 @@ namespace SysBot.Pokemon
         {
             // Seed Check Bot doesn't show anything, so it can skip the first B press.
             int attempts = 0;
-            while (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            while (!await IsOnOverworld(token).ConfigureAwait(false))
             {
                 attempts++;
                 if (attempts >= 15)
@@ -394,7 +394,7 @@ namespace SysBot.Pokemon
         public async Task<bool> CheckIfSearchingForSurprisePartner(CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(SurpriseTradeSearchOffset, 8, token).ConfigureAwait(false);
-            return BitConverter.ToUInt32(data,0) == SurpriseTradeSearch_Searching;
+            return BitConverter.ToUInt32(data, 0) == SurpriseTradeSearch_Searching;
         }
 
         public async Task ResetTradePosition(CancellationToken token)
@@ -402,7 +402,7 @@ namespace SysBot.Pokemon
             Log("Resetting bot position.");
 
             // Shouldn't ever be used while not on overworld.
-            if (!await IsCorrectScreen(CurrentScreen_Overworld, token).ConfigureAwait(false))
+            if (!await IsOnOverworld(token).ConfigureAwait(false))
                 await ExitTrade(true, token).ConfigureAwait(false);
 
             await Click(Y, 2_000, token).ConfigureAwait(false);
@@ -448,6 +448,12 @@ namespace SysBot.Pokemon
         public async Task<bool> IsInBattle(CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(Version == GameVersion.SH ? InBattleRaidOffsetSH : InBattleRaidOffsetSW, 1, token).ConfigureAwait(false);
+            return data[0] == 1;
+        }
+
+        public async Task<bool> IsOnOverworld(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(OverworldOffset, 1, token).ConfigureAwait(false);
             return data[0] == 1;
         }
 

@@ -78,6 +78,9 @@ namespace SysBot.Pokemon
         public const uint MenuClosed = 0xBBE00000;
         */
 
+        //CurrentScreenOffset seems unreliable for Overworld; this one is 1 on Overworld and 0 otherwise.
+        public const uint OverworldOffset = 0x2E36E474;
+
         public const uint CurrentScreenOffset = 0x68dcbc90;
 
         public const uint CurrentScreen_Overworld = 0xFFFF5127;
