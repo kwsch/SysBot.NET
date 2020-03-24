@@ -21,10 +21,5 @@
         /// Bot will soft reset the Legendary Dogs
         /// </summary>
         LegendaryDogs,
-
-        /// <summary>
-        /// Bot will move in a circular path to encounter Pokémon
-        /// </summary>
-        Circle, // unused right now
     }
 }

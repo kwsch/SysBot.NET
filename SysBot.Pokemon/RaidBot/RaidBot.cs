@@ -12,7 +12,7 @@ namespace SysBot.Pokemon
         private readonly RaidSettings Settings;
         public readonly IDumper Dump;
         private readonly bool ldn;
-        
+
         public RaidBot(PokeBotConfig cfg, RaidSettings raid, IDumper folder, BotCompleteCounts counts) : base(cfg)
         {
             Settings = raid;
@@ -70,7 +70,7 @@ namespace SysBot.Pokemon
             var timetowait = 3 * 60 * 1000;
             while (timetowait > 0)
             {
-                bool result = await CheckIfQueueFullAsync().ConfigureAwait(false);
+                bool result = await GetIsRaidPartyIsFullAsync().ConfigureAwait(false);
                 if (result)
                     break;
 
@@ -95,8 +95,9 @@ namespace SysBot.Pokemon
             return false;
         }
 
-        // Check if queue is full and set true if it is
-        private async Task<bool> CheckIfQueueFullAsync()
+        // Check if the raid party is full and set true if it is
+        // not implemented
+        private static async Task<bool> GetIsRaidPartyIsFullAsync()
         {
             await Task.Delay(1).ConfigureAwait(false);
             return false;

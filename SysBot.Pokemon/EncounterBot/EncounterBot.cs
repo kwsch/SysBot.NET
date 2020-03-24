@@ -131,10 +131,12 @@ namespace SysBot.Pokemon
                 while (await IsInBattle(token).ConfigureAwait(false))
                     await FleeToOverworld(token).ConfigureAwait(false);
 
-                if (Mode == EncounterMode.VerticalLine) await SetStick(LEFT, 0, -30000, 2500, token).ConfigureAwait(false);
-                else if (Mode == EncounterMode.HorizontalLine) await SetStick(LEFT, -30000, 0, 2500, token).ConfigureAwait(false);
-                await ResetStick(token).ConfigureAwait(false);
+                if (Mode == EncounterMode.VerticalLine)
+                    await SetStick(LEFT, 0, -30000, 2500, token).ConfigureAwait(false);
+                else if (Mode == EncounterMode.HorizontalLine)
+                    await SetStick(LEFT, -30000, 0, 2500, token).ConfigureAwait(false);
 
+                await ResetStick(token).ConfigureAwait(false);
             }
         }
 
