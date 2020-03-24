@@ -21,6 +21,7 @@ namespace SysBot.Pokemon.WinForms
         public Main()
         {
             InitializeComponent();
+            PokeTradeBot.SeedChecker = new Z3SeedSearchHandler<PK8>();
 
             if (File.Exists(ConfigPath))
             {

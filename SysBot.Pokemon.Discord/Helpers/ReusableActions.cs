@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using PKHeX.Core;
-using Image = System.Drawing.Image;
-using ImageFormat = System.Drawing.Imaging.ImageFormat;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -27,13 +25,6 @@ namespace SysBot.Pokemon.Discord
             File.WriteAllBytes(tmp, pkm.DecryptedPartyData);
             await user.SendFileAsync(tmp, msg).ConfigureAwait(false);
             File.Delete(tmp);
-        }
-
-        public static async Task SendImageAsync(this ISocketMessageChannel channel, Image finalQR, string msg = "")
-        {
-            const string fn = "tmp.png";
-            finalQR.Save(fn, ImageFormat.Png);
-            await channel.SendFileAsync(fn, msg).ConfigureAwait(false);
         }
 
         public static async Task RepostPKMAsShowdownAsync(this ISocketMessageChannel channel, IAttachment att)

@@ -4,15 +4,15 @@ using PKHeX.Core;
 
 namespace SysBot.Pokemon
 {
-    public class Z3SeedResult
+    public class SeedSearchResult
     {
-        public static readonly Z3SeedResult None = new Z3SeedResult(Z3SearchResult.SeedNone, default, 0);
+        public static readonly SeedSearchResult None = new SeedSearchResult(Z3SearchResult.SeedNone, default, 0);
 
         public readonly Z3SearchResult Type;
         public readonly ulong Seed;
         public readonly int FlawlessIVCount;
 
-        public Z3SeedResult(Z3SearchResult type, ulong seed, int ivCount)
+        public SeedSearchResult(Z3SearchResult type, ulong seed, int ivCount)
         {
             Type = type;
             Seed = seed;
@@ -35,14 +35,14 @@ namespace SysBot.Pokemon
             if (FlawlessIVCount >= 1)
                 first += $", IVCount: {FlawlessIVCount}";
             yield return first;
-            yield return $"Next Shiny Frame: {Z3Search.GetNextShinyFrame(Seed, out var type)}";
+            yield return $"Next Shiny Frame: {SeedSearchUtil.GetNextShinyFrame(Seed, out var type)}";
             var shinytype = type == 1 ? "Star" : "Square";
             yield return $"Shiny Type: {shinytype}";
         }
 
         public Shiny GetShinyType()
         {
-            Z3Search.GetNextShinyFrame(Seed, out var type);
+            SeedSearchUtil.GetNextShinyFrame(Seed, out var type);
             return type == 1 ? Shiny.AlwaysStar : Shiny.AlwaysSquare;
         }
     }

@@ -1,27 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net47</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>8</LangVersion>
     <Nullable>enable</Nullable>
-    <Platforms>AnyCPU;x64;x86</Platforms>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
-  <!-- this group contains references that are not platform specific -->
   <ItemGroup>
     <PackageReference Include="PKHeX.Core" Version="20.3.14" />
     <ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />
   </ItemGroup>
 
-  <!-- x64 specific references -->
-  <ItemGroup Condition=" '$(Platform)' == 'x64' ">
-    <PackageReference Include="Microsoft.Z3.x64" Version="4.8.7" />
-  </ItemGroup>
-
-  <!-- x86 specific references -->
-  <ItemGroup Condition=" '$(Platform)' == 'x86' ">
-    <PackageReference Include="Microsoft.Z3.x86" Version="4.8.7" />
-  </ItemGroup>
   <ItemGroup>
     <Folder Include="deps\" />
   </ItemGroup>

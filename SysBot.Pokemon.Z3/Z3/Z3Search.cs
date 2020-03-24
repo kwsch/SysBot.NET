@@ -8,7 +8,7 @@ namespace SysBot.Pokemon
 {
     public static class Z3Search
     {
-        public static Z3SeedResult GetFirstSeed(uint ec, uint pid, int[] ivs)
+        public static SeedSearchResult GetFirstSeed(uint ec, uint pid, int[] ivs)
         {
             var seeds = GetSeeds(ec, pid);
             bool hasClosest = false;
@@ -19,20 +19,20 @@ namespace SysBot.Pokemon
                 for (int i = 1; i <= 5; i++) // fixed IV count
                 {
                     if (IsMatch(seed, ivs, i))
-                        return new Z3SeedResult(Z3SearchResult.Success, seed, i);
+                        return new SeedSearchResult(Z3SearchResult.Success, seed, i);
                 }
                 hasClosest = true;
                 closest = seed;
             }
 
             if (hasClosest)
-                return new Z3SeedResult(Z3SearchResult.SeedMismatch, closest, 0);
-            return Z3SeedResult.None;
+                return new SeedSearchResult(Z3SearchResult.SeedMismatch, closest, 0);
+            return SeedSearchResult.None;
         }
 
-        public static IList<Z3SeedResult> GetAllSeeds(uint ec, uint pid, int[] ivs)
+        public static IList<SeedSearchResult> GetAllSeeds(uint ec, uint pid, int[] ivs)
         {
-            var result = new List<Z3SeedResult>();
+            var result = new List<SeedSearchResult>();
             var seeds = GetSeeds(ec, pid);
             foreach (var seed in seeds)
             {
@@ -42,16 +42,16 @@ namespace SysBot.Pokemon
                 {
                     if (IsMatch(seed, ivs, i))
                     {
-                        result.Add(new Z3SeedResult(Z3SearchResult.Success, seed, i));
+                        result.Add(new SeedSearchResult(Z3SearchResult.Success, seed, i));
                         added = true;
                     }
                 }
                 if (!added)
-                    result.Add(new Z3SeedResult(Z3SearchResult.SeedMismatch, seed, 0));
+                    result.Add(new SeedSearchResult(Z3SearchResult.SeedMismatch, seed, 0));
             }
 
             if (result.Count == 0)
-                result.Add(Z3SeedResult.None);
+                result.Add(SeedSearchResult.None);
             else if (result.Any(z => z.Type == Z3SearchResult.Success))
                 result.RemoveAll(z => z.Type != Z3SearchResult.Success);
             return result;
@@ -76,7 +76,7 @@ namespace SysBot.Pokemon
                 foreach (var kvp in m.Consts)
                 {
                     var tmp = (BitVecNum)kvp.Value;
-                    yield return tmp.UInt64; // TODO: Something nicer
+                    yield return tmp.UInt64;
                     exp = ctx.MkAnd(exp, ctx.MkNot(ctx.MkEq(s0, m.Evaluate(s0))));
                 }
             }
@@ -136,38 +136,6 @@ namespace SysBot.Pokemon
             if (q != Status.SATISFIABLE)
                 return null;
             return solver.Model;
-        }
-
-        public static uint GetShinyXor(uint val) => (val >> 16) ^ (val & 0xFFFF);
-
-        public static uint GetShinyType(uint pid, uint tidsid)
-        {
-            var p = GetShinyXor(pid);
-            var t = GetShinyXor(tidsid);
-            if (p == t)
-                return 2; // square;
-            if ((p ^ t) < 0x10)
-                return 1; // star
-            return 0;
-        }
-
-        public static int GetNextShinyFrame(ulong seed, out uint type)
-        {
-            var rng = new Xoroshiro128Plus(seed);
-            for (int i = 0; ; i++)
-            {
-                uint _ = (uint)rng.NextInt(0xFFFFFFFF); // EC
-                uint SIDTID = (uint)rng.NextInt(0xFFFFFFFF);
-                uint PID = (uint)rng.NextInt(0xFFFFFFFF);
-                type = GetShinyType(PID, SIDTID);
-                if (type != 0)
-                    return i;
-
-                // Get the next seed, and reset for the next iteration
-                rng = new Xoroshiro128Plus(seed);
-                seed = rng.Next();
-                rng = new Xoroshiro128Plus(seed);
-            }
         }
 
         public static bool IsMatch(ulong seed, int[] ivs, int fixed_ivs)

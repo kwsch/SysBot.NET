@@ -11,6 +11,7 @@ namespace SysBot.Pokemon
 {
     public class PokeTradeBot : PokeRoutineExecutor
     {
+        public static ISeedSearchHandler<PK8> SeedChecker = new NoSeedSearchHandler<PK8>();
         private readonly PokeTradeHub<PK8> Hub;
 
         /// <summary>
@@ -586,7 +587,7 @@ namespace SysBot.Pokemon
             {
                 try
                 {
-                    ReplyWithZ3Results(detail, pk);
+                    ReplyWithSeedCheckResults(detail, pk);
                 }
                 catch (Exception ex)
                 {
@@ -600,7 +601,7 @@ namespace SysBot.Pokemon
             return PokeTradeResult.Success;
         }
 
-        private void ReplyWithZ3Results(PokeTradeDetail<PK8> detail, PK8 result)
+        private void ReplyWithSeedCheckResults(PokeTradeDetail<PK8> detail, PK8 result)
         {
             detail.SendNotification(this, "Calculating your seed(s)...");
 
@@ -616,24 +617,7 @@ namespace SysBot.Pokemon
                 return;
             }
 
-            var ec = result.EncryptionConstant;
-            var pid = result.PID;
-            var IVs = result.IVs.Length == 0 ? GetBlankIVTemplate() : PKX.ReorderSpeedLast((int[])result.IVs.Clone());
-            if (Hub.Config.SeedCheck.ShowAllZ3Results)
-            {
-                var matches = Z3Search.GetAllSeeds(ec, pid, IVs);
-                foreach (var match in matches)
-                {
-                    var lump = new PokeTradeSummary("Calculated Seed:", match);
-                    detail.SendNotification(this, lump);
-                }
-            }
-            else
-            {
-                var match = Z3Search.GetFirstSeed(ec, pid, IVs);
-                var lump = new PokeTradeSummary("Calculated Seed:", match);
-                detail.SendNotification(this, lump);
-            }
+            SeedChecker.CalculateAndNotify(result, detail, Hub.Config.SeedCheck, this);
             Log("Seed calculation completed.");
         }
 

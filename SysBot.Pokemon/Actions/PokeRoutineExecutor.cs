@@ -463,8 +463,6 @@ namespace SysBot.Pokemon
             return new SlotQualityCheck(result);
         }
 
-        public static int[] GetBlankIVTemplate() => new[] { -1, -1, -1, -1, -1, -1 };
-
         public void PrintBadSlotMessage(SlotQualityCheck q)
         {
             switch (q.Quality)
