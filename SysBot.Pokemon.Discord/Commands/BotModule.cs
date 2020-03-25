@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using SysBot.Base;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -44,7 +45,9 @@ namespace SysBot.Pokemon.Discord
             }
 
             bot.Start();
-            await ReplyAsync($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to start.").ConfigureAwait(false);
+            if (!EchoModule.IsEchoChannel(Context.Channel))
+                await ReplyAsync($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to start.").ConfigureAwait(false);
+            EchoUtil.Echo($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to start.");
         }
 
         [Command("botStop")]
@@ -60,7 +63,9 @@ namespace SysBot.Pokemon.Discord
             }
 
             bot.Stop();
-            await ReplyAsync($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to stop.").ConfigureAwait(false);
+            if (!EchoModule.IsEchoChannel(Context.Channel))
+                await ReplyAsync($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to stop.").ConfigureAwait(false);
+            EchoUtil.Echo($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to stop.");
         }
 
         [Command("botIdle")]
@@ -77,7 +82,9 @@ namespace SysBot.Pokemon.Discord
             }
 
             bot.Pause();
-            await ReplyAsync($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to idle.").ConfigureAwait(false);
+            if (!EchoModule.IsEchoChannel(Context.Channel))
+                await ReplyAsync($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to idle.").ConfigureAwait(false);
+            EchoUtil.Echo($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to idle.");
         }
 
         [Command("botChange")]
@@ -93,7 +100,9 @@ namespace SysBot.Pokemon.Discord
             }
 
             bot.Bot.Config.Initialize(task);
-            await ReplyAsync($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to do {task} as its next task.").ConfigureAwait(false);
+            if (!EchoModule.IsEchoChannel(Context.Channel))
+                await ReplyAsync($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to do {task} as its next task.").ConfigureAwait(false);
+            EchoUtil.Echo($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to do {task} as its next task.");
         }
     }
 }
