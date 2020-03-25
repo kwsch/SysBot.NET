@@ -25,7 +25,7 @@ namespace SysBot.Pokemon.ConsoleApp
                 foreach (var bot in prog.Bots)
                 {
                     bot.Initialize();
-                    AddBot(bot);
+                    AddBot(env, bot);
                 }
 
                 LogUtil.Forwarders.Add((msg, ident) => Console.WriteLine($"{ident}: {msg}"));
@@ -43,9 +43,27 @@ namespace SysBot.Pokemon.ConsoleApp
             }
         }
 
-        private static void AddBot(PokeBotConfig bot)
+        private static bool AddBot(PokeBotRunner env, PokeBotConfig cfg)
         {
-            Console.WriteLine($"Added: {bot.IP}: {bot.InitialRoutine}");
+            if (!cfg.IsValidIP())
+            {
+                Console.WriteLine($"{cfg.IP}'s config is not valid.");
+                return false;
+            }
+
+            var newbot = env.CreateBotFromConfig(cfg);
+            try
+            {
+                env.Add(newbot);
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+
+            Console.WriteLine($"Added: {cfg.IP}: {cfg.InitialRoutine}");
+            return true;
         }
     }
 }
