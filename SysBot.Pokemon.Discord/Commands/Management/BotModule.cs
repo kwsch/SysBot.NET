@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using SysBot.Base;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -32,13 +31,6 @@ namespace SysBot.Pokemon.Discord
             return $"- {z.Connection.IP} | {z.Connection.Name} - {z.Config.CurrentRoutineType} ~ {z.LastTime:hh:mm:ss} | {z.LastLogged}";
         }
 
-        private async Task EchoAndReply(string msg)
-        {
-            EchoUtil.Echo(msg);
-            if (!EchoModule.IsEchoChannel(Context.Channel))
-                await ReplyAsync(msg).ConfigureAwait(false);
-        }
-
         [Command("botStart")]
         [Summary("Starts a bot by IP address.")]
         [RequireSudo]
@@ -52,7 +44,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             bot.Start();
-            await EchoAndReply($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to start.").ConfigureAwait(false);
+            await Context.Channel.EchoAndReply($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to start.").ConfigureAwait(false);
         }
 
         [Command("botStop")]
@@ -68,7 +60,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             bot.Stop();
-            await EchoAndReply($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to stop.").ConfigureAwait(false);
+            await Context.Channel.EchoAndReply($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to stop.").ConfigureAwait(false);
         }
 
         [Command("botIdle")]
@@ -85,7 +77,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             bot.Pause();
-            await EchoAndReply($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to idle.").ConfigureAwait(false);
+            await Context.Channel.EchoAndReply($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to idle.").ConfigureAwait(false);
         }
 
         [Command("botChange")]
@@ -101,7 +93,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             bot.Bot.Config.Initialize(task);
-            await EchoAndReply($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to do {task} as its next task.").ConfigureAwait(false);
+            await Context.Channel.EchoAndReply($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to do {task} as its next task.").ConfigureAwait(false);
         }
     }
 }

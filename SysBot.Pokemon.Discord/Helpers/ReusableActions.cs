@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using PKHeX.Core;
+using SysBot.Base;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -47,6 +48,14 @@ namespace SysBot.Pokemon.Discord
             if (user is SocketGuildUser g && mgr.CanUseSudo(g.Roles.Select(z => z.Name)))
                 return true;
             return false;
+        }
+
+        public static async Task EchoAndReply(this ISocketMessageChannel channel, string msg)
+        {
+            // Announce it in the channel the command was entered only if it's not already an echo channel.
+            EchoUtil.Echo(msg);
+            if (!EchoModule.IsEchoChannel(channel))
+                await channel.SendMessageAsync(msg).ConfigureAwait(false);
         }
 
         public static async Task SendPKMAsShowdownSetAsync(this ISocketMessageChannel channel, PKM pkm)
