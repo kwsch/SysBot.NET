@@ -44,12 +44,13 @@ namespace SysBot.Pokemon.Discord
         }
 
         [Command("sudoku")]
+        [Alias("kill", "shutdown")]
         [Summary("Causes the entire process to end itself!")]
         [RequireOwner]
         // ReSharper disable once UnusedParameter.Global
         public async Task ExitProgram()
         {
-            await ReplyAsync("Shutting down... goodbye!").ConfigureAwait(false);
+            await Context.Channel.EchoAndReply("Shutting down... goodbye! **Bot services are going offline.**").ConfigureAwait(false);
             Environment.Exit(0);
         }
     }
