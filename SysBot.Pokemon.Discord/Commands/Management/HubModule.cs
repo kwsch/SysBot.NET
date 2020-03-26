@@ -49,8 +49,7 @@ namespace SysBot.Pokemon.Discord
                 if (c == 0)
                     continue;
 
-                var next = q.TryPeek(out var detail, out _);
-                var nextMsg = next ? $"{detail.Trainer.TrainerName} - {detail.TradeData.Nickname}" : "None!";
+                var nextMsg = GetNextName(q);
                 builder.AddField(x =>
                 {
                     x.Name = $"{q.Type} Queue";
@@ -73,6 +72,21 @@ namespace SysBot.Pokemon.Discord
             }
 
             await ReplyAsync("Bot Status", false, builder.Build()).ConfigureAwait(false);
+        }
+
+        private static string GetNextName(PokeTradeQueue<PK8> q)
+        {
+            var next = q.TryPeek(out var detail, out _);
+            if (!next)
+                return "None!";
+
+            var name = detail.Trainer.TrainerName;
+
+            // show detail of trade if possible
+            var nick = detail.TradeData.Nickname;
+            if (!string.IsNullOrEmpty(nick))
+                name += $" - {nick}";
+            return name;
         }
 
         private static string SummarizeBots(PokeTradeHub<PK8> hub)
