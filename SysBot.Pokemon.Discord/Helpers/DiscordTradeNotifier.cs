@@ -73,7 +73,7 @@ namespace SysBot.Pokemon.Discord
 
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result, string message)
         {
-            if (result.Species != 0 && Hub.Config.Discord.ReturnPK8s)
+            if (result.Species != 0 && (Hub.Config.Discord.ReturnPK8s || info.Type == PokeTradeType.Dump))
                 Context.User.SendPKMAsync(result, message).ConfigureAwait(false);
         }
 
