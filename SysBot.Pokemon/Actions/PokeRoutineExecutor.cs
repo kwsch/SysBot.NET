@@ -357,7 +357,7 @@ namespace SysBot.Pokemon
         public async Task ReOpenGame(CancellationToken token)
         {
             // Reopen the game if we get softbanned
-            Log("Potential softban detected, reopenng game just in case!");
+            Log("Potential softban detected, reopening game just in case!");
             await Click(HOME, 2000, token).ConfigureAwait(false);
             await Click(X, 1000, token).ConfigureAwait(false);
             await Click(A, 5000, token).ConfigureAwait(false);
