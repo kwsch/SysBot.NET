@@ -337,11 +337,11 @@ namespace SysBot.Pokemon
             }
         }
 
-        public async Task ExitSeedCheckTrade(PokeTradeHub<PK8> hub, CancellationToken token)
+        public async Task ExitSeedCheckTrade(PokeTradeHubConfig config, CancellationToken token)
         {
             // Seed Check Bot doesn't show anything, so it can skip the first B press.
             int attempts = 0;
-            while (!await IsOnOverworld(hub.Config, token).ConfigureAwait(false))
+            while (!await IsOnOverworld(config, token).ConfigureAwait(false))
             {
                 attempts++;
                 if (attempts >= 15)
@@ -397,12 +397,12 @@ namespace SysBot.Pokemon
             return BitConverter.ToUInt32(data, 0) == SurpriseTradeSearch_Searching;
         }
 
-        public async Task ResetTradePosition(PokeTradeHub<PK8> hub, CancellationToken token)
+        public async Task ResetTradePosition(PokeTradeHubConfig config, CancellationToken token)
         {
             Log("Resetting bot position.");
 
             // Shouldn't ever be used while not on overworld.
-            if (!await IsOnOverworld(hub.Config, token).ConfigureAwait(false))
+            if (!await IsOnOverworld(config, token).ConfigureAwait(false))
                 await ExitTrade(true, token).ConfigureAwait(false);
 
             // Ensure we're searching before we try to reset a search.

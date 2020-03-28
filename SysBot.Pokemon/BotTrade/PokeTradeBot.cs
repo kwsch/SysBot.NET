@@ -153,7 +153,7 @@ namespace SysBot.Pokemon
             if (await CheckIfSearchingForLinkTradePartner(token).ConfigureAwait(false))
             {
                 Log("Still searching, reset bot position.");
-                await ResetTradePosition(Hub, token).ConfigureAwait(false);
+                await ResetTradePosition(Hub.Config, token).ConfigureAwait(false);
             }
 
             Log("Opening Y-Comm Menu");
@@ -226,7 +226,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Aborted;
             if (!partnerFound)
             {
-                await ResetTradePosition(Hub, token).ConfigureAwait(false);
+                await ResetTradePosition(Hub.Config, token).ConfigureAwait(false);
                 return PokeTradeResult.NoTrainerFound;
             }
 
@@ -432,7 +432,7 @@ namespace SysBot.Pokemon
             }
 
             Log($"Ended Dump loop after processing {ctr} Pokémon");
-            await ExitSeedCheckTrade(Hub, token).ConfigureAwait(false);
+            await ExitSeedCheckTrade(Hub.Config, token).ConfigureAwait(false);
             if (ctr == 0)
                 return PokeTradeResult.TrainerTooSlow;
 
@@ -466,7 +466,7 @@ namespace SysBot.Pokemon
             if (await CheckIfSearchingForSurprisePartner(token).ConfigureAwait(false))
             {
                 Log("Still searching, reset.");
-                await ResetTradePosition(Hub, token).ConfigureAwait(false);
+                await ResetTradePosition(Hub.Config, token).ConfigureAwait(false);
             }
 
             Log("Opening Y-Comm Menu");
@@ -531,7 +531,7 @@ namespace SysBot.Pokemon
 
             if (!partnerFound)
             {
-                await ResetTradePosition(Hub, token).ConfigureAwait(false);
+                await ResetTradePosition(Hub.Config, token).ConfigureAwait(false);
                 return PokeTradeResult.NoTrainerFound;
             }
 
@@ -574,7 +574,7 @@ namespace SysBot.Pokemon
 
         private async Task<PokeTradeResult> EndSeedCheckTradeAsync(PokeTradeDetail<PK8> detail, PK8 pk, CancellationToken token)
         {
-            await ExitSeedCheckTrade(Hub, token).ConfigureAwait(false);
+            await ExitSeedCheckTrade(Hub.Config, token).ConfigureAwait(false);
 
             detail.TradeFinished(this, pk);
 
