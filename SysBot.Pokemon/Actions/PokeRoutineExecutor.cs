@@ -257,12 +257,12 @@ namespace SysBot.Pokemon
             // Confirm Code outside of this method (allow synchronization)
         }
 
-        public async Task EnsureConnectedToYComm(CancellationToken token)
+        public async Task EnsureConnectedToYComm(PokeTradeHub<PK8> hub, CancellationToken token)
         {
             if (!await IsGameConnectedToYComm(token).ConfigureAwait(false))
             {
                 Log("Reconnecting to Y-Comm...");
-                await ReconnectToYComm(token).ConfigureAwait(false);
+                await ReconnectToYComm(hub, token).ConfigureAwait(false);
             }
         }
 
@@ -286,13 +286,13 @@ namespace SysBot.Pokemon
             return data[0] == 1;
         }
 
-        public async Task ReconnectToYComm(CancellationToken token)
+        public async Task ReconnectToYComm(PokeTradeHub<PK8> hub, CancellationToken token)
         {
             // Press B in case a Error Message is Present
             await Click(B, 2000, token).ConfigureAwait(false);
 
             // Return to Overworld
-            if (!await IsOnOverworld(token).ConfigureAwait(false))
+            if (!await IsOnOverworld(hub, token).ConfigureAwait(false))
             {
                 for (int i = 0; i < 5; i++)
                 {
@@ -337,11 +337,11 @@ namespace SysBot.Pokemon
             }
         }
 
-        public async Task ExitSeedCheckTrade(CancellationToken token)
+        public async Task ExitSeedCheckTrade(PokeTradeHub<PK8> hub, CancellationToken token)
         {
             // Seed Check Bot doesn't show anything, so it can skip the first B press.
             int attempts = 0;
-            while (!await IsOnOverworld(token).ConfigureAwait(false))
+            while (!await IsOnOverworld(hub, token).ConfigureAwait(false))
             {
                 attempts++;
                 if (attempts >= 15)
@@ -356,8 +356,8 @@ namespace SysBot.Pokemon
 
         public async Task ReOpenGame(CancellationToken token)
         {
-            // Reopen The Game if we got a Soft-ban
-            Log("Potential Soft-ban detected, Reopen Game just in case!");
+            // Reopen the game if we get softbanned
+            Log("Potential softban detected, reopenng game just in case!");
             await Click(HOME, 2000, token).ConfigureAwait(false);
             await Click(X, 1000, token).ConfigureAwait(false);
             await Click(A, 5000, token).ConfigureAwait(false);
@@ -365,7 +365,7 @@ namespace SysBot.Pokemon
             for (int i = 0; i < 30; i++)
                 await Click(A, 1000, token).ConfigureAwait(false);
 
-            // In case we are Soft-banned we reset the Timestamp
+            // In case we are softbanned, reset the timestamp
             await Unban(token).ConfigureAwait(false);
         }
 
@@ -397,13 +397,17 @@ namespace SysBot.Pokemon
             return BitConverter.ToUInt32(data, 0) == SurpriseTradeSearch_Searching;
         }
 
-        public async Task ResetTradePosition(CancellationToken token)
+        public async Task ResetTradePosition(PokeTradeHub<PK8> hub, CancellationToken token)
         {
             Log("Resetting bot position.");
 
             // Shouldn't ever be used while not on overworld.
-            if (!await IsOnOverworld(token).ConfigureAwait(false))
+            if (!await IsOnOverworld(hub, token).ConfigureAwait(false))
                 await ExitTrade(true, token).ConfigureAwait(false);
+
+            // Ensure we're searching before we try to reset a search.
+            if (!await CheckIfSearchingForLinkTradePartner(token).ConfigureAwait(false))
+                return;
 
             await Click(Y, 2_000, token).ConfigureAwait(false);
             for (int i = 0; i < 5; i++)
@@ -451,10 +455,37 @@ namespace SysBot.Pokemon
             return data[0] == 1;
         }
 
-        public async Task<bool> IsOnOverworld(CancellationToken token)
+        public async Task<bool> IsOnOverworld(PokeTradeHub<PK8> hub, CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(OverworldOffset, 1, token).ConfigureAwait(false);
-            return data[0] == 1;
+            // Uses CurrentScreenOffset and compares the value to CurrentScreen_Overworld.
+            if (hub.Config.ScreenDetection == ScreenDetectionMode.Original)
+            {
+                var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
+                return BitConverter.ToUInt32(data, 0) == CurrentScreen_Overworld;
+            }
+            // Uses an appropriate OverworldOffset for the console language.
+            else if (hub.Config.ScreenDetection == ScreenDetectionMode.New)
+            {
+                var data = await Connection.ReadBytesAsync(GetOverworldOffset(hub.Config.ConsoleLanguage), 1, token).ConfigureAwait(false);
+                return data[0] == 1;
+            }
+            return false;
+        }
+
+        public static uint GetOverworldOffset(ConsoleLanguageParameter value)
+        {
+            return value switch
+            {
+                ConsoleLanguageParameter.French => OverworldOffsetFrench,
+                ConsoleLanguageParameter.German => OverworldOffsetGerman,
+                ConsoleLanguageParameter.Spanish => OverworldOffsetSpanish,
+                ConsoleLanguageParameter.Italian => OverworldOffsetItalian,
+                ConsoleLanguageParameter.Japanese => OverworldOffsetJapanese,
+                ConsoleLanguageParameter.ChineseTraditional => OverworldOffsetChineseT,
+                ConsoleLanguageParameter.ChineseSimplified => OverworldOffsetChineseS,
+                ConsoleLanguageParameter.Korean => OverworldOffsetKorean,
+                _ => OverworldOffset,
+            };
         }
 
         public async Task<SlotQualityCheck> GetBoxSlotQuality(int box, int slot, CancellationToken token)

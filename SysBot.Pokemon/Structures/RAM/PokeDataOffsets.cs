@@ -1,4 +1,5 @@
 ﻿using System;
+using SysBot.Base;
 
 namespace SysBot.Pokemon
 {
@@ -79,7 +80,17 @@ namespace SysBot.Pokemon
         */
 
         //CurrentScreenOffset seems unreliable for Overworld; this one is 1 on Overworld and 0 otherwise.
+        //Varies based on console language which is configured in Hub.
+        //Default setting works for English, Dutch, Portuguese, and Russian
         public const uint OverworldOffset = 0x2E36E474;
+        public const uint OverworldOffsetFrench = 0x2E36E634;
+        public const uint OverworldOffsetGerman = 0x2E36E734;
+        public const uint OverworldOffsetSpanish = 0x2E36E634;
+        public const uint OverworldOffsetItalian = 0x2E36E404;
+        public const uint OverworldOffsetJapanese = 0x2E36E5F4;
+        public const uint OverworldOffsetChineseT = 0x2E36D664;
+        public const uint OverworldOffsetChineseS = 0x2E36D6C4;
+        public const uint OverworldOffsetKorean = 0x2E36DAB4;
 
         public const uint CurrentScreenOffset = 0x68dcbc90;
 
@@ -123,6 +134,22 @@ namespace SysBot.Pokemon
                 SwordShieldDaycare.WildArea => DayCare_Wildarea_Egg_Is_Ready,
                 SwordShieldDaycare.Route5 => DayCare_Route5_Egg_Is_Ready,
                 _ => throw new ArgumentException(nameof(daycare)),
+            };
+        }
+
+        public static uint GetOverworldOffset(ConsoleLanguageParameter value)
+        {
+            return value switch
+            {
+                ConsoleLanguageParameter.French => OverworldOffsetFrench,
+                ConsoleLanguageParameter.German => OverworldOffsetGerman,
+                ConsoleLanguageParameter.Spanish => OverworldOffsetSpanish,
+                ConsoleLanguageParameter.Italian => OverworldOffsetItalian,
+                ConsoleLanguageParameter.Japanese => OverworldOffsetJapanese,
+                ConsoleLanguageParameter.ChineseTraditional => OverworldOffsetChineseT,
+                ConsoleLanguageParameter.ChineseSimplified => OverworldOffsetChineseS,
+                ConsoleLanguageParameter.Korean => OverworldOffsetKorean,
+                _ => OverworldOffset,
             };
         }
     }

@@ -98,7 +98,7 @@ namespace SysBot.Pokemon
                 Hub.Config.Stream.StartTrade(this, detail, Hub);
                 Hub.Queues.StartTrade(this, detail);
 
-                await EnsureConnectedToYComm(token).ConfigureAwait(false);
+                await EnsureConnectedToYComm(Hub, token).ConfigureAwait(false);
                 var result = await PerformLinkCodeTrade(sav, detail, token).ConfigureAwait(false);
                 if (result != PokeTradeResult.Success) // requeue
                 {
@@ -125,7 +125,7 @@ namespace SysBot.Pokemon
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.SurpriseTrade)
             {
                 var pkm = Hub.Ledy.Pool.GetRandomSurprise();
-                await EnsureConnectedToYComm(token).ConfigureAwait(false);
+                await EnsureConnectedToYComm(Hub, token).ConfigureAwait(false);
                 var _ = await PerformSurpriseTrade(sav, pkm, token).ConfigureAwait(false);
             }
         }
@@ -144,7 +144,7 @@ namespace SysBot.Pokemon
             if (pkm.Species != 0)
                 await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
 
-            if (!await IsOnOverworld(token).ConfigureAwait(false))
+            if (!await IsOnOverworld(Hub, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.RecoverStart;
@@ -153,7 +153,7 @@ namespace SysBot.Pokemon
             if (await CheckIfSearchingForLinkTradePartner(token).ConfigureAwait(false))
             {
                 Log("Still searching, reset bot position.");
-                await ResetTradePosition(token).ConfigureAwait(false);
+                await ResetTradePosition(Hub, token).ConfigureAwait(false);
             }
 
             Log("Opening Y-Comm Menu");
@@ -192,7 +192,7 @@ namespace SysBot.Pokemon
             Hub.Config.Stream.EndEnterCode(this);
 
             // Should be on overworld by now.
-            if (!await IsOnOverworld(token).ConfigureAwait(false))
+            if (!await IsOnOverworld(Hub, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.RecoverPostLinkCode;
@@ -226,7 +226,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Aborted;
             if (!partnerFound)
             {
-                await ResetTradePosition(token).ConfigureAwait(false);
+                await ResetTradePosition(Hub, token).ConfigureAwait(false);
                 return PokeTradeResult.NoTrainerFound;
             }
 
@@ -293,7 +293,7 @@ namespace SysBot.Pokemon
                     poke.SendNotification(this, clone, "Here's what you showed me!");
 
                 var la = new LegalityAnalysis(clone);
-                if (!la.Valid && Hub.Config.VerifyLegality)
+                if (!la.Valid && Hub.Config.Legality.VerifyLegality)
                 {
                     Log($"Clone request has detected an invalid Pokémon: {(Species)clone.Species}");
                     if (DumpSetting.Dump)
@@ -355,7 +355,7 @@ namespace SysBot.Pokemon
                 delay_count++;
                 if (delay_count >= 50)
                     break;
-                if (await IsOnOverworld(token).ConfigureAwait(false)) // In case we are in a Trade Evolution/PokeDex Entry and the Trade Partner quits we land on the Overworld
+                if (await IsOnOverworld(Hub, token).ConfigureAwait(false)) // In case we are in a Trade Evolution/PokeDex Entry and the Trade Partner quits we land on the Overworld
                     break;
             }
 
@@ -432,7 +432,7 @@ namespace SysBot.Pokemon
             }
 
             Log($"Ended Dump loop after processing {ctr} Pokémon");
-            await ExitSeedCheckTrade(token).ConfigureAwait(false);
+            await ExitSeedCheckTrade(Hub, token).ConfigureAwait(false);
             if (ctr == 0)
                 return PokeTradeResult.TrainerTooSlow;
 
@@ -457,7 +457,7 @@ namespace SysBot.Pokemon
             Log("Starting next Surprise Trade. Getting data...");
             await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
 
-            if (!await IsOnOverworld(token).ConfigureAwait(false))
+            if (!await IsOnOverworld(Hub, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.RecoverStart;
@@ -466,7 +466,7 @@ namespace SysBot.Pokemon
             if (await CheckIfSearchingForSurprisePartner(token).ConfigureAwait(false))
             {
                 Log("Still searching, reset.");
-                await ResetTradePosition(token).ConfigureAwait(false);
+                await ResetTradePosition(Hub, token).ConfigureAwait(false);
             }
 
             Log("Opening Y-Comm Menu");
@@ -508,7 +508,7 @@ namespace SysBot.Pokemon
             // Let Surprise Trade be sent out before checking if we're back to the Overworld.
             await Task.Delay(3_000, token).ConfigureAwait(false);
 
-            if (!await IsOnOverworld(token).ConfigureAwait(false))
+            if (!await IsOnOverworld(Hub, token).ConfigureAwait(false))
             {
                 await ExitTrade(true, token).ConfigureAwait(false);
                 return PokeTradeResult.RecoverReturnOverworld;
@@ -531,7 +531,7 @@ namespace SysBot.Pokemon
 
             if (!partnerFound)
             {
-                await ResetTradePosition(token).ConfigureAwait(false);
+                await ResetTradePosition(Hub, token).ConfigureAwait(false);
                 return PokeTradeResult.NoTrainerFound;
             }
 
@@ -560,7 +560,7 @@ namespace SysBot.Pokemon
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
 
-            if (await IsOnOverworld(token).ConfigureAwait(false))
+            if (await IsOnOverworld(Hub, token).ConfigureAwait(false))
                 Log("Trade complete!");
             else
                 await ExitTrade(true, token).ConfigureAwait(false);
@@ -574,7 +574,7 @@ namespace SysBot.Pokemon
 
         private async Task<PokeTradeResult> EndSeedCheckTradeAsync(PokeTradeDetail<PK8> detail, PK8 pk, CancellationToken token)
         {
-            await ExitSeedCheckTrade(token).ConfigureAwait(false);
+            await ExitSeedCheckTrade(Hub, token).ConfigureAwait(false);
 
             detail.TradeFinished(this, pk);
 

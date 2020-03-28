@@ -107,7 +107,7 @@ namespace SysBot.Pokemon
                     return new FossilBot(cfg, Hub.Config.Fossil, Hub.Config.Folder, Hub.Counts);
 
                 case PokeRoutineType.RaidBot:
-                    return new RaidBot(cfg, Hub.Config.Raid, Hub.Config.Folder, Hub.Counts);
+                    return new RaidBot(cfg, Hub);
 
                 case PokeRoutineType.EncounterBot:
                     return new EncounterBot(cfg, Hub.Config.Encounter, Hub.Config.Folder, Hub.Counts);
