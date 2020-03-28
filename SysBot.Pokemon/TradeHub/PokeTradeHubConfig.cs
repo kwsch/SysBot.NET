@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using SysBot.Base;
 
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
@@ -15,8 +16,11 @@ namespace SysBot.Pokemon
         [Category(FeatureToggle), Description("When enabled, the bot will press the B button occasionally when it is not processing anything (to avoid sleep).")]
         public bool AntiIdle { get; set; }
 
-        [Category(FeatureToggle), Description("When set, the bot will only send a Pokémon if it is legal!")]
-        public bool VerifyLegality { get; set; } = true;
+        [Category(FeatureToggle), Description("Method for detecting the overworld. Original method may not work consistently for some users, while ConsoleLanguageSpecific method requires your Switch console language.")]
+        public ScreenDetectionMode ScreenDetection { get; set; }
+
+        [Category(FeatureToggle), Description("ConsoleLanguageSpecific screen detection method only. Set your Switch console language here for bots to work properly. All consoles should be using the same language.")]
+        public ConsoleLanguageParameter ConsoleLanguage { get; set; }
 
         [Category(Operation)]
         [TypeConverter(typeof(ExpandableObjectConverter))]

@@ -74,7 +74,7 @@ namespace SysBot.Pokemon.Discord
             var pkm = sav.GetLegal(set, out _);
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[set.Species];
-            var invalid = !(pkm is PK8) || (!la.Valid && SysCordInstance.Self.Hub.Config.VerifyLegality);
+            var invalid = !(pkm is PK8) || (!la.Valid && SysCordInstance.Self.Hub.Config.Legality.VerifyLegality);
             if (invalid)
             {
                 var imsg = $"Oops! I wasn't able to create something from that. Here's my best attempt for that {spec}!";
@@ -116,7 +116,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             var la = new LegalityAnalysis(pk8);
-            if (!la.Valid && SysCordInstance.Self.Hub.Config.VerifyLegality)
+            if (!la.Valid && SysCordInstance.Self.Hub.Config.Legality.VerifyLegality)
             {
                 await ReplyAsync("PK8 attachment is not legal, and cannot be traded!").ConfigureAwait(false);
                 return;

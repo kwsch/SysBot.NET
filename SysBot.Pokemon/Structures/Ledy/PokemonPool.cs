@@ -83,7 +83,7 @@ namespace SysBot.Pokemon
                 }
 
                 var la = new LegalityAnalysis(pk8);
-                if (!la.Valid && Settings.VerifyLegality)
+                if (!la.Valid && Settings.Legality.VerifyLegality)
                 {
                     var reason = la.Report();
                     LogUtil.LogInfo($"SKIPPED: Provided pk8 is not valid: {dest.FileName} -- {reason}", nameof(PokemonPool<T>));

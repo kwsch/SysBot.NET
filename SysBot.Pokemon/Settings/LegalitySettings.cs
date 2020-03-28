@@ -38,6 +38,9 @@ namespace SysBot.Pokemon
         [Category(Generate), Description("Allow XOROSHIRO")]
         public bool UseXOROSHIRO { get; set; } = true;
 
+        [Category(Generate), Description("When set, the bot will only send a Pokémon if it is legal!")]
+        public bool VerifyLegality { get; set; } = true;
+
         // Misc
 
         [Category(Misc), Description("Zero out HOME tracker regardless of current tracker value. Applies to user requested PKM files as well.")]

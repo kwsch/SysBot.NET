@@ -8,16 +8,18 @@ namespace SysBot.Pokemon
 {
     public class RaidBot : PokeRoutineExecutor
     {
+        private readonly PokeTradeHub<PK8> Hub;
         private readonly BotCompleteCounts Counts;
         private readonly RaidSettings Settings;
         public readonly IDumper Dump;
         private readonly bool ldn;
 
-        public RaidBot(PokeBotConfig cfg, RaidSettings raid, IDumper folder, BotCompleteCounts counts) : base(cfg)
+        public RaidBot(PokeBotConfig cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
-            Settings = raid;
-            Dump = folder;
-            Counts = counts;
+            Hub = hub;
+            Settings = Hub.Config.Raid;
+            Dump = Hub.Config.Folder;
+            Counts = Hub.Counts;
             ldn = Settings.UseLdnMitm;
         }
 
@@ -44,7 +46,7 @@ namespace SysBot.Pokemon
         private async Task<bool> HostRaidAsync(SAV8SWSH sav, int code, CancellationToken token)
         {
             // Connect to Y-Comm
-            await EnsureConnectedToYComm(token).ConfigureAwait(false);
+            await EnsureConnectedToYComm(Hub.Config, token).ConfigureAwait(false);
 
             // Press A and stall out a bit for the loading
             await Click(A, 5000, token).ConfigureAwait(false);
@@ -140,7 +142,7 @@ namespace SysBot.Pokemon
             Log("Back in the overworld!");
 
             // Reconnect to ycomm.
-            await EnsureConnectedToYComm(token).ConfigureAwait(false);
+            await EnsureConnectedToYComm(Hub.Config, token).ConfigureAwait(false);
             Log("Reconnected to Y-Comm!");
         }
 
@@ -172,7 +174,7 @@ namespace SysBot.Pokemon
             Log("Back in the overworld!");
 
             // Reconnect to ycomm.
-            await EnsureConnectedToYComm(token).ConfigureAwait(false);
+            await EnsureConnectedToYComm(Hub.Config, token).ConfigureAwait(false);
             Log("Reconnected to Y-Comm!");
         }
 
