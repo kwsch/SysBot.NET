@@ -9,7 +9,7 @@ namespace SysBot.Pokemon
         public const uint CurrentBoxOffset = 0x4298e83E;
         public const uint TrainerDataOffset = 0x42935E48;
         public const uint SoftBanUnixTimespanOffset = 0x4298f9f8;
-        public const uint IsConnectedOffset = 0x2f865c78;
+        public const uint IsConnectedOffset = 0x2F864118;
 
         // Vary by game. They are 1 when in a battle or raid, 0 otherwise.
         public const uint InBattleRaidOffsetSH = 0x3DD26104;

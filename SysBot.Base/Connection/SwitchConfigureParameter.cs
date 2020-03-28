@@ -37,6 +37,6 @@
     public enum ScreenDetectionMode
     {
         Original,
-        New,
+        ConsoleLanguageSpecific,
     }
 }

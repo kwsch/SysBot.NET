@@ -257,12 +257,12 @@ namespace SysBot.Pokemon
             // Confirm Code outside of this method (allow synchronization)
         }
 
-        public async Task EnsureConnectedToYComm(PokeTradeHub<PK8> hub, CancellationToken token)
+        public async Task EnsureConnectedToYComm(PokeTradeHubConfig config, CancellationToken token)
         {
             if (!await IsGameConnectedToYComm(token).ConfigureAwait(false))
             {
                 Log("Reconnecting to Y-Comm...");
-                await ReconnectToYComm(hub, token).ConfigureAwait(false);
+                await ReconnectToYComm(config, token).ConfigureAwait(false);
             }
         }
 
@@ -286,13 +286,13 @@ namespace SysBot.Pokemon
             return data[0] == 1;
         }
 
-        public async Task ReconnectToYComm(PokeTradeHub<PK8> hub, CancellationToken token)
+        public async Task ReconnectToYComm(PokeTradeHubConfig config, CancellationToken token)
         {
             // Press B in case a Error Message is Present
             await Click(B, 2000, token).ConfigureAwait(false);
 
             // Return to Overworld
-            if (!await IsOnOverworld(hub, token).ConfigureAwait(false))
+            if (!await IsOnOverworld(config, token).ConfigureAwait(false))
             {
                 for (int i = 0; i < 5; i++)
                 {
@@ -341,7 +341,7 @@ namespace SysBot.Pokemon
         {
             // Seed Check Bot doesn't show anything, so it can skip the first B press.
             int attempts = 0;
-            while (!await IsOnOverworld(hub, token).ConfigureAwait(false))
+            while (!await IsOnOverworld(hub.Config, token).ConfigureAwait(false))
             {
                 attempts++;
                 if (attempts >= 15)
@@ -402,7 +402,7 @@ namespace SysBot.Pokemon
             Log("Resetting bot position.");
 
             // Shouldn't ever be used while not on overworld.
-            if (!await IsOnOverworld(hub, token).ConfigureAwait(false))
+            if (!await IsOnOverworld(hub.Config, token).ConfigureAwait(false))
                 await ExitTrade(true, token).ConfigureAwait(false);
 
             // Ensure we're searching before we try to reset a search.
@@ -455,18 +455,18 @@ namespace SysBot.Pokemon
             return data[0] == 1;
         }
 
-        public async Task<bool> IsOnOverworld(PokeTradeHub<PK8> hub, CancellationToken token)
+        public async Task<bool> IsOnOverworld(PokeTradeHubConfig config, CancellationToken token)
         {
             // Uses CurrentScreenOffset and compares the value to CurrentScreen_Overworld.
-            if (hub.Config.ScreenDetection == ScreenDetectionMode.Original)
+            if (config.ScreenDetection == ScreenDetectionMode.Original)
             {
                 var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
                 return BitConverter.ToUInt32(data, 0) == CurrentScreen_Overworld;
             }
             // Uses an appropriate OverworldOffset for the console language.
-            else if (hub.Config.ScreenDetection == ScreenDetectionMode.New)
+            else if (config.ScreenDetection == ScreenDetectionMode.ConsoleLanguageSpecific)
             {
-                var data = await Connection.ReadBytesAsync(GetOverworldOffset(hub.Config.ConsoleLanguage), 1, token).ConfigureAwait(false);
+                var data = await Connection.ReadBytesAsync(GetOverworldOffset(config.ConsoleLanguage), 1, token).ConfigureAwait(false);
                 return data[0] == 1;
             }
             return false;

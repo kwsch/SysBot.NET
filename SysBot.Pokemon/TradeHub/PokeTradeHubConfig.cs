@@ -16,10 +16,10 @@ namespace SysBot.Pokemon
         [Category(FeatureToggle), Description("When enabled, the bot will press the B button occasionally when it is not processing anything (to avoid sleep).")]
         public bool AntiIdle { get; set; }
 
-        [Category(FeatureToggle), Description("Method for detecting the overworld. Original method may not work consistently for some users, while New method requires entering your Switch console language.")]
+        [Category(FeatureToggle), Description("Method for detecting the overworld. Original method may not work consistently for some users, while ConsoleLanguageSpecific method requires your Switch console language.")]
         public ScreenDetectionMode ScreenDetection { get; set; }
 
-        [Category(FeatureToggle), Description("New screen detection method only. Set your Switch console language here for bots to work properly. All consoles should be using the same language.")]
+        [Category(FeatureToggle), Description("ConsoleLanguageSpecific screen detection method only. Set your Switch console language here for bots to work properly. All consoles should be using the same language.")]
         public ConsoleLanguageParameter ConsoleLanguage { get; set; }
 
         [Category(Operation)]
