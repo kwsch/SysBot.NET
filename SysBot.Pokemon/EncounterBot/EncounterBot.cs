@@ -102,11 +102,17 @@ namespace SysBot.Pokemon
 
                 Log($"Encounter found after {attempts} attempts! Checking details.");
 
+                // Reset stick while we wait for the encounter to load.
+                await ResetStick(token).ConfigureAwait(false);
+
                 var pk = await ReadPokemon(WildPokemonOffset, token).ConfigureAwait(false);
                 if (pk.Species == 0)
                 {
                     Log("Invalid data detected. Restarting loop.");
-                    // add stuff for recovering
+
+                    // Flee and continue looping.
+                    while (await IsInBattle(token).ConfigureAwait(false))
+                        await FleeToOverworld(token).ConfigureAwait(false);
                     continue;
                 }
 
@@ -124,19 +130,12 @@ namespace SysBot.Pokemon
                 }
                 else if (pk.Ability == 119 || pk.Ability == 107) // pokemon with announced abilites
                 {
-                    await Task.Delay(2700, token).ConfigureAwait(false);
+                    //await Task.Delay(2_700, token).ConfigureAwait(false);
                 }
 
-                await Task.Delay(2600, token).ConfigureAwait(false);
+                await Task.Delay(2_700, token).ConfigureAwait(false);
                 while (await IsInBattle(token).ConfigureAwait(false))
                     await FleeToOverworld(token).ConfigureAwait(false);
-
-                if (Mode == EncounterMode.VerticalLine)
-                    await SetStick(LEFT, 0, -30000, 2500, token).ConfigureAwait(false);
-                else if (Mode == EncounterMode.HorizontalLine)
-                    await SetStick(LEFT, -30000, 0, 2500, token).ConfigureAwait(false);
-
-                await ResetStick(token).ConfigureAwait(false);
             }
         }
 
@@ -144,8 +143,8 @@ namespace SysBot.Pokemon
         {
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EncounterBot)
             {
-                await SetStick(LEFT, 0, 20000, 500, token).ConfigureAwait(false);
-                await SetStick(LEFT, 0, 0, 1000, token).ConfigureAwait(false);
+                await SetStick(LEFT, 0, 20_000, 500, token).ConfigureAwait(false);
+                await SetStick(LEFT, 0, 0, 1_000, token).ConfigureAwait(false);
 
                 var pk = await ReadPokemon(RaidPokemonOffset, token).ConfigureAwait(false);
                 if (pk.Species == 0)
@@ -170,20 +169,20 @@ namespace SysBot.Pokemon
 
                 Connection.Log("Resetting raid by restarting the game");
                 // Close out of the game
-                await Click(HOME, 1600, token).ConfigureAwait(false);
-                await Click(X, 800, token).ConfigureAwait(false);
-                await Click(A, 4000, token).ConfigureAwait(false); // Closing software prompt
+                await Click(HOME, 1_600, token).ConfigureAwait(false);
+                await Click(X, 0_800, token).ConfigureAwait(false);
+                await Click(A, 4_000, token).ConfigureAwait(false); // Closing software prompt
                 Connection.Log("Closed out of the game!");
 
                 // Open game and select profile
-                await Click(A, 1000, token).ConfigureAwait(false);
-                await Click(A, 1000, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
                 Connection.Log("Restarting the game!");
 
                 // Switch Logo lag, skip cutscene, game load screen
-                await Task.Delay(14000, token).ConfigureAwait(false);
-                await Click(A, 1000, token).ConfigureAwait(false);
-                await Task.Delay(3500, token).ConfigureAwait(false);
+                await Task.Delay(14_000, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
+                await Task.Delay(3_500, token).ConfigureAwait(false);
                 Connection.Log("Back in the overworld!");
                 await ResetStick(token).ConfigureAwait(false);
             }
@@ -255,36 +254,36 @@ namespace SysBot.Pokemon
                     switch (Mode)
                     {
                         case EncounterMode.VerticalLine:
-                            await SetStick(LEFT, 0, 30000, 2500, token).ConfigureAwait(false);
-                            await SetStick(LEFT, 0, 0, 750, token).ConfigureAwait(false); // reset
+                            await SetStick(LEFT, 0, -30000, 2_400, token).ConfigureAwait(false);
+                            await SetStick(LEFT, 0, 0, 0_100, token).ConfigureAwait(false); // reset
 
-                            await SetStick(LEFT, 0, -30000, 2500, token).ConfigureAwait(false);
-                            await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false); // reset
+                            // Quit early if we found an encounter on first sweep.
+                            if (await IsInBattle(token).ConfigureAwait(false))
+                                break;
+
+                            await SetStick(LEFT, 0, 30000, 2_400, token).ConfigureAwait(false);
+                            await SetStick(LEFT, 0, 0, 0_100, token).ConfigureAwait(false); // reset
                             break;
                         case EncounterMode.HorizontalLine:
-                            await SetStick(LEFT, 30000, 0, 2500, token).ConfigureAwait(false);
-                            await SetStick(LEFT, 0, 0, 750, token).ConfigureAwait(false); // reset
+                            await SetStick(LEFT, -30000, 0, 2_400, token).ConfigureAwait(false);
+                            await SetStick(LEFT, 0, 0, 0_100, token).ConfigureAwait(false); // reset
 
-                            await SetStick(LEFT, -30000, 0, 2500, token).ConfigureAwait(false);
-                            await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false); // reset
+                            // Quit early if we found an encounter on first sweep.
+                            if (await IsInBattle(token).ConfigureAwait(false))
+                                break;
+                            
+                            await SetStick(LEFT, 30000, 0, 2_400, token).ConfigureAwait(false);
+                            await SetStick(LEFT, 0, 0, 0_100, token).ConfigureAwait(false); // reset
                             break;
                     }
-                }
-                else
-                {
-                    while (await IsInBattle(token).ConfigureAwait(false))
-                        await FleeToOverworld(token).ConfigureAwait(false);
+
+                    attempts++;
+                    if (attempts % 10 == 0)
+                        Log($"Tried {attempts} times, still no encounters.");
                 }
 
-                var pk = await ReadPokemon(WildPokemonOffset, token).ConfigureAwait(false);
-                if (pk.Species == 0)
-                    continue;
                 if (await IsInBattle(token).ConfigureAwait(false))
-                    return attempts;
-
-                attempts++;
-                if (attempts % 10 == 0)
-                    Log($"Tried {attempts} times, still no encounters.");
+                    return (attempts);
             }
 
             return -1; // aborted
@@ -293,17 +292,16 @@ namespace SysBot.Pokemon
         private async Task ResetStick(CancellationToken token)
         {
             // If aborting the sequence, we might have the stick set at some position. Clear it just in case.
-            await SetStick(LEFT, 0, 0, 1_000, token).ConfigureAwait(false); // reset
+            await SetStick(LEFT, 0, 0, 0_500, token).ConfigureAwait(false); // reset
         }
 
         private async Task FleeToOverworld(CancellationToken token)
         {
             // This routine will always escape a battle.
             await Click(B, 0_400, token).ConfigureAwait(false);
-            await Click(B, 0_900, token).ConfigureAwait(false);
-            await Click(DUP, 0_500, token).ConfigureAwait(false);
-            await Click(A, 0_750, token).ConfigureAwait(false);
-            await Task.Delay(2_000, token).ConfigureAwait(false);
+            await Click(B, 0_400, token).ConfigureAwait(false);
+            await Click(DUP, 0_400, token).ConfigureAwait(false);
+            await Click(A, 0_400, token).ConfigureAwait(false);
         }
     }
 }
