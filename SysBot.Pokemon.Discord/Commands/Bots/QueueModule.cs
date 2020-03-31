@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using PKHeX.Core;
@@ -42,9 +43,9 @@ namespace SysBot.Pokemon.Discord
         [Alias("qcu", "tcu")]
         [Summary("Clears the user from the trade queues. Will not remove a user if they are being processed.")]
         [RequireSudo]
-        public async Task ClearTradeUserAsync([Summary("Username of the person to clear")]string user)
+        public async Task ClearTradeUserAsync([Summary("Username of the person to clear")]string _)
         {
-            string msg = ClearTrade(user);
+            string msg = ClearTrade(Context.Message.MentionedUsers.FirstOrDefault().Id);
             await ReplyAsync(msg).ConfigureAwait(false);
         }
 
