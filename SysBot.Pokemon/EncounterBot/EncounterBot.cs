@@ -271,7 +271,7 @@ namespace SysBot.Pokemon
                             // Quit early if we found an encounter on first sweep.
                             if (await IsInBattle(token).ConfigureAwait(false))
                                 break;
-                            
+
                             await SetStick(LEFT, 30000, 0, 2_400, token).ConfigureAwait(false);
                             await SetStick(LEFT, 0, 0, 0_100, token).ConfigureAwait(false); // reset
                             break;
@@ -283,7 +283,7 @@ namespace SysBot.Pokemon
                 }
 
                 if (await IsInBattle(token).ConfigureAwait(false))
-                    return (attempts);
+                    return attempts;
             }
 
             return -1; // aborted

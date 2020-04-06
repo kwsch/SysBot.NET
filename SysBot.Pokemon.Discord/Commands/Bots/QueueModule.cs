@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using PKHeX.Core;
@@ -45,8 +44,11 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task ClearTradeUserAsync([Summary("Username of the person to clear")]string _)
         {
-            string msg = ClearTrade(Context.Message.MentionedUsers.FirstOrDefault().Id);
-            await ReplyAsync(msg).ConfigureAwait(false);
+            foreach (var user in Context.Message.MentionedUsers)
+            {
+                string msg = ClearTrade(user.Id);
+                await ReplyAsync(msg).ConfigureAwait(false);
+            }
         }
 
         [Command("queueClearUser")]

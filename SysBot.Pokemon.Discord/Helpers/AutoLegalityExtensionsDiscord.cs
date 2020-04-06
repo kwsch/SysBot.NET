@@ -56,7 +56,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             var legal = pkm.LegalizePokemon();
-            if (legal == null || !new LegalityAnalysis(legal).Valid)
+            if (!new LegalityAnalysis(legal).Valid)
             {
                 await channel.SendMessageAsync($"{download.SanitizedFileName}: Unable to legalize.").ConfigureAwait(false);
                 return;
