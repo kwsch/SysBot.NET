@@ -112,6 +112,9 @@ namespace SysBot.Pokemon
                 case PokeRoutineType.EncounterBot:
                     return new EncounterBot(cfg, Hub.Config.Encounter, Hub.Config.Folder, Hub.Counts);
 
+                case PokeRoutineType.RemoteControl:
+                    return new RemoteControlBot(cfg);
+
                 default:
                     throw new ArgumentException(nameof(cfg.NextRoutineType));
             }

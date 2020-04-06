@@ -41,6 +41,9 @@ namespace SysBot.Pokemon
         [Category(Whitelists), Description("Users with this role are allowed to enter the Dump queue.")]
         public string RoleCanDump { get; set; } = DefaultDisable;
 
+        [Category(Whitelists), Description("Users with this role are allowed to remotely control the console (if running as Remote Control Bot.")]
+        public string RoleRemoteControl { get; set; } = DefaultDisable;
+
         [Category(Whitelists), Description("Users with this role are allowed to bypass command restrictions.")]
         public string RoleSudo { get; set; } = DefaultDisable;
 

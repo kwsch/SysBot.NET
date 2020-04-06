@@ -17,6 +17,6 @@
         RaidBot,
         EncounterBot,
 
-        Other = 999,
+        RemoteControl,
     }
 }

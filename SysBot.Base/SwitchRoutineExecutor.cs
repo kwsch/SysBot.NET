@@ -22,6 +22,8 @@ namespace SysBot.Base
         public string LastLogged { get; private set; } = "Not Started";
         public DateTime LastTime { get; private set; } = DateTime.Now;
 
+        protected void ReportStatus() => LastTime = DateTime.Now;
+
         public void Log(string message)
         {
             Connection.Log(message);

@@ -19,6 +19,7 @@ namespace SysBot.Pokemon.Discord
         public readonly SensitiveSet<string> RolesTrade = new SensitiveSet<string>();
         public readonly SensitiveSet<string> RolesSeed = new SensitiveSet<string>();
         public readonly SensitiveSet<string> RolesDump = new SensitiveSet<string>();
+        public readonly SensitiveSet<string> RolesRemoteControl = new SensitiveSet<string>();
 
         public bool CanUseSudo(ulong uid) => SudoDiscord.Contains(uid);
         public bool CanUseSudo(IEnumerable<string> roles) => roles.Any(SudoRoles.Contains);
@@ -46,6 +47,7 @@ namespace SysBot.Pokemon.Discord
                 nameof(RolesTrade) => RolesTrade,
                 nameof(RolesSeed) => RolesSeed,
                 nameof(RolesDump) => RolesDump,
+                nameof(RolesRemoteControl) => RolesRemoteControl,
                 _ => throw new ArgumentOutOfRangeException(nameof(type)),
             };
         }
@@ -63,6 +65,7 @@ namespace SysBot.Pokemon.Discord
             RolesTrade.Read(cfg.Discord.RoleCanTrade, z => z);
             RolesSeed.Read(cfg.Discord.RoleCanSeedCheck, z => z);
             RolesDump.Read(cfg.Discord.RoleCanDump, z => z);
+            RolesRemoteControl.Read(cfg.Discord.RoleRemoteControl, z => z);
         }
 
         public void Write()
