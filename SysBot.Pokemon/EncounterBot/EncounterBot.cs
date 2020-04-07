@@ -128,9 +128,9 @@ namespace SysBot.Pokemon
                     Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
                     return;
                 }
-                else if (pk.Ability == 119 || pk.Ability == 107) // pokemon with announced abilites
+                else if (Enum.IsDefined(typeof(EncounterAbilites), pk.Ability)) // pokemon with announced abilites
                 {
-                    //await Task.Delay(2_700, token).ConfigureAwait(false);
+                    await Task.Delay(2_700, token).ConfigureAwait(false);
                 }
 
                 await Task.Delay(2_700, token).ConfigureAwait(false);
