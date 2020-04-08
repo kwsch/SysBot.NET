@@ -20,12 +20,12 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Generate trade start details, indicating what the bot is trading.")]
         public bool CreateTradeStartSprite { get; set; } = true;
 
-        [Category(Operation), Description("Format to display the Now Trading details")]
+        [Category(Operation), Description("Format to display the Now Trading details. {0} = ID, {1} = User")]
         public string TrainerTradeStart { get; set; } = "(ID {0}) {1}";
 
         // On Deck
 
-        [Category(Operation), Description("Generate a list of People currently on-deck #2.")]
+        [Category(Operation), Description("Generate a list of People currently on-deck.")]
         public bool CreateOnDeck { get; set; } = true;
 
         [Category(Operation), Description("Amount of users to show in the on-deck list.")]
@@ -37,7 +37,7 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Separator to split the on-deck list users.")]
         public string OnDeckSeparator { get; set; } = "\n";
 
-        [Category(Operation), Description("Format to display the on-deck list users.")]
+        [Category(Operation), Description("Format to display the on-deck list users. {0} = ID, {3} = User")]
         public string OnDeckFormat { get; set; } = "(ID {0}) - {3}";
 
         // On Deck 2
@@ -54,7 +54,7 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Separator to split the on-deck #2 list users.")]
         public string OnDeckSeparator2 { get; set; } = "\n";
 
-        [Category(Operation), Description("Format to display the on-deck #2 list users.")]
+        [Category(Operation), Description("Format to display the on-deck #2 list users. {0} = ID, {3} = User")]
         public string OnDeckFormat2 { get; set; } = "(ID {0}) - {3}";
 
         // User List
@@ -71,26 +71,26 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Separator to split the list users.")]
         public string UserListSeparator { get; set; } = ", ";
 
-        [Category(Operation), Description("Format to display the list users.")]
+        [Category(Operation), Description("Format to display the list users. {0} = ID, {3} = User")]
         public string UserListFormat { get; set; } = "(ID {0}) - {3}";
 
         // TradeCodeBlock
 
-        [Category(Operation), Description("Copies the file .")]
+        [Category(Operation), Description("Copies the TradeBlockFile if it exists, otherwise, a placeholder image is copied instead.")]
         public bool CopyImageFile { get; set; } = true;
 
-        [Category(Operation), Description("Separator to split the on-deck list users.")]
+        [Category(Operation), Description("Source File name of the image to be copied when a trade code is being entered. If left empty, will create a placeholder image.")]
         public string TradeBlockFile { get; set; } = string.Empty;
 
-        [Category(Operation), Description("Separator to split the on-deck list users.")]
-        public string TradeBlockFormat { get; set; } = "block_{0}.png"; // {0} gets replaced with the local IP address
+        [Category(Operation), Description("Destination file name of the Link Code blocking image. {0} gets replaced with the local IP address.")]
+        public string TradeBlockFormat { get; set; } = "block_{0}.png";
 
         // Waited Time
 
         [Category(Operation), Description("Create a file listing the amount of time the most recently dequeued user has waited.")]
         public bool CreateWaitedTime { get; set; } = true;
 
-        [Category(Operation), Description("Format to display the Waited Time.")]
+        [Category(Operation), Description("Format to display the Waited Time for the most recently dequeued user.")]
         public string WaitedTimeFormat { get; set; } = @"hh\:mm\:ss";
 
         // Estimated Time
@@ -109,7 +109,7 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Create a file indicating the count of users in the queue.")]
         public bool CreateUsersInQueue { get; set; } = true;
 
-        [Category(Operation), Description("Format to display the Users in Queue.")]
+        [Category(Operation), Description("Format to display the Users in Queue. {0} = Count")]
         public string UsersInQueueFormat { get; set; } = "Users in Queue: {0}";
 
         // Completed Trades
@@ -117,7 +117,7 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Create a file indicating the count of completed trades.")]
         public bool CreateCompletedTrades { get; set; } = true;
 
-        [Category(Operation), Description("Format to display the Users in Queue.")]
+        [Category(Operation), Description("Format to display the Completed Trades. {0} = Count")]
         public string CompletedTradesFormat { get; set; } = "Completed Trades: {0}";
 
         public void StartTrade(PokeTradeBot b, PokeTradeDetail<PK8> detail, PokeTradeHub<PK8> hub)
@@ -145,7 +145,7 @@ namespace SysBot.Pokemon
             }
             catch (Exception e)
             {
-                LogUtil.LogError(e.Message, "Stream");
+                LogUtil.LogError(e.Message, nameof(StreamSettings));
             }
         }
 
@@ -191,7 +191,7 @@ namespace SysBot.Pokemon
             }
             catch (Exception e)
             {
-                LogUtil.LogError(e.Message, "Stream");
+                LogUtil.LogError(e.Message, nameof(StreamSettings));
             }
         }
 
@@ -217,7 +217,7 @@ namespace SysBot.Pokemon
             }
             catch (Exception e)
             {
-                LogUtil.LogError(e.Message, "Stream");
+                LogUtil.LogError(e.Message, nameof(StreamSettings));
             }
         }
 
