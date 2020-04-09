@@ -59,14 +59,28 @@ namespace SysBot.Base
 
         public async Task<int> SendAsync(byte[] buffer, CancellationToken token) => await Task.Run(() => Connection.Send(buffer), token).ConfigureAwait(false);
 
-        public async Task<byte[]> ReadBytesAsync(uint offset, int length, CancellationToken token)
+        private async Task<byte[]> ReadBytesFromCmdAsync(byte[] cmd, int length, CancellationToken token)
         {
-            var cmd = SwitchCommand.Peek(offset, length);
             await SendAsync(cmd, token).ConfigureAwait(false);
 
             var buffer = new byte[(length * 2) + 1];
             var _ = Read(buffer);
             return Decoder.ConvertHexByteStringToBytes(buffer);
+        }
+
+        public async Task<byte[]> ReadBytesAsync(uint offset, int length, CancellationToken token)
+        {
+            return await ReadBytesFromCmdAsync(SwitchCommand.Peek(offset, length), length, token);
+        }
+
+        public async Task<byte[]> GetMainNsoBaseAsync(CancellationToken token)
+        {
+            return await ReadBytesFromCmdAsync(SwitchCommand.GetMainNsoBase(), 8, token);
+        }
+
+        public async Task<byte[]> GetHeapBaseAsync(CancellationToken token)
+        {
+            return await ReadBytesFromCmdAsync(SwitchCommand.GetHeapBase(), 8, token);
         }
 
         public async Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token)
