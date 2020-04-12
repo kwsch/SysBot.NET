@@ -87,12 +87,14 @@ namespace SysBot.Pokemon.WinForms
                 PB_Lamp.BackColor = Color.Transparent;
                 return;
             }
-            if (bot.Config.CurrentRoutineType == PokeRoutineType.Idle)
+
+            var cfg = bot.Config;
+            if (cfg.CurrentRoutineType == PokeRoutineType.Idle && cfg.NextRoutineType == PokeRoutineType.Idle)
             {
                 PB_Lamp.BackColor = Color.Yellow;
                 return;
             }
-            if (LastUpdateStatus == lastTime)
+            if (LastUpdateStatus == lastTime && PB_Lamp.BackColor != Color.Transparent)
                 return;
 
             // Color decay from Green based on time
@@ -100,11 +102,11 @@ namespace SysBot.Pokemon.WinForms
             Color good = Color.Green;
             Color bad = Color.Red;
 
-            var delta = DateTime.Now - bot.LastTime;
+            var delta = DateTime.Now - lastTime;
             var seconds = delta.Seconds;
 
             LastUpdateStatus = lastTime;
-            if (seconds > 2 * threshold)
+            if (seconds > 2 * threshold && PB_Lamp.BackColor != Color.Transparent)
                 return; // already changed by now
 
             if (seconds > threshold)
