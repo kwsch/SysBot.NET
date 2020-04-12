@@ -40,8 +40,23 @@ namespace SysBot.Base
             if (IsRunning)
                 return;
 
-            Task.Run(() => Bot.RunAsync(Source.Token), Source.Token);
-            IsRunning = true;
+            Task.Run(() => Bot.RunAsync(Source.Token)
+                .ContinueWith(ReportFailure, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously)
+                .ContinueWith(_ => IsRunning = false));
+        }
+
+        private void ReportFailure(Task finishedTask)
+        {
+            var ident = Bot.Connection.Name;
+            var ae = finishedTask.Exception;
+            if (ae == null)
+            {
+                LogUtil.LogError("Bot has stopped without error.", ident);
+                return;
+            }
+            LogUtil.LogError("Bot has crashed!", ident);
+            foreach (var e in ae.InnerExceptions)
+                LogUtil.LogError(e.StackTrace, ident);
         }
 
         public void Resume()
