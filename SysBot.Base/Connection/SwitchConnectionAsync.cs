@@ -73,19 +73,34 @@ namespace SysBot.Base
             return await ReadBytesFromCmdAsync(SwitchCommand.Peek(offset, length), length, token);
         }
 
-        public async Task<byte[]> GetMainNsoBaseAsync(CancellationToken token)
+        public async Task<byte[]> ReadBytesAbsoluteAsync(UInt64 offset, int length, CancellationToken token)
         {
-            return await ReadBytesFromCmdAsync(SwitchCommand.GetMainNsoBase(), 8, token);
+            return await ReadBytesFromCmdAsync(SwitchCommand.PeekAbsolute(offset, length), length, token);
         }
 
-        public async Task<byte[]> GetHeapBaseAsync(CancellationToken token)
+        public async Task<UInt64> GetMainNsoBaseAsync(CancellationToken token)
         {
-            return await ReadBytesFromCmdAsync(SwitchCommand.GetHeapBase(), 8, token);
+            byte[] baseBytes = await ReadBytesFromCmdAsync(SwitchCommand.GetMainNsoBase(), 8, token);
+            Array.Reverse(baseBytes, 0, 8);
+            return BitConverter.ToUInt64(baseBytes, 0);
+        }
+
+        public async Task<UInt64> GetHeapBaseAsync(CancellationToken token)
+        {
+            var baseBytes = await ReadBytesFromCmdAsync(SwitchCommand.GetHeapBase(), 8, token);
+            Array.Reverse(baseBytes, 0, 8);
+            return BitConverter.ToUInt64(baseBytes, 0);
         }
 
         public async Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token)
         {
             var cmd = SwitchCommand.Poke(offset, data);
+            await SendAsync(cmd, token).ConfigureAwait(false);
+        }
+
+        public async Task WriteBytesAbsoluteAsync(byte[] data, UInt64 offset, CancellationToken token)
+        {
+            var cmd = SwitchCommand.PokeAbsolute(offset, data);
             await SendAsync(cmd, token).ConfigureAwait(false);
         }
     }

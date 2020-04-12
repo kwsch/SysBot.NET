@@ -97,7 +97,7 @@ namespace SysBot.Base
         /// <param name="offset">Absolute address of the data</param>
         /// <param name="count">Amount of bytes</param>
         /// <returns>Encoded command bytes</returns>
-        public static byte[] PeekAbsolute(uint offset, int count) => Encode($"peekAbsolute 0x{offset:X8} {count}");
+        public static byte[] PeekAbsolute(ulong offset, int count) => Encode($"peekAbsolute 0x{offset:X16} {count}");
 
         /// <summary>
         /// Sends the Bot <see cref="data"/> to be written to absolute <see cref="offset"/>.
@@ -105,7 +105,7 @@ namespace SysBot.Base
         /// <param name="offset">Absolute address of the data</param>
         /// <param name="data">Data to write</param>
         /// <returns>Encoded command bytes</returns>
-        public static byte[] PokeAbsolute(uint offset, byte[] data) => Encode($"pokeAbsolute 0x{offset:X8} 0x{string.Concat(data.Select(z => $"{z:X2}"))}");
+        public static byte[] PokeAbsolute(ulong offset, byte[] data) => Encode($"pokeAbsolute 0x{offset:X16} 0x{string.Concat(data.Select(z => $"{z:X2}"))}");
 
         /* 
          *
@@ -117,7 +117,7 @@ namespace SysBot.Base
         /// Requests the main NSO base of attached process.
         /// </summary>
         /// <returns>Encoded command bytes</returns>
-        public static byte[] GetMainNsoBase() => Encode("getHeapBase");
+        public static byte[] GetMainNsoBase() => Encode("getMainNsoBase");
 
         /// <summary>
         /// Requests the heap base of attached process.
