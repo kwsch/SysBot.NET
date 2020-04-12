@@ -33,6 +33,7 @@ namespace SysBot.Pokemon
             Log("Starting main RaidBot loop.");
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.RaidBot)
             {
+                Config.IterateNextRoutine();
                 int code = Settings.GetRandomRaidCode();
                 bool airplane = await HostRaidAsync(sav, code, token).ConfigureAwait(false);
                 await ResetGameAsync(airplane, token).ConfigureAwait(false);

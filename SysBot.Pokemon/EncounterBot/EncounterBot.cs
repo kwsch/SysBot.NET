@@ -76,6 +76,7 @@ namespace SysBot.Pokemon
             await IdentifyTrainer(token).ConfigureAwait(false);
 
             Log("Starting main EncounterBot loop.");
+            Config.IterateNextRoutine();
 
             // Clear out any residual stick weirdness.
             await ResetStick(token).ConfigureAwait(false);

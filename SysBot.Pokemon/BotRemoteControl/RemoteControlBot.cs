@@ -15,6 +15,7 @@ namespace SysBot.Pokemon
             await IdentifyTrainer(token).ConfigureAwait(false);
 
             Log("Starting main loop, then waiting for commands.");
+            Config.IterateNextRoutine();
             while (!token.IsCancellationRequested)
             {
                 await Task.Delay(1_000, token).ConfigureAwait(false);

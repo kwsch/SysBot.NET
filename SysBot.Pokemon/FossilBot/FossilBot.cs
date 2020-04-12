@@ -54,6 +54,7 @@ namespace SysBot.Pokemon
             }
 
             Log("Starting main FossilBot loop.");
+            Config.IterateNextRoutine();
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.FossilBot)
             {
                 await ReviveFossil(counts, token).ConfigureAwait(false);

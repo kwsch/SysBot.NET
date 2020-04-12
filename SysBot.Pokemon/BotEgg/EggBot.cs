@@ -42,6 +42,7 @@ namespace SysBot.Pokemon
             }
 
             Log("Starting main EggBot loop.");
+            Config.IterateNextRoutine();
             var blank = new PK8();
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EggFetch)
             {
