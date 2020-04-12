@@ -94,7 +94,7 @@ namespace SysBot.Pokemon.WinForms
                 PB_Lamp.BackColor = Color.Yellow;
                 return;
             }
-            if (LastUpdateStatus == lastTime && PB_Lamp.BackColor != Color.Transparent)
+            if (LastUpdateStatus == lastTime)
                 return;
 
             // Color decay from Green based on time
@@ -106,7 +106,7 @@ namespace SysBot.Pokemon.WinForms
             var seconds = delta.Seconds;
 
             LastUpdateStatus = lastTime;
-            if (seconds > 2 * threshold && PB_Lamp.BackColor != Color.Transparent)
+            if (seconds > 2 * threshold)
                 return; // already changed by now
 
             if (seconds > threshold)
