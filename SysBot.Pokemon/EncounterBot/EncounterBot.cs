@@ -1,5 +1,6 @@
 ﻿using PKHeX.Core;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;
@@ -128,7 +129,7 @@ namespace SysBot.Pokemon
                     Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
                     return;
                 }
-                else if (Enum.IsDefined(typeof(EncounterAbilites), pk.Ability)) // pokemon with announced abilites
+                if (EncounterBotUtil.DisplayedAbilities.Contains(pk.Ability)) // pokemon with announced abilites
                 {
                     await Task.Delay(2_700, token).ConfigureAwait(false);
                 }
