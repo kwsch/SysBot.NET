@@ -43,6 +43,8 @@ namespace SysBot.Base
             Task.Run(() => Bot.RunAsync(Source.Token)
                 .ContinueWith(ReportFailure, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously)
                 .ContinueWith(_ => IsRunning = false));
+
+            IsRunning = true;
         }
 
         private void ReportFailure(Task finishedTask)
