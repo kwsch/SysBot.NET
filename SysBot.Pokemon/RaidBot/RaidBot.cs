@@ -48,7 +48,7 @@ namespace SysBot.Pokemon
         private async Task<bool> HostRaidAsync(SAV8SWSH sav, int code, CancellationToken token)
         {
             // Connect to Y-Comm
-            await EnsureConnectedToYComm(Hub.Config, token).ConfigureAwait(false);
+            //await EnsureConnectedToYComm(Hub.Config, token).ConfigureAwait(false);
 
             // Press A and stall out a bit for the loading
             await Click(A, 5000, token).ConfigureAwait(false);
@@ -83,16 +83,17 @@ namespace SysBot.Pokemon
                 timetowait -= 1000;
             }
 
+            await Click(A, 500, token).ConfigureAwait(false);
             if (timetowait > 0)
             {
                 Log("All participants have joined.");
-                while (await GetCurrentScreen(token) == 0xFF4628E8)
+                while (!await IsInBattle(token))
                     await Click(A, 500, token).ConfigureAwait(false);
             }
             else
             {
                 Log("Not all participants have joined. Continuing anyway!");
-                while (await GetCurrentScreen(token) == 0xFF4628E8)
+                while (!await IsInBattle(token))
                     await Click(A, 500, token).ConfigureAwait(false);
             }
 
