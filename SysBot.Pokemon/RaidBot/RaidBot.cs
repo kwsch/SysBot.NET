@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SysBot.Base;
 using static SysBot.Base.SwitchButton;
+using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
@@ -68,12 +69,13 @@ namespace SysBot.Pokemon
             await Click(A, 5000, token).ConfigureAwait(false);
             await Click(DUP, 1000, token).ConfigureAwait(false);
             await Click(A, 1000, token).ConfigureAwait(false);
+            await ClearRaidTrainerName(token);
 
             // Use Offset to actually calculate this value and press A
             var timetowait = 3 * 60 * 1000;
             while (timetowait > 0)
             {
-                bool result = await GetIsRaidPartyIsFullAsync().ConfigureAwait(false);
+                bool result = await GetIsRaidPartyIsFullAsync(token).ConfigureAwait(false);
                 if (result)
                     break;
 
@@ -84,25 +86,37 @@ namespace SysBot.Pokemon
             if (timetowait > 0)
             {
                 Log("All participants have joined.");
-                await Click(A, 3000, token).ConfigureAwait(false);
+                while (await GetCurrentScreen(token) == 0xFF4628E8)
+                    await Click(A, 500, token).ConfigureAwait(false);
             }
             else
             {
                 Log("Not all participants have joined. Continuing anyway!");
-                await Click(A, 3000, token).ConfigureAwait(false);
+                while (await GetCurrentScreen(token) == 0xFF4628E8)
+                    await Click(A, 500, token).ConfigureAwait(false);
             }
 
             Log($"Hosting raid as {sav.OT} with code: {code:0000}.");
-            await Task.Delay(10_000, token).ConfigureAwait(false);
+            await Task.Delay(5_000, token).ConfigureAwait(false);
 
             return false;
         }
 
-        // Check if the raid party is full and set true if it is
-        // not implemented
-        private static async Task<bool> GetIsRaidPartyIsFullAsync()
+        private async Task ClearRaidTrainerName(CancellationToken token)
         {
-            await Task.Delay(1).ConfigureAwait(false);
+            byte[] EmptyCharacter = new byte[1];
+            await Connection.WriteBytesAsync(EmptyCharacter, RaidTrainer2Offset, token).ConfigureAwait(false);
+            await Connection.WriteBytesAsync(EmptyCharacter, RaidTrainer3Offset, token).ConfigureAwait(false);
+            await Connection.WriteBytesAsync(EmptyCharacter, RaidTrainer4Offset, token).ConfigureAwait(false);
+        }
+
+        private async Task<bool> GetIsRaidPartyIsFullAsync(CancellationToken token)
+        {
+            var P2 = await Connection.ReadBytesAsync(RaidTrainer2Offset, 1, token);
+            var P3 = await Connection.ReadBytesAsync(RaidTrainer3Offset, 1, token);
+            var P4 = await Connection.ReadBytesAsync(RaidTrainer4Offset, 1, token);
+            if ((P2[0] != 0) && (P3[0] != 0) && (P4[0] != 0))
+                return true;
             return false;
         }
 
