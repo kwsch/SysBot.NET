@@ -11,6 +11,12 @@ namespace SysBot.Pokemon
         public const uint SoftBanUnixTimespanOffset = 0x4298f9f8;
         public const uint IsConnectedOffset = 0x2F864118;
 
+        // Raid Trainer Name Offsets
+        public const uint RaidTrainer1Offset = 0x81F4C1B4;
+        public const uint RaidTrainer2Offset = 0x81F4C1DC;
+        public const uint RaidTrainer3Offset = 0x81F4C204;
+        public const uint RaidTrainer4Offset = 0x81F4C22C;
+
         // Vary by game. They are 1 when in a battle or raid, 0 otherwise.
         public const uint InBattleRaidOffsetSH = 0x3DD26104;
         public const uint InBattleRaidOffsetSW = 0x3DD26109;
