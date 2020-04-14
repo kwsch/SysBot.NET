@@ -472,6 +472,18 @@ namespace SysBot.Pokemon
             return false;
         }
 
+        public async Task<TextSpeed> GetTextSpeed(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(TextSpeedOffset, 1, token).ConfigureAwait(false);
+            return (TextSpeed)data[0]-0x24;
+        }
+
+        public async Task SetTextSpeed(TextSpeed speed, CancellationToken token)
+        {
+            var data = new byte[] { (byte)((uint)speed + 0x24) };
+            await Connection.WriteBytesAsync(data, TextSpeedOffset, token).ConfigureAwait(false);
+        }
+
         public static uint GetOverworldOffset(ConsoleLanguageParameter value)
         {
             return value switch

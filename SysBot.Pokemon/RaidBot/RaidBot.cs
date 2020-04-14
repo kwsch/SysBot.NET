@@ -31,6 +31,11 @@ namespace SysBot.Pokemon
             Log("Identifying trainer data of the host console.");
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
 
+            var originalTextSpeed = await GetTextSpeed(token);
+            if (originalTextSpeed != TextSpeed.Fast)
+                Log("Did you not read the wiki? It's fine though I set text speed to fast for you. No need to report that the bot isn't working.");
+                await SetTextSpeed(TextSpeed.Fast, token);
+
             Log("Starting main RaidBot loop.");
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.RaidBot)
             {
@@ -43,6 +48,7 @@ namespace SysBot.Pokemon
                 Log($"Raid host {encounterCount} finished.");
                 Counts.AddCompletedRaids();
             }
+            await SetTextSpeed(originalTextSpeed, token);
         }
 
         private async Task<bool> HostRaidAsync(SAV8SWSH sav, int code, CancellationToken token)
