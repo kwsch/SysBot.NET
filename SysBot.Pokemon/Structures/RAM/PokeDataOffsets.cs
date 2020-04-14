@@ -10,6 +10,7 @@ namespace SysBot.Pokemon
         public const uint TrainerDataOffset = 0x42935E48;
         public const uint SoftBanUnixTimespanOffset = 0x4298f9f8;
         public const uint IsConnectedOffset = 0x2F864118;
+        public const uint TextSpeedOffset = 0x42935FD0;
 
         // Raid Trainer Name Offsets
         public const uint RaidTrainer1Offset = 0x81F4C1B4;

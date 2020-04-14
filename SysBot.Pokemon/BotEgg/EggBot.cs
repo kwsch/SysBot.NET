@@ -33,6 +33,11 @@ namespace SysBot.Pokemon
             Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);
 
+            var originalTextSpeed = await GetTextSpeed(token);
+            if (originalTextSpeed != TextSpeed.Fast)
+                Log("Did you not read the wiki? It's fine though I set text speed to fast for you. No need to report that the bot isn't working.");
+                await SetTextSpeed(TextSpeed.Fast, token);
+
             Log("Checking destination slot for eggs to see if anything is in the slot...");
             var existing = await GetBoxSlotQuality(InjectBox, InjectSlot, token).ConfigureAwait(false);
             if (existing.Quality != SlotQuality.Overwritable)
@@ -93,6 +98,7 @@ namespace SysBot.Pokemon
 
             // If aborting the sequence, we might have the stick set at some position. Clear it just in case.
             await SetStick(LEFT, 0, 0, 0, CancellationToken.None).ConfigureAwait(false); // reset
+            await SetTextSpeed(originalTextSpeed, token);
         }
 
         private async Task<int> StepUntilEgg(CancellationToken token)
