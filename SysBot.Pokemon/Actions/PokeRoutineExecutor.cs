@@ -1,11 +1,11 @@
-﻿using System;
+﻿using PKHeX.Core;
+using SysBot.Base;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using PKHeX.Core;
-using SysBot.Base;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Pokemon.PokeDataOffsets;
 
@@ -108,10 +108,10 @@ namespace SysBot.Pokemon
 
             async Task<bool> SpinCircle()
             {
-                return    await Step( m,  0).ConfigureAwait(false) // →
-                       || await Step( 0,  m).ConfigureAwait(false) // ↑ 
-                       || await Step(-m,  0).ConfigureAwait(false) // ←
-                       || await Step( 0, -m).ConfigureAwait(false);// ↓
+                return await Step(m, 0).ConfigureAwait(false) // →
+                       || await Step(0, m).ConfigureAwait(false) // ↑ 
+                       || await Step(-m, 0).ConfigureAwait(false) // ←
+                       || await Step(0, -m).ConfigureAwait(false);// ↓
 
                 async Task<bool> Step(short x, short y)
                 {
@@ -475,12 +475,13 @@ namespace SysBot.Pokemon
         public async Task<TextSpeed> GetTextSpeed(CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(TextSpeedOffset, 1, token).ConfigureAwait(false);
-            return (TextSpeed)data[0]-0x24;
+            return (TextSpeed)(data[0] & 3);
         }
 
         public async Task SetTextSpeed(TextSpeed speed, CancellationToken token)
         {
-            var data = new byte[] { (byte)((uint)speed + 0x24) };
+            var textSpeedByte = await Connection.ReadBytesAsync(TextSpeedOffset, 1, token).ConfigureAwait(false);
+            var data = new byte[] { (byte)(textSpeedByte[0] & 0xFC | (int)speed) };
             await Connection.WriteBytesAsync(data, TextSpeedOffset, token).ConfigureAwait(false);
         }
 
