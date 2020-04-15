@@ -31,10 +31,7 @@ namespace SysBot.Pokemon
             Log("Identifying trainer data of the host console.");
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
 
-            var originalTextSpeed = await GetTextSpeed(token);
-            if (originalTextSpeed != TextSpeed.Fast)
-                Log("Did you not read the wiki? It's fine though I set text speed to fast for you. No need to report that the bot isn't working.");
-                await SetTextSpeed(TextSpeed.Fast, token);
+            var originalTextSpeed = await EnsureTextSpeedFast(token).ConfigureAwait(false);
 
             Log("Starting main RaidBot loop.");
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.RaidBot)
@@ -48,7 +45,7 @@ namespace SysBot.Pokemon
                 Log($"Raid host {encounterCount} finished.");
                 Counts.AddCompletedRaids();
             }
-            await SetTextSpeed(originalTextSpeed, token);
+            await SetTextSpeed(originalTextSpeed, token).ConfigureAwait(false);
         }
 
         private async Task<bool> HostRaidAsync(SAV8SWSH sav, int code, CancellationToken token)
@@ -75,7 +72,7 @@ namespace SysBot.Pokemon
             await Click(A, 5000, token).ConfigureAwait(false);
             await Click(DUP, 1000, token).ConfigureAwait(false);
             await Click(A, 1000, token).ConfigureAwait(false);
-            await ClearRaidTrainerName(token);
+            await ClearRaidTrainerName(token).ConfigureAwait(false);
 
             // Use Offset to actually calculate this value and press A
             var timetowait = 3 * 60 * 1000;
@@ -93,13 +90,13 @@ namespace SysBot.Pokemon
             if (timetowait > 0)
             {
                 Log("All participants have joined.");
-                while (!await IsInBattle(token))
+                while (!await IsInBattle(token).ConfigureAwait(false))
                     await Click(A, 500, token).ConfigureAwait(false);
             }
             else
             {
                 Log("Not all participants have joined. Continuing anyway!");
-                while (!await IsInBattle(token))
+                while (!await IsInBattle(token).ConfigureAwait(false))
                     await Click(A, 500, token).ConfigureAwait(false);
             }
 
@@ -119,12 +116,10 @@ namespace SysBot.Pokemon
 
         private async Task<bool> GetIsRaidPartyIsFullAsync(CancellationToken token)
         {
-            var P2 = await Connection.ReadBytesAsync(RaidTrainer2Offset, 1, token);
-            var P3 = await Connection.ReadBytesAsync(RaidTrainer3Offset, 1, token);
-            var P4 = await Connection.ReadBytesAsync(RaidTrainer4Offset, 1, token);
-            if ((P2[0] != 0) && (P3[0] != 0) && (P4[0] != 0))
-                return true;
-            return false;
+            var P2 = await Connection.ReadBytesAsync(RaidTrainer2Offset, 1, token).ConfigureAwait(false);
+            var P3 = await Connection.ReadBytesAsync(RaidTrainer3Offset, 1, token).ConfigureAwait(false);
+            var P4 = await Connection.ReadBytesAsync(RaidTrainer4Offset, 1, token).ConfigureAwait(false);
+            return (P2[0] != 0) && (P3[0] != 0) && (P4[0] != 0);
         }
 
         private async Task ResetGameAsync(bool airplane, CancellationToken token)

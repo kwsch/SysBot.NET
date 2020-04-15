@@ -481,7 +481,7 @@ namespace SysBot.Pokemon
         public async Task SetTextSpeed(TextSpeed speed, CancellationToken token)
         {
             var textSpeedByte = await Connection.ReadBytesAsync(TextSpeedOffset, 1, token).ConfigureAwait(false);
-            var data = new byte[] { (byte)(textSpeedByte[0] & 0xFC | (int)speed) };
+            var data = new[] { (byte)((textSpeedByte[0] & 0xFC) | (int)speed) };
             await Connection.WriteBytesAsync(data, TextSpeedOffset, token).ConfigureAwait(false);
         }
 
@@ -519,6 +519,17 @@ namespace SysBot.Pokemon
                     Log(new ShowdownSet(q.Data!).Text);
                     return;
             }
+        }
+
+        protected async Task<TextSpeed> EnsureTextSpeedFast(CancellationToken token)
+        {
+            var speed = await GetTextSpeed(token).ConfigureAwait(false);
+            if (speed == TextSpeed.Fast)
+                return speed;
+
+            Log("Did you not read the wiki? It's fine though I set text speed to fast for you. No need to report that the bot isn't working.");
+            await SetTextSpeed(TextSpeed.Fast, token).ConfigureAwait(false);
+            return speed;
         }
     }
 }

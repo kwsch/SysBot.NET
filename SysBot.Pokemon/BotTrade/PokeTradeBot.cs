@@ -44,10 +44,7 @@ namespace SysBot.Pokemon
             Log("Identifying trainer data of the host console.");
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
 
-            var originalTextSpeed = await GetTextSpeed(token);
-            if (originalTextSpeed != TextSpeed.Fast)
-                Log("Did you not read the wiki? It's fine though I set text speed to fast for you. No need to report that the bot isn't working.");
-                await SetTextSpeed(TextSpeed.Fast, token);
+            var originalTextSpeed = await EnsureTextSpeedFast(token).ConfigureAwait(false);
 
             Log("Starting main TradeBot loop.");
             while (!token.IsCancellationRequested)
@@ -62,7 +59,7 @@ namespace SysBot.Pokemon
                 await task.ConfigureAwait(false);
             }
             Hub.Bots.Remove(this);
-            await SetTextSpeed(originalTextSpeed, token);
+            await SetTextSpeed(originalTextSpeed, token).ConfigureAwait(false);
         }
 
         private async Task DoNothing(CancellationToken token)
