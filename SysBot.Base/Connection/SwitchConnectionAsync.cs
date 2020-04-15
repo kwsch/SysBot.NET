@@ -70,24 +70,24 @@ namespace SysBot.Base
 
         public async Task<byte[]> ReadBytesAsync(uint offset, int length, CancellationToken token)
         {
-            return await ReadBytesFromCmdAsync(SwitchCommand.Peek(offset, length), length, token);
+            return await ReadBytesFromCmdAsync(SwitchCommand.Peek(offset, length), length, token).ConfigureAwait(false);
         }
 
-        public async Task<byte[]> ReadBytesAbsoluteAsync(UInt64 offset, int length, CancellationToken token)
+        public async Task<byte[]> ReadBytesAbsoluteAsync(ulong offset, int length, CancellationToken token)
         {
-            return await ReadBytesFromCmdAsync(SwitchCommand.PeekAbsolute(offset, length), length, token);
+            return await ReadBytesFromCmdAsync(SwitchCommand.PeekAbsolute(offset, length), length, token).ConfigureAwait(false);
         }
 
-        public async Task<UInt64> GetMainNsoBaseAsync(CancellationToken token)
+        public async Task<ulong> GetMainNsoBaseAsync(CancellationToken token)
         {
-            byte[] baseBytes = await ReadBytesFromCmdAsync(SwitchCommand.GetMainNsoBase(), 8, token);
+            byte[] baseBytes = await ReadBytesFromCmdAsync(SwitchCommand.GetMainNsoBase(), sizeof(ulong), token).ConfigureAwait(false);
             Array.Reverse(baseBytes, 0, 8);
             return BitConverter.ToUInt64(baseBytes, 0);
         }
 
-        public async Task<UInt64> GetHeapBaseAsync(CancellationToken token)
+        public async Task<ulong> GetHeapBaseAsync(CancellationToken token)
         {
-            var baseBytes = await ReadBytesFromCmdAsync(SwitchCommand.GetHeapBase(), 8, token);
+            var baseBytes = await ReadBytesFromCmdAsync(SwitchCommand.GetHeapBase(), sizeof(ulong), token).ConfigureAwait(false);
             Array.Reverse(baseBytes, 0, 8);
             return BitConverter.ToUInt64(baseBytes, 0);
         }
@@ -98,7 +98,7 @@ namespace SysBot.Base
             await SendAsync(cmd, token).ConfigureAwait(false);
         }
 
-        public async Task WriteBytesAbsoluteAsync(byte[] data, UInt64 offset, CancellationToken token)
+        public async Task WriteBytesAbsoluteAsync(byte[] data, ulong offset, CancellationToken token)
         {
             var cmd = SwitchCommand.PokeAbsolute(offset, data);
             await SendAsync(cmd, token).ConfigureAwait(false);
