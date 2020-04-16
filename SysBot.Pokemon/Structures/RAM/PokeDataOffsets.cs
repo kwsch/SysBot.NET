@@ -99,6 +99,9 @@ namespace SysBot.Pokemon
         public const uint OverworldOffsetChineseS = 0x2E36D6C4;
         public const uint OverworldOffsetKorean = 0x2E36DAB4;
 
+        //For detecting when we're able to interact in a battle
+        public const uint BattleMenuOffset = 0x691372E4;
+
         public const uint CurrentScreenOffset = 0x68dcbc90;
 
         public const uint CurrentScreen_Overworld = 0xFFFF5127;

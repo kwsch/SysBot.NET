@@ -216,14 +216,14 @@ namespace SysBot.Pokemon
             if (Hub.Config.Trade.SpinTrade)
                 partnerFound = await SpinUntilChangedLink(30_000, token).ConfigureAwait(false);
             else
-                partnerFound = await ReadUntilChanged(ofs, PokeTradeBotUtil.EMPTY_EC, 30_000, 0_200, token).ConfigureAwait(false);
+                partnerFound = await ReadUntilChanged(ofs, PokeTradeBotUtil.EMPTY_EC, 30_000, 0_200, false, token).ConfigureAwait(false);
 
             // Wait 15 more seconds. First 30 seconds is for spin
             if (!partnerFound)
             {
                 Log("Still no partner found.. waiting 15 more seconds");
                 partnerFound =
-                    await ReadUntilChanged(ofs, PokeTradeBotUtil.EMPTY_EC, 15_000, 0_200, token).ConfigureAwait(false);
+                    await ReadUntilChanged(ofs, PokeTradeBotUtil.EMPTY_EC, 15_000, 0_200, false, token).ConfigureAwait(false);
             }
 
             if (token.IsCancellationRequested)
@@ -525,10 +525,10 @@ namespace SysBot.Pokemon
             if (Hub.Config.Trade.SpinSurprise)
                 await SpinUntilChangedSurprise(30_000, token).ConfigureAwait(false);
             else
-                await ReadUntilChanged(ofs, searching, 30_000, 0_200, token).ConfigureAwait(false);
+                await ReadUntilChanged(ofs, searching, 30_000, 0_200, false, token).ConfigureAwait(false);
 
             // Wait 15 Seconds for offer...
-            var partnerFound = await ReadUntilChanged(SurpriseTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, 15_000, 0_200, token).ConfigureAwait(false);
+            var partnerFound = await ReadUntilChanged(SurpriseTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, 15_000, 0_200, false, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;

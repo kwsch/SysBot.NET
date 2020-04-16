@@ -187,14 +187,19 @@ namespace SysBot.Pokemon
             return changed;
         }
 
-        public async Task<bool> ReadUntilChanged(uint offset, byte[] original, int waitms, int waitInterval, CancellationToken token)
+        // Reads an offset until it changes to either match or differ from the comparison value.
+        // If "match" is set to true, then the function returns true when the offset matches the given value.
+        // Otherwise, it returns true when the offset no longer matches the given value.
+        public async Task<bool> ReadUntilChanged(uint offset, byte[] comparison, int waitms, int waitInterval, bool match, CancellationToken token)
         {
             var sw = new Stopwatch();
             sw.Start();
             do
             {
-                if (await ReadIsChanged(offset, original, token).ConfigureAwait(false))
+                var result = await Connection.ReadBytesAsync(offset, comparison.Length, token).ConfigureAwait(false);
+                if (match == result.SequenceEqual(comparison))
                     return true;
+
                 await Task.Delay(waitInterval, token).ConfigureAwait(false);
             } while (sw.ElapsedMilliseconds < waitms);
             return false;

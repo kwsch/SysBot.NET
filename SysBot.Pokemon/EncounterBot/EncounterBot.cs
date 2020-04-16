@@ -133,12 +133,11 @@ namespace SysBot.Pokemon
                     Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
                     return;
                 }
-                if (EncounterBotUtil.DisplayedAbilities.Contains(pk.Ability)) // pokemon with announced abilites
-                {
-                    await Task.Delay(2_700, token).ConfigureAwait(false);
-                }
 
-                await Task.Delay(2_700, token).ConfigureAwait(false);
+                byte[] battlemenuready = { 255, 255, 255, 255 };
+
+                await ReadUntilChanged(BattleMenuOffset, battlemenuready, 15_000, 0_100, true, token).ConfigureAwait(false);
+
                 while (await IsInBattle(token).ConfigureAwait(false))
                     await FleeToOverworld(token).ConfigureAwait(false);
             }
@@ -303,10 +302,10 @@ namespace SysBot.Pokemon
         private async Task FleeToOverworld(CancellationToken token)
         {
             // This routine will always escape a battle.
-            await Click(B, 0_400, token).ConfigureAwait(false);
-            await Click(B, 0_400, token).ConfigureAwait(false);
             await Click(DUP, 0_400, token).ConfigureAwait(false);
             await Click(A, 0_400, token).ConfigureAwait(false);
+            await Click(B, 0_400, token).ConfigureAwait(false);
+            await Click(B, 0_400, token).ConfigureAwait(false);
         }
     }
 }
