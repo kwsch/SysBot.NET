@@ -69,7 +69,7 @@ namespace SysBot.Pokemon
             }
 
             // Invite others, confirm Pokémon and wait
-            await Click(A, 5000, token).ConfigureAwait(false);
+            await Click(A, 7000, token).ConfigureAwait(false);
             await Click(DUP, 1000, token).ConfigureAwait(false);
             await Click(A, 1000, token).ConfigureAwait(false);
             await ClearRaidTrainerName(token).ConfigureAwait(false);
