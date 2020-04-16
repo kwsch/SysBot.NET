@@ -69,13 +69,14 @@ namespace SysBot.Pokemon
             }
 
             // Invite others, confirm Pokémon and wait
-            await Click(A, 5000, token).ConfigureAwait(false);
+            await Click(A, 7000, token).ConfigureAwait(false);
             await Click(DUP, 1000, token).ConfigureAwait(false);
             await Click(A, 1000, token).ConfigureAwait(false);
             await ClearRaidTrainerName(token).ConfigureAwait(false);
 
             // Use Offset to actually calculate this value and press A
             var timetowait = 3 * 60 * 1000;
+            await Task.Delay(1000, token).ConfigureAwait(false);
             while (timetowait > 0)
             {
                 bool result = await GetIsRaidPartyIsFullAsync(token).ConfigureAwait(false);
