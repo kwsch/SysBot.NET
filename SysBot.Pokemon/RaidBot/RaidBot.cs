@@ -51,7 +51,7 @@ namespace SysBot.Pokemon
         private async Task<bool> HostRaidAsync(SAV8SWSH sav, int code, CancellationToken token)
         {
             // Connect to Y-Comm
-            //await EnsureConnectedToYComm(Hub.Config, token).ConfigureAwait(false);
+            await EnsureConnectedToYComm(Hub.Config, token).ConfigureAwait(false);
 
             // Press A and stall out a bit for the loading
             await Click(A, 5000, token).ConfigureAwait(false);
