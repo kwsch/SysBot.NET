@@ -76,6 +76,7 @@ namespace SysBot.Pokemon
 
             // Use Offset to actually calculate this value and press A
             var timetowait = 3 * 60 * 1000;
+            await Task.Delay(1000, token).ConfigureAwait(false);
             while (timetowait > 0)
             {
                 bool result = await GetIsRaidPartyIsFullAsync(token).ConfigureAwait(false);
