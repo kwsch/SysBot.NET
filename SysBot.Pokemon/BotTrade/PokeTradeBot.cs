@@ -543,9 +543,9 @@ namespace SysBot.Pokemon
             await Task.Delay(7_000, token).ConfigureAwait(false);
 
             var TrainerName = await GetTradePartnerName(TradeMethod.SupriseTrade, token).ConfigureAwait(false);
-            var SuprisePoke = await ReadSupriseTradePokemon(token).ConfigureAwait(false);
+            var SurprisePoke = await ReadSurpriseTradePokemon(token).ConfigureAwait(false);
 
-            Log($"Found Surprise Trade Partner: {TrainerName}, Pokémon: {(Species)SuprisePoke.Species}");
+            Log($"Found Surprise Trade Partner: {TrainerName}, Pokémon: {(Species)SurprisePoke.Species}");
 
             // Clear out the received trade data; we want to skip the trade animation.
             // The box slot locks have been removed prior to searching.
@@ -570,7 +570,7 @@ namespace SysBot.Pokemon
                 await ExitTrade(true, token).ConfigureAwait(false);
 
             if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                DumpPokemon(DumpSetting.DumpFolder, "surprise", SuprisePoke);
+                DumpPokemon(DumpSetting.DumpFolder, "surprise", SurprisePoke);
             Hub.Counts.AddCompletedSurprise();
 
             return PokeTradeResult.Success;

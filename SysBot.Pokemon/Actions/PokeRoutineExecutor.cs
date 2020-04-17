@@ -35,7 +35,7 @@ namespace SysBot.Pokemon
             return new PK8(data);
         }
 
-        public async Task<PK8> ReadSupriseTradePokemon(CancellationToken token)
+        public async Task<PK8> ReadSurpriseTradePokemon(CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(SurpriseTradePartnerPokemonOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
             return new PK8(data);
