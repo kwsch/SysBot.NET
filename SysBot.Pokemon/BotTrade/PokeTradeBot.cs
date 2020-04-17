@@ -210,7 +210,7 @@ namespace SysBot.Pokemon
 
             // Wait until search finishes
             // Wait 30 Seconds for Trainer...
-            Log("Waiting for trainer ...");
+            Log("Waiting for trainer...");
             bool partnerFound;
             const uint ofs = LinkTradePartnerPokemonOffset;
             if (Hub.Config.Trade.SpinTrade)
@@ -221,7 +221,7 @@ namespace SysBot.Pokemon
             // Wait 15 more seconds. First 30 seconds is for spin
             if (!partnerFound)
             {
-                Log("Still no partner found.. waiting 15 more seconds");
+                Log("Still no partner found... waiting 15 more seconds");
                 partnerFound =
                     await ReadUntilChanged(ofs, PokeTradeBotUtil.EMPTY_EC, 15_000, 0_200, false, token).ConfigureAwait(false);
             }

@@ -17,6 +17,7 @@ namespace SysBot.Pokemon
         private readonly EncounterMode Mode;
         private readonly Nature DesiredNature;
         private readonly int[] DesiredIVs = {-1, -1, -1, -1, -1, -1};
+        private readonly byte[] BattleMenuReady = {255, 255, 255, 255};
 
         public EncounterBot(PokeBotConfig cfg, EncounterSettings encounter, IDumper dump, BotCompleteCounts count) : base(cfg)
         {
@@ -105,7 +106,7 @@ namespace SysBot.Pokemon
                 if (attempts < 0) // aborted
                     continue;
 
-                Log($"Encounter found after {attempts} attempts! Checking details.");
+                Log($"Encounter found after {attempts} attempts! Checking details...");
 
                 // Reset stick while we wait for the encounter to load.
                 await ResetStick(token).ConfigureAwait(false);
@@ -134,10 +135,12 @@ namespace SysBot.Pokemon
                     return;
                 }
 
-                byte[] battlemenuready = { 255, 255, 255, 255 };
+                // In some areas, the menu offset can flicker undesirably while battle is loading.
+                await Task.Delay(4_000, token).ConfigureAwait(false);
 
-                await ReadUntilChanged(BattleMenuOffset, battlemenuready, 15_000, 0_100, true, token).ConfigureAwait(false);
+                await ReadUntilChanged(BattleMenuOffset, BattleMenuReady, 15_000, 0_100, true, token).ConfigureAwait(false);
 
+                Log("Running away...");
                 while (await IsInBattle(token).ConfigureAwait(false))
                     await FleeToOverworld(token).ConfigureAwait(false);
             }
@@ -200,19 +203,19 @@ namespace SysBot.Pokemon
 
                 // At the start of each loop, an A press is needed to exit out of a prompt.
                 await Click(A, 0_500, token).ConfigureAwait(false);
-                await SetStick(LEFT, 0, 30000, 1000, token).ConfigureAwait(false);
+                await SetStick(LEFT, 0, 30000, 1_000, token).ConfigureAwait(false);
 
                 // Encounters Zacian/Zamazenta
                 await Click(A, 0_600, token).ConfigureAwait(false);
 
                 // Cutscene loads
-                await Click(A, 3_500, token).ConfigureAwait(false);
+                await Click(A, 2_700, token).ConfigureAwait(false);
 
                 // Click through all the menus.
                 for (int i = 0; i < 4; i++)
                     await Click(A, 1_000, token).ConfigureAwait(false);
 
-                Log("Encounter started! Checking details.");
+                Log("Encounter started! Checking details...");
 
                 await Task.Delay(4_000, token).ConfigureAwait(false);
 
@@ -237,13 +240,17 @@ namespace SysBot.Pokemon
                 }
 
                 // Wait for the entire cutscene until we can flee.
-                await Task.Delay(18_000, token).ConfigureAwait(false);
+                await Task.Delay(19_500, token).ConfigureAwait(false);
 
                 // Get rid of any stick stuff left over so we can flee properly.
                 await ResetStick(token).ConfigureAwait(false);
 
+                Log("Running away...");
                 while (await IsInBattle(token).ConfigureAwait(false))
                     await FleeToOverworld(token).ConfigureAwait(false);
+
+                // Extra delay to be sure we're fully out of the battle.
+                await Task.Delay(0_250, token).ConfigureAwait(false);
             }
         }
 
