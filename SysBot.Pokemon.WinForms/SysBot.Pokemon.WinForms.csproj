@@ -16,12 +16,13 @@
     <Version>01.00.00</Version>
     <Nullable>enable</Nullable>
     <Platforms>x64;x86</Platforms>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="PKHeX.Core" Version="20.4.14" />
-    <PackageReference Include="Costura.Fody" Version="4.1.0" />
+    <PackageReference Include="System.Resources.Extensions" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +31,14 @@
     <ProjectReference Include="..\SysBot.Pokemon.Twitch\SysBot.Pokemon.Twitch.csproj" />
     <ProjectReference Include="..\SysBot.Pokemon\SysBot.Pokemon.csproj" />
     <ProjectReference Include="..\SysBot.Pokemon.Z3\SysBot.Pokemon.Z3.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.StartsWith('net4')) AND '$(Configuration)' == 'Release' ">
+    <PackageReference Include="Costura.Fody" Version="4.1.0" />
+    <PackageReference Include="Fody" Version="6.0.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.StartsWith('net4'))">
