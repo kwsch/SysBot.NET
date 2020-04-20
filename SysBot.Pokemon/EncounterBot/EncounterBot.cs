@@ -1,6 +1,5 @@
 ﻿using PKHeX.Core;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;

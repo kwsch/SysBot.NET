@@ -121,11 +121,11 @@ namespace SysBot.Pokemon.Discord
             return ClearTrade(userID);
         }
 
-        private static string ClearTrade(string username)
-        {
-            var result = Info.ClearTrade(username);
-            return GetClearTradeMessage(result);
-        }
+        //private static string ClearTrade(string username)
+        //{
+        //    var result = Info.ClearTrade(username);
+        //    return GetClearTradeMessage(result);
+        //}
 
         private static string ClearTrade(ulong userID)
         {
