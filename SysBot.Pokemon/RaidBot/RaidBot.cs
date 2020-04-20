@@ -137,7 +137,7 @@ namespace SysBot.Pokemon
         {
             Log("Resetting raid by restarting the game");
             // Close out of the game
-            await Click(HOME, 3_000, token).ConfigureAwait(false);
+            await Click(HOME, 4_000, token).ConfigureAwait(false);
             await Click(X, 1_000, token).ConfigureAwait(false);
             await Click(A, 5_000, token).ConfigureAwait(false); // Closing software prompt
             Log("Closed out of the game!");
