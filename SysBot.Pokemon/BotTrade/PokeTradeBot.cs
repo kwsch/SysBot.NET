@@ -474,19 +474,19 @@ namespace SysBot.Pokemon
             }
 
             Log("Opening Y-Comm Menu");
-            await Click(Y, 2_000, token).ConfigureAwait(false);
+            await Click(Y, 1_500, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
 
             Log("Selecting Surprise Trade");
             await Click(DDOWN, 0_500, token).ConfigureAwait(false);
-            await Click(A, 4_000, token).ConfigureAwait(false);
+            await Click(A, 2_000, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
 
-            await Task.Delay(2_000, token).ConfigureAwait(false);
+            await Task.Delay(0_750, token).ConfigureAwait(false);
 
             if (!await IsCorrectScreen(CurrentScreen_Box, token).ConfigureAwait(false))
             {
@@ -503,8 +503,9 @@ namespace SysBot.Pokemon
 
             Log("Confirming...");
             await Click(A, 5_000, token).ConfigureAwait(false);
+
             for (int i = 0; i < 3; i++)
-                await Click(A, 0_700, token).ConfigureAwait(false);
+                await Click(A, 0_900, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
