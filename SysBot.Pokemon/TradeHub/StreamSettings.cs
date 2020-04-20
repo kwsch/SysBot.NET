@@ -14,6 +14,9 @@ namespace SysBot.Pokemon
 
         public static Action<PK8, string>? CreateSpriteFile { get; set; }
 
+        [Category(Operation), Description("Generate stream assets; turning off will prevent generation of assets.")]
+        public bool CreateAssets { get; set; } = true;
+
         [Category(Operation), Description("Generate trade start details, indicating who the bot is trading with.")]
         public bool CreateTradeStart { get; set; } = true;
 
@@ -122,6 +125,9 @@ namespace SysBot.Pokemon
 
         public void StartTrade(PokeTradeBot b, PokeTradeDetail<PK8> detail, PokeTradeHub<PK8> hub)
         {
+            if (!CreateAssets)
+                return;
+
             try
             {
                 if (CreateTradeStart)
