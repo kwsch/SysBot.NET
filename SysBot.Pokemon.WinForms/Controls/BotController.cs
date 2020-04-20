@@ -54,7 +54,7 @@ namespace SysBot.Pokemon.WinForms
             {
                 var text = tsi.Text;
                 tsi.Enabled = Enum.TryParse(text, out BotControlCommand cmd)
-                    ? runOnce && cmd.IsUsableWhileRunning() == bot.IsRunning
+                    ? runOnce && cmd.IsUsable(bot.IsRunning, bot.IsPaused)
                     : !bot.IsRunning;
             }
         }
@@ -199,16 +199,16 @@ namespace SysBot.Pokemon.WinForms
 
     public static class BotControlCommandExtensions
     {
-        public static bool IsUsableWhileRunning(this BotControlCommand cmd)
+        public static bool IsUsable(this BotControlCommand cmd, bool running, bool paused)
         {
-            switch (cmd)
+            return cmd switch
             {
-                case BotControlCommand.Stop:
-                case BotControlCommand.Idle:
-                    return true;
-                default:
-                    return false;
-            }
+                BotControlCommand.Start => !running,
+                BotControlCommand.Stop => running,
+                BotControlCommand.Idle => running && !paused,
+                BotControlCommand.Resume => paused,
+                _ => false,
+            };
         }
     }
 }
