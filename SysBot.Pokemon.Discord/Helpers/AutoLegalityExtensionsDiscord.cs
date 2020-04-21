@@ -14,9 +14,11 @@ namespace SysBot.Pokemon.Discord
                 await channel.SendMessageAsync("Oops! I wasn't able to interpret your message! If you intended to convert something, please double check what you're pasting!").ConfigureAwait(false);
                 return;
             }
-            var pkm = sav.GetLegal(set, out var result);
+
+            var template = AutoLegalityWrapper.GetTemplate(set);
+            var pkm = sav.GetLegal(template, out var result);
             var la = new LegalityAnalysis(pkm);
-            var spec = GameInfo.Strings.Species[set.Species];
+            var spec = GameInfo.Strings.Species[template.Species];
             var msg = la.Valid
                 ? $"Here's your ({result}) legalized PKM for {spec} ({la.EncounterOriginal.Name})!"
                 : $"Oops! I wasn't able to create something from that. Here's my best attempt for that {spec}!";

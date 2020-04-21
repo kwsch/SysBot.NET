@@ -13,9 +13,9 @@ namespace SysBot.Pokemon.Twitch
                 return false;
             }
 
-            ShowdownSet set = TwitchShowdownUtil.ConvertToShowdown(setstring);
-
-            if (set.Species < 1)
+            var set = TwitchShowdownUtil.ConvertToShowdown(setstring);
+            var template = AutoLegalityWrapper.GetTemplate(set);
+            if (template.Species < 1)
             {
                 msg = $"Skipping trade, @{username}: Please read what you are supposed to type as the command argument.";
                 return false;
@@ -28,7 +28,7 @@ namespace SysBot.Pokemon.Twitch
             }
 
             var sav = AutoLegalityWrapper.GetTrainerInfo(PKX.Generation);
-            PKM pkm = sav.GetLegal(set, out _);
+            PKM pkm = sav.GetLegal(template, out _);
 
             if (!pkm.CanBeTraded())
             {

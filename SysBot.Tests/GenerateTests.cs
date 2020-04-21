@@ -17,7 +17,8 @@ namespace SysBot.Tests
         {
             var sav = AutoLegalityWrapper.GetTrainerInfo(8);
             var s = new ShowdownSet(set);
-            var pk = sav.GetLegal(s, out _);
+            var template = AutoLegalityWrapper.GetTemplate(s);
+            var pk = sav.GetLegal(template, out _);
             pk.Should().NotBeNull();
         }
 
@@ -30,7 +31,8 @@ namespace SysBot.Tests
             for (int i = 0; i < 10; i++)
             {
                 var s = new ShowdownSet(set);
-                var pk = sav.GetLegal(s, out _);
+                var template = AutoLegalityWrapper.GetTemplate(s);
+                var pk = sav.GetLegal(template, out _);
                 pk.AbilityNumber.Should().Be(abilNumber);
             }
         }
@@ -45,7 +47,8 @@ namespace SysBot.Tests
             {
                 var twitch = set.Replace("\r\n", " ").Replace("\n", " ");
                 var s = TwitchShowdownUtil.ConvertToShowdown(twitch);
-                var pk = sav.GetLegal(s, out _);
+                var template = AutoLegalityWrapper.GetTemplate(s);
+                var pk = sav.GetLegal(template, out _);
                 pk.AbilityNumber.Should().Be(abilNumber);
             }
         }

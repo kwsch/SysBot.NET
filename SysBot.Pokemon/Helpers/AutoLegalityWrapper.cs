@@ -94,7 +94,7 @@ namespace SysBot.Pokemon
 
         public static ITrainerInfo GetTrainerInfo(int gen) => TrainerSettings.GetSavedTrainerData(gen);
 
-        public static PKM GetLegal(this ITrainerInfo sav, ShowdownSet set, out string res)
+        public static PKM GetLegal(this ITrainerInfo sav, IBattleTemplate set, out string res)
         {
             var result =  sav.GetLegalFromSet(set, out var type);
             res = type.ToString();
@@ -102,5 +102,6 @@ namespace SysBot.Pokemon
         }
 
         public static PKM LegalizePokemon(this PKM pk) => pk.Legalize();
+        public static IBattleTemplate GetTemplate(ShowdownSet set) => new RegenTemplate(set);
     }
 }

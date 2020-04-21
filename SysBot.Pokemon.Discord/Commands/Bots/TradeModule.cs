@@ -62,6 +62,7 @@ namespace SysBot.Pokemon.Discord
             const int gen = 8;
             content = ReusableActions.StripCodeBlock(content);
             var set = new ShowdownSet(content);
+            var template = AutoLegalityWrapper.GetTemplate(set);
             if (set.InvalidLines.Count != 0)
             {
                 var msg = $"Unable to parse Showdown Set:\n{string.Join("\n", set.InvalidLines)}";
@@ -71,9 +72,9 @@ namespace SysBot.Pokemon.Discord
 
             var sav = AutoLegalityWrapper.GetTrainerInfo(gen);
 
-            var pkm = sav.GetLegal(set, out _);
+            var pkm = sav.GetLegal(template, out _);
             var la = new LegalityAnalysis(pkm);
-            var spec = GameInfo.Strings.Species[set.Species];
+            var spec = GameInfo.Strings.Species[template.Species];
             var invalid = !(pkm is PK8) || (!la.Valid && SysCordInstance.Self.Hub.Config.Legality.VerifyLegality);
             if (invalid)
             {
