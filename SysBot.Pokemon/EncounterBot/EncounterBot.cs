@@ -17,6 +17,7 @@ namespace SysBot.Pokemon
         private readonly Nature DesiredNature;
         private readonly int[] DesiredIVs = {-1, -1, -1, -1, -1, -1};
         private readonly byte[] BattleMenuReady = {255, 255, 255, 255};
+        private readonly byte[] BattleMenuDogReady = { 0, 0, 0, 0 };
 
         public EncounterBot(PokeBotConfig cfg, EncounterSettings encounter, IDumper dump, BotCompleteCounts count) : base(cfg)
         {
@@ -238,11 +239,13 @@ namespace SysBot.Pokemon
                     return;
                 }
 
-                // Wait for the entire cutscene until we can flee.
-                await Task.Delay(19_500, token).ConfigureAwait(false);
-
                 // Get rid of any stick stuff left over so we can flee properly.
                 await ResetStick(token).ConfigureAwait(false);
+
+                // Wait for the entire cutscene until we can flee.
+                await Task.Delay(18_000, token).ConfigureAwait(false);
+
+                await ReadUntilChanged(BattleMenuOffsetDog, BattleMenuDogReady, 5_000, 0_100, true, token).ConfigureAwait(false);
 
                 Log("Running away...");
                 while (await IsInBattle(token).ConfigureAwait(false))

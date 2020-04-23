@@ -101,6 +101,7 @@ namespace SysBot.Pokemon
 
         //For detecting when we're able to interact in a battle
         public const uint BattleMenuOffset = 0x691372E4;
+        public const uint BattleMenuOffsetDog = 0x6759E550;
 
         public const uint CurrentScreenOffset = 0x68dcbc90;
 
