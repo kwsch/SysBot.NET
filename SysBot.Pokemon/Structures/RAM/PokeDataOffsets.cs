@@ -86,9 +86,9 @@ namespace SysBot.Pokemon
         public const uint MenuClosed = 0xBBE00000;
         */
 
-        //CurrentScreenOffset seems unreliable for Overworld; this one is 1 on Overworld and 0 otherwise.
-        //Varies based on console language which is configured in Hub.
-        //Default setting works for English, Dutch, Portuguese, and Russian
+        // CurrentScreenOffset can be unreliable for Overworld; this one is 1 on Overworld and 0 otherwise.
+        // Varies based on console language which is configured in Hub.
+        // Default setting works for English, Dutch, Portuguese, and Russian
         public const uint OverworldOffset = 0x2E36E474;
         public const uint OverworldOffsetFrench = 0x2E36E634;
         public const uint OverworldOffsetGerman = 0x2E36E734;
@@ -99,10 +99,15 @@ namespace SysBot.Pokemon
         public const uint OverworldOffsetChineseS = 0x2E36D6C4;
         public const uint OverworldOffsetKorean = 0x2E36DAB4;
 
-        //For detecting when we're able to interact in a battle
+        // For detecting when we're able to interact with the menu in a battle.
+        // Offsets flicker while battle is loading, best to wait close to when the menu appears.
         public const uint BattleMenuOffset = 0x691372E4;
         public const uint BattleMenuOffsetDog = 0x6759E550;
 
+        // Always 0xFF out of menus, 0 while in menus when standing in front of Cara Liss.
+        public const uint OverworldFossil = 0x67479E3C;
+
+        // Most screen detection checks the values at this offset.
         public const uint CurrentScreenOffset = 0x68dcbc90;
 
         public const uint CurrentScreen_Overworld = 0xFFFF5127;

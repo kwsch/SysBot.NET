@@ -37,7 +37,7 @@ namespace SysBot.Pokemon
 
             var originalTextSpeed = await EnsureTextSpeedFast(token).ConfigureAwait(false);
 
-            Log("Checking destination slot for revived fossil Pokémon to see if anything is in the slot...");
+            Log("Checking destination slot for revived fossil Pokémon...");
             var existing = await GetBoxSlotQuality(InjectBox, InjectSlot, token).ConfigureAwait(false);
             if (existing.Quality != SlotQuality.Overwritable)
             {
@@ -51,7 +51,7 @@ namespace SysBot.Pokemon
             int reviveCount = counts.PossibleRevives(FossilSpecies);
             if (reviveCount == 0)
             {
-                Log("Insufficient fossil pieces to start. Please obtain at least one of each required fossil piece before starting.");
+                Log("Insufficient fossil pieces. Please obtain at least one of each required fossil piece first.");
                 return;
             }
 
@@ -59,8 +59,24 @@ namespace SysBot.Pokemon
             Config.IterateNextRoutine();
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.FossilBot)
             {
+                if (encounterCount != 0 && encounterCount % reviveCount == 0)
+                {
+                    Log($"Ran out of fossils to revive {FossilSpecies}.");
+                    if (Settings.InjectWhenEmpty)
+                    {
+                        Log("Restoring original pouch data.");
+                        await Connection.WriteBytesAsync(pouchData, PokeDataOffsets.ItemTreasureAddress, token).ConfigureAwait(false);
+                        await Task.Delay(500, token).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        Log("Restart the game and the bot(s) or set \"Inject Fossils\" to True in the config.");
+                        return;
+                    }
+                }
+
                 await ReviveFossil(counts, token).ConfigureAwait(false);
-                Log("Fossil revived. Checking details.");
+                Log("Fossil revived. Checking details...");
 
                 var pk = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
                 if (pk.Species == 0 || !pk.ChecksumValid)
@@ -81,58 +97,50 @@ namespace SysBot.Pokemon
                     if (Settings.ContinueAfterMatch)
                     {
                         Log("Result found! Continuing to collect more fossils.");
-                        continue;
                     }
-                    Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
-                    return;
+                    else
+                    {
+                        Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
+                        return;
+                    }
                 }
 
-                if (encounterCount % reviveCount != 0)
-                    continue;
-
-                Log($"Ran out of fossils to revive {FossilSpecies}.");
-                if (Settings.InjectWhenEmpty)
-                {
-                    Log("Restoring original pouch data.");
-                    await Connection.WriteBytesAsync(pouchData, PokeDataOffsets.ItemTreasureAddress, token).ConfigureAwait(false);
-                    await Task.Delay(200, token).ConfigureAwait(false);
-                }
-                else
-                {
-                    Log("Re-start the game then re-start the bot(s), or set \"Inject Fossils\" to True in the config.");
-                    return;
-                }
+                Log("Clearing destination slot.");
+                await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
             }
             await SetTextSpeed(originalTextSpeed, token).ConfigureAwait(false);
         }
 
         private async Task ReviveFossil(FossilCount count, CancellationToken token)
         {
-            await Click(A, 1100, token).ConfigureAwait(false);
-            await Click(A, 1300, token).ConfigureAwait(false);
+            Log("Starting fossil revival routine...");
+            if (GameLang == LanguageID.Spanish)
+                await Click(A, 0_900, token).ConfigureAwait(false);
 
+            await Click(A, 1_100, token).ConfigureAwait(false);
+
+            // French is slightly slower.
+            if (GameLang == LanguageID.French)
+                await Task.Delay(0_200, token).ConfigureAwait(false);
+
+            await Click(A, 1_300, token).ConfigureAwait(false);
+
+            // Selecting first fossil.
             if (count.UseSecondOption1(FossilSpecies))
-                await Click(DDOWN, 300, token).ConfigureAwait(false);
-            await Click(A, 1300, token).ConfigureAwait(false);
+                await Click(DDOWN, 0_300, token).ConfigureAwait(false);
+            await Click(A, 1_300, token).ConfigureAwait(false);
 
+            // Selecting second fossil.
             if (count.UseSecondOption2(FossilSpecies))
                 await Click(DDOWN, 300, token).ConfigureAwait(false);
-            await Click(A, 1200, token).ConfigureAwait(false);
-            await Click(A, 1200, token).ConfigureAwait(false);
 
-            await Click(A, 4000, token).ConfigureAwait(false);
-            await Click(A, 1200, token).ConfigureAwait(false);
-            await Click(A, 1200, token).ConfigureAwait(false);
-            if (GameLang == LanguageID.French)
-                await Click(A, 800, token).ConfigureAwait(false);
-            await Click(A, 1200, token).ConfigureAwait(false);
-            await Click(A, 4500, token).ConfigureAwait(false);
+            // A spam through accepting the fossil and agreeing to revive.
+            for (int i = 0; i < 8; i++)
+                await Click(A, 0_400, token).ConfigureAwait(false);
 
-            Log("Getting fossil! Clearing destination slot.");
-            await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
-
-            await Click(A, 2400, token).ConfigureAwait(false);
-            await Click(A, 1800, token).ConfigureAwait(false);
+            // Safe to mash B from here until we get out of all menus.
+            while (!await IsOnOverworldFossil(token).ConfigureAwait(false))
+                await Click(B, 0_400, token).ConfigureAwait(false);
         }
     }
 }
