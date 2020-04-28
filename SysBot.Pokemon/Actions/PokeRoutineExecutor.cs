@@ -479,8 +479,9 @@ namespace SysBot.Pokemon
 
         public async Task<bool> IsOnOverworldFossil(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(OverworldFossil, 1, token).ConfigureAwait(false);
-            return data[0] == 0xFF;
+            var data = await Connection.ReadBytesAsync(OverworldFossil, 4, token).ConfigureAwait(false);
+            var dataint = BitConverter.ToUInt32(data, 0);
+            return dataint == 0xFFFF5127 || dataint == 0xFFFFFFFF;
         }
 
         public async Task<TextSpeed> GetTextSpeed(CancellationToken token)
