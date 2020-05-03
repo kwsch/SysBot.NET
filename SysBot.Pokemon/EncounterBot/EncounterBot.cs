@@ -14,23 +14,25 @@ namespace SysBot.Pokemon
         private readonly IDumper DumpSetting;
         private readonly Species StopOnSpecies;
         private readonly EncounterMode Mode;
+        private bool CaptureVideo;
         private readonly Nature DesiredNature;
         private readonly int[] DesiredIVs = {-1, -1, -1, -1, -1, -1};
         private readonly byte[] BattleMenuReady = {255, 255, 255, 255};
         private readonly byte[] BattleMenuDogReady = { 0, 0, 0, 0 };
 
-        public EncounterBot(PokeBotConfig cfg, EncounterSettings encounter, IDumper dump, BotCompleteCounts count) : base(cfg)
+        public EncounterBot(PokeBotConfig cfg, PokeTradeHub<PK8> Hub) : base(cfg)
         {
-            Counts = count;
-            DumpSetting = dump;
-            StopOnSpecies = encounter.StopOnSpecies;
-            Mode = encounter.EncounteringType;
-            DesiredNature = encounter.DesiredNature;
+            Counts = Hub.Counts;
+            DumpSetting = Hub.Config.Folder;
+            StopOnSpecies = Hub.Config.Encounter.StopOnSpecies;
+            Mode = Hub.Config.Encounter.EncounteringType;
+            CaptureVideo = Hub.Config.CaptureVideoClip;
+            DesiredNature = Hub.Config.Encounter.DesiredNature;
 
             /* Populate DesiredIVs array.  Bot matches 0 and 31 IVs.
              * Any other nonzero IV is treated as a minimum accepted value.
              * If they put "x", this is a wild card so we can leave -1. */
-            string[] splitIVs = encounter.DesiredIVs.Split(new [] {'/'}, StringSplitOptions.RemoveEmptyEntries);
+            string[] splitIVs = Hub.Config.Encounter.DesiredIVs.Split(new [] {'/'}, StringSplitOptions.RemoveEmptyEntries);
 
             // Only accept up to 6 values in case people can't count.
             for (int i = 0; i < 6 && i < splitIVs.Length; i++)
@@ -131,6 +133,8 @@ namespace SysBot.Pokemon
 
                 if (StopCondition(pk))
                 {
+                    if (CaptureVideo)
+                        await PressAndHold(CAPTURE, 2_000, 1_000, token).ConfigureAwait(false);
                     Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
                     return;
                 }

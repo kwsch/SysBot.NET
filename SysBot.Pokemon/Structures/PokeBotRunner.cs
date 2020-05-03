@@ -104,13 +104,13 @@ namespace SysBot.Pokemon
                     return new EggBot(cfg, Hub.Config.Egg, Hub.Config.Folder, Hub.Counts);
 
                 case PokeRoutineType.FossilBot:
-                    return new FossilBot(cfg, Hub.Config.Fossil, Hub.Config.Folder, Hub.Counts);
+                    return new FossilBot(cfg, Hub);
 
                 case PokeRoutineType.RaidBot:
                     return new RaidBot(cfg, Hub);
 
                 case PokeRoutineType.EncounterBot:
-                    return new EncounterBot(cfg, Hub.Config.Encounter, Hub.Config.Folder, Hub.Counts);
+                    return new EncounterBot(cfg, Hub);
 
                 case PokeRoutineType.RemoteControl:
                     return new RemoteControlBot(cfg);

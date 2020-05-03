@@ -12,13 +12,15 @@ namespace SysBot.Pokemon
         private readonly IDumper DumpSetting;
         private readonly FossilSpecies FossilSpecies;
         private readonly FossilSettings Settings;
+        private bool CaptureVideo;
 
-        public FossilBot(PokeBotConfig cfg, FossilSettings fossil, IDumper dump, BotCompleteCounts count) : base(cfg)
+        public FossilBot(PokeBotConfig cfg, PokeTradeHub<PK8> Hub) : base(cfg)
         {
-            Counts = count;
-            DumpSetting = dump;
-            Settings = fossil;
-            FossilSpecies = fossil.Species;
+            Counts = Hub.Counts;
+            DumpSetting = Hub.Config.Folder;
+            Settings = Hub.Config.Fossil;
+            FossilSpecies = Settings.Species;
+            CaptureVideo = Hub.Config.CaptureVideoClip;
         }
 
         private int encounterCount;
@@ -94,6 +96,9 @@ namespace SysBot.Pokemon
 
                 if (StopCondition(pk))
                 {
+                    if (CaptureVideo)
+                        await PressAndHold(CAPTURE, 2_000, 1_000, token).ConfigureAwait(false);
+
                     if (Settings.ContinueAfterMatch)
                     {
                         Log("Result found! Continuing to collect more fossils.");

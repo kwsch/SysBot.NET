@@ -22,6 +22,9 @@ namespace SysBot.Pokemon
         [Category(FeatureToggle), Description("ConsoleLanguageSpecific screen detection method only. Set your Switch console language here for bots to work properly. All consoles should be using the same language.")]
         public ConsoleLanguageParameter ConsoleLanguage { get; set; }
 
+        [Category(FeatureToggle), Description("Holds Capture button to record a 30 second clip when a matching shiny Pokémon is found by EncounterBot or Fossilbot.")]
+        public bool CaptureVideoClip { get; set; }
+
         [Category(Operation)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public DistributionSettings Distribute { get; set; } = new DistributionSettings();
