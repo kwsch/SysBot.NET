@@ -187,6 +187,9 @@ namespace SysBot.Pokemon
 
         public void StartEnterCode(PokeTradeBot b)
         {
+            if (!CreateAssets)
+                return;
+
             try
             {
                 var file = GetBlockFileName(b);
