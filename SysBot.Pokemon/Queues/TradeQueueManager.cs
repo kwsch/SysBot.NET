@@ -50,7 +50,7 @@ namespace SysBot.Pokemon
                 return false;
 
             var random = Hub.Ledy.Pool.GetRandomPoke();
-            var code = cfg.TradeCode;
+            var code = cfg.RandomCode ? Hub.Config.Trade.GetRandomTradeCode() : cfg.TradeCode;
             var trainer = new PokeTradeTrainerInfo("Random Distribution");
             detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random, code);
             return true;

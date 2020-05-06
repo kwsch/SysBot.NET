@@ -13,14 +13,14 @@ namespace SysBot.Pokemon
         public bool UseLdnMitm { get; set; } = true;
 
         [Category(Hosting), Description("Minimum Link Code to host the raid with.")]
-        public int MinTradeCode { get; set; } = 8180;
+        public int MinRaidCode { get; set; } = 8180;
 
         [Category(Hosting), Description("Maximum Link Code to host the raid with.")]
-        public int MaxTradeCode { get; set; } = 8199;
+        public int MaxRaidCode { get; set; } = 8199;
 
         /// <summary>
         /// Gets a random trade code based on the range settings.
         /// </summary>
-        public int GetRandomRaidCode() => Util.Rand.Next(MinTradeCode, MaxTradeCode + 1);
+        public int GetRandomRaidCode() => Util.Rand.Next(MinRaidCode, MaxRaidCode + 1);
     }
 }
