@@ -414,7 +414,7 @@ namespace SysBot.Pokemon
             var time = TimeSpan.FromSeconds(Hub.Config.Trade.MaxDumpTradeTime);
             var start = DateTime.Now;
             await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
-            while (ctr <= Hub.Config.Trade.MaxDumpsPerTrade || DateTime.Now - start < time)
+            while (ctr <= Hub.Config.Trade.MaxDumpsPerTrade && DateTime.Now - start < time)
             {
                 var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 15_000, 1_000, token).ConfigureAwait(false);
                 if (pk == null || pk.Species < 1 || !pk.ChecksumValid)
