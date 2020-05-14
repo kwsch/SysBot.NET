@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Base.SwitchStick;
+using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
@@ -34,8 +35,9 @@ namespace SysBot.Pokemon
             await IdentifyTrainer(token).ConfigureAwait(false);
 
             var originalTextSpeed = await EnsureTextSpeedFast(token).ConfigureAwait(false);
+            await SetCurrentBox(0, token).ConfigureAwait(false);
 
-            Log("Checking destination slot for eggs to see if anything is in the slot...");
+            Log("Checking destination slot...");
             var existing = await GetBoxSlotQuality(InjectBox, InjectSlot, token).ConfigureAwait(false);
             if (existing.Quality != SlotQuality.Overwritable)
             {
@@ -59,12 +61,11 @@ namespace SysBot.Pokemon
                 await SetBoxPokemon(blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
 
                 for (int i = 0; i < 4; i++)
-                    await Click(A, 500, token).ConfigureAwait(false);
-                await Task.Delay(4000, token).ConfigureAwait(false);
+                    await Click(A, 0_400, token).ConfigureAwait(false);
 
-                await Click(A, 1850, token).ConfigureAwait(false);
-                await Click(A, 1950, token).ConfigureAwait(false);
-                await Click(A, 450, token).ConfigureAwait(false);
+                // Safe to mash B from here until we get out of all menus. Currentscreen becomes 0xFFFFFFFF.
+                while (!await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
+                    await Click(B, 0_400, token).ConfigureAwait(false);
 
                 Log("Egg received. Checking details.");
                 var pk = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
@@ -88,7 +89,7 @@ namespace SysBot.Pokemon
                         Log("Restult found! Continuing to collect more eggs.");
                         continue;
                     }
-                    Log("Result found! Stopping routine execution; re-start the bot(s) to search again.");
+                    Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
                     return;
                 }
             }

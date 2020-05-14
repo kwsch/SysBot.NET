@@ -38,6 +38,7 @@ namespace SysBot.Pokemon
             await IdentifyTrainer(token).ConfigureAwait(false);
 
             var originalTextSpeed = await EnsureTextSpeedFast(token).ConfigureAwait(false);
+            await SetCurrentBox(0, token).ConfigureAwait(false);
 
             Log("Checking destination slot for revived fossil Pokémon...");
             var existing = await GetBoxSlotQuality(InjectBox, InjectSlot, token).ConfigureAwait(false);
