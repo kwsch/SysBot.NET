@@ -107,11 +107,11 @@ namespace SysBot.Pokemon
                 await SetEggStepCounter(Location, token).ConfigureAwait(false);
 
                 // Walk Diagonally Left
-                await SetStick(LEFT, -19000, 19000, 500, token).ConfigureAwait(false);
+                await SetStick(LEFT, -19000, 19000, 0_500, token).ConfigureAwait(false);
                 await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false); // reset
 
                 // Walk Diagonally Right, slightly longer to ensure we stay at the Daycare lady.
-                await SetStick(LEFT, 19000, 19000, 550, token).ConfigureAwait(false);
+                await SetStick(LEFT, 19000, 19000, 0_550, token).ConfigureAwait(false);
                 await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false); // reset
 
                 bool eggReady = await IsEggReady(Location, token).ConfigureAwait(false);

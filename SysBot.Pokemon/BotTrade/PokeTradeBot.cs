@@ -154,7 +154,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.RecoverStart;
             }
 
-            if (await CheckIfSearchingForLinkTradePartner(token).ConfigureAwait(false))
+            while (await CheckIfSearchingForLinkTradePartner(token).ConfigureAwait(false))
             {
                 Log("Still searching, reset bot position.");
                 await ResetTradePosition(Hub.Config, token).ConfigureAwait(false);
