@@ -64,7 +64,7 @@ namespace SysBot.Pokemon
                     await Click(A, 0_400, token).ConfigureAwait(false);
 
                 // Safe to mash B from here until we get out of all menus. Currentscreen becomes 0xFFFFFFFF.
-                while (!await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
+                while (!await IsOnOverworldFossil(token).ConfigureAwait(false))
                     await Click(B, 0_400, token).ConfigureAwait(false);
 
                 Log("Egg received. Checking details.");
