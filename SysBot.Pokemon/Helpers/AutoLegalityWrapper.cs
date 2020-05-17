@@ -32,6 +32,7 @@ namespace SysBot.Pokemon
         {
             APILegality.SetAllLegalRibbons = cfg.SetAllLegalRibbons;
             APILegality.SetMatchingBalls = cfg.SetMatchingBalls;
+            APILegality.ForceSpecifiedBall = cfg.ForceSpecifiedBall;
             APILegality.UseXOROSHIRO = cfg.UseXOROSHIRO;
             Legalizer.AllowBruteForce = cfg.AllowBruteForce;
         }
