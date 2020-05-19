@@ -15,6 +15,9 @@ namespace SysBot.Pokemon
         [Category(Hosting), Description("Minimum amount of seconds to wait before starting a raid. Ranges from 0 to 180 seconds.")]
         public int MinTimeToWait { get; set; } = 90;
 
+        [Category(Hosting), Description("Extra time in milliseconds to wait before closing the game to reset the raid.")]
+        public int ExtraTimeEndRaid { get; set; } = 0;
+
         [Category(Hosting), Description("Minimum Link Code to host the raid with. Set this to -1 to host with no code.")]
         public int MinRaidCode { get; set; } = 8180;
 

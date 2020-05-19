@@ -109,7 +109,7 @@ namespace SysBot.Pokemon
             }
 
             Log("Finishing raid routine.");
-            await Task.Delay(6_500, token).ConfigureAwait(false);
+            await Task.Delay(5_500 + Hub.Config.Raid.ExtraTimeEndRaid, token).ConfigureAwait(false);
 
             return false;
         }

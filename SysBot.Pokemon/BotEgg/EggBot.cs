@@ -86,7 +86,7 @@ namespace SysBot.Pokemon
                 {
                     if (ContinueGettingEggs)
                     {
-                        Log("Restult found! Continuing to collect more eggs.");
+                        Log("Result found! Continuing to collect more eggs.");
                         continue;
                     }
                     Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
