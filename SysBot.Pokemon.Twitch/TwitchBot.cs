@@ -88,6 +88,10 @@ namespace SysBot.Pokemon.Twitch
         {
             Task.Run(async () =>
             {
+
+                if (client.JoinedChannels.Count == 0)
+                    client.JoinChannel(Channel);
+
                 client.SendMessage(Channel, "5...");
                 await Task.Delay(1_000).ConfigureAwait(false);
                 client.SendMessage(Channel, "4...");
@@ -176,6 +180,9 @@ namespace SysBot.Pokemon.Twitch
             if (!Hub.Config.Twitch.AllowCommandsViaChannel || Hub.Config.Twitch.UserBlacklist.Contains(e.Command.ChatMessage.Username))
                 return;
 
+            if (client.JoinedChannels.Count == 0)
+                client.JoinChannel(Channel);
+
             var msg = e.Command.ChatMessage;
             var c = e.Command.CommandText.ToLower();
             var args = e.Command.ArgumentsAsString;
@@ -257,6 +264,10 @@ namespace SysBot.Pokemon.Twitch
         private void Client_OnWhisperReceived(object sender, OnWhisperReceivedArgs e)
         {
             LogUtil.LogText($"[{client.TwitchUsername}] - @{e.WhisperMessage.Username}: {e.WhisperMessage.Message}");
+
+            if (client.JoinedChannels.Count == 0)
+                client.JoinChannel(Channel);
+
             if (QueuePool.Count > 100)
             {
                 var removed = QueuePool[0];
