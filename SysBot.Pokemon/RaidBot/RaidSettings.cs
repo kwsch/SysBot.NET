@@ -9,7 +9,7 @@ namespace SysBot.Pokemon
         private const string Hosting = nameof(Hosting);
         public override string ToString() => "Raid Bot Settings";
 
-        [Category(FeatureToggle), Description("When set, the bot will assume that ldn_mitm sysmodule is running on your system. Better stability")]
+        [Category(FeatureToggle), Description("The bot will reset the game assuming ldn_mitm sysmodule is on your system. Better stability.")]
         public bool UseLdnMitm { get; set; } = true;
 
         [Category(Hosting), Description("Minimum amount of seconds to wait before starting a raid. Ranges from 0 to 180 seconds.")]

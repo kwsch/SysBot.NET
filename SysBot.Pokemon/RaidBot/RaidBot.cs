@@ -65,12 +65,14 @@ namespace SysBot.Pokemon
             // Press A and stall out a bit for the loading
             await Click(A, 5_000, token).ConfigureAwait(false);
 
+            var msg = code < 0 ? "no Link Code" : $"code: {code:0000}";
+            EchoUtil.Echo($"Raid lobby is open with {msg}.");
+
             if (code >= 0)
             {
                 // Set Link code
                 await Click(PLUS, 1_000, token).ConfigureAwait(false);
                 await EnterTradeCode(code, token).ConfigureAwait(false);
-                EchoUtil.Echo($"Raid code is {code}.");
 
                 // Raid barrier here maybe?
                 await Click(PLUS, 2_000, token).ConfigureAwait(false);
@@ -93,8 +95,7 @@ namespace SysBot.Pokemon
                 timetowait -= 1_000;
             }
 
-            var msg = code < 0 ? "no Link Code." : $"code: {code:0000}.";
-            Log("Attempting to start the raid with " + msg);
+            EchoUtil.Echo($"Raid will be starting soon with {msg}.");
 
             // Wait a few seconds for people to lock in.
             await Task.Delay(5_000, token).ConfigureAwait(false);
@@ -109,7 +110,7 @@ namespace SysBot.Pokemon
             }
 
             Log("Finishing raid routine.");
-            await Task.Delay(5_500 + Hub.Config.Raid.ExtraTimeEndRaid, token).ConfigureAwait(false);
+            await Task.Delay(5_000 + Hub.Config.Raid.ExtraTimeEndRaid, token).ConfigureAwait(false);
 
             return false;
         }
@@ -146,11 +147,9 @@ namespace SysBot.Pokemon
 
             // Switch Logo lag, skip cutscene, game load screen
             await Task.Delay(25_000, token).ConfigureAwait(false);
-            await Click(A, 1_000, token).ConfigureAwait(false);
-            await Task.Delay(10_000, token).ConfigureAwait(false);
 
             while (!await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
-                await Task.Delay(1_000, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
 
             Log("Back in the overworld!");
 
