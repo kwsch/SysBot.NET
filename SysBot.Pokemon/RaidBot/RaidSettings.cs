@@ -15,6 +15,9 @@ namespace SysBot.Pokemon
         [Category(Hosting), Description("Minimum amount of seconds to wait before starting a raid. Ranges from 0 to 180 seconds.")]
         public int MinTimeToWait { get; set; } = 90;
 
+        [Category(Hosting), Description("Extra time in milliseconds to wait for the raid to load after clicking on the den.")]
+        public int ExtraTimeLoadRaid { get; set; } = 0;
+
         [Category(Hosting), Description("Extra time in milliseconds to wait after clicking \"Invite Others\" before locking into a Pokémon.")]
         public int ExtraTimeOpenRaid { get; set; } = 0;
 

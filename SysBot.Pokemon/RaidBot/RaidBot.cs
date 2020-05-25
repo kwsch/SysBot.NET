@@ -63,7 +63,7 @@ namespace SysBot.Pokemon
             await EnsureConnectedToYComm(Hub.Config, token).ConfigureAwait(false);
 
             // Press A and stall out a bit for the loading
-            await Click(A, 5_000, token).ConfigureAwait(false);
+            await Click(A, 5_000 + Hub.Config.Raid.ExtraTimeLoadRaid, token).ConfigureAwait(false);
 
             var msg = code < 0 ? "no Link Code" : $"code: {code:0000}";
             EchoUtil.Echo($"Raid lobby is open with {msg}.");
