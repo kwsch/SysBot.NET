@@ -306,7 +306,7 @@ namespace SysBot.Pokemon
             }
 
             await Click(Y, 1000, token).ConfigureAwait(false);
-            await Click(PLUS, 15_000, token).ConfigureAwait(false);
+            await Click(PLUS, 7_000 + config.ExtraTimeReconnectYComm, token).ConfigureAwait(false);
 
             for (int i = 0; i < 5; i++)
             {

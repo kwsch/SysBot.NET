@@ -80,7 +80,7 @@ namespace SysBot.Pokemon
             }
 
             // Invite others, confirm Pokémon and wait
-            await Click(A, 7_000, token).ConfigureAwait(false);
+            await Click(A, 7_000 + Hub.Config.Raid.ExtraTimeOpenRaid, token).ConfigureAwait(false);
             await Click(DUP, 1_000, token).ConfigureAwait(false);
             await Click(A, 1_000, token).ConfigureAwait(false);
 
