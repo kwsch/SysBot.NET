@@ -232,6 +232,16 @@ namespace SysBot.Pokemon
                 for (int i = 0; i < 4; i++)
                     await Click(DUP, 0_600, token).ConfigureAwait(false);
                 await Click(DDOWN, 0_600, token).ConfigureAwait(false);
+
+                if (Hub.Config.Raid.RowStartDeletingFriends > 1)
+                {
+                    // If they set any other row to start deleting from, get to the end of the row.
+                    for (int i = 1; i < Hub.Config.Raid.RowStartDeletingFriends; i++)
+                        await Click(DDOWN, 0_600, token).ConfigureAwait(false);
+
+                    for (int i = 0; i < 3; i++)
+                        await Click(DRIGHT, 0_600, token).ConfigureAwait(false);
+                }
             }
             else
             {

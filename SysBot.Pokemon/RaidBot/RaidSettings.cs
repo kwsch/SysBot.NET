@@ -45,6 +45,9 @@ namespace SysBot.Pokemon
         [Category(Hosting), Description("Number of raids to host between trying to delete friends.")]
         public int RaidsBetweenDeleteFriends { get; set; } = 0;
 
+        [Category(Hosting), Description("Number of row to start trying to delete friends.")]
+        public int RowStartDeletingFriends { get; set; } = 1;
+
         [Category(Hosting), Description("The Switch profile you are using to manage friends. For example, set this to 2 if you are using the second profile.")]
         public int ProfileNumber { get; set; } = 1;
 
