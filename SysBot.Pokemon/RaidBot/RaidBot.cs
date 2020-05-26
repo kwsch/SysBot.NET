@@ -169,7 +169,7 @@ namespace SysBot.Pokemon
             await Task.Delay(15_000, token).ConfigureAwait(false);
 
             while (!await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
-                await Click(A, 1_000, token).ConfigureAwait(false);
+                await Click(A, 2_000, token).ConfigureAwait(false);
 
             Log("Back in the overworld!");
 
