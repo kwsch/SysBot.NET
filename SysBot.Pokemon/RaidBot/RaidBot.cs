@@ -234,7 +234,7 @@ namespace SysBot.Pokemon
                 await Click(DDOWN, 0_600, token).ConfigureAwait(false);
                 await Click(A, 0_800, token).ConfigureAwait(false);
 
-                await NavigateEndOfFriends(Settings.RowStartDeletingFriends, token).ConfigureAwait(false);
+                await NavigateFriends(Settings.RowStartDeletingFriends, 4, token).ConfigureAwait(false);
             }
             else
             {
@@ -246,20 +246,20 @@ namespace SysBot.Pokemon
                 await Click(A, 0_800, token).ConfigureAwait(false);
                 await Click(A, 2_500, token).ConfigureAwait(false);
 
-                await NavigateEndOfFriends(Settings.RowStartAddingFriends, token).ConfigureAwait(false);
+                await NavigateFriends(Settings.RowStartAddingFriends, 5, token).ConfigureAwait(false);
             }
         }
 
-        // Navigates to the specified row, then moves to the end of that row.
-        private async Task NavigateEndOfFriends(int rows, CancellationToken token)
+        // Navigates to the specified row and column.
+        private async Task NavigateFriends(int row, int column, CancellationToken token)
         {
-            if (rows == 1)
+            if (row == 1)
                 return;
 
-            for (int i = 1; i < rows; i++)
+            for (int i = 1; i < row; i++)
                 await Click(DDOWN, 0_600, token).ConfigureAwait(false);
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 1; i < column; i++)
                 await Click(DRIGHT, 0_600, token).ConfigureAwait(false);
         }
 
