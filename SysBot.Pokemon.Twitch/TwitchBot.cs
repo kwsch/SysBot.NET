@@ -28,7 +28,7 @@ namespace SysBot.Pokemon.Twitch
             Hub = hub;
             Settings = settings;
 
-            var credentials = new ConnectionCredentials(settings.Username, settings.Token);
+            var credentials = new ConnectionCredentials(settings.Username.ToLower(), settings.Token);
             AutoLegalityWrapper.EnsureInitialized(Hub.Config.Legality);
 
             var clientOptions = new ClientOptions
