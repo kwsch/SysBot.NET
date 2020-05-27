@@ -78,6 +78,9 @@ namespace SysBot.Pokemon.Twitch
 
             client.Connect();
 
+            if (client.JoinedChannels.Count == 0)
+                client.JoinChannel(Channel);
+
             EchoUtil.Forwarders.Add(msg => client.SendMessage(Channel, msg));
 
             // Turn on if verified
@@ -158,6 +161,9 @@ namespace SysBot.Pokemon.Twitch
 
         private void Client_OnJoinedChannel(object sender, OnJoinedChannelArgs e)
         {
+            if (client.JoinedChannels.Count == 0)
+                client.JoinChannel(Channel);
+
             LogUtil.LogInfo($"Joined {e.Channel}", e.BotUsername);
             client.SendMessage(e.Channel, "Connected!");
         }
@@ -177,6 +183,10 @@ namespace SysBot.Pokemon.Twitch
 
         private void Client_OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
         {
+            if (client.JoinedChannels.Count == 0)
+                client.JoinChannel(Channel);
+
+
             if (!Hub.Config.Twitch.AllowCommandsViaChannel || Hub.Config.Twitch.UserBlacklist.Contains(e.Command.ChatMessage.Username))
                 return;
 
