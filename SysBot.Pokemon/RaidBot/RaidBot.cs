@@ -166,10 +166,13 @@ namespace SysBot.Pokemon
             Log("Restarting the game!");
 
             // Switch Logo lag, skip cutscene, game load screen
-            await Task.Delay(15_000, token).ConfigureAwait(false);
+            await Task.Delay(15_000 + Hub.Config.Raid.ExtraTimeLoadGame, token).ConfigureAwait(false);
+
+            for (int i = 0; i < 5; i++)
+                await Click(A, 1_000, token).ConfigureAwait(false);
 
             while (!await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
-                await Click(A, 2_000, token).ConfigureAwait(false);
+                await Task.Delay(2_000, token).ConfigureAwait(false);
 
             Log("Back in the overworld!");
 
@@ -272,15 +275,15 @@ namespace SysBot.Pokemon
             await Click(A, 0_600, token).ConfigureAwait(false);
             // Click "Remove Friend", confirm "Delete", return to next card.
             await Click(A, 1_000, token).ConfigureAwait(false);
-            await Click(A, 5_000, token).ConfigureAwait(false);
+            await Click(A, 5_000 + Hub.Config.Raid.ExtraTimeDeleteFriend, token).ConfigureAwait(false);
             await Click(A, 1_000, token).ConfigureAwait(false);
         }
 
         // Adds one friend. Timing may need to be adjusted since delays vary with connection.
         private async Task AddFriend(CancellationToken token)
         {
-            await Click(A, 3_500, token).ConfigureAwait(false);
-            await Click(A, 3_000, token).ConfigureAwait(false);
+            await Click(A, 3_500 + Hub.Config.Raid.ExtraTimeAddFriend, token).ConfigureAwait(false);
+            await Click(A, 3_000 + Hub.Config.Raid.ExtraTimeAddFriend, token).ConfigureAwait(false);
         }
     }
 }
