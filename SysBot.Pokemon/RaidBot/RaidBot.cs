@@ -49,9 +49,10 @@ namespace SysBot.Pokemon
                 // If they set this to 0, they want to add and remove friends before hosting any raids.
                 if (Settings.InitialRaidsToHost == 0 && encounterCount == 0)
                 {
-                    Log("Adding and removing friends.");
-                    addFriends = true;
-                    deleteFriends = true;
+                    if (Hub.Config.Raid.NumberFriendsToAdd > 0)
+                        addFriends = true;
+                    if (Hub.Config.Raid.NumberFriendsToDelete > 0)
+                        deleteFriends = true;
 
                     // Back out of the game.
                     await Click(B, 0_500, token).ConfigureAwait(false);
@@ -66,10 +67,10 @@ namespace SysBot.Pokemon
                 // If we're changing friends, we'll echo while waiting on the lobby to fill up.
                 if (Settings.InitialRaidsToHost <= encounterCount)
                 {
-                    if (Settings.NumberFriendsToAdd > 0 && Settings.RaidsBetweenAddFriends > 0)
-                        addFriends = (encounterCount - Settings.InitialRaidsToHost) % Settings.RaidsBetweenAddFriends == 0;
-                    if (Settings.NumberFriendsToDelete > 0 && Settings.RaidsBetweenDeleteFriends > 0)
-                        deleteFriends = (encounterCount - Settings.InitialRaidsToHost) % Settings.RaidsBetweenDeleteFriends == 0;
+                    if (Hub.Config.Raid.NumberFriendsToAdd > 0 && Hub.Config.Raid.RaidsBetweenAddFriends > 0)
+                        addFriends = (encounterCount - Settings.InitialRaidsToHost) % Hub.Config.Raid.RaidsBetweenAddFriends == 0;
+                    if (Hub.Config.Raid.NumberFriendsToDelete > 0 && Hub.Config.Raid.RaidsBetweenDeleteFriends > 0)
+                        deleteFriends = (encounterCount - Settings.InitialRaidsToHost) % Hub.Config.Raid.RaidsBetweenDeleteFriends == 0;
                 }
 
                 int code = Settings.GetRandomRaidCode();
@@ -100,13 +101,17 @@ namespace SysBot.Pokemon
                 await Click(A, 1_000, token).ConfigureAwait(false);
             }
 
+            if (addFriends && !string.IsNullOrEmpty(Settings.FriendCode))
+                EchoUtil.Echo($"Send a friend request to Friend Code **{Settings.FriendCode}** to join in! Friends will be added after this raid.");
+
             // Invite others, confirm Pokémon and wait
             await Click(A, 7_000 + Hub.Config.Raid.ExtraTimeOpenRaid, token).ConfigureAwait(false);
             await Click(DUP, 1_000, token).ConfigureAwait(false);
             await Click(A, 1_000, token).ConfigureAwait(false);
 
-            var msg = code < 0 ? "no Link Code" : $"code: {code:0000}";
-            EchoUtil.Echo($"Raid lobby is open with {msg}.");
+            var linkcodemsg = code < 0 ? "no Link Code" : $"code **{code:0000}**";
+            var raiddescmsg = string.IsNullOrEmpty(Hub.Config.Raid.RaidDescription) ? "" : $" for {Hub.Config.Raid.RaidDescription}";
+            EchoUtil.Echo($"Raid lobby{raiddescmsg} is open with {linkcodemsg}.");
 
             var timetowait = Hub.Config.Raid.MinTimeToWait * 1_000;
             var timetojoinraid = 175_000 - timetowait;
@@ -119,11 +124,7 @@ namespace SysBot.Pokemon
                 timetowait -= 1_000;
             }
 
-            EchoUtil.Echo($"Raid will be starting soon with {msg}.");
-
-            if (addFriends && !string.IsNullOrEmpty(Settings.FriendCode))
-                EchoUtil.Echo($"Send a friend request to Friend Code {Settings.FriendCode} to join in! Friends will be added after this raid.");
-
+            EchoUtil.Echo($"Raid will be starting soon for {linkcodemsg}.");
             // Wait a few seconds for people to lock in.
             await Task.Delay(5_000, token).ConfigureAwait(false);
 
@@ -196,7 +197,6 @@ namespace SysBot.Pokemon
                 await NavigateFriendsMenu(true, token).ConfigureAwait(false);
                 for (int i = 0; i < Settings.NumberFriendsToDelete; i++)
                     await DeleteFriend(token).ConfigureAwait(false);
-                EchoUtil.Echo($"Deleted up to {Settings.NumberFriendsToDelete} friends!");
             }
 
             // If we're deleting friends and need to add friends, it's cleaner to back out 
@@ -217,7 +217,6 @@ namespace SysBot.Pokemon
                 await NavigateFriendsMenu(false, token).ConfigureAwait(false);
                 for (int i = 0; i < Settings.NumberFriendsToAdd; i++)
                     await AddFriend(token).ConfigureAwait(false);
-                EchoUtil.Echo($"Added up to {Settings.NumberFriendsToAdd} new friends!");
             }
 
             addFriends = false;
