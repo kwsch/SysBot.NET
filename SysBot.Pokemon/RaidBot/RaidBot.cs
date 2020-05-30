@@ -161,13 +161,13 @@ namespace SysBot.Pokemon
             if (addFriends || deleteFriends)
                 await DeleteAddFriends(token).ConfigureAwait(false);
 
-            // Open game and select profile
-            await Click(A, 1_000, token).ConfigureAwait(false);
-            await Click(A, 1_000, token).ConfigureAwait(false);
+            // Open game and select profile. We can be liberal with A-presses here.
+            for (int i = 0; i < 4; i++)
+                await Click(A, 1_000, token).ConfigureAwait(false);
             Log("Restarting the game!");
 
             // Switch Logo lag, skip cutscene, game load screen
-            await Task.Delay(15_000 + Hub.Config.Raid.ExtraTimeLoadGame, token).ConfigureAwait(false);
+            await Task.Delay(12_000 + Hub.Config.Raid.ExtraTimeLoadGame, token).ConfigureAwait(false);
 
             for (int i = 0; i < 5; i++)
                 await Click(A, 1_000, token).ConfigureAwait(false);
