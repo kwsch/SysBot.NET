@@ -184,11 +184,7 @@ namespace SysBot.Pokemon
 
         private async Task DeleteAddFriends(CancellationToken token)
         {
-            // Get to the profile.
-            await Click(DUP, 0_600, token).ConfigureAwait(false);
-            for (int i = 1; i < Settings.ProfileNumber; i++)
-                await Click(DRIGHT, 0_600, token).ConfigureAwait(false);
-            await Click(A, 2_000, token).ConfigureAwait(false);
+            await NavigateToProfile(token).ConfigureAwait(false);
 
             // Delete before adding to avoid deleting new friends.
             if (deleteFriends)
@@ -205,10 +201,7 @@ namespace SysBot.Pokemon
             {
                 Log("Navigating back to add friends.");
                 await Click(HOME, 2_000, token).ConfigureAwait(false);
-                await Click(DUP, 0_600, token).ConfigureAwait(false);
-                for (int i = 1; i < Settings.ProfileNumber; i++)
-                    await Click(DRIGHT, 0_600, token).ConfigureAwait(false);
-                await Click(A, 2_000, token).ConfigureAwait(false);
+                await NavigateToProfile(token).ConfigureAwait(false);
             }
 
             if (addFriends)
@@ -221,7 +214,16 @@ namespace SysBot.Pokemon
 
             addFriends = false;
             deleteFriends = false;
-            await Click(HOME, 1_000, token).ConfigureAwait(false);
+            await Click(HOME, 2_000, token).ConfigureAwait(false);
+        }
+
+        // Goes from Home screen hovering over the game to the correct profile
+        private async Task NavigateToProfile(CancellationToken token)
+        {
+            await Click(DUP, 0_600, token).ConfigureAwait(false);
+            for (int i = 1; i < Settings.ProfileNumber; i++)
+                await Click(DRIGHT, 0_600, token).ConfigureAwait(false);
+            await Click(A, 2_000, token).ConfigureAwait(false);
         }
 
         // Gets us on the friend card if it exists after HOME button has been pressed.
