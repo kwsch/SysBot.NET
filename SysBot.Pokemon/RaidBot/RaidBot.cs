@@ -155,7 +155,7 @@ namespace SysBot.Pokemon
             // Close out of the game
             await Click(HOME, 4_000, token).ConfigureAwait(false);
             await Click(X, 1_000, token).ConfigureAwait(false);
-            await Click(A, 5_000, token).ConfigureAwait(false); // Closing software prompt
+            await Click(A, 5_000 + Hub.Config.Raid.ExtraTimeCloseGame, token).ConfigureAwait(false); // Closing software prompt
             Log("Closed out of the game!");
 
             if (addFriends || deleteFriends)

@@ -24,6 +24,9 @@ namespace SysBot.Pokemon
         [Category(Hosting), Description("Extra time in milliseconds to wait before closing the game to reset the raid.")]
         public int ExtraTimeEndRaid { get; set; } = 0;
 
+        [Category(Hosting), Description("Extra time in milliseconds to wait after clicking to close the game.")]
+        public int ExtraTimeCloseGame { get; set; } = 0;
+
         [Category(Hosting), Description("Extra time in milliseconds to wait after accepting a friend.")]
         public int ExtraTimeAddFriend { get; set; } = 0;
 
