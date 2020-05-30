@@ -24,6 +24,8 @@ namespace SysBot.Pokemon
         private int encounterCount;
         private bool deleteFriends = false;
         private bool addFriends = false;
+        private bool[] PlayerReady = new bool[4];
+        private int raidBossSpecies = -1;
 
         protected override async Task MainLoop(CancellationToken token)
         {
@@ -92,6 +94,13 @@ namespace SysBot.Pokemon
             // Press A and stall out a bit for the loading
             await Click(A, 5_000 + Hub.Config.Raid.ExtraTimeLoadRaid, token).ConfigureAwait(false);
 
+            if (raidBossSpecies == -1)
+            {
+                var data = await Connection.ReadBytesAsync(RaidBossOffset, 2, token).ConfigureAwait(false);
+                raidBossSpecies = BitConverter.ToUInt16(data, 0);
+            }
+            Log($"Initializing raid for {(Species)raidBossSpecies}.");
+
             if (code >= 0)
             {
                 // Set Link code
@@ -99,10 +108,10 @@ namespace SysBot.Pokemon
                 await EnterTradeCode(code, token).ConfigureAwait(false);
                 await Click(PLUS, 2_000, token).ConfigureAwait(false);
                 await Click(A, 1_000, token).ConfigureAwait(false);
-            }
 
-            if (addFriends && !string.IsNullOrEmpty(Settings.FriendCode))
-                EchoUtil.Echo($"Send a friend request to Friend Code **{Settings.FriendCode}** to join in! Friends will be added after this raid.");
+                if (addFriends && !string.IsNullOrEmpty(Settings.FriendCode))
+                    EchoUtil.Echo($"Send a friend request to Friend Code **{Settings.FriendCode}** to join in! Friends will be added after this raid.");
+            }
 
             // Invite others, confirm Pokémon and wait
             await Click(A, 7_000 + Hub.Config.Raid.ExtraTimeOpenRaid, token).ConfigureAwait(false);
@@ -110,23 +119,23 @@ namespace SysBot.Pokemon
             await Click(A, 1_000, token).ConfigureAwait(false);
 
             var linkcodemsg = code < 0 ? "no Link Code" : $"code **{code:0000}**";
-            var raiddescmsg = string.IsNullOrEmpty(Hub.Config.Raid.RaidDescription) ? "" : $" for {Hub.Config.Raid.RaidDescription}";
-            EchoUtil.Echo($"Raid lobby{raiddescmsg} is open with {linkcodemsg}.");
+
+            string raiddescmsg = string.IsNullOrEmpty(Hub.Config.Raid.RaidDescription) ? ((Species)raidBossSpecies).ToString() : Hub.Config.Raid.RaidDescription;
+            EchoUtil.Echo($"Raid lobby for {raiddescmsg} is open with {linkcodemsg}.");
 
             var timetowait = Hub.Config.Raid.MinTimeToWait * 1_000;
             var timetojoinraid = 175_000 - timetowait;
 
             Log("Waiting on raid party...");
             // Wait the minimum timer or until raid party fills up.
-            while (timetowait > 0 && !await GetRaidPartyIsFullAsync(token).ConfigureAwait(false))
+            while (timetowait > 0 && !await GetRaidPartyReady(token).ConfigureAwait(false))
             {
                 await Task.Delay(1_000, token).ConfigureAwait(false);
                 timetowait -= 1_000;
             }
 
-            EchoUtil.Echo($"Raid will be starting soon for {linkcodemsg}.");
-            // Wait a few seconds for people to lock in.
-            await Task.Delay(5_000, token).ConfigureAwait(false);
+            await Task.Delay(1_000, token).ConfigureAwait(false);
+            EchoUtil.Echo($"Raid is starting now with {linkcodemsg}.");
 
             /* Press A and check if we entered a raid.  If other users don't lock in,
                it will automatically start once the timer runs out. If we don't make it into
@@ -137,16 +146,54 @@ namespace SysBot.Pokemon
                 timetojoinraid -= 0_500;
             }
 
+            for (int i = 0; i < 4; i++)
+                PlayerReady[i] = false;
+
             Log("Finishing raid routine.");
             await Task.Delay(5_000 + Hub.Config.Raid.ExtraTimeEndRaid, token).ConfigureAwait(false);
 
             return false;
         }
 
-        private async Task<bool> GetRaidPartyIsFullAsync(CancellationToken token)
+        private async Task<bool> GetRaidPartyReady(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(RaidTrainerFullOffset, 4, token).ConfigureAwait(false);
-            return BitConverter.ToUInt32(data, 0) == 0xFFFFFFFF;
+            bool ready = true;
+            for (uint i = 0; i < 4; i++)
+            {
+                if (!await ConfirmPlayerReady(i, token).ConfigureAwait(false))
+                    ready = false;
+            }
+            return ready;
+        }
+
+        private async Task<bool> ConfirmPlayerReady(uint player, CancellationToken token)
+        {
+            if (PlayerReady[player])
+                return true;
+
+            var ofs = RaidP0PokemonOffset + 0x30 * player;
+
+            // Check if the player has locked in.
+            var data = await Connection.ReadBytesAsync(ofs + RaidLockedInIncr, 1, token).ConfigureAwait(false);
+            if (data[0] == 0)
+                return false;
+
+            // If we get to here, they're locked in and should have a Pokémon selected.
+            data = await Connection.ReadBytesAsync(ofs, 2, token).ConfigureAwait(false);
+            var dexno = BitConverter.ToUInt16(data, 0);
+            data = await Connection.ReadBytesAsync(ofs + RaidAltFormInc, 1, token).ConfigureAwait(false);
+
+            if (dexno == 0)
+                return false;
+
+            PlayerReady[player] = true;
+            if (Hub.Config.Raid.EchoPartyReady)
+            {
+                var altformstr = data[0] == 0 ? "" : "-" + data[0];
+                EchoUtil.Echo($"Player {player + 1} is ready with {(Species)dexno}{altformstr}!");
+            }
+
+            return true;
         }
 
         private async Task ResetGameAsync(CancellationToken token)

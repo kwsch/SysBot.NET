@@ -12,13 +12,21 @@ namespace SysBot.Pokemon
         public const uint IsConnectedOffset = 0x2F864118;
         public const uint TextSpeedOffset = 0x42935FD0;
 
-        public const uint RaidTrainerFullOffset = 0x6879DDCC;
+        // Raid Offsets
+        // The dex number of the Pokémon the host currently has chosen. 
+        // Details for each player span 0x30, so add 0x30 to get to the next offset.
+        public const uint RaidP0PokemonOffset = 0x80F48154;
+        // Add to each Pokémon offset.  AltForm used.
+        public const uint RaidAltFormInc = 0x4;
+        // Add to each Pokémon offset.  Bool for whether they have locked in their Pokémon.
+        public const uint RaidLockedInIncr = 0x1C;
+        public const uint RaidBossOffset = 0x80F4811C;
 
         // Vary by game. They are 1 when in a battle or raid, 0 otherwise.
         public const uint InBattleRaidOffsetSH = 0x3DD26104;
         public const uint InBattleRaidOffsetSW = 0x3DD26109;
 
-        // Pokemon Encounter Offsets
+        // Pokémon Encounter Offsets
         public const uint WildPokemonOffset = 0x8D45C648;
         public const uint RaidPokemonOffset = 0x85C7AB08;
         public const uint LegendaryPokemonOffset = 0x85C74F88;

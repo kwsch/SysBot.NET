@@ -39,8 +39,11 @@ namespace SysBot.Pokemon
         [Category(Hosting), Description("Maximum Link Code to host the raid with. Set this to -1 to host with no code.")]
         public int MaxRaidCode { get; set; } = 8199;
 
-        [Category(Hosting), Description("Optional description of the raid the bot is hosting.")]
+        [Category(Hosting), Description("Optional description of the raid the bot is hosting. Uses automatic Pokémon detection if left blank.")]
         public string RaidDescription { get; set; } = string.Empty;
+
+        [Category(Hosting), Description("Echoes each party member as they lock into a Pokémon.")]
+        public bool EchoPartyReady { get; set; } = false;
 
         [Category(Hosting), Description("Allows the bot to echo your Friend Code if set.")]
         public string FriendCode { get; set; } = string.Empty;
