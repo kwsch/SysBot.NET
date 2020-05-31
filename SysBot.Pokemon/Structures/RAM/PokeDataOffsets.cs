@@ -18,6 +18,10 @@ namespace SysBot.Pokemon
         public const uint RaidP0PokemonOffset = 0x80F48154;
         // Add to each Pokémon offset.  AltForm used.
         public const uint RaidAltFormInc = 0x4;
+        // Add to each Pokémon offset.  0 = male, 1 = female, 2 = genderless.
+        public const uint RaidGenderIncr = 0x8;
+        // Add to each Pokémon offset.  Bool for whether the Pokémon is shiny.
+        public const uint RaidShinyIncr = 0xC;
         // Add to each Pokémon offset.  Bool for whether they have locked in their Pokémon.
         public const uint RaidLockedInIncr = 0x1C;
         public const uint RaidBossOffset = 0x80F4811C;

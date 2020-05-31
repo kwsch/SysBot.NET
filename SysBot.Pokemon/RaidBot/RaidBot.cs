@@ -178,19 +178,24 @@ namespace SysBot.Pokemon
             if (data[0] == 0)
                 return false;
 
-            // If we get to here, they're locked in and should have a Pokémon selected.
-            data = await Connection.ReadBytesAsync(ofs, 2, token).ConfigureAwait(false);
-            var dexno = BitConverter.ToUInt16(data, 0);
-            data = await Connection.ReadBytesAsync(ofs + RaidAltFormInc, 1, token).ConfigureAwait(false);
-
-            if (dexno == 0)
-                return false;
-
             PlayerReady[player] = true;
+
+            // If we get to here, they're locked in and should have a Pokémon selected.
             if (Hub.Config.Raid.EchoPartyReady)
             {
+                data = await Connection.ReadBytesAsync(ofs, 2, token).ConfigureAwait(false);
+                var dexno = BitConverter.ToUInt16(data, 0);
+
+                data = await Connection.ReadBytesAsync(ofs + RaidAltFormInc, 1, token).ConfigureAwait(false);
                 var altformstr = data[0] == 0 ? "" : "-" + data[0];
-                EchoUtil.Echo($"Player {player + 1} is ready with {(Species)dexno}{altformstr}!");
+
+                data = await Connection.ReadBytesAsync(ofs + RaidShinyIncr, 1, token).ConfigureAwait(false);
+                var shiny = data[0] == 1 ? "★" : "";
+
+                data = await Connection.ReadBytesAsync(ofs + RaidGenderIncr, 1, token).ConfigureAwait(false);
+                var gender = data[0] == 0 ? " (M)" : (data[0] == 1 ? " (F)" : "");
+
+                EchoUtil.Echo($"Player {player + 1} is ready with {shiny} {(Species)dexno}{altformstr}{gender}!");
             }
 
             return true;
