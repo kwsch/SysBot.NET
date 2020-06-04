@@ -112,9 +112,6 @@ namespace SysBot.Pokemon
         public const uint BattleMenuOffset = 0x691372E4;
         public const uint BattleMenuOffsetDog = 0x6759E550;
 
-        // Always 0xFF out of menus, 0 while in menus when standing in front of Cara Liss.
-        public const uint OverworldFossil = 0x67479E3C;
-
         // Most screen detection checks the values at this offset.
         public const uint CurrentScreenOffset = 0x68dcbc90;
 

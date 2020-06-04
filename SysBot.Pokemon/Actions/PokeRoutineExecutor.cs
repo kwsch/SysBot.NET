@@ -466,7 +466,8 @@ namespace SysBot.Pokemon
             if (config.ScreenDetection == ScreenDetectionMode.Original)
             {
                 var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
-                return BitConverter.ToUInt32(data, 0) == CurrentScreen_Overworld;
+                var dataint = BitConverter.ToUInt32(data, 0);
+                return dataint == CurrentScreen_Overworld || dataint == CurrentScreen_WildArea;
             }
             // Uses an appropriate OverworldOffset for the console language.
             else if (config.ScreenDetection == ScreenDetectionMode.ConsoleLanguageSpecific)
@@ -475,13 +476,6 @@ namespace SysBot.Pokemon
                 return data[0] == 1;
             }
             return false;
-        }
-
-        public async Task<bool> IsOnOverworldFossil(CancellationToken token)
-        {
-            var data = await Connection.ReadBytesAsync(OverworldFossil, 4, token).ConfigureAwait(false);
-            var dataint = BitConverter.ToUInt32(data, 0);
-            return dataint == 0xFFFF5127 || dataint == 0xFFFFFFFF;
         }
 
         public async Task<TextSpeed> GetTextSpeed(CancellationToken token)

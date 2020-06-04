@@ -8,19 +8,17 @@ namespace SysBot.Pokemon
 {
     public class FossilBot : PokeRoutineExecutor
     {
+        private readonly PokeTradeHub<PK8> hub;
         private readonly BotCompleteCounts Counts;
         private readonly IDumper DumpSetting;
-        private readonly FossilSpecies FossilSpecies;
         private readonly FossilSettings Settings;
-        private bool CaptureVideo;
 
         public FossilBot(PokeBotConfig cfg, PokeTradeHub<PK8> Hub) : base(cfg)
         {
+            hub = Hub;
             Counts = Hub.Counts;
             DumpSetting = Hub.Config.Folder;
             Settings = Hub.Config.Fossil;
-            FossilSpecies = Settings.Species;
-            CaptureVideo = Hub.Config.CaptureVideoClip;
         }
 
         private int encounterCount;
@@ -51,7 +49,7 @@ namespace SysBot.Pokemon
             Log("Checking item counts...");
             var pouchData = await Connection.ReadBytesAsync(PokeDataOffsets.ItemTreasureAddress, 80, token).ConfigureAwait(false);
             var counts = FossilCount.GetFossilCounts(pouchData);
-            int reviveCount = counts.PossibleRevives(FossilSpecies);
+            int reviveCount = counts.PossibleRevives(hub.Config.Fossil.Species);
             if (reviveCount == 0)
             {
                 Log("Insufficient fossil pieces. Please obtain at least one of each required fossil piece first.");
@@ -64,7 +62,7 @@ namespace SysBot.Pokemon
             {
                 if (encounterCount != 0 && encounterCount % reviveCount == 0)
                 {
-                    Log($"Ran out of fossils to revive {FossilSpecies}.");
+                    Log($"Ran out of fossils to revive {hub.Config.Fossil.Species}.");
                     if (Settings.InjectWhenEmpty)
                     {
                         Log("Restoring original pouch data.");
@@ -97,7 +95,7 @@ namespace SysBot.Pokemon
 
                 if (StopCondition(pk))
                 {
-                    if (CaptureVideo)
+                    if (hub.Config.CaptureVideoClip)
                         await PressAndHold(CAPTURE, 2_000, 1_000, token).ConfigureAwait(false);
 
                     if (Settings.ContinueAfterMatch)
@@ -132,12 +130,12 @@ namespace SysBot.Pokemon
             await Click(A, 1_300, token).ConfigureAwait(false);
 
             // Selecting first fossil.
-            if (count.UseSecondOption1(FossilSpecies))
+            if (count.UseSecondOption1(hub.Config.Fossil.Species))
                 await Click(DDOWN, 0_300, token).ConfigureAwait(false);
             await Click(A, 1_300, token).ConfigureAwait(false);
 
             // Selecting second fossil.
-            if (count.UseSecondOption2(FossilSpecies))
+            if (count.UseSecondOption2(hub.Config.Fossil.Species))
                 await Click(DDOWN, 300, token).ConfigureAwait(false);
 
             // A spam through accepting the fossil and agreeing to revive.
@@ -145,7 +143,7 @@ namespace SysBot.Pokemon
                 await Click(A, 0_400, token).ConfigureAwait(false);
 
             // Safe to mash B from here until we get out of all menus.
-            while (!await IsOnOverworldFossil(token).ConfigureAwait(false))
+            while (!await IsOnOverworld(hub.Config, token).ConfigureAwait(false))
                 await Click(B, 0_400, token).ConfigureAwait(false);
         }
     }

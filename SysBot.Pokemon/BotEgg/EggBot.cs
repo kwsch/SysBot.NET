@@ -9,16 +9,18 @@ namespace SysBot.Pokemon
 {
     public class EggBot : PokeRoutineExecutor
     {
+        private readonly PokeTradeHub<PK8> hub;
         private readonly BotCompleteCounts Counts;
         private readonly IDumper DumpSetting;
         private readonly bool ContinueGettingEggs;
         private const SwordShieldDaycare Location = SwordShieldDaycare.Route5;
 
-        public EggBot(PokeBotConfig cfg, EggSettings egg, IDumper dump, BotCompleteCounts count) : base(cfg)
+        public EggBot(PokeBotConfig cfg, PokeTradeHub<PK8> Hub) : base(cfg)
         {
-            Counts = count;
-            DumpSetting = dump;
-            ContinueGettingEggs = egg.ContinueAfterMatch;
+            hub = Hub;
+            Counts = Hub.Counts;
+            DumpSetting = Hub.Config.Folder;
+            ContinueGettingEggs = Hub.Config.Egg.ContinueAfterMatch;
         }
 
         private int encounterCount;
@@ -62,8 +64,8 @@ namespace SysBot.Pokemon
                 for (int i = 0; i < 4; i++)
                     await Click(A, 0_400, token).ConfigureAwait(false);
 
-                // Safe to mash B from here until we get out of all menus. Currentscreen becomes 0xFFFFFFFF.
-                while (!await IsOnOverworldFossil(token).ConfigureAwait(false))
+                // Safe to mash B from here until we get out of all menus.
+                while (!await IsOnOverworld(hub.Config, token).ConfigureAwait(false))
                     await Click(B, 0_400, token).ConfigureAwait(false);
 
                 Log("Egg received. Checking details.");

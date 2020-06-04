@@ -10,11 +10,9 @@ namespace SysBot.Pokemon
 {
     public class EncounterBot : PokeRoutineExecutor
     {
+        private readonly PokeTradeHub<PK8> hub;
         private readonly BotCompleteCounts Counts;
         private readonly IDumper DumpSetting;
-        private readonly Species StopOnSpecies;
-        private readonly EncounterMode Mode;
-        private bool CaptureVideo;
         private readonly Nature DesiredNature;
         private readonly int[] DesiredIVs = {-1, -1, -1, -1, -1, -1};
         private readonly byte[] BattleMenuReady = {255, 255, 255, 255};
@@ -22,11 +20,9 @@ namespace SysBot.Pokemon
 
         public EncounterBot(PokeBotConfig cfg, PokeTradeHub<PK8> Hub) : base(cfg)
         {
+            hub = Hub;
             Counts = Hub.Counts;
             DumpSetting = Hub.Config.Folder;
-            StopOnSpecies = Hub.Config.Encounter.StopOnSpecies;
-            Mode = Hub.Config.Encounter.EncounteringType;
-            CaptureVideo = Hub.Config.CaptureVideoClip;
             DesiredNature = Hub.Config.Encounter.DesiredNature;
 
             /* Populate DesiredIVs array.  Bot matches 0 and 31 IVs.
@@ -49,9 +45,9 @@ namespace SysBot.Pokemon
         {
             /*  Match species and look for a shiny. This is only checked for walking encounters.
              *  If they specified a species, it has to match. */
-            if (Mode == EncounterMode.HorizontalLine || Mode == EncounterMode.VerticalLine)
+            if (hub.Config.Encounter.EncounteringType == EncounterMode.HorizontalLine || hub.Config.Encounter.EncounteringType == EncounterMode.VerticalLine)
             {
-                if (!pk.IsShiny || (StopOnSpecies != Species.None && StopOnSpecies != (Species)pk.Species))
+                if (!pk.IsShiny || (hub.Config.Encounter.StopOnSpecies != Species.None && hub.Config.Encounter.StopOnSpecies != (Species)pk.Species))
                     return false;
             }
 
@@ -86,7 +82,7 @@ namespace SysBot.Pokemon
             // Clear out any residual stick weirdness.
             await ResetStick(token).ConfigureAwait(false);
 
-            var task = Mode switch
+            var task = hub.Config.Encounter.EncounteringType switch
             {
                 EncounterMode.VerticalLine => WalkInLine(token),
                 EncounterMode.HorizontalLine => WalkInLine(token),
@@ -133,9 +129,13 @@ namespace SysBot.Pokemon
 
                 if (StopCondition(pk))
                 {
-                    if (CaptureVideo)
-                        await PressAndHold(CAPTURE, 2_000, 1_000, token).ConfigureAwait(false);
                     Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
+
+                    if (hub.Config.CaptureVideoClip)
+                    {
+                        await Task.Delay(10_000).ConfigureAwait(false);
+                        await PressAndHold(CAPTURE, 2_000, 1_000, token).ConfigureAwait(false);
+                    }
                     return;
                 }
 
@@ -268,7 +268,7 @@ namespace SysBot.Pokemon
             {
                 if (!await IsInBattle(token).ConfigureAwait(false))
                 {
-                    switch (Mode)
+                    switch (hub.Config.Encounter.EncounteringType)
                     {
                         case EncounterMode.VerticalLine:
                             await SetStick(LEFT, 0, -30000, 2_400, token).ConfigureAwait(false);

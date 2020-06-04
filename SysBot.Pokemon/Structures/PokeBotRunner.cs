@@ -101,7 +101,7 @@ namespace SysBot.Pokemon
                     return new PokeTradeBot(Hub, cfg);
 
                 case PokeRoutineType.EggFetch:
-                    return new EggBot(cfg, Hub.Config.Egg, Hub.Config.Folder, Hub.Counts);
+                    return new EggBot(cfg, Hub);
 
                 case PokeRoutineType.FossilBot:
                     return new FossilBot(cfg, Hub);
