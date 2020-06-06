@@ -220,8 +220,9 @@ namespace SysBot.Pokemon
                     await Click(A, 1_000, token).ConfigureAwait(false);
 
                 Log("Encounter started! Checking details...");
+                await Task.Delay(4_000, token).ConfigureAwait(false);
                 while (!await IsInBattle(token).ConfigureAwait(false))
-                    await Task.Delay(0_500, token).ConfigureAwait(false);
+                    await Task.Delay(0_250, token).ConfigureAwait(false);
 
                 var pk = await ReadPokemon(LegendaryPokemonOffset, token).ConfigureAwait(false);
                 if (pk.Species == 0)
