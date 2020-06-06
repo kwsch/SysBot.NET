@@ -190,12 +190,12 @@ namespace SysBot.Pokemon
                 var altformstr = data[0] == 0 ? "" : "-" + data[0];
 
                 data = await Connection.ReadBytesAsync(ofs + RaidShinyIncr, 1, token).ConfigureAwait(false);
-                var shiny = data[0] == 1 ? "★" : "";
+                var shiny = data[0] == 1 ? "★ " : "";
 
                 data = await Connection.ReadBytesAsync(ofs + RaidGenderIncr, 1, token).ConfigureAwait(false);
                 var gender = data[0] == 0 ? " (M)" : (data[0] == 1 ? " (F)" : "");
 
-                EchoUtil.Echo($"Player {player + 1} is ready with {shiny} {(Species)dexno}{altformstr}{gender}!");
+                EchoUtil.Echo($"Player {player + 1} is ready with {shiny}{(Species)dexno}{altformstr}{gender}!");
             }
 
             return true;
