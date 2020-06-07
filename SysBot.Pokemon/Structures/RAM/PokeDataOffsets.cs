@@ -11,7 +11,7 @@ namespace SysBot.Pokemon
         public const uint SoftBanUnixTimespanOffset = 0x4298f9f8;
         public const uint IsConnectedOffset = 0x2F864118;
         public const uint TextSpeedOffset = 0x42935FD0;
-
+        public const uint LastUsedBallOffset = 0x49D88EE0;
         // Raid Offsets
         // The dex number of the Pokémon the host currently has chosen. 
         // Details for each player span 0x30, so add 0x30 to get to the next offset.

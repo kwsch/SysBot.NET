@@ -41,6 +41,12 @@ namespace SysBot.Pokemon
             return new PK8(data);
         }
 
+        public async Task SetLastUsedBall(Ball ball, CancellationToken token)
+        {
+            var data = BitConverter.GetBytes((int)ball);
+            await Connection.WriteBytesAsync(data, LastUsedBallOffset, token).ConfigureAwait(false);
+        }
+
         public async Task SetBoxPokemon(PK8 pkm, int box, int slot, CancellationToken token, SAV8? sav = null)
         {
             if (sav != null)
