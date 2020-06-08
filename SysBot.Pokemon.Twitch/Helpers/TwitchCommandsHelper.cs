@@ -14,6 +14,11 @@ namespace SysBot.Pokemon.Twitch
             }
 
             var set = TwitchShowdownUtil.ConvertToShowdown(setstring);
+            if (set == null)
+            {
+                msg = $"Skipping trade, @{username}: Empty nickname provided for the species.";
+                return false;
+            }
             var template = AutoLegalityWrapper.GetTemplate(set);
             if (template.Species < 1)
             {

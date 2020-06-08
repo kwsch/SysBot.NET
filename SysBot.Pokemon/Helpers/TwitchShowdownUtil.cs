@@ -9,7 +9,7 @@ namespace SysBot.Pokemon
         /// </summary>
         /// <param name="setstring">single string</param>
         /// <returns>ShowdownSet object</returns>
-        public static ShowdownSet ConvertToShowdown(string setstring)
+        public static ShowdownSet? ConvertToShowdown(string setstring)
         {
             // Twitch removes new lines, so we are left with a single line set
             var restorenick = string.Empty;
@@ -18,6 +18,8 @@ namespace SysBot.Pokemon
             if (nickIndex > -1)
             {
                 restorenick = setstring.Substring(0, nickIndex + 1);
+                if (restorenick.TrimStart().StartsWith("("))
+                    return null;
                 setstring = setstring.Substring(nickIndex + 1);
             }
 

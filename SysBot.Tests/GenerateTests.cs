@@ -23,6 +23,15 @@ namespace SysBot.Tests
         }
 
         [Theory]
+        [InlineData(InavlidSpec)]
+        public void ShouldNotGenerate(string set)
+        {
+            var sav = AutoLegalityWrapper.GetTrainerInfo(8);
+            var s = TwitchShowdownUtil.ConvertToShowdown(set);
+            s.Should().BeNull();
+        }
+
+        [Theory]
         [InlineData(Torkoal2, 2)]
         [InlineData(Charizard4, 4)]
         public void TestAbility(string set, int abilNumber)
@@ -47,8 +56,8 @@ namespace SysBot.Tests
             {
                 var twitch = set.Replace("\r\n", " ").Replace("\n", " ");
                 var s = TwitchShowdownUtil.ConvertToShowdown(twitch);
-                var template = AutoLegalityWrapper.GetTemplate(s);
-                var pk = sav.GetLegal(template, out _);
+                var template = s == null ? null : AutoLegalityWrapper.GetTemplate(s);
+                var pk = template == null ? null : sav.GetLegal(template, out _);
                 pk.AbilityNumber.Should().Be(abilNumber);
             }
         }
@@ -107,5 +116,8 @@ Timid Nature
 - Air Slash 
 - Solar Beam 
 - Beat Up";
+
+        private const string InavlidSpec =
+@"(Pikachu)";
     }
 }
