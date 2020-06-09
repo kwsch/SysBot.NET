@@ -10,7 +10,6 @@ using TwitchLib.Communication.Models;
 using PKHeX.Core;
 using SysBot.Base;
 using TwitchLib.Communication.Events;
-using System.Threading;
 
 namespace SysBot.Pokemon.Twitch
 {
@@ -79,12 +78,6 @@ namespace SysBot.Pokemon.Twitch
 
             client.Connect();
 
-            while(!client.IsConnected)
-                Thread.Sleep(0_100);
-
-            if (client.JoinedChannels.Count == 0)
-                client.JoinChannel(Channel);
-
             EchoUtil.Forwarders.Add(msg => client.SendMessage(Channel, msg));
 
             // Turn on if verified
@@ -95,10 +88,6 @@ namespace SysBot.Pokemon.Twitch
         {
             Task.Run(async () =>
             {
-
-                if (client.JoinedChannels.Count == 0)
-                    client.JoinChannel(Channel);
-
                 client.SendMessage(Channel, "5...");
                 await Task.Delay(1_000).ConfigureAwait(false);
                 client.SendMessage(Channel, "4...");
@@ -165,9 +154,6 @@ namespace SysBot.Pokemon.Twitch
 
         private void Client_OnJoinedChannel(object sender, OnJoinedChannelArgs e)
         {
-            if (client.JoinedChannels.Count == 0)
-                client.JoinChannel(Channel);
-
             LogUtil.LogInfo($"Joined {e.Channel}", e.BotUsername);
             client.SendMessage(e.Channel, "Connected!");
         }
@@ -187,15 +173,8 @@ namespace SysBot.Pokemon.Twitch
 
         private void Client_OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
         {
-            if (client.JoinedChannels.Count == 0)
-                client.JoinChannel(Channel);
-
-
             if (!Hub.Config.Twitch.AllowCommandsViaChannel || Hub.Config.Twitch.UserBlacklist.Contains(e.Command.ChatMessage.Username))
                 return;
-
-            if (client.JoinedChannels.Count == 0)
-                client.JoinChannel(Channel);
 
             var msg = e.Command.ChatMessage;
             var c = e.Command.CommandText.ToLower();
@@ -278,10 +257,6 @@ namespace SysBot.Pokemon.Twitch
         private void Client_OnWhisperReceived(object sender, OnWhisperReceivedArgs e)
         {
             LogUtil.LogText($"[{client.TwitchUsername}] - @{e.WhisperMessage.Username}: {e.WhisperMessage.Message}");
-
-            if (client.JoinedChannels.Count == 0)
-                client.JoinChannel(Channel);
-
             if (QueuePool.Count > 100)
             {
                 var removed = QueuePool[0];

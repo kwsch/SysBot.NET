@@ -97,16 +97,11 @@ namespace SysBot.Pokemon.Twitch
 
         private void SendMessage(string message, TwitchMessageDestination dest)
         {
-
             switch (dest)
             {
                 case TwitchMessageDestination.Channel:
-                    if (Client.JoinedChannels.Count == 0)
-                        Client.JoinChannel(Channel);
-
                     Client.SendMessage(Channel, message);
                     break;
-
                 case TwitchMessageDestination.Whisper:
                     Client.SendWhisper(Username, message);
                     break;
