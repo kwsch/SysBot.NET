@@ -10,6 +10,7 @@ using TwitchLib.Communication.Models;
 using PKHeX.Core;
 using SysBot.Base;
 using TwitchLib.Communication.Events;
+using System.Threading;
 
 namespace SysBot.Pokemon.Twitch
 {
@@ -77,6 +78,9 @@ namespace SysBot.Pokemon.Twitch
                 LogUtil.LogError(e.BotUsername + Environment.NewLine + e.Error.Message, "TwitchBot");
 
             client.Connect();
+
+            while(!client.IsConnected)
+                Thread.Sleep(0_100);
 
             if (client.JoinedChannels.Count == 0)
                 client.JoinChannel(Channel);
