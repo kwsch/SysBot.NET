@@ -10,7 +10,16 @@ namespace SysBot.Base
         public static void Echo(string message)
         {
             foreach (var fwd in Forwarders)
-                fwd(message);
+            {
+                try
+                {
+                    fwd(message);
+                }
+                catch (Exception ex)
+                {
+                    LogUtil.LogInfo($"Exception: {ex} occurred while trying to echo: {message} to the forwarder: {fwd}", "Echo");
+                }
+            }
             LogUtil.LogInfo(message, "Echo");
         }
     }
