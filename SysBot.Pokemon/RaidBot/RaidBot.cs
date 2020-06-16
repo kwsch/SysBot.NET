@@ -32,8 +32,6 @@ namespace SysBot.Pokemon
             Log("Identifying trainer data of the host console.");
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
 
-            var originalTextSpeed = await EnsureTextSpeedFast(token).ConfigureAwait(false);
-
             Log("Starting main RaidBot loop.");
 
             if (Hub.Config.Raid.MinTimeToWait < 0 || Hub.Config.Raid.MinTimeToWait > 180)
@@ -83,7 +81,6 @@ namespace SysBot.Pokemon
 
                 await ResetGameAsync(token).ConfigureAwait(false);
             }
-            await SetTextSpeed(originalTextSpeed, token).ConfigureAwait(false);
         }
 
         private async Task<bool> HostRaidAsync(SAV8SWSH sav, int code, CancellationToken token)

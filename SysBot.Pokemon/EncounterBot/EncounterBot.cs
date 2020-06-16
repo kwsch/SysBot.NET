@@ -74,8 +74,6 @@ namespace SysBot.Pokemon
             Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);
 
-            var originalTextSpeed = await EnsureTextSpeedFast(token).ConfigureAwait(false);
-
             Log("Starting main EncounterBot loop.");
             Config.IterateNextRoutine();
 
@@ -93,7 +91,6 @@ namespace SysBot.Pokemon
             await task.ConfigureAwait(false);
 
             await ResetStick(token).ConfigureAwait(false);
-            await SetTextSpeed(originalTextSpeed, token).ConfigureAwait(false);
         }
 
         private async Task WalkInLine(CancellationToken token)

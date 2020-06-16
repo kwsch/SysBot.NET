@@ -232,6 +232,10 @@ namespace SysBot.Pokemon
             InGameName = sav.OT;
             Connection.Name = $"{InGameName}-{sav.DisplayTID:000000}";
             Log($"{Connection.IP} identified as {Connection.Name}, using {GameLang}.");
+
+            if (await GetTextSpeed(token).ConfigureAwait(false) != TextSpeed.Fast)
+                Log("Text speed should be set to FAST. Stop the bot and fix this if you encounter problems.");
+
             return sav;
         }
 
@@ -531,17 +535,6 @@ namespace SysBot.Pokemon
                     Log(new ShowdownSet(q.Data!).Text);
                     return;
             }
-        }
-
-        protected async Task<TextSpeed> EnsureTextSpeedFast(CancellationToken token)
-        {
-            var speed = await GetTextSpeed(token).ConfigureAwait(false);
-            if (speed == TextSpeed.Fast)
-                return speed;
-
-            Log("Did you not read the wiki? It's fine though I set text speed to fast for you. No need to report that the bot isn't working.");
-            await SetTextSpeed(TextSpeed.Fast, token).ConfigureAwait(false);
-            return speed;
         }
     }
 }

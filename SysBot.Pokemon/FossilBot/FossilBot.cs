@@ -35,7 +35,6 @@ namespace SysBot.Pokemon
             Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);
 
-            var originalTextSpeed = await EnsureTextSpeedFast(token).ConfigureAwait(false);
             await SetCurrentBox(0, token).ConfigureAwait(false);
 
             Log("Checking destination slot for revived fossil Pokémon...");
@@ -112,7 +111,6 @@ namespace SysBot.Pokemon
                 Log("Clearing destination slot.");
                 await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
             }
-            await SetTextSpeed(originalTextSpeed, token).ConfigureAwait(false);
         }
 
         private async Task ReviveFossil(FossilCount count, CancellationToken token)
