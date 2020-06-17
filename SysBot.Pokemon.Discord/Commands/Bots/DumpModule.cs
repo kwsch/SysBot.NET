@@ -24,6 +24,17 @@ namespace SysBot.Pokemon.Discord
         [Alias("d")]
         [Summary("Dumps the Pokémon you show via Link Trade.")]
         [RequireQueueRole(nameof(DiscordManager.RolesDump))]
+        public async Task DumpAsync([Summary("Trade Code")][Remainder] string code)
+        {
+            int tradeCode = Util.ToInt32(code);
+            bool sudo = Context.User.GetIsSudo();
+            await Context.AddToQueueAsync(tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sudo, new PK8(), PokeRoutineType.Dump, PokeTradeType.Dump).ConfigureAwait(false);
+        }
+
+        [Command("dump")]
+        [Alias("d")]
+        [Summary("Dumps the Pokémon you show via Link Trade.")]
+        [RequireQueueRole(nameof(DiscordManager.RolesDump))]
         public async Task DumpAsync()
         {
             var code = Info.GetRandomTradeCode();

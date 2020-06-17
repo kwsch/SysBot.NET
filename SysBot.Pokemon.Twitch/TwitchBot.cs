@@ -261,7 +261,7 @@ namespace SysBot.Pokemon.Twitch
             {
                 var removed = QueuePool[0];
                 QueuePool.RemoveAt(0); // First in, first out
-                client.SendMessage(Channel, $"Removed {removed.DisplayName} from the waiting list. (list exceeded maximum count)");
+                client.SendMessage(Channel, $"Removed @{removed.DisplayName} from the waiting list. (list exceeded maximum count)");
             }
 
             var user = QueuePool.Find(q => q.UserName == e.WhisperMessage.Username);
@@ -271,7 +271,7 @@ namespace SysBot.Pokemon.Twitch
             var msg = e.WhisperMessage.Message;
             try
             {
-                int code = int.Parse(msg);
+                int code = Util.ToInt32(msg);
                 var _ = AddToTradeQueue(user.Pokemon, code, e, Settings.IsSudo(user.UserName), PokeRoutineType.LinkTrade, out string message);
                 client.SendMessage(Channel, message);
             }

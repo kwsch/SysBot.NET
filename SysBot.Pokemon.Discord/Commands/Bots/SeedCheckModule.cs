@@ -24,6 +24,17 @@ namespace SysBot.Pokemon.Discord
         [Alias("checkMySeed", "checkSeed", "seed", "s", "sc")]
         [Summary("Checks the seed for a Pokémon.")]
         [RequireQueueRole(nameof(DiscordManager.RolesSeed))]
+        public async Task SeedCheckAsync([Summary("Trade Code")][Remainder] string code)
+        {
+            int tradeCode = Util.ToInt32(code);
+            bool sudo = Context.User.GetIsSudo();
+            await Context.AddToQueueAsync(tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sudo, new PK8(), PokeRoutineType.SeedCheck, PokeTradeType.Clone).ConfigureAwait(false);
+        }
+
+        [Command("seedCheck")]
+        [Alias("checkMySeed", "checkSeed", "seed", "s", "sc")]
+        [Summary("Checks the seed for a Pokémon.")]
+        [RequireQueueRole(nameof(DiscordManager.RolesSeed))]
         public async Task SeedCheckAsync()
         {
             var code = Info.GetRandomTradeCode();

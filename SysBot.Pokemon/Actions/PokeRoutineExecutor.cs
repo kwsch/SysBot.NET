@@ -41,12 +41,6 @@ namespace SysBot.Pokemon
             return new PK8(data);
         }
 
-        public async Task SetLastUsedBall(Ball ball, CancellationToken token)
-        {
-            var data = BitConverter.GetBytes((int)ball);
-            await Connection.WriteBytesAsync(data, LastUsedBallOffset, token).ConfigureAwait(false);
-        }
-
         public async Task SetBoxPokemon(PK8 pkm, int box, int slot, CancellationToken token, SAV8? sav = null)
         {
             if (sav != null)
@@ -92,107 +86,6 @@ namespace SysBot.Pokemon
             return null;
         }
 
-        public async Task<bool> SpinUntilChangedLink(int waitms, CancellationToken token)
-        {
-            const int fastSleep = 10; // between commands
-            const int defaultSleep = 50; // original
-            const int delay = 100; // per stick command
-            const int m = 25_000; // magnitude of stick movement
-            var sw = new Stopwatch();
-
-            bool changed = false;
-            await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, fastSleep), token).ConfigureAwait(false);
-            sw.Start();
-            do
-            {
-                // Spin the Left Stick in a circle counter-clockwise, starting from 0deg (polar) in increments of 90deg.
-                if (!await SpinCircle().ConfigureAwait(false))
-                    continue;
-                changed = true;
-                break;
-            } while (sw.ElapsedMilliseconds < waitms);
-
-            async Task<bool> SpinCircle()
-            {
-                return await Step(m, 0).ConfigureAwait(false) // →
-                       || await Step(0, m).ConfigureAwait(false) // ↑ 
-                       || await Step(-m, 0).ConfigureAwait(false) // ←
-                       || await Step(0, -m).ConfigureAwait(false);// ↓
-
-                async Task<bool> Step(short x, short y)
-                {
-                    var now = sw.ElapsedMilliseconds;
-                    await SetStick(SwitchStick.LEFT, x, y, 2 * fastSleep, token).ConfigureAwait(false);
-                    if (await LinkTradePartnerFound(token).ConfigureAwait(false))
-                        return true;
-
-                    // wait the rest of this step's delay
-                    var wait = delay - (sw.ElapsedMilliseconds - now);
-                    if (wait > 0)
-                        await Task.Delay((int)wait, token).ConfigureAwait(false);
-                    return false;
-                }
-            }
-
-            // Gracefully clean up
-            await Connection.SendAsync(SwitchCommand.ResetStick(SwitchStick.LEFT), token).ConfigureAwait(false);
-            await Task.Delay(fastSleep, token).ConfigureAwait(false);
-            await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, defaultSleep), token).ConfigureAwait(false);
-            await Task.Delay(defaultSleep, token).ConfigureAwait(false);
-            return changed;
-        }
-
-        public async Task<bool> SpinUntilChangedSurprise(int waitms, CancellationToken token)
-        {
-            const int fastSleep = 10; // between commands
-            const int defaultSleep = 50; // original
-            const int delay = 100; // per stick command
-            const int m = 25_000; // magnitude of stick movement
-            var sw = new Stopwatch();
-
-            bool changed = false;
-            var searching = await Connection.ReadBytesAsync(SurpriseTradeSearchOffset, 4, token).ConfigureAwait(false);
-            await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, fastSleep), token).ConfigureAwait(false);
-            sw.Start();
-            do
-            {
-                // Spin the Left Stick in a circle counter-clockwise, starting from 0deg (polar) in increments of 90deg.
-                if (!await SpinCircle().ConfigureAwait(false))
-                    continue;
-                changed = true;
-                break;
-            } while (sw.ElapsedMilliseconds < waitms);
-
-            async Task<bool> SpinCircle()
-            {
-                return await Step(m, 0).ConfigureAwait(false) // →
-                       || await Step(0, m).ConfigureAwait(false) // ↑ 
-                       || await Step(-m, 0).ConfigureAwait(false) // ←
-                       || await Step(0, -m).ConfigureAwait(false);// ↓
-
-                async Task<bool> Step(short x, short y)
-                {
-                    var now = sw.ElapsedMilliseconds;
-                    await SetStick(SwitchStick.LEFT, x, y, 2 * fastSleep, token).ConfigureAwait(false);
-                    if (await ReadIsChanged(SurpriseTradeSearchOffset, searching, token).ConfigureAwait(false))
-                        return true;
-
-                    // wait the rest of this step's delay
-                    var wait = delay - (sw.ElapsedMilliseconds - now);
-                    if (wait > 0)
-                        await Task.Delay((int)wait, token).ConfigureAwait(false);
-                    return false;
-                }
-            }
-
-            // Gracefully clean up
-            await Connection.SendAsync(SwitchCommand.ResetStick(SwitchStick.LEFT), token).ConfigureAwait(false);
-            await Task.Delay(fastSleep, token).ConfigureAwait(false);
-            await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, defaultSleep), token).ConfigureAwait(false);
-            await Task.Delay(defaultSleep, token).ConfigureAwait(false);
-            return changed;
-        }
-
         // Reads an offset until it changes to either match or differ from the comparison value.
         // If "match" is set to true, then the function returns true when the offset matches the given value.
         // Otherwise, it returns true when the offset no longer matches the given value.
@@ -219,8 +112,8 @@ namespace SysBot.Pokemon
 
         public async Task<bool> LinkTradePartnerFound(CancellationToken token)
         {
-            var result = await Connection.ReadBytesAsync(LinkTradeFoundOffset, 1, token).ConfigureAwait(false);
-            return (result[0] & 0xF) != 1;
+            var data = await Connection.ReadBytesAsync(LinkTradeSearchingOffset, 1, token).ConfigureAwait(false);
+            return data[0] == 0;
         }
 
         public async Task<SAV8SWSH> IdentifyTrainer(CancellationToken token)
@@ -324,15 +217,15 @@ namespace SysBot.Pokemon
             }
         }
 
-        public async Task ExitTrade(bool unexpected, CancellationToken token)
+        public async Task ExitTrade(PokeTradeHubConfig config, bool unexpected, CancellationToken token)
         {
             if (unexpected)
                 Log("Unexpected behavior, recover position");
 
             int attempts = 0;
-            uint screenID = 0;
+            uint screenID;
             int softBanAttempts = 0;
-            while (screenID != CurrentScreen_Overworld)
+            while (!await IsOnOverworld(config, token).ConfigureAwait(false))
             {
                 screenID = await GetCurrentScreen(token).ConfigureAwait(false);
                 if (screenID == CurrentScreen_Softban)
@@ -418,7 +311,7 @@ namespace SysBot.Pokemon
 
             // Shouldn't ever be used while not on overworld.
             if (!await IsOnOverworld(config, token).ConfigureAwait(false))
-                await ExitTrade(true, token).ConfigureAwait(false);
+                await ExitTrade(config, true, token).ConfigureAwait(false);
 
             // Ensure we're searching before we try to reset a search.
             if (!await CheckIfSearchingForLinkTradePartner(token).ConfigureAwait(false))
@@ -466,8 +359,15 @@ namespace SysBot.Pokemon
 
         public async Task<bool> IsInBattle(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(Version == GameVersion.SH ? InBattleRaidOffsetSH : InBattleRaidOffsetSW, 1, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(InBattleRaidOffset, 1, token).ConfigureAwait(false);
             return data[0] == 1;
+        }
+
+        public async Task<bool> IsInBox(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
+            var dataint = BitConverter.ToUInt32(data, 0);
+            return dataint == CurrentScreen_Box1 || dataint == CurrentScreen_Box2;
         }
 
         public async Task<bool> IsOnOverworld(PokeTradeHubConfig config, CancellationToken token)
@@ -477,7 +377,7 @@ namespace SysBot.Pokemon
             {
                 var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
                 var dataint = BitConverter.ToUInt32(data, 0);
-                return dataint == CurrentScreen_Overworld || dataint == CurrentScreen_WildArea;
+                return dataint == CurrentScreen_Overworld1 || dataint == CurrentScreen_Overworld2;
             }
             // Uses an appropriate OverworldOffset for the console language.
             else if (config.ScreenDetection == ScreenDetectionMode.ConsoleLanguageSpecific)

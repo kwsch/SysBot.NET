@@ -35,6 +35,7 @@ namespace SysBot.Pokemon
             APILegality.ForceSpecifiedBall = cfg.ForceSpecifiedBall;
             APILegality.UseXOROSHIRO = cfg.UseXOROSHIRO;
             Legalizer.AllowBruteForce = cfg.AllowBruteForce;
+            Legalizer.EnableEasterEggs = cfg.EnableEasterEggs;
         }
 
         private static void InitializeTrainerDatabase(LegalitySettings cfg)

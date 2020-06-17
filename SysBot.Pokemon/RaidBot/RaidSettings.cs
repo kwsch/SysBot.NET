@@ -12,6 +12,12 @@ namespace SysBot.Pokemon
         [Category(Hosting), Description("Minimum amount of seconds to wait before starting a raid. Ranges from 0 to 180 seconds.")]
         public int MinTimeToWait { get; set; } = 90;
 
+        [Category(Hosting), Description("Extra time in milliseconds to wait for profiles to load when starting the game.")]
+        public int ExtraTimeLoadProfile { get; set; } = 0;
+
+        [Category(Hosting), Description("Extra time in milliseconds to wait to check if DLC is usable.")]
+        public int ExtraTimeCheckDLC { get; set; } = 0;
+
         [Category(Hosting), Description("Extra time in milliseconds to wait before clicking A in title screen.")]
         public int ExtraTimeLoadGame { get; set; } = 0;
 

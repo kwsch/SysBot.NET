@@ -8,13 +8,13 @@ namespace SysBot.Pokemon.Discord
 {
     public static class QueueExtensions
     {
-        private const uint MaxTradeCode = 9999;
+        private const uint MaxTradeCode = 99999999;
 
         public static async Task AddToQueueAsync(this SocketCommandContext Context, int code, string trainer, bool sudo, PK8 trade, PokeRoutineType routine, PokeTradeType type)
         {
             if ((uint)code > MaxTradeCode)
             {
-                await Context.Channel.SendMessageAsync("Trade code should be 0000-9999!").ConfigureAwait(false);
+                await Context.Channel.SendMessageAsync("Trade code should be 00000000-99999999!").ConfigureAwait(false);
                 return;
             }
 

@@ -94,7 +94,7 @@ namespace SysBot.Pokemon
                 }
                 waitCounter = 0;
 
-                string tradetype = $" ({detail.Type.ToString()})";
+                string tradetype = $" ({detail.Type})";
                 Log($"Starting next {type}{tradetype} Bot Trade. Getting data...");
                 Hub.Config.Stream.StartTrade(this, detail, Hub);
                 Hub.Queues.StartTrade(this, detail);
@@ -147,7 +147,7 @@ namespace SysBot.Pokemon
 
             if (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
             {
-                await ExitTrade(true, token).ConfigureAwait(false);
+                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
                 return PokeTradeResult.RecoverStart;
             }
 
@@ -180,7 +180,7 @@ namespace SysBot.Pokemon
             await Task.Delay(1_000, token).ConfigureAwait(false);
 
             var code = poke.Code;
-            Log($"Entering Link Trade Code: {code:0000}...");
+            Log($"Entering Link Trade Code: {code:0000 0000}...");
             await EnterTradeCode(code, token).ConfigureAwait(false);
 
             // Wait for Barrier to trigger all bots simultaneously.
@@ -194,36 +194,19 @@ namespace SysBot.Pokemon
 
             Hub.Config.Stream.EndEnterCode(this);
 
-            // Should be on overworld by now.
+            // Should be on overworld searching by now.
             if (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
             {
-                await ExitTrade(true, token).ConfigureAwait(false);
+                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
                 return PokeTradeResult.RecoverPostLinkCode;
             }
-
-            // Clear the shown data offset right as we start waiting on overworld.
-            await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
 
             poke.TradeSearching(this);
             await Task.Delay(0_500, token).ConfigureAwait(false);
 
-            // Wait until search finishes
-            // Wait 30 Seconds for Trainer...
+            // Wait 45 Seconds for Trainer...
             Log("Waiting for trainer...");
-            bool partnerFound;
-            const uint ofs = LinkTradePartnerPokemonOffset;
-            if (Hub.Config.Trade.SpinTrade)
-                partnerFound = await SpinUntilChangedLink(30_000, token).ConfigureAwait(false);
-            else
-                partnerFound = await ReadUntilChanged(ofs, PokeTradeBotUtil.EMPTY_EC, 30_000, 0_200, false, token).ConfigureAwait(false);
-
-            // Wait 15 more seconds. First 30 seconds is for spin
-            if (!partnerFound)
-            {
-                Log("Still no partner found... waiting 15 more seconds");
-                partnerFound =
-                    await ReadUntilChanged(ofs, PokeTradeBotUtil.EMPTY_EC, 15_000, 0_200, false, token).ConfigureAwait(false);
-            }
+            bool partnerFound = await WaitForPokemonChanged(LinkTradePartnerPokemonOffset, 45_000, 0_200, token);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
@@ -235,13 +218,14 @@ namespace SysBot.Pokemon
 
             // Select Pokemon
             // pkm already injected to b1s1
-            var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
-            Log($"Found Trading Partner: {TrainerName} ...");
-            await Task.Delay(1_500, token).ConfigureAwait(false); // necessary delay to get to the box properly
+            await Task.Delay(5_500, token).ConfigureAwait(false); // necessary delay to get to the box properly
 
-            if (!await IsCorrectScreen(CurrentScreen_Box, token).ConfigureAwait(false))
+            var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
+            Log($"Found Trading Partner: {TrainerName}...");
+
+            if (!await IsInBox(token).ConfigureAwait(false))
             {
-                await ExitTrade(true, token).ConfigureAwait(false);
+                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
                 return PokeTradeResult.RecoverOpenBox;
             }
 
@@ -259,9 +243,10 @@ namespace SysBot.Pokemon
 
             // Wait for User Input...
             var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 25_000, 1_000, token).ConfigureAwait(false);
+            var oldEC = await Connection.ReadBytesAsync(LinkTradePartnerPokemonOffset, 4, token).ConfigureAwait(false);
             if (pk == null)
             {
-                await ExitTrade(true, token).ConfigureAwait(false);
+                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
                 return PokeTradeResult.TrainerTooSlow;
             }
 
@@ -307,6 +292,7 @@ namespace SysBot.Pokemon
                     poke.SendNotification(this, "This Pokémon is not legal per PKHeX's legality checks. I am forbidden from cloning this. Exiting trade.");
                     poke.SendNotification(this, report);
 
+                    await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
                     return PokeTradeResult.IllegalTrade;
                 }
 
@@ -316,27 +302,22 @@ namespace SysBot.Pokemon
                 poke.SendNotification(this, $"**Cloned your {(Species)clone.Species}!**\nNow press B to cancel your offer and trade me a Pokémon you don't want.");
                 Log($"Cloned a {(Species)clone.Species}. Waiting for user to change their Pokémon...");
 
-                // Clear the shown data offset.
-                await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
+                // Separate this out from WaitForPokemonChanged since we compare to old EC from original read.
+                partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, oldEC, 15_000, 0_200, false, token).ConfigureAwait(false);
 
-                // Wait for User Input...
-                var pk2 = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 10_000, 1_000, token).ConfigureAwait(false);
-                if (pk2 == null || SearchUtil.HashByDetails(pk2) == SearchUtil.HashByDetails(pk))
+                if (!partnerFound)
                 {
                     poke.SendNotification(this, "**HEY CHANGE IT NOW OR I AM LEAVING!!!**");
-
                     // They get one more chance.
-                    // Clear the shown data offset.
-                    await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
+                    partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, oldEC, 15_000, 0_200, false, token).ConfigureAwait(false);
+                }
 
-                    // Wait for User Input...
-                    pk2 = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 5_000, 1_000, token).ConfigureAwait(false);
-                    if (pk2 == null || SearchUtil.HashByDetails(pk2) == SearchUtil.HashByDetails(pk))
-                    {
-                        Log("Trading partner did not change their Pokémon.");
-                        await ExitTrade(true, token).ConfigureAwait(false);
-                        return PokeTradeResult.TrainerTooSlow;
-                    }
+                var pk2 = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 3_000, 1_000, token).ConfigureAwait(false);
+                if (!partnerFound || pk2 == null || SearchUtil.HashByDetails(pk2) == SearchUtil.HashByDetails(pk))
+                {
+                    Log("Trading partner did not change their Pokémon.");
+                    await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
+                    return PokeTradeResult.TrainerTooSlow;
                 }
 
                 await Click(A, 0_800, token).ConfigureAwait(false);
@@ -352,7 +333,7 @@ namespace SysBot.Pokemon
                 await Click(A, 1_500, token).ConfigureAwait(false);
 
             var delay_count = 0;
-            while (!await IsCorrectScreen(CurrentScreen_Box, token).ConfigureAwait(false))
+            while (!await IsInBox(token).ConfigureAwait(false))
             {
                 await Click(A, 3_000, token).ConfigureAwait(false);
                 delay_count++;
@@ -364,7 +345,7 @@ namespace SysBot.Pokemon
 
             await Task.Delay(1_000 + Util.Rand.Next(0_700, 1_000), token).ConfigureAwait(false);
 
-            await ExitTrade(false, token).ConfigureAwait(false);
+            await ExitTrade(Hub.Config, false, token).ConfigureAwait(false);
             Log("Exited Trade!");
 
             if (token.IsCancellationRequested)
@@ -410,14 +391,15 @@ namespace SysBot.Pokemon
             int ctr = 0;
             var time = TimeSpan.FromSeconds(Hub.Config.Trade.MaxDumpTradeTime);
             var start = DateTime.Now;
-            await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
             while (ctr < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.Now - start < time)
             {
-                var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 15_000, 1_000, token).ConfigureAwait(false);
-                if (pk == null || pk.Species < 1 || !pk.ChecksumValid)
-                    break;
+                bool found = await WaitForPokemonChanged(LinkTradePartnerPokemonOffset, 15_000, 1_000, token);
+                if (!found)
+                    continue;
 
-                await Connection.WriteBytesAsync(PokeTradeBotUtil.EMPTY_SLOT, LinkTradePartnerPokemonOffset, token).ConfigureAwait(false);
+                var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 3_000, 1_000, token).ConfigureAwait(false);
+                if (pk == null || pk.Species < 1 || !pk.ChecksumValid)
+                    continue;
 
                 // Send results from separate thread; the bot doesn't need to wait for things to be calculated.
                 if (DumpSetting.Dump)
@@ -462,7 +444,7 @@ namespace SysBot.Pokemon
 
             if (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
             {
-                await ExitTrade(true, token).ConfigureAwait(false);
+                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
                 return PokeTradeResult.RecoverStart;
             }
 
@@ -487,9 +469,9 @@ namespace SysBot.Pokemon
 
             await Task.Delay(0_750, token).ConfigureAwait(false);
 
-            if (!await IsCorrectScreen(CurrentScreen_Box, token).ConfigureAwait(false))
+            if (!await IsInBox(token).ConfigureAwait(false))
             {
-                await ExitTrade(true, token).ConfigureAwait(false);
+                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
                 return PokeTradeResult.RecoverPostLinkCode;
             }
 
@@ -514,21 +496,16 @@ namespace SysBot.Pokemon
 
             if (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
             {
-                await ExitTrade(true, token).ConfigureAwait(false);
+                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
                 return PokeTradeResult.RecoverReturnOverworld;
             }
 
             // Wait 30 Seconds for Trainer...
             Log("Waiting for Surprise Trade Partner...");
-            const uint ofs = SurpriseTradeSearchOffset;
-            var searching = await Connection.ReadBytesAsync(ofs, 4, token).ConfigureAwait(false);
-            if (Hub.Config.Trade.SpinSurprise)
-                await SpinUntilChangedSurprise(30_000, token).ConfigureAwait(false);
-            else
-                await ReadUntilChanged(ofs, searching, 30_000, 0_200, false, token).ConfigureAwait(false);
 
-            // Wait 15 Seconds for offer...
-            var partnerFound = await ReadUntilChanged(SurpriseTradePartnerPokemonOffset, PokeTradeBotUtil.EMPTY_EC, 15_000, 0_200, false, token).ConfigureAwait(false);
+            // Wait 45 Seconds for offer...
+            var oldEC = await Connection.ReadBytesAsync(SurpriseTradeSearchOffset, 4, token).ConfigureAwait(false);
+            var partnerFound = await ReadUntilChanged(SurpriseTradeSearchOffset, oldEC, 45_000, 0_200, false, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
@@ -567,7 +544,7 @@ namespace SysBot.Pokemon
             if (await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
                 Log("Trade complete!");
             else
-                await ExitTrade(true, token).ConfigureAwait(false);
+                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
 
             if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
                 DumpPokemon(DumpSetting.DumpFolder, "surprise", SurprisePoke);
@@ -672,6 +649,12 @@ namespace SysBot.Pokemon
                 Hub.BotSync.Barrier.RemoveParticipant();
                 Log($"Left the Barrier. Count: {Hub.BotSync.Barrier.ParticipantCount}");
             }
+        }
+
+        private async Task<bool> WaitForPokemonChanged(uint offset, int waitms, int waitInterval, CancellationToken token)
+        {
+            var oldEC = await Connection.ReadBytesAsync(offset, 4, token).ConfigureAwait(false);
+            return await ReadUntilChanged(offset, oldEC, waitms, waitInterval, false, token).ConfigureAwait(false);
         }
     }
 }

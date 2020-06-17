@@ -26,14 +26,14 @@ namespace SysBot.Pokemon.Discord
         public void TradeInitialize(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
         {
             var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";
-            Context.User.SendMessageAsync($"Initializing trade{receive}. Please be ready. Your code is **{Code:0000}**.").ConfigureAwait(false);
+            Context.User.SendMessageAsync($"Initializing trade{receive}. Please be ready. Your code is **{Code:0000 0000}**.").ConfigureAwait(false);
         }
 
         public void TradeSearching(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
         {
             var name = Info.TrainerName;
             var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", {name}";
-            Context.User.SendMessageAsync($"I'm waiting for you{trainer}! Your code is **{Code:0000}**. My IGN is **{routine.InGameName}**.").ConfigureAwait(false);
+            Context.User.SendMessageAsync($"I'm waiting for you{trainer}! Your code is **{Code:0000 0000}**. My IGN is **{routine.InGameName}**.").ConfigureAwait(false);
         }
 
         public void TradeCanceled(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeResult msg)

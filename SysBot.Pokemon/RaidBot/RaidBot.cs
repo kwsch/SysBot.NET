@@ -54,11 +54,14 @@ namespace SysBot.Pokemon
                     if (Hub.Config.Raid.NumberFriendsToDelete > 0)
                         deleteFriends = true;
 
-                    // Back out of the game.
-                    await Click(B, 0_500, token).ConfigureAwait(false);
-                    await Click(HOME, 4_000, token).ConfigureAwait(false);
-                    await DeleteAddFriends(token).ConfigureAwait(false);
-                    await Click(HOME, 1_000, token).ConfigureAwait(false);
+                    if (addFriends || deleteFriends)
+                    {
+                        // Back out of the game.
+                        await Click(B, 0_500, token).ConfigureAwait(false);
+                        await Click(HOME, 4_000, token).ConfigureAwait(false);
+                        await DeleteAddFriends(token).ConfigureAwait(false);
+                        await Click(HOME, 1_000, token).ConfigureAwait(false);
+                    }
                 }
 
                 encounterCount++;
@@ -115,7 +118,7 @@ namespace SysBot.Pokemon
             await Click(DUP, 1_000, token).ConfigureAwait(false);
             await Click(A, 1_000, token).ConfigureAwait(false);
 
-            var linkcodemsg = code < 0 ? "no Link Code" : $"code **{code:0000}**";
+            var linkcodemsg = code < 0 ? "no Link Code" : $"code **{code:0000 0000}**";
 
             string raiddescmsg = string.IsNullOrEmpty(Hub.Config.Raid.RaidDescription) ? ((Species)raidBossSpecies).ToString() : Hub.Config.Raid.RaidDescription;
             EchoUtil.Echo($"Raid lobby for {raiddescmsg} is open with {linkcodemsg}.");
@@ -210,18 +213,23 @@ namespace SysBot.Pokemon
             if (addFriends || deleteFriends)
                 await DeleteAddFriends(token).ConfigureAwait(false);
 
-            // Open game and select profile. We can be liberal with A-presses here.
-            for (int i = 0; i < 4; i++)
-                await Click(A, 1_000, token).ConfigureAwait(false);
+            // Open game and select profile.
+            await Click(A, 1_000 + Hub.Config.Raid.ExtraTimeLoadProfile, token).ConfigureAwait(false);
+            await Click(A, 1_000 + Hub.Config.Raid.ExtraTimeCheckDLC, token).ConfigureAwait(false);
+            // If they have DLC on the system and can't use it, requires an UP + A to start the game.
+            // Should be harmless otherwise since they'll be in loading screen.
+            await Click(DUP, 0_600, token).ConfigureAwait(false);
+            await Click(A, 0_600, token).ConfigureAwait(false);
+
             Log("Restarting the game!");
 
             // Switch Logo lag, skip cutscene, game load screen
-            await Task.Delay(12_000 + Hub.Config.Raid.ExtraTimeLoadGame, token).ConfigureAwait(false);
+            await Task.Delay(11_000 + Hub.Config.Raid.ExtraTimeLoadGame, token).ConfigureAwait(false);
 
             for (int i = 0; i < 5; i++)
                 await Click(A, 1_000, token).ConfigureAwait(false);
 
-            while (!await IsCorrectScreen(CurrentScreen_WildArea, token).ConfigureAwait(false))
+            while (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
                 await Task.Delay(2_000, token).ConfigureAwait(false);
 
             Log("Back in the overworld!");

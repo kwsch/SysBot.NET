@@ -15,8 +15,7 @@ namespace SysBot.Pokemon
         private readonly IDumper DumpSetting;
         private readonly Nature DesiredNature;
         private readonly int[] DesiredIVs = {-1, -1, -1, -1, -1, -1};
-        private readonly byte[] BattleMenuReady = {255, 255, 255, 255};
-        private readonly byte[] BattleMenuDogReady = { 0, 0, 0, 0 };
+        private readonly byte[] BattleMenuReady = {0, 0, 0, 255};
 
         public EncounterBot(PokeBotConfig cfg, PokeTradeHub<PK8> Hub) : base(cfg)
         {
@@ -136,10 +135,9 @@ namespace SysBot.Pokemon
                     return;
                 }
 
-                // In some areas, the menu offset can flicker undesirably while battle is loading.
-                await Task.Delay(4_000, token).ConfigureAwait(false);
-
-                await ReadUntilChanged(BattleMenuOffset, BattleMenuReady, 15_000, 0_100, true, token).ConfigureAwait(false);
+                // Offsets are flickery so make sure we see it 3 times.
+                for (int i = 0; i < 3; i++)
+                    await ReadUntilChanged(BattleMenuOffset, BattleMenuReady, 5_000, 0_100, true, token).ConfigureAwait(false);
 
                 Log("Running away...");
                 while (await IsInBattle(token).ConfigureAwait(false))
@@ -210,17 +208,13 @@ namespace SysBot.Pokemon
                 await Click(A, 0_600, token).ConfigureAwait(false);
 
                 // Cutscene loads
-                await Click(A, 2_700, token).ConfigureAwait(false);
+                await Click(A, 2_600, token).ConfigureAwait(false);
 
                 // Click through all the menus.
-                for (int i = 0; i < 4; i++)
+                while (!await IsInBattle(token).ConfigureAwait(false))
                     await Click(A, 1_000, token).ConfigureAwait(false);
 
                 Log("Encounter started! Checking details...");
-                await Task.Delay(4_000, token).ConfigureAwait(false);
-                while (!await IsInBattle(token).ConfigureAwait(false))
-                    await Task.Delay(0_250, token).ConfigureAwait(false);
-
                 var pk = await ReadPokemon(LegendaryPokemonOffset, token).ConfigureAwait(false);
                 if (pk.Species == 0)
                 {
@@ -244,10 +238,12 @@ namespace SysBot.Pokemon
                 // Get rid of any stick stuff left over so we can flee properly.
                 await ResetStick(token).ConfigureAwait(false);
 
-                // Wait for the entire cutscene until we can flee.
-                await Task.Delay(18_000, token).ConfigureAwait(false);
+                // Wait for the entire cutscene.
+                await Task.Delay(15_000, token).ConfigureAwait(false);
 
-                await ReadUntilChanged(BattleMenuOffsetDog, BattleMenuDogReady, 5_000, 0_100, true, token).ConfigureAwait(false);
+                // Offsets are flickery so make sure we see it 3 times.
+                for (int i = 0; i < 3; i++)
+                    await ReadUntilChanged(BattleMenuOffset, BattleMenuReady, 5_000, 0_100, true, token).ConfigureAwait(false);
 
                 Log("Running away...");
                 while (await IsInBattle(token).ConfigureAwait(false))
