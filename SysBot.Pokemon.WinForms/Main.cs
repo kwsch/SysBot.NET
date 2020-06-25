@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -120,7 +119,6 @@ namespace SysBot.Pokemon.WinForms
 
         private void B_Start_Click(object sender, EventArgs e)
         {
-            /*
             SaveCurrentConfig();
 
             LogUtil.LogInfo("Starting all bots...", "Form");
@@ -130,9 +128,6 @@ namespace SysBot.Pokemon.WinForms
 
             if (Bots.Count == 0)
                 WinFormsUtil.Alert("No bots configured, but all supporting services have been started.");
-            */
-            Process.Start("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-            WinFormsUtil.Error("Extremely impatient user detected!!! Please consider replacing user!!!");
         }
 
         private void SendAll(BotControlCommand cmd)
