@@ -108,10 +108,10 @@ namespace SysBot.Pokemon
                 await EnterTradeCode(code, token).ConfigureAwait(false);
                 await Click(PLUS, 2_000, token).ConfigureAwait(false);
                 await Click(A, 1_000, token).ConfigureAwait(false);
-
-                if (addFriends && !string.IsNullOrEmpty(Settings.FriendCode))
-                    EchoUtil.Echo($"Send a friend request to Friend Code **{Settings.FriendCode}** to join in! Friends will be added after this raid.");
             }
+
+            if (addFriends && !string.IsNullOrEmpty(Settings.FriendCode))
+                EchoUtil.Echo($"Send a friend request to Friend Code **{Settings.FriendCode}** to join in! Friends will be added after this raid.");
 
             // Invite others, confirm Pokémon and wait
             await Click(A, 7_000 + Hub.Config.Raid.ExtraTimeOpenRaid, token).ConfigureAwait(false);
