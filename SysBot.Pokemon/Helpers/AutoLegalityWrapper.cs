@@ -24,8 +24,6 @@ namespace SysBot.Pokemon
             Task.Run(() => EncounterEvent.RefreshMGDB());
             InitializeTrainerDatabase(cfg);
             InitializeSettings(cfg);
-
-            // Legalizer.AllowBruteForce = false;
         }
 
         private static void InitializeSettings(LegalitySettings cfg)
@@ -34,7 +32,7 @@ namespace SysBot.Pokemon
             APILegality.SetMatchingBalls = cfg.SetMatchingBalls;
             APILegality.ForceSpecifiedBall = cfg.ForceSpecifiedBall;
             APILegality.UseXOROSHIRO = cfg.UseXOROSHIRO;
-            Legalizer.AllowBruteForce = cfg.AllowBruteForce;
+            Legalizer.AllowBruteForce = false;
             Legalizer.EnableEasterEggs = cfg.EnableEasterEggs;
         }
 

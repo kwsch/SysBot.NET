@@ -35,9 +35,6 @@ namespace SysBot.Pokemon
         [Category(Generate), Description("Force the specified ball by iterating through all encounters and finding a legal one with the specific ball")]
         public bool ForceSpecifiedBall { get; set; } = false;
 
-        [Category(Generate), Description("Allow Brute Forcing to make something legal (CPU Intensive)")]
-        public bool AllowBruteForce { get; set; }
-
         [Category(Generate), Description("Allow XOROSHIRO")]
         public bool UseXOROSHIRO { get; set; } = true;
 
