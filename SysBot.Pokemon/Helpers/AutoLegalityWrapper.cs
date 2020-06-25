@@ -10,20 +10,24 @@ namespace SysBot.Pokemon
     {
         private static bool Initialized;
 
-        public static void EnsureInitialized(LegalitySettings cfg)
+        public static async Task EnsureInitialized(LegalitySettings cfg)
         {
             if (Initialized)
                 return;
             Initialized = true;
-            InitializeAutoLegality(cfg);
+            await InitializeAutoLegality(cfg).ConfigureAwait(false);
         }
 
-        private static void InitializeAutoLegality(LegalitySettings cfg)
+        private static async Task InitializeAutoLegality(LegalitySettings cfg)
         {
-            Task.Run(InitializeCoreStrings);
-            Task.Run(() => EncounterEvent.RefreshMGDB());
-            InitializeTrainerDatabase(cfg);
-            InitializeSettings(cfg);
+            await Task.WhenAll(
+                Task.Run(() => InitializeCoreStrings()),
+                Task.Run(() => EncounterEvent.RefreshMGDB()),
+                Task.Run(() => InitializeTrainerDatabase(cfg)),
+                Task.Run(() => InitializeSettings(cfg))
+            ).ConfigureAwait(false);
+
+            // Legalizer.AllowBruteForce = false;
         }
 
         private static void InitializeSettings(LegalitySettings cfg)

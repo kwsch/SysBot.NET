@@ -14,12 +14,10 @@ namespace SysBot.Pokemon.Discord
 {
     public static class SysCordInstance
     {
-#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
-        public static SysCord Self;
-        public static DiscordManager Manager;
+        public static SysCord Self = default!;
+        public static DiscordManager Manager = default!;
         public static DiscordSettings Settings => Self.Hub.Config.Discord;
-        public static BotRunner<PokeBotConfig> Runner;
-#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
+        public static BotRunner<PokeBotConfig> Runner = default!;
     }
 
     public sealed class SysCord
@@ -40,7 +38,7 @@ namespace SysBot.Pokemon.Discord
             Hub = hub;
             SysCordInstance.Self = this; // hack
             SysCordInstance.Manager = new DiscordManager(Hub.Config);
-            AutoLegalityWrapper.EnsureInitialized(Hub.Config.Legality);
+            AutoLegalityWrapper.EnsureInitialized(Hub.Config.Legality).Wait();
 
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
