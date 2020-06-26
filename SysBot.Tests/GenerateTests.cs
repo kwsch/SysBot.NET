@@ -7,7 +7,7 @@ namespace SysBot.Tests
 {
     public class GenerateTests
     {
-        static GenerateTests() => AutoLegalityWrapper.EnsureInitialized(new LegalitySettings());
+        static GenerateTests() => AutoLegalityWrapper.EnsureInitialized(new LegalitySettings()).Wait();
 
         [Theory]
         [InlineData(Gengar)]
@@ -58,7 +58,8 @@ namespace SysBot.Tests
                 var s = TwitchShowdownUtil.ConvertToShowdown(twitch);
                 var template = s == null ? null : AutoLegalityWrapper.GetTemplate(s);
                 var pk = template == null ? null : sav.GetLegal(template, out _);
-                pk.AbilityNumber.Should().Be(abilNumber);
+                pk.Should().NotBeNull();
+                pk!.AbilityNumber.Should().Be(abilNumber);
             }
         }
 
