@@ -45,7 +45,7 @@ namespace SysBot.Pokemon
             if (RunOnce)
                 return;
 
-            EncounterEvent.RefreshMGDB();
+            AutoLegalityWrapper.EnsureInitialized(Hub.Config.Legality);
 
             AddIntegrations();
             AddTradeBotMonitors();

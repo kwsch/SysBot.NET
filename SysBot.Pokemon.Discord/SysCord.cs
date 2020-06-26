@@ -38,7 +38,6 @@ namespace SysBot.Pokemon.Discord
             Hub = hub;
             SysCordInstance.Self = this; // hack
             SysCordInstance.Manager = new DiscordManager(Hub.Config);
-            AutoLegalityWrapper.EnsureInitialized(Hub.Config.Legality);
 
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
