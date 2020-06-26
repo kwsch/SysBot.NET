@@ -7,7 +7,7 @@ namespace SysBot.Tests
 {
     public class GenerateTests
     {
-        static GenerateTests() => AutoLegalityWrapper.EnsureInitialized(new LegalitySettings()).Wait();
+        static GenerateTests() => AutoLegalityWrapper.EnsureInitialized(new LegalitySettings());
 
         [Theory]
         [InlineData(Gengar)]
