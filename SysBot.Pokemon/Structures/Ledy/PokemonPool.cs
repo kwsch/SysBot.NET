@@ -92,7 +92,7 @@ namespace SysBot.Pokemon
 
                 if (DisallowSurpriseTrade(pk8))
                 {
-                    LogUtil.LogInfo("Provided pk8 can't be Surprise Traded: " + dest.FileName, nameof(PokemonPool<T>));
+                    LogUtil.LogInfo("Provided pk8 was loaded but can't be Surprise Traded: " + dest.FileName, nameof(PokemonPool<T>));
                     surpriseBlocked++;
                 }
 
@@ -123,7 +123,8 @@ namespace SysBot.Pokemon
 
         private static bool DisallowSurpriseTrade(PK8 pk8)
         {
-            return pk8.RibbonClassic || pk8.RibbonPremier || pk8.RibbonBirthday;
+            // Surprise Trade currently bans Mythicals and Legendaries, not Sub-Legendaries.
+            return Legal.Legends.Contains(pk8.Species);
         }
     }
 }
