@@ -260,15 +260,17 @@ namespace SysBot.Pokemon
             {
                 // Allow the trade partner to do a Ledy swap.
                 var trade = Hub.Ledy.GetLedyTrade(pk, Hub.Config.Distribute.LedySpecies);
-                pkm = trade.Receive;
-                poke.TradeData = pkm;
-                if (trade.Type != LedyResponseType.Random)
+                if (trade != null)
                 {
-                    poke.SendNotification(this, "Injecting your requested Pokémon.");
+                    pkm = trade.Receive;
+                    poke.TradeData = pkm;
+
+                    poke.SendNotification(this, "Injecting the requested Pokémon.");
                     await Click(A, 0_800, token).ConfigureAwait(false);
                     await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
                     await Task.Delay(2_500, token).ConfigureAwait(false);
                 }
+
                 for (int i = 0; i < 5; i++)
                     await Click(A, 0_500, token).ConfigureAwait(false);
             }

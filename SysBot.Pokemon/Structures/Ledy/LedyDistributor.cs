@@ -17,10 +17,10 @@ namespace SysBot.Pokemon
 
         private const Species NoMatchSpecies = Species.None;
 
-        public LedyResponse<T> GetLedyTrade(T pk, Species speciesMatch = NoMatchSpecies)
+        public LedyResponse<T>? GetLedyTrade(T pk, Species speciesMatch = NoMatchSpecies)
         {
             if (speciesMatch != NoMatchSpecies && pk.Species != (int)speciesMatch)
-                return GetRandomResponse();
+                return default;
 
             // All the files should be loaded in as lowercase, regular-width text with no white spaces.
             var nick = StringsUtil.Sanitize(pk.Nickname);
@@ -29,13 +29,7 @@ namespace SysBot.Pokemon
             if (Distribution.TryGetValue(nick, out match))
                 return new LedyResponse<T>(match.RequestInfo, LedyResponseType.MatchPool);
 
-            return GetRandomResponse();
-        }
-
-        private LedyResponse<T> GetRandomResponse()
-        {
-            var gift = Pool.GetRandomPoke();
-            return new LedyResponse<T>(gift, LedyResponseType.Random);
+            return default;
         }
     }
 }
