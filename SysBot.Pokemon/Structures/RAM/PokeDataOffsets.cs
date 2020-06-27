@@ -127,21 +127,5 @@ namespace SysBot.Pokemon
                 _ => throw new ArgumentException(nameof(daycare)),
             };
         }
-
-        public static uint GetOverworldOffset(ConsoleLanguageParameter value)
-        {
-            return value switch
-            {
-                ConsoleLanguageParameter.French => OverworldOffsetFrench,
-                ConsoleLanguageParameter.German => OverworldOffsetGerman,
-                ConsoleLanguageParameter.Spanish => OverworldOffsetSpanish,
-                ConsoleLanguageParameter.Italian => OverworldOffsetItalian,
-                ConsoleLanguageParameter.Japanese => OverworldOffsetJapanese,
-                ConsoleLanguageParameter.ChineseTraditional => OverworldOffsetChineseT,
-                ConsoleLanguageParameter.ChineseSimplified => OverworldOffsetChineseS,
-                ConsoleLanguageParameter.Korean => OverworldOffsetKorean,
-                _ => OverworldOffset,
-            };
-        }
     }
 }

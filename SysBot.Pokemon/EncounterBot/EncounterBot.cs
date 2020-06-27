@@ -123,21 +123,18 @@ namespace SysBot.Pokemon
                 if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
                     DumpPokemon(DumpSetting.DumpFolder, "encounters", pk);
 
+                // Offsets are flickery so make sure we see it 3 times.
+                for (int i = 0; i < 3; i++)
+                    await ReadUntilChanged(BattleMenuOffset, BattleMenuReady, 5_000, 0_100, true, token).ConfigureAwait(false);
+
                 if (StopCondition(pk))
                 {
                     Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
 
                     if (hub.Config.CaptureVideoClip)
-                    {
-                        await Task.Delay(10_000).ConfigureAwait(false);
                         await PressAndHold(CAPTURE, 2_000, 1_000, token).ConfigureAwait(false);
-                    }
                     return;
                 }
-
-                // Offsets are flickery so make sure we see it 3 times.
-                for (int i = 0; i < 3; i++)
-                    await ReadUntilChanged(BattleMenuOffset, BattleMenuReady, 5_000, 0_100, true, token).ConfigureAwait(false);
 
                 Log("Running away...");
                 while (await IsInBattle(token).ConfigureAwait(false))
