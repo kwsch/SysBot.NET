@@ -81,7 +81,7 @@ namespace SysBot.Pokemon.Twitch
             var detail = TwitchBot.Info.GetDetail(parse);
             return detail == null
                 ? "Sorry, you are not currently in the queue."
-                : $"Your trade code is {detail.Trade.Code:0000}";
+                : $"Your trade code is {detail.Trade.Code:0000 0000}";
         }
     }
 }

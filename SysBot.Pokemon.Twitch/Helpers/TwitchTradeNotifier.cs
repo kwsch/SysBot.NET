@@ -60,7 +60,7 @@ namespace SysBot.Pokemon.Twitch
             var msg = $"@{info.Trainer.TrainerName} (ID: {info.ID}): Initializing trade{receive} with you. Please be ready. Use the code you whispered me to search!";
             var dest = Settings.TradeStartDestination;
             if (dest == TwitchMessageDestination.Whisper)
-                msg += $" Your trade code is: {info.Code:0000}";
+                msg += $" Your trade code is: {info.Code:0000 0000}";
             LogUtil.LogText(msg);
             SendMessage(msg, dest);
         }
@@ -74,7 +74,7 @@ namespace SysBot.Pokemon.Twitch
             if (dest == TwitchMessageDestination.Channel)
                 message += " Use the code you whispered me to search!";
             else if (dest == TwitchMessageDestination.Whisper)
-                message += $" Your trade code is: {info.Code:0000}";
+                message += $" Your trade code is: {info.Code:0000 0000}";
             LogUtil.LogText(message);
             SendMessage($"@{info.Trainer.TrainerName} {message}", dest);
         }

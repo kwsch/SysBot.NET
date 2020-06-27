@@ -86,13 +86,13 @@ namespace SysBot.Pokemon
                 if (!la.Valid && Settings.Legality.VerifyLegality)
                 {
                     var reason = la.Report();
-                    LogUtil.LogInfo($"SKIPPED: Provided pk8 is not valid: {dest.FileName} -- {reason}", nameof(PokemonPool<T>));
+                    LogUtil.LogInfo($"SKIPPED: Provided pk8 is not legal: {dest.FileName} -- {reason}", nameof(PokemonPool<T>));
                     continue;
                 }
 
                 if (DisallowSurpriseTrade(pk8))
                 {
-                    LogUtil.LogInfo("Provided pk8 has a special ribbon and can't be Surprise Traded: " + dest.FileName, nameof(PokemonPool<T>));
+                    LogUtil.LogInfo("Provided pk8 can't be Surprise Traded: " + dest.FileName, nameof(PokemonPool<T>));
                     surpriseBlocked++;
                 }
 
