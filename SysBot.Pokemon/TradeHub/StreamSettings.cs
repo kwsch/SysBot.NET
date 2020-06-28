@@ -15,7 +15,7 @@ namespace SysBot.Pokemon
         public static Action<PK8, string>? CreateSpriteFile { get; set; }
 
         [Category(Operation), Description("Generate stream assets; turning off will prevent generation of assets.")]
-        public bool CreateAssets { get; set; } = true;
+        public bool CreateAssets { get; set; } = false;
 
         [Category(Operation), Description("Generate trade start details, indicating who the bot is trading with.")]
         public bool CreateTradeStart { get; set; } = true;
