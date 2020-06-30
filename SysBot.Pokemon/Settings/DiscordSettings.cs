@@ -72,5 +72,8 @@ namespace SysBot.Pokemon
 
         [Category(Operation), Description("Returns PK8s of Pokémon shown in the trade to the user.")]
         public bool ReturnPK8s { get; set; } = true;
+        
+        [Category(Operation), Description("If set to true, the bot will display which Pokémon the user requested in echo messages.")]
+        public bool DisplayPokeName { get; set; } = false;
     }
 }
