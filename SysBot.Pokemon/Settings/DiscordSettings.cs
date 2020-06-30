@@ -7,6 +7,7 @@ namespace SysBot.Pokemon
         private const string Startup = nameof(Startup);
         private const string Operation = nameof(Operation);
         private const string Whitelists = nameof(Whitelists);
+        private const bool EchoOption = nameof(EchoOption);
         private const string DefaultDisable = "DISABLE";
         public override string ToString() => "Discord Integration Settings";
 
@@ -72,5 +73,10 @@ namespace SysBot.Pokemon
 
         [Category(Operation), Description("Returns PK8s of Pokémon shown in the trade to the user.")]
         public bool ReturnPK8s { get; set; } = true;
+
+        // Echo Option
+        
+        [Category(EchoOption), Description("If set to true, the bot will display which Pokémon the user requested in echo messages.")]
+        public bool DisplayPokeName { get; set; } = false;
     }
 }
