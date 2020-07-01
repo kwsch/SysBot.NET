@@ -17,7 +17,7 @@ namespace SysBot.Pokemon
         public bool AntiIdle { get; set; }
 
         [Category(FeatureToggle), Description("Method for detecting the overworld. Original method may not work consistently for some users, while ConsoleLanguageSpecific method requires your Switch console language.")]
-        public ScreenDetectionMode ScreenDetection { get; set; }
+        public ScreenDetectionMode ScreenDetection { get; set; } = ScreenDetectionMode.ConsoleLanguageSpecific;
 
         [Category(FeatureToggle), Description("ConsoleLanguageSpecific screen detection method only. Set your Switch console language here for bots to work properly. All consoles should be using the same language.")]
         public ConsoleLanguageParameter ConsoleLanguage { get; set; }
