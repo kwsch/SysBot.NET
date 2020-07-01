@@ -8,7 +8,7 @@ namespace SysBot.Pokemon
         public const uint BoxStartOffset = 0x4506d890;
         public const uint CurrentBoxOffset = 0x450BE81E;
         public const uint TrainerDataOffset = 0x45061108;
-        public const uint SoftBanUnixTimespanOffset = 0x44f46578;
+        public const uint SoftBanUnixTimespanOffset = 0x450C09F8;
         public const uint IsConnectedOffset = 0x2F71D593;
         public const uint TextSpeedOffset = 0x45061290;
         public const uint ItemTreasureAddress = 0x45060B60;
