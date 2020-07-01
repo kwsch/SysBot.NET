@@ -393,15 +393,15 @@ namespace SysBot.Pokemon
             int ctr = 0;
             var time = TimeSpan.FromSeconds(Hub.Config.Trade.MaxDumpTradeTime);
             var start = DateTime.Now;
+            var pkprev = new PK8();
             while (ctr < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.Now - start < time)
             {
-                bool found = await WaitForPokemonChanged(LinkTradePartnerPokemonOffset, 15_000, 1_000, token);
-                if (!found)
+                var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 3_000, 1_000, token).ConfigureAwait(false);
+                if (pk == null || pk.Species < 1 || !pk.ChecksumValid || SearchUtil.HashByDetails(pk) == SearchUtil.HashByDetails(pkprev))
                     continue;
 
-                var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 3_000, 1_000, token).ConfigureAwait(false);
-                if (pk == null || pk.Species < 1 || !pk.ChecksumValid)
-                    continue;
+                // Save the new Pokémon for comparison next round.
+                pkprev = pk;
 
                 // Send results from separate thread; the bot doesn't need to wait for things to be calculated.
                 if (DumpSetting.Dump)
