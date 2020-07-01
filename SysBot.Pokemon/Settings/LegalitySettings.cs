@@ -10,6 +10,8 @@ namespace SysBot.Pokemon
         public override string ToString() => "Legality Generating Settings";
 
         // Generate
+        [Category(Generate), Description("MGDB path for wondercards")]
+        public string MGDBPath { get; set; } = string.Empty;
 
         [Category(Generate), Description("Regenerated PKM files will attempt to be sourced from games using trainer data info from these PKM Files.")]
         public string GeneratePathTrainerInfo { get; set; } = string.Empty;

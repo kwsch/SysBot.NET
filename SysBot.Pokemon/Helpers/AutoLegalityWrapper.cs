@@ -22,7 +22,7 @@ namespace SysBot.Pokemon
         {
             InitializeCoreStrings();
             if (!EncounterEvent.Initialized)
-                EncounterEvent.RefreshMGDB();
+                EncounterEvent.RefreshMGDB(cfg.MGDBPath);
             InitializeTrainerDatabase(cfg);
             InitializeSettings(cfg);
             // Legalizer.AllowBruteForce = false;
