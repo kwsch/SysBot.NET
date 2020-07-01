@@ -616,9 +616,7 @@ namespace SysBot.Pokemon
             if (FailedBarrier == 1) // failed last iteration
                 timeoutAfter *= 2; // try to re-sync in the event things are too slow.
 
-            var result = opt == BotSyncOption.LocalSync
-                ? Hub.BotSync.Barrier.SignalAndWait(TimeSpan.FromSeconds(timeoutAfter), token)
-                : Hub.BotSync.RemoteBarrier.WaitOne(TimeSpan.FromSeconds(timeoutAfter));
+            var result = Hub.BotSync.Barrier.SignalAndWait(TimeSpan.FromSeconds(timeoutAfter), token);
 
             if (result)
             {
