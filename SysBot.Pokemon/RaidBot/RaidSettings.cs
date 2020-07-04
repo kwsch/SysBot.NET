@@ -5,7 +5,6 @@ namespace SysBot.Pokemon
 {
     public class RaidSettings
     {
-        private const string FeatureToggle = nameof(FeatureToggle);
         private const string Hosting = nameof(Hosting);
         public override string ToString() => "Raid Bot Settings";
 

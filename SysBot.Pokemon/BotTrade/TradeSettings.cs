@@ -7,7 +7,6 @@ namespace SysBot.Pokemon
     {
         private const string TradeCode = nameof(TradeCode);
         private const string Dumping = nameof(Dumping);
-        private const string Cosmetic = nameof(Cosmetic);
         public override string ToString() => "Trade Bot Settings";
 
         [Category(TradeCode), Description("Minimum Link Code.")]

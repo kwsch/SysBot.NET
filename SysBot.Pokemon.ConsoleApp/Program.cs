@@ -25,7 +25,8 @@ namespace SysBot.Pokemon.ConsoleApp
                 foreach (var bot in prog.Bots)
                 {
                     bot.Initialize();
-                    AddBot(env, bot);
+                    if (!AddBot(env, bot))
+                        Console.WriteLine($"Failed to add bot: {bot.IP}");
                 }
 
                 LogUtil.Forwarders.Add((msg, ident) => Console.WriteLine($"{ident}: {msg}"));

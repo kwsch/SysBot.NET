@@ -96,6 +96,13 @@ namespace SysBot.Pokemon
             };
         }
 
+        /// <summary>
+        /// Gets the weight of a <see cref="PokeTradeType"/> based on the count of users in the queue and time users have waited.
+        /// </summary>
+        /// <param name="count">Count of users for <see cref="type"/></param>
+        /// <param name="time">Next-to-be-processed user's time joining the queue</param>
+        /// <param name="type">Queue type</param>
+        /// <returns>Effective weight for the trade type.</returns>
         public long GetWeight(int count, DateTime time, PokeTradeType type)
         {
             var now = DateTime.Now;
@@ -109,6 +116,12 @@ namespace SysBot.Pokemon
             return cb + tb;
         }
 
+        /// <summary>
+        /// Estimates the amount of time (minutes) until the user will be processed.
+        /// </summary>
+        /// <param name="position">Position in the queue</param>
+        /// <param name="botct">Amount of bots processing requests</param>
+        /// <returns>Estimated time in Minutes</returns>
         public float EstimateDelay(int position, int botct) => (EstimatedDelayFactor * position) / botct;
     }
 

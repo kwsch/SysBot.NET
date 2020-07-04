@@ -1,5 +1,4 @@
 ﻿using System;
-using SysBot.Base;
 
 namespace SysBot.Pokemon
 {

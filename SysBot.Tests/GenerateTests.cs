@@ -26,7 +26,7 @@ namespace SysBot.Tests
         [InlineData(InavlidSpec)]
         public void ShouldNotGenerate(string set)
         {
-            var sav = AutoLegalityWrapper.GetTrainerInfo(8);
+            _ = AutoLegalityWrapper.GetTrainerInfo(8);
             var s = TwitchShowdownUtil.ConvertToShowdown(set);
             s.Should().BeNull();
         }
@@ -119,6 +119,6 @@ Timid Nature
 - Beat Up";
 
         private const string InavlidSpec =
-@"(Pikachu)";
+"(Pikachu)";
     }
 }

@@ -15,9 +15,9 @@ namespace SysBot.Pokemon
     {
         protected PokeRoutineExecutor(PokeBotConfig cfg) : base(cfg) { }
 
-        public LanguageID GameLang;
-        private GameVersion Version;
-        public string InGameName = "SysBot.NET";
+        public LanguageID GameLang { get; private set; }
+        public GameVersion Version { get; private set; }
+        public string InGameName { get; private set; } = "SysBot.NET";
 
         public override void SoftStop() => Config.Pause();
 
@@ -126,7 +126,7 @@ namespace SysBot.Pokemon
             Connection.Name = $"{InGameName}-{sav.DisplayTID:000000}";
             Log($"{Connection.IP} identified as {Connection.Name}, using {GameLang}.");
 
-            if (await GetTextSpeed(token).ConfigureAwait(false) != TextSpeed.Fast)
+            if (await GetTextSpeed(token).ConfigureAwait(false) != TextSpeedOption.Fast)
                 Log("Text speed should be set to FAST. Stop the bot and fix this if you encounter problems.");
 
             return sav;
@@ -226,11 +226,10 @@ namespace SysBot.Pokemon
                 Log("Unexpected behavior, recover position");
 
             int attempts = 0;
-            uint screenID;
             int softBanAttempts = 0;
             while (!await IsOnOverworld(config, token).ConfigureAwait(false))
             {
-                screenID = await GetCurrentScreen(token).ConfigureAwait(false);
+                var screenID = await GetCurrentScreen(token).ConfigureAwait(false);
                 if (screenID == CurrentScreen_Softban)
                 {
                     softBanAttempts++;
@@ -391,13 +390,13 @@ namespace SysBot.Pokemon
             return false;
         }
 
-        public async Task<TextSpeed> GetTextSpeed(CancellationToken token)
+        public async Task<TextSpeedOption> GetTextSpeed(CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(TextSpeedOffset, 1, token).ConfigureAwait(false);
-            return (TextSpeed)(data[0] & 3);
+            return (TextSpeedOption)(data[0] & 3);
         }
 
-        public async Task SetTextSpeed(TextSpeed speed, CancellationToken token)
+        public async Task SetTextSpeed(TextSpeedOption speed, CancellationToken token)
         {
             var textSpeedByte = await Connection.ReadBytesAsync(TextSpeedOffset, 1, token).ConfigureAwait(false);
             var data = new[] { (byte)((textSpeedByte[0] & 0xFC) | (int)speed) };

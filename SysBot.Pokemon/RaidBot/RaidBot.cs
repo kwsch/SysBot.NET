@@ -22,15 +22,15 @@ namespace SysBot.Pokemon
         }
 
         private int encounterCount;
-        private bool deleteFriends = false;
-        private bool addFriends = false;
-        private bool[] PlayerReady = new bool[4];
+        private bool deleteFriends;
+        private bool addFriends;
+        private readonly bool[] PlayerReady = new bool[4];
         private int raidBossSpecies = -1;
 
         protected override async Task MainLoop(CancellationToken token)
         {
             Log("Identifying trainer data of the host console.");
-            var sav = await IdentifyTrainer(token).ConfigureAwait(false);
+            _ = await IdentifyTrainer(token).ConfigureAwait(false);
 
             Log("Starting main RaidBot loop.");
 
@@ -77,7 +77,7 @@ namespace SysBot.Pokemon
                 }
 
                 int code = Settings.GetRandomRaidCode();
-                await HostRaidAsync(sav, code, token).ConfigureAwait(false);
+                await HostRaidAsync(code, token).ConfigureAwait(false);
 
                 Log($"Raid host {encounterCount} finished.");
                 Counts.AddCompletedRaids();
@@ -86,7 +86,7 @@ namespace SysBot.Pokemon
             }
         }
 
-        private async Task<bool> HostRaidAsync(SAV8SWSH sav, int code, CancellationToken token)
+        private async Task HostRaidAsync(int code, CancellationToken token)
         {
             // Connect to Y-Comm
             await EnsureConnectedToYComm(Hub.Config, token).ConfigureAwait(false);
@@ -151,8 +151,6 @@ namespace SysBot.Pokemon
 
             Log("Finishing raid routine.");
             await Task.Delay(5_000 + Hub.Config.Raid.ExtraTimeEndRaid, token).ConfigureAwait(false);
-
-            return false;
         }
 
         private async Task<bool> GetRaidPartyReady(CancellationToken token)
@@ -171,7 +169,7 @@ namespace SysBot.Pokemon
             if (PlayerReady[player])
                 return true;
 
-            var ofs = RaidP0PokemonOffset + 0x30 * player;
+            var ofs = RaidP0PokemonOffset + (0x30 * player);
 
             // Check if the player has locked in.
             var data = await Connection.ReadBytesAsync(ofs + RaidLockedInIncr, 1, token).ConfigureAwait(false);
