@@ -45,6 +45,7 @@ namespace SysBot.Pokemon.Twitch
             if (valid && pkm is PK8 pk8)
             {
                 var tq = new TwitchQueue(pk8, new PokeTradeTrainerInfo(display), username);
+                TwitchBot.QueuePool.RemoveAll(z => z.UserName == username); // remove old requests if any
                 TwitchBot.QueuePool.Add(tq);
                 msg = $"@{username} - added to the waiting list. Please whisper to me your trade code! Your request from the waiting list will be removed if you are too slow!";
                 return true;

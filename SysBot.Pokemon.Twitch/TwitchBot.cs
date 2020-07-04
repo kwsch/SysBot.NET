@@ -61,9 +61,9 @@ namespace SysBot.Pokemon.Twitch
             client.OnLeftChannel += Client_OnLeftChannel;
 
             client.OnMessageSent += (_, e)
-                => LogUtil.LogText($"{client.TwitchUsername}] - Message Sent in {e.SentMessage.Channel}: {e.SentMessage.Message}");
+                => LogUtil.LogText($"[{client.TwitchUsername}] - Message Sent in {e.SentMessage.Channel}: {e.SentMessage.Message}");
             client.OnWhisperSent += (_, e)
-                => LogUtil.LogText($"{client.TwitchUsername}] - Whisper Sent to @{e.Receiver}: {e.Message}");
+                => LogUtil.LogText($"[{client.TwitchUsername}] - Whisper Sent to @{e.Receiver}: {e.Message}");
 
             client.OnMessageThrottled += (_, e)
                 => LogUtil.LogError($"Message Throttled: {e.Message}", "TwitchBot");
@@ -118,7 +118,7 @@ namespace SysBot.Pokemon.Twitch
 
             if (added == QueueResultAdd.AlreadyInQueue)
             {
-                msg = "Sorry, you are already in the queue.";
+                msg = $"@{name}: Sorry, you are already in the queue.";
                 return false;
             }
 
@@ -260,10 +260,10 @@ namespace SysBot.Pokemon.Twitch
             {
                 var removed = QueuePool[0];
                 QueuePool.RemoveAt(0); // First in, first out
-                client.SendMessage(Channel, $"Removed @{removed.DisplayName} from the waiting list. (list exceeded maximum count)");
+                client.SendMessage(Channel, $"Removed @{removed.DisplayName} ({(Species)removed.Pokemon.Species}) from the waiting list: stale request.");
             }
 
-            var user = QueuePool.Find(q => q.UserName == e.WhisperMessage.Username);
+            var user = QueuePool.FindLast(q => q.UserName == e.WhisperMessage.Username);
             if (user == null)
                 return;
             QueuePool.Remove(user);
