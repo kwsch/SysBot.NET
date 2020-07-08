@@ -79,8 +79,10 @@ namespace SysBot.Pokemon.Discord
             var ticketID = "";
             if (TradeStartModule.IsStartChannel(Context.Channel.Id))
                 ticketID = $", unique ID: {detail.ID}";
-            
-            var pokeName = Info.Hub.Config.Discord.DisplayPokeName ? $" Receiving: {(Species)pk8.Species}.": "";
+
+            var pokeName = "";
+            if (t == PokeTradeType.Specific && Info.Hub.Config.Discord.DisplayPokeName && pk8.Species != 0)
+                pokeName = $" Receiving: {(Species)pk8.Species}.";
             msg = $"{user.Mention} - Added to the {type} queue{ticketID}. Current Position: {position.Position}.{pokeName}";
 
             var botct = Info.Hub.Bots.Count;
