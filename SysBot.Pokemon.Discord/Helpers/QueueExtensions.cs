@@ -81,6 +81,8 @@ namespace SysBot.Pokemon.Discord
                 ticketID = $", unique ID: {detail.ID}";
             
             var pokeName = Info.Hub.Config.Discord.DisplayPokeName ? $" Receiving: {(Species)pk8.Species}.": "";
+            if (pokeName.Trim().Equals("Receiving: None."))
+                   pokeName = "";
             msg = $"{user.Mention} - Added to the {type} queue{ticketID}. Current Position: {position.Position}.{pokeName}";
 
             var botct = Info.Hub.Bots.Count;
