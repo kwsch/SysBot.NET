@@ -15,7 +15,7 @@ namespace SysBot.Pokemon
         // Raid Offsets
         // The dex number of the Pokémon the host currently has chosen. 
         // Details for each player span 0x30, so add 0x30 to get to the next offset.
-        public const uint RaidP0PokemonOffset = 0x8398A174;
+        public const uint RaidP0PokemonOffset = 0x8398A184;
         // Add to each Pokémon offset.  AltForm used.
         public const uint RaidAltFormInc = 0x4;
         // Add to each Pokémon offset.  0 = male, 1 = female, 2 = genderless.
@@ -24,10 +24,10 @@ namespace SysBot.Pokemon
         public const uint RaidShinyIncr = 0xC;
         // Add to each Pokémon offset.  Bool for whether they have locked in their Pokémon.
         public const uint RaidLockedInIncr = 0x1C;
-        public const uint RaidBossOffset = 0x8398A13C;
+        public const uint RaidBossOffset = 0x8398A14C;
 
         // 1 when in a battle or raid, 0 otherwise.
-        public const uint InBattleRaidOffset = 0x3F12850F;
+        public const uint InBattleRaidOffset = 0x3F12850D;
 
         // Pokémon Encounter Offsets
         public const uint WildPokemonOffset = 0x8FEA3358;
