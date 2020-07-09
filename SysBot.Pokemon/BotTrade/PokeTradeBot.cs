@@ -191,19 +191,11 @@ namespace SysBot.Pokemon
             WaitAtBarrierIfApplicable(token);
             await Click(PLUS, 1_000, token).ConfigureAwait(false);
 
-            // Start a Link Trade, in case of Empty Slot/Egg/Bad Pokémon we press sometimes B to return to the Overworld and skip this Slot.
-            // Confirming...
-            for (int i = 0; i < 4; i++)
-                await Click(A, 1_000, token).ConfigureAwait(false);
-
             Hub.Config.Stream.EndEnterCode(this);
 
-            // Should be on overworld searching by now.
-            if (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
-            {
-                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
-                return PokeTradeResult.RecoverPostLinkCode;
-            }
+            // Confirming and return to overworld.
+            while (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
+                await Click(A, 0_800, token).ConfigureAwait(false);
 
             poke.TradeSearching(this);
             await Task.Delay(0_500, token).ConfigureAwait(false);
@@ -489,10 +481,8 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.Aborted;
 
             Log("Confirming...");
-            await Click(A, 5_000, token).ConfigureAwait(false);
-
-            for (int i = 0; i < 3; i++)
-                await Click(A, 0_900, token).ConfigureAwait(false);
+            while (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
+                await Click(A, 0_800, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
