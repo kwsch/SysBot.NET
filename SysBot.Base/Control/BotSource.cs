@@ -56,9 +56,22 @@ namespace SysBot.Base
                 LogUtil.LogError("Bot has stopped without error.", ident);
                 return;
             }
+
             LogUtil.LogError("Bot has crashed!", ident);
+
+            if (!string.IsNullOrEmpty(ae.Message))
+                LogUtil.LogError("Aggregate message:" + ae.Message, ident);
+
+            var st = ae.StackTrace;
+            if (!string.IsNullOrEmpty(st))
+                LogUtil.LogError("Aggregate stacktrace:" + st, ident);
+
             foreach (var e in ae.InnerExceptions)
-                LogUtil.LogError(e.StackTrace, ident);
+            {
+                if (!string.IsNullOrEmpty(e.Message))
+                    LogUtil.LogError("Inner message:" + e.Message, ident);
+                LogUtil.LogError("Inner stacktrace:" + e.StackTrace, ident);
+            }
         }
 
         public void Resume()
