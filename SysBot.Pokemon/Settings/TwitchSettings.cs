@@ -50,9 +50,6 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Users with these usernames cannot use the bot.")]
         public string UserBlacklist { get; set; } = string.Empty;
 
-        [Category(Operation), Description("Sub only mode (Restricts the bot to twitch subs only)")]
-        public bool SubOnlyBot { get; set; } = false;
-
         [Category(Operation), Description("When enabled, the bot will process commands sent to the channel.")]
         public bool AllowCommandsViaChannel { get; set; } = true;
 

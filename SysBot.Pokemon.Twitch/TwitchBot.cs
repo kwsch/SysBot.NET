@@ -55,7 +55,6 @@ namespace SysBot.Pokemon.Twitch
             client.OnWhisperReceived += Client_OnWhisperReceived;
             client.OnChatCommandReceived += Client_OnChatCommandReceived;
             client.OnWhisperCommandReceived += Client_OnWhisperCommandReceived;
-            client.OnNewSubscriber += Client_OnNewSubscriber;
             client.OnConnected += Client_OnConnected;
             client.OnDisconnected += Client_OnDisconnected;
             client.OnLeftChannel += Client_OnLeftChannel;
@@ -201,26 +200,22 @@ namespace SysBot.Pokemon.Twitch
             client.SendWhisper(msg.Username, response);
         }
 
-        private static bool IsSubscriber(ChatMessage c) => c.IsSubscriber || IsFounder(c);
-        private static bool IsFounder(ChatMessage c) => c.BadgeInfo.Any(kvp => kvp.Key == "founder");
-
         private string HandleCommand(TwitchLibMessage m, string c, string args, bool whisper)
         {
             bool sudo() => m is ChatMessage ch && (ch.IsBroadcaster || Settings.IsSudo(m.Username));
-            bool disallowed() => Settings.SubOnlyBot && !((m is ChatMessage ch && IsSubscriber(ch)) || sudo());
 
             switch (c)
             {
                 // User Usable Commands
-                case "trade" when !disallowed():
+                case "trade":
                     var _ = TwitchCommandsHelper.AddToWaitingList(args, m.DisplayName, m.Username, out string msg);
                     return msg;
-                case "ts" when !disallowed():
+                case "ts":
                     return $"@{m.Username}: {Info.GetPositionString(ulong.Parse(m.UserId))}";
-                case "tc" when !disallowed():
+                case "tc":
                     return $"@{m.Username}: {TwitchCommandsHelper.ClearTrade(ulong.Parse(m.UserId))}";
 
-                case "code" when whisper && !disallowed():
+                case "code":
                     return TwitchCommandsHelper.GetCode(ulong.Parse(m.UserId));
 
                 // Sudo Only Commands
@@ -278,10 +273,6 @@ namespace SysBot.Pokemon.Twitch
             {
                 Console.WriteLine($"{ex.Message}");
             }
-        }
-
-        private void Client_OnNewSubscriber(object sender, OnNewSubscriberArgs e)
-        {
         }
     }
 }
