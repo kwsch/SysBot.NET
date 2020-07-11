@@ -84,7 +84,11 @@ namespace SysBot.Pokemon
                 if (!Hub.Queues.TryDequeue(type, out var detail, out var priority) && !Hub.Queues.TryDequeueLedy(out detail))
                 {
                     if (waitCounter == 0)
+                    {
+                        // Updates the assets.
+                        Hub.Config.Stream.IdleAssets(this);
                         Log("Nothing to check, waiting for new users...");
+                    }
                     waitCounter++;
                     if (waitCounter % 10 == 0 && Hub.Config.AntiIdle)
                         await Click(B, 1_000, token).ConfigureAwait(false);

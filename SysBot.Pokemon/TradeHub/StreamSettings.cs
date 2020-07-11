@@ -155,6 +155,42 @@ namespace SysBot.Pokemon
             }
         }
 
+        public void IdleAssets(PokeTradeBot b)
+        {
+            if (!CreateAssets)
+                return;
+
+            try
+            {
+                var files = Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*", SearchOption.TopDirectoryOnly);
+                foreach (var file in files)
+                {
+                    if (file.Contains(b.Connection.IP))
+                        File.Delete(file);
+                }
+
+                if (CreateWaitedTime)
+                    File.WriteAllText("waited.txt", "00:00:00");
+                if (CreateEstimatedTime)
+                {
+                    File.WriteAllText("estimatedTime.txt", "Estimated time: 0 minutes");
+                    File.WriteAllText("estimatedTimestamp.txt", "");
+                }
+                if (CreateOnDeck)
+                    File.WriteAllText("ondeck.txt", "Waiting...");
+                if (CreateOnDeck2)
+                    File.WriteAllText("ondeck2.txt", "Queue is empty!");
+                if (CreateUserList)
+                    File.WriteAllText("users.txt", "None");
+                if (CreateUsersInQueue)
+                    File.WriteAllText("queuecount.txt", "Users in Queue: 0");
+            }
+            catch (Exception e)
+            {
+                LogUtil.LogError(e.Message, nameof(StreamSettings));
+            }
+        }
+
         private void GenerateUsersInQueue(int count)
         {
             var value = string.Format(UsersInQueueFormat, count);
