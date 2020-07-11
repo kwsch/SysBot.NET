@@ -215,7 +215,7 @@ namespace SysBot.Pokemon.Twitch
                 case "tc":
                     return $"@{m.Username}: {TwitchCommandsHelper.ClearTrade(ulong.Parse(m.UserId))}";
 
-                case "code":
+                case "code" when whisper:
                     return TwitchCommandsHelper.GetCode(ulong.Parse(m.UserId));
 
                 // Sudo Only Commands
