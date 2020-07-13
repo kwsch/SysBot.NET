@@ -40,7 +40,7 @@ namespace SysBot.Pokemon.YouTube
                             client.OnMessagesReceived += Client_OnMessagesReceived;
                             if (await client.Connect())
                             {
-                                while (true) { }
+                                await Task.Delay(-1);
                             }
                             else
                             {

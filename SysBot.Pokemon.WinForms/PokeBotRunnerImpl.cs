@@ -1,6 +1,7 @@
 ﻿using PKHeX.Core;
 using SysBot.Pokemon.Discord;
 using SysBot.Pokemon.Twitch;
+using SysBot.Pokemon.WinForms;
 using SysBot.Pokemon.YouTube;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,7 +53,7 @@ namespace SysBot.Pokemon
             if (YouTube != null)
                 return; // already created
 
-            MessageBox.Show("Please Login in your Browser");
+            WinFormsUtil.Alert("Please Login with your Browser");
             if (string.IsNullOrWhiteSpace(config.ChannelID))
                 return;
             if (string.IsNullOrWhiteSpace(config.ClientID))

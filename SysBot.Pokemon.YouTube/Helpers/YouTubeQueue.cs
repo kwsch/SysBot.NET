@@ -1,6 +1,6 @@
 ﻿using PKHeX.Core;
 
-namespace SysBot.Pokemon
+namespace SysBot.Pokemon.YouTube
 {
     public class YouTubeQueue
     {
