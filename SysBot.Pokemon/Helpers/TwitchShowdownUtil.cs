@@ -2,7 +2,7 @@
 
 namespace SysBot.Pokemon
 {
-    public static class TwitchShowdownUtil
+    public static class ShowdownUtil
     {
         /// <summary>
         /// Converts a single line to a showdown set

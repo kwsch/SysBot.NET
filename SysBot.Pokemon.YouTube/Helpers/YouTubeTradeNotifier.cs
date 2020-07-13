@@ -33,7 +33,7 @@ namespace SysBot.Pokemon.YouTube
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, string message)
         {
             LogUtil.LogText(message);
-            SendMessage($"@{info.Trainer.TrainerName}: {message}");
+            Client.SendMessage($"@{info.Trainer.TrainerName}: {message}");
         }
 
         public void TradeCanceled(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeResult msg)
@@ -41,7 +41,7 @@ namespace SysBot.Pokemon.YouTube
             OnFinish?.Invoke(routine);
             var line = $"@{info.Trainer.TrainerName}: Trade canceled, {msg}";
             LogUtil.LogText(line);
-            SendMessage(line);
+            Client.SendMessage(line);
         }
 
         public void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result)
@@ -50,7 +50,7 @@ namespace SysBot.Pokemon.YouTube
             var tradedToUser = Data.Species;
             var message = $"@{info.Trainer.TrainerName}: " + (tradedToUser != 0 ? $"Trade finished. Enjoy your {(Species)tradedToUser}!" : "Trade finished!");
             LogUtil.LogText(message);
-            SendMessage(message);
+            Client.SendMessage(message);
         }
 
         public void TradeInitialize(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
@@ -59,7 +59,7 @@ namespace SysBot.Pokemon.YouTube
             var msg = $"@{info.Trainer.TrainerName} (ID: {info.ID}): Initializing trade{receive} with you. Please be ready. Use the code you whispered me to search!";
             msg += $" Your trade code is: {info.Code:0000 0000}";
             LogUtil.LogText(msg);
-            SendMessage(msg);
+            Client.SendMessage(msg);
         }
 
         public void TradeSearching(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
@@ -69,7 +69,7 @@ namespace SysBot.Pokemon.YouTube
             var message = $"I'm waiting for you{trainer}! My IGN is {routine.InGameName}.";
             message += $" Your trade code is: {info.Code:0000 0000}";
             LogUtil.LogText(message);
-            SendMessage($"@{info.Trainer.TrainerName} {message}");
+            Client.SendMessage($"@{info.Trainer.TrainerName} {message}");
         }
 
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeSummary message)
@@ -78,19 +78,14 @@ namespace SysBot.Pokemon.YouTube
             if (message.Details.Count > 0)
                 msg += ", " + string.Join(", ", message.Details.Select(z => $"{z.Heading}: {z.Detail}"));
             LogUtil.LogText(msg);
-            SendMessage(msg);
+            Client.SendMessage(msg);
         }
 
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result, string message)
         {
             var msg = $"Details for {result.FileName}: " + message;
             LogUtil.LogText(msg);
-            SendMessage(msg);
-        }
-
-        private void SendMessage(string message)
-        {
-            Client.SendMessage(message);
+            Client.SendMessage(msg);
         }
     }
 }
