@@ -27,7 +27,7 @@ namespace SysBot.Tests
         public void ShouldNotGenerate(string set)
         {
             _ = AutoLegalityWrapper.GetTrainerInfo(8);
-            var s = TwitchShowdownUtil.ConvertToShowdown(set);
+            var s = ShowdownUtil.ConvertToShowdown(set);
             s.Should().BeNull();
         }
 
@@ -55,7 +55,7 @@ namespace SysBot.Tests
             for (int i = 0; i < 10; i++)
             {
                 var twitch = set.Replace("\r\n", " ").Replace("\n", " ");
-                var s = TwitchShowdownUtil.ConvertToShowdown(twitch);
+                var s = ShowdownUtil.ConvertToShowdown(twitch);
                 var template = s == null ? null : AutoLegalityWrapper.GetTemplate(s);
                 var pk = template == null ? null : sav.GetLegal(template, out _);
                 pk.Should().NotBeNull();
