@@ -1,7 +1,7 @@
-﻿using System.IO;
-using System.Threading;
-using PKHeX.Core;
+﻿using PKHeX.Core;
 using PKHeX.Core.AutoMod;
+using System.IO;
+using System.Threading;
 
 namespace SysBot.Pokemon
 {
@@ -43,7 +43,7 @@ namespace SysBot.Pokemon
             string OT = cfg.GenerateOT;
             int TID = cfg.GenerateTID16;
             int SID = cfg.GenerateSID16;
-            int lang = (int) cfg.GenerateLanguage;
+            int lang = (int)cfg.GenerateLanguage;
 
             var externalSource = cfg.GeneratePathTrainerInfo;
             if (!string.IsNullOrWhiteSpace(externalSource) && Directory.Exists(externalSource))
@@ -97,7 +97,7 @@ namespace SysBot.Pokemon
 
         public static PKM GetLegal(this ITrainerInfo sav, IBattleTemplate set, out string res)
         {
-            var result =  sav.GetLegalFromSet(set, out var type);
+            var result = sav.GetLegalFromSet(set, out var type);
             res = type.ToString();
             return result;
         }

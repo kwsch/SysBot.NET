@@ -1,14 +1,14 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using PKHeX.Core;
 using SysBot.Base;
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -145,7 +145,7 @@ namespace SysBot.Pokemon.Discord
             var modules = _commands.Modules.ToList();
 
             var blacklist = Hub.Config.Discord.ModuleBlacklist
-                .Replace("Module", "").Split(new [] {','}, StringSplitOptions.RemoveEmptyEntries)
+                .Replace("Module", "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(z => z.Trim()).ToList();
 
             foreach (var module in modules)

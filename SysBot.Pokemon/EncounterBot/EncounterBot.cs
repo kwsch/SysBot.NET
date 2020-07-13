@@ -14,8 +14,8 @@ namespace SysBot.Pokemon
         private readonly BotCompleteCounts Counts;
         private readonly IDumper DumpSetting;
         private readonly Nature DesiredNature;
-        private readonly int[] DesiredIVs = {-1, -1, -1, -1, -1, -1};
-        private readonly byte[] BattleMenuReady = {0, 0, 0, 255};
+        private readonly int[] DesiredIVs = { -1, -1, -1, -1, -1, -1 };
+        private readonly byte[] BattleMenuReady = { 0, 0, 0, 255 };
 
         public EncounterBot(PokeBotConfig cfg, PokeTradeHub<PK8> Hub) : base(cfg)
         {
@@ -27,7 +27,7 @@ namespace SysBot.Pokemon
             /* Populate DesiredIVs array.  Bot matches 0 and 31 IVs.
              * Any other nonzero IV is treated as a minimum accepted value.
              * If they put "x", this is a wild card so we can leave -1. */
-            string[] splitIVs = Hub.Config.Encounter.DesiredIVs.Split(new [] {'/'}, StringSplitOptions.RemoveEmptyEntries);
+            string[] splitIVs = Hub.Config.Encounter.DesiredIVs.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
             // Only accept up to 6 values in case people can't count.
             for (int i = 0; i < 6 && i < splitIVs.Length; i++)

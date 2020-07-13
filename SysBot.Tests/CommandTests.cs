@@ -1,6 +1,6 @@
-using System.Linq;
 using FluentAssertions;
 using SysBot.Base;
+using System.Linq;
 using Xunit;
 
 namespace SysBot.Tests

@@ -1,13 +1,13 @@
 using PKHeX.Core;
 
-namespace SysBot.Pokemon.Twitch
+namespace SysBot.Pokemon.YouTube
 {
-    public static class TwitchCommandsHelper
+    public static class YouTubeCommandsHelper
     {
         // Helper functions for commands
         public static bool AddToWaitingList(string setstring, string display, string username, out string msg)
         {
-            if (!TwitchBot.Info.GetCanQueue())
+            if (!YouTubeBot.Info.GetCanQueue())
             {
                 msg = "Sorry, I am not currently accepting queue requests!";
                 return false;
@@ -44,9 +44,9 @@ namespace SysBot.Pokemon.Twitch
             var valid = new LegalityAnalysis(pkm).Valid;
             if (valid && pkm is PK8 pk8)
             {
-                var tq = new TwitchQueue(pk8, new PokeTradeTrainerInfo(display), username);
-                TwitchBot.QueuePool.RemoveAll(z => z.UserName == username); // remove old requests if any
-                TwitchBot.QueuePool.Add(tq);
+                var tq = new YouTubeQueue(pk8, new PokeTradeTrainerInfo(display), username);
+                YouTubeBot.QueuePool.RemoveAll(z => z.UserName == username); // remove old requests if any
+                YouTubeBot.QueuePool.Add(tq);
                 msg = $"@{username} - added to the waiting list. Please whisper to me your trade code! Your request from the waiting list will be removed if you are too slow!";
                 return true;
             }
@@ -57,13 +57,13 @@ namespace SysBot.Pokemon.Twitch
 
         public static string ClearTrade(string user)
         {
-            var result = TwitchBot.Info.ClearTrade(user);
+            var result = YouTubeBot.Info.ClearTrade(user);
             return GetClearTradeMessage(result);
         }
 
         public static string ClearTrade(ulong userID)
         {
-            var result = TwitchBot.Info.ClearTrade(userID);
+            var result = YouTubeBot.Info.ClearTrade(userID);
             return GetClearTradeMessage(result);
         }
 
@@ -79,7 +79,7 @@ namespace SysBot.Pokemon.Twitch
 
         public static string GetCode(ulong parse)
         {
-            var detail = TwitchBot.Info.GetDetail(parse);
+            var detail = YouTubeBot.Info.GetDetail(parse);
             return detail == null
                 ? "Sorry, you are not currently in the queue."
                 : $"Your trade code is {detail.Trade.Code:0000 0000}";

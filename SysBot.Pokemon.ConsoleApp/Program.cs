@@ -1,8 +1,8 @@
-﻿using System;
-using System.IO;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using PKHeX.Core;
 using SysBot.Base;
+using System;
+using System.IO;
 
 namespace SysBot.Pokemon.ConsoleApp
 {

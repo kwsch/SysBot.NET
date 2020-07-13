@@ -4,7 +4,7 @@ namespace SysBot.Pokemon
 {
     public class Z3SeedSearchHandler<T> : ISeedSearchHandler<T> where T : PKM, new()
     {
-        private static int[] GetBlankIVTemplate() => new[] {-1, -1, -1, -1, -1, -1};
+        private static int[] GetBlankIVTemplate() => new[] { -1, -1, -1, -1, -1, -1 };
 
         public void CalculateAndNotify(T pkm, PokeTradeDetail<T> detail, SeedCheckSettings settings, PokeTradeBot bot)
         {

@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Discord.Commands;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord.Commands;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -11,7 +11,7 @@ namespace SysBot.Pokemon.Discord
         [Summary("Adds mentioned user to global sudo")]
         [RequireOwner]
         // ReSharper disable once UnusedParameter.Global
-        public async Task SudoUsers([Remainder]string _)
+        public async Task SudoUsers([Remainder] string _)
         {
             await Process(Context.Message.MentionedUsers.Select(z => z.Id), (z, x) => z.Add(x), z => z.SudoDiscord).ConfigureAwait(false);
         }
@@ -20,7 +20,7 @@ namespace SysBot.Pokemon.Discord
         [Summary("Removes mentioned user to global sudo")]
         [RequireOwner]
         // ReSharper disable once UnusedParameter.Global
-        public async Task RemoveSudoUsers([Remainder]string _)
+        public async Task RemoveSudoUsers([Remainder] string _)
         {
             await Process(Context.Message.MentionedUsers.Select(z => z.Id), (z, x) => z.Remove(x), z => z.SudoDiscord).ConfigureAwait(false);
         }
@@ -31,7 +31,7 @@ namespace SysBot.Pokemon.Discord
         // ReSharper disable once UnusedParameter.Global
         public async Task AddChannel()
         {
-            await Process(new[] {Context.Message.Channel.Id}, (z, x) => z.Add(x), z => z.WhitelistedChannels).ConfigureAwait(false);
+            await Process(new[] { Context.Message.Channel.Id }, (z, x) => z.Add(x), z => z.WhitelistedChannels).ConfigureAwait(false);
         }
 
         [Command("removeChannel")]

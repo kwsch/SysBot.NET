@@ -1,8 +1,8 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using PKHeX.Core;
 using SysBot.Pokemon;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace SysBot.Tests
@@ -48,7 +48,7 @@ namespace SysBot.Tests
 
             first.Notifier.TradeInitialize(executor, first);
             first.Notifier.TradeSearching(executor, first);
-            first.Notifier.TradeFinished(executor, first, new PK8 {Species = 777});
+            first.Notifier.TradeFinished(executor, first, new PK8 { Species = 777 });
 
             var status = info.CheckPosition(t1.UserID, PokeRoutineType.LinkTrade);
             status.Position.Should().Be(1); // not zero indexed
@@ -95,7 +95,7 @@ namespace SysBot.Tests
 
         private static TradeEntry<PK8> GetTestTrade(int tag)
         {
-            var d3 = new PokeTradeDetail<PK8>(new PK8 {Species = tag}, new PokeTradeTrainerInfo($"Test {tag}"), new PokeTradeLogNotifier<PK8>(), PokeTradeType.Specific, tag);
+            var d3 = new PokeTradeDetail<PK8>(new PK8 { Species = tag }, new PokeTradeTrainerInfo($"Test {tag}"), new PokeTradeLogNotifier<PK8>(), PokeTradeType.Specific, tag);
             return new TradeEntry<PK8>(d3, (ulong)tag, PokeRoutineType.LinkTrade, $"Test Trade {tag}");
         }
     }

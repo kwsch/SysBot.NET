@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using PKHeX.Core;
+using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -61,7 +61,7 @@ namespace SysBot.Pokemon.Discord
         [Command("findFrame")]
         [Alias("ff", "getFrameData")]
         [Summary("Prints the next shiny frame from the provided seed.")]
-        public async Task FindFrameAsync([Remainder]string seedString)
+        public async Task FindFrameAsync([Remainder] string seedString)
         {
             seedString = seedString.ToLower();
             if (seedString.StartsWith("0x"))
@@ -73,7 +73,7 @@ namespace SysBot.Pokemon.Discord
             var type = r.GetShinyType();
             var msg = r.ToString();
 
-            var embed = new EmbedBuilder {Color = type == Shiny.AlwaysStar ? Color.Gold : Color.LighterGrey};
+            var embed = new EmbedBuilder { Color = type == Shiny.AlwaysStar ? Color.Gold : Color.LighterGrey };
 
             embed.AddField(x =>
             {

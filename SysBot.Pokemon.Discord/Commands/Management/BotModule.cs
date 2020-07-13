@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Discord;
+using Discord.Commands;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Commands;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -83,7 +83,7 @@ namespace SysBot.Pokemon.Discord
         [Command("botChange")]
         [Summary("Changes the routine of a bot (trades).")]
         [RequireSudo]
-        public async Task ChangeTaskAsync(string ip, [Summary("Routine enum name")]PokeRoutineType task)
+        public async Task ChangeTaskAsync(string ip, [Summary("Routine enum name")] PokeRoutineType task)
         {
             var bot = SysCordInstance.Runner.GetBot(ip);
             if (bot == null)

@@ -1,8 +1,8 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using PKHeX.Core;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -32,7 +32,7 @@ namespace SysBot.Pokemon.Discord
         [Alias("t")]
         [Summary("Makes the bot trade you the provided Pokémon file.")]
         [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-        public async Task TradeAsyncAttach([Summary("Trade Code")]int code)
+        public async Task TradeAsyncAttach([Summary("Trade Code")] int code)
         {
             var sudo = Context.User.GetIsSudo();
 
@@ -57,7 +57,7 @@ namespace SysBot.Pokemon.Discord
         [Alias("t")]
         [Summary("Makes the bot trade you a Pokémon converted from the provided Showdown Set.")]
         [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-        public async Task TradeAsync([Summary("Trade Code")]int code, [Summary("Showdown Set")][Remainder]string content)
+        public async Task TradeAsync([Summary("Trade Code")] int code, [Summary("Showdown Set")][Remainder] string content)
         {
             const int gen = 8;
             content = ReusableActions.StripCodeBlock(content);
@@ -85,14 +85,14 @@ namespace SysBot.Pokemon.Discord
 
             pkm.ResetPartyStats();
             var sudo = Context.User.GetIsSudo();
-            await AddTradeToQueueAsync(code, Context.User.Username, (PK8) pkm, sudo).ConfigureAwait(false);
+            await AddTradeToQueueAsync(code, Context.User.Username, (PK8)pkm, sudo).ConfigureAwait(false);
         }
 
         [Command("trade")]
         [Alias("t")]
         [Summary("Makes the bot trade you a Pokémon converted from the provided Showdown Set.")]
         [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-        public async Task TradeAsync([Summary("Showdown Set")][Remainder]string content)
+        public async Task TradeAsync([Summary("Showdown Set")][Remainder] string content)
         {
             var code = Info.GetRandomTradeCode();
             await TradeAsync(code, content).ConfigureAwait(false);

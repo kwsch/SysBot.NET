@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using PKHeX.Core;
+using SysBot.Base;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Newtonsoft.Json;
-using PKHeX.Core;
-using SysBot.Base;
 
 namespace SysBot.Pokemon.WinForms
 {
@@ -60,8 +60,8 @@ namespace SysBot.Pokemon.WinForms
             MinimumSize = Size;
             PG_Hub.SelectedObject = RunningEnvironment.Hub.Config;
 
-            var routines = (PokeRoutineType[]) Enum.GetValues(typeof(PokeRoutineType));
-            var list = routines.Select(z => new ComboItem(z.ToString(), (int) z)).ToArray();
+            var routines = (PokeRoutineType[])Enum.GetValues(typeof(PokeRoutineType));
+            var list = routines.Select(z => new ComboItem(z.ToString(), (int)z)).ToArray();
             CB_Routine.DisplayMember = nameof(ComboItem.Text);
             CB_Routine.ValueMember = nameof(ComboItem.Value);
             CB_Routine.DataSource = list;
@@ -199,7 +199,7 @@ namespace SysBot.Pokemon.WinForms
 
         private void AddBotControl(PokeBotConfig cfg)
         {
-            var row = new BotController {Width = FLP_Bots.Width};
+            var row = new BotController { Width = FLP_Bots.Width };
             row.Initialize(RunningEnvironment, cfg);
             FLP_Bots.Controls.Add(row);
             FLP_Bots.SetFlowBreak(row, true);

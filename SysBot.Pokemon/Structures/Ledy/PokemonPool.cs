@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using PKHeX.Core;
+﻿using PKHeX.Core;
 using SysBot.Base;
+using System.Collections.Generic;
+using System.IO;
 
 namespace SysBot.Pokemon
 {

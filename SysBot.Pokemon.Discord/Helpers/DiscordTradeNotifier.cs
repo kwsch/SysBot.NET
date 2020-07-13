@@ -1,8 +1,8 @@
-﻿using System;
-using System.Linq;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using PKHeX.Core;
+using System;
+using System.Linq;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -82,7 +82,7 @@ namespace SysBot.Pokemon.Discord
             var type = r.GetShinyType();
             var lines = r.ToString();
 
-            var embed = new EmbedBuilder {Color = type == Shiny.AlwaysStar ? Color.Gold : Color.LighterGrey};
+            var embed = new EmbedBuilder { Color = type == Shiny.AlwaysStar ? Color.Gold : Color.LighterGrey };
             embed.AddField(x =>
             {
                 x.Name = "Seed Result";
