@@ -1,15 +1,14 @@
-﻿using System;
+﻿using PKHeX.Core;
+using SysBot.Base;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
-using TwitchLib.Communication.Models;
-using PKHeX.Core;
-using SysBot.Base;
 using TwitchLib.Communication.Events;
+using TwitchLib.Communication.Models;
 
 namespace SysBot.Pokemon.Twitch
 {

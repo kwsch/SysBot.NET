@@ -1,7 +1,7 @@
-﻿using System.Net;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using PKHeX.Core;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.Discord
 {

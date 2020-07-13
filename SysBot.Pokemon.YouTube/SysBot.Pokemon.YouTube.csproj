@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<Platforms>AnyCPU</Platforms>
+		<LangVersion>8</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Google.Apis" Version="1.45.0" />
+		<PackageReference Include="Google.Apis.Auth" Version="1.45.0" />
+		<PackageReference Include="Google.Apis.Core" Version="1.45.0" />
+		<PackageReference Include="Google.Apis.YouTube.v3" Version="1.45.0.1929" />
+		<PackageReference Include="Google.Apis.YouTubePartner.v1" Version="1.35.1.1334" />
+		<PackageReference Include="PKHeX.Core" Version="20.6.22" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />
+		<ProjectReference Include="..\SysBot.Pokemon\SysBot.Pokemon.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="StreamingClient.Base">
+	    <HintPath>deps\StreamingClient.Base.dll</HintPath>
+	  </Reference>
+	  <Reference Include="YouTube.Base">
+	    <HintPath>deps\YouTube.Base.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
+</Project>

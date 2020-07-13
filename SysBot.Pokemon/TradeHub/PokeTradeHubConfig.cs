@@ -1,5 +1,5 @@
-﻿using System.ComponentModel;
-using SysBot.Base;
+﻿using SysBot.Base;
+using System.ComponentModel;
 
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
@@ -83,6 +83,11 @@ namespace SysBot.Pokemon
         [Category(Integration)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public TwitchSettings Twitch { get; set; } = new TwitchSettings();
+
+        [Category(Integration)]
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public YouTubeSettings YouTube { get; set; } = new YouTubeSettings();
+
 
         [Category(Integration)]
         [TypeConverter(typeof(ExpandableObjectConverter))]

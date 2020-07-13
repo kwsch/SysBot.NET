@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using PKHeX.Core;
+using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -32,7 +32,7 @@ namespace SysBot.Pokemon.Discord
         [Alias("qcu", "tcu")]
         [Summary("Clears the user from the trade queues. Will not remove a user if they are being processed.")]
         [RequireSudo]
-        public async Task ClearTradeUserAsync([Summary("Discord user ID")]ulong id)
+        public async Task ClearTradeUserAsync([Summary("Discord user ID")] ulong id)
         {
             string msg = ClearTrade(id);
             await ReplyAsync(msg).ConfigureAwait(false);
@@ -42,7 +42,7 @@ namespace SysBot.Pokemon.Discord
         [Alias("qcu", "tcu")]
         [Summary("Clears the user from the trade queues. Will not remove a user if they are being processed.")]
         [RequireSudo]
-        public async Task ClearTradeUserAsync([Summary("Username of the person to clear")]string _)
+        public async Task ClearTradeUserAsync([Summary("Username of the person to clear")] string _)
         {
             foreach (var user in Context.Message.MentionedUsers)
             {
@@ -95,7 +95,7 @@ namespace SysBot.Pokemon.Discord
         [Alias("qm")]
         [Summary("Changes how queueing is controlled (manual/threshold/interval).")]
         [RequireSudo]
-        public async Task ChangeQueueModeAsync([Summary("Queue mode")]QueueOpening mode)
+        public async Task ChangeQueueModeAsync([Summary("Queue mode")] QueueOpening mode)
         {
             SysCordInstance.Self.Hub.Config.Queues.QueueToggleMode = mode;
             await ReplyAsync($"Changed queue mode to {mode}.").ConfigureAwait(false);

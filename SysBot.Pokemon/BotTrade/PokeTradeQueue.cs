@@ -1,7 +1,7 @@
-﻿using System;
+﻿using PKHeX.Core;
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using PKHeX.Core;
 
 namespace SysBot.Pokemon
 {

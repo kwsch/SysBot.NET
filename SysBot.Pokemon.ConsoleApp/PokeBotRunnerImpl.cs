@@ -1,8 +1,8 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using PKHeX.Core;
+﻿using PKHeX.Core;
 using SysBot.Pokemon.Discord;
 using SysBot.Pokemon.Twitch;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SysBot.Pokemon
 {

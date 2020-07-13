@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Z3;
+using PKHeX.Core;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Microsoft.Z3;
-using PKHeX.Core;
 
 namespace SysBot.Pokemon
 {

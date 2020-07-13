@@ -1,9 +1,9 @@
-﻿using System;
+﻿using SysBot.Base;
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using SysBot.Base;
 
 namespace SysBot.Pokemon.WinForms
 {
@@ -118,7 +118,7 @@ namespace SysBot.Pokemon.WinForms
             else
             {
                 // blend from green->red, favoring green until near saturation
-                var factor = seconds / (double) threshold;
+                var factor = seconds / (double)threshold;
                 var blend = Blend(bad, good, factor * factor);
                 PB_Lamp.BackColor = blend;
             }

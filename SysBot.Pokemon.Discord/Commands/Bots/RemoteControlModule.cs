@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Discord.Commands;
+using SysBot.Base;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord.Commands;
-using SysBot.Base;
 
 namespace SysBot.Pokemon.Discord
 {

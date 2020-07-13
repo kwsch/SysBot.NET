@@ -1,6 +1,6 @@
-﻿using System;
+﻿using SysBot.Base;
+using System;
 using System.Collections.Generic;
-using SysBot.Base;
 using static SysBot.Base.SwitchButton;
 
 namespace SysBot.Pokemon
