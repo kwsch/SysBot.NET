@@ -8,7 +8,7 @@ namespace SysBot.Pokemon
     {
         private const string Distribute = nameof(Distribute);
         private const string Synchronize = nameof(Synchronize);
-        public override string ToString() => "Trade Distribution Settings";
+        public override string ToString() => "Distribution Trade Settings";
 
         // Distribute
 

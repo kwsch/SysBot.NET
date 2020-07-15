@@ -15,7 +15,7 @@ namespace SysBot.Pokemon
             Config = config;
             var pool = new PokemonPool<T>(config);
             Ledy = new LedyDistributor<T>(pool);
-            BotSync = new BotSynchronizer(config.Distribute);
+            BotSync = new BotSynchronizer(config.Distribution);
             BotSync.BarrierReleasingActions.Add(() => LogUtil.LogInfo($"{BotSync.Barrier.ParticipantCount} bots released.", "Barrier"));
             Counts = new BotCompleteCounts(config.Counts);
 

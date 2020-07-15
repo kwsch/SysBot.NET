@@ -10,7 +10,7 @@ namespace SysBot.Tests
         [Fact]
         public void TestHub()
         {
-            var cfg = new PokeTradeHubConfig { Distribute = { DistributeWhileIdle = true } };
+            var cfg = new PokeTradeHubConfig { Distribution = { DistributeWhileIdle = true } };
             var hub = new PokeTradeHub<PK8>(cfg);
 
             var pool = hub.Ledy.Pool;

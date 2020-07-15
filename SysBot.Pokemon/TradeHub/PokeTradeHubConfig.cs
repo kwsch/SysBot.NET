@@ -30,10 +30,6 @@ namespace SysBot.Pokemon
 
         [Category(Operation)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
-        public DistributionSettings Distribute { get; set; } = new DistributionSettings();
-
-        [Category(Operation)]
-        [TypeConverter(typeof(ExpandableObjectConverter))]
         public CountSettings Counts { get; set; } = new CountSettings();
 
         [Category(Operation)]
@@ -57,6 +53,10 @@ namespace SysBot.Pokemon
         [Category(Bots)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public SeedCheckSettings SeedCheck { get; set; } = new SeedCheckSettings();
+
+        [Category(Bots)]
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public DistributionSettings Distribution { get; set; } = new DistributionSettings();
 
         [Category(Bots)]
         [TypeConverter(typeof(ExpandableObjectConverter))]

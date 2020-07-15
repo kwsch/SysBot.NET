@@ -6,8 +6,12 @@ namespace SysBot.Pokemon
     public class TradeSettings
     {
         private const string TradeCode = nameof(TradeCode);
+        private const string TradeConfig = nameof(TradeConfig);
         private const string Dumping = nameof(Dumping);
         public override string ToString() => "Trade Bot Settings";
+
+        [Category(TradeConfig), Description("Time to wait for a trade partner in seconds.")]
+        public int TradeWaitTime { get; set; } = 45;
 
         [Category(TradeCode), Description("Minimum Link Code.")]
         public int MinTradeCode { get; set; } = 8180;

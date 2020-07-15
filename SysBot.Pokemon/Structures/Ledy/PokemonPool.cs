@@ -16,7 +16,7 @@ namespace SysBot.Pokemon
             Settings = settings;
         }
 
-        public bool Randomized => Settings.Distribute.Shuffled;
+        public bool Randomized => Settings.Distribution.Shuffled;
 
         private int Counter;
 

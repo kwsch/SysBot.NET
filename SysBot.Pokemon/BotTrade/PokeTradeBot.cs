@@ -200,9 +200,9 @@ namespace SysBot.Pokemon
             poke.TradeSearching(this);
             await Task.Delay(0_500, token).ConfigureAwait(false);
 
-            // Wait 45 Seconds for Trainer...
+            // Wait for a Trainer...
             Log("Waiting for trainer...");
-            bool partnerFound = await WaitForPokemonChanged(LinkTradePartnerPokemonOffset, 45_000, 0_200, token);
+            bool partnerFound = await WaitForPokemonChanged(LinkTradePartnerPokemonOffset, Hub.Config.Trade.TradeWaitTime * 1_000, 0_200, token);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
@@ -255,7 +255,7 @@ namespace SysBot.Pokemon
             if (poke.Type == PokeTradeType.Random) // distribution
             {
                 // Allow the trade partner to do a Ledy swap.
-                var trade = Hub.Ledy.GetLedyTrade(pk, Hub.Config.Distribute.LedySpecies);
+                var trade = Hub.Ledy.GetLedyTrade(pk, Hub.Config.Distribution.LedySpecies);
                 if (trade != null)
                 {
                     pkm = trade.Receive;
@@ -499,9 +499,9 @@ namespace SysBot.Pokemon
             // Wait 30 Seconds for Trainer...
             Log("Waiting for Surprise Trade Partner...");
 
-            // Wait 45 Seconds for offer...
+            // Wait for an offer...
             var oldEC = await Connection.ReadBytesAsync(SurpriseTradeSearchOffset, 4, token).ConfigureAwait(false);
-            var partnerFound = await ReadUntilChanged(SurpriseTradeSearchOffset, oldEC, 45_000, 0_200, false, token).ConfigureAwait(false);
+            var partnerFound = await ReadUntilChanged(SurpriseTradeSearchOffset, oldEC, Hub.Config.Trade.TradeWaitTime * 1_000, 0_200, false, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
@@ -602,11 +602,11 @@ namespace SysBot.Pokemon
         {
             if (!ShouldWaitAtBarrier)
                 return;
-            var opt = Hub.Config.Distribute.SynchronizeBots;
+            var opt = Hub.Config.Distribution.SynchronizeBots;
             if (opt == BotSyncOption.NoSync)
                 return;
 
-            var timeoutAfter = Hub.Config.Distribute.SynchronizeTimeout;
+            var timeoutAfter = Hub.Config.Distribution.SynchronizeTimeout;
             if (FailedBarrier == 1) // failed last iteration
                 timeoutAfter *= 2; // try to re-sync in the event things are too slow.
 

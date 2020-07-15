@@ -42,7 +42,7 @@ namespace SysBot.Pokemon
         public bool TryDequeueLedy(out PokeTradeDetail<T> detail)
         {
             detail = default!;
-            var cfg = Hub.Config.Distribute;
+            var cfg = Hub.Config.Distribution;
             if (!cfg.DistributeWhileIdle)
                 return false;
 
