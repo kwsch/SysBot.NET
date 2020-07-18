@@ -21,6 +21,9 @@ namespace SysBot.Pokemon
         [Category(Startup), Description("List of Modules that will not be loaded when the Bot is started (comma separated).")]
         public string ModuleBlacklist { get; set; } = string.Empty;
 
+        [Category(Startup), Description("Toggle to handle commands asynchronously or synchronously.")]
+        public bool AsyncCommands { get; set; }
+
         [Category(Startup), Description("Custom Status for playing a game.")]
         public string BotGameStatus { get; set; } = "SysBot.NET: Pokémon";
 

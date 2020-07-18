@@ -54,10 +54,10 @@ namespace SysBot.Pokemon.Discord
             {
                 // Again, log level:
                 LogLevel = LogSeverity.Info,
-                
+
                 // This makes commands get run on the task thread pool instead on the websocket read thread.
                 // This ensures long running logic can't block the websocket connection.
-                DefaultRunMode = RunMode.Async,
+                DefaultRunMode = Hub.Config.Discord.AsyncCommands ? RunMode.Async : RunMode.Sync,
 
                 // There's a few more properties you can set,
                 // for example, case-insensitive commands.
