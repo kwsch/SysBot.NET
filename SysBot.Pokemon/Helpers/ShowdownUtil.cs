@@ -11,7 +11,7 @@ namespace SysBot.Pokemon
         /// <returns>ShowdownSet object</returns>
         public static ShowdownSet? ConvertToShowdown(string setstring)
         {
-            // LiveStream Chats removes new lines, so we are left with a single line set
+            // LiveStreams remove new lines, so we are left with a single line set
             var restorenick = string.Empty;
 
             var nickIndex = setstring.LastIndexOf(')');
