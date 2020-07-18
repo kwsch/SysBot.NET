@@ -67,9 +67,19 @@ namespace SysBot.Pokemon.Discord
             // Subscribe the logging handler to both the client and the CommandService.
             _client.Log += Log;
             _commands.Log += Log;
+            
+            // Subscribe the command executed handler to handle possible failure of commands
+            _commands.CommandExecuted += CommandExecuted;
 
             // Setup your DI container.
             _services = ConfigureServices();
+        }
+
+        /// This Checks if a command was executed successful and if not sends the error as message
+        private static async Task CommandExecuted(Optional<CommandInfo> info, ICommandContext context, IResult result)
+        {
+            if (!result.IsSuccess)
+                await context.Channel.SendMessageAsync(result.ErrorReason).ConfigureAwait(false);
         }
 
         // If any services require the client, or the CommandService, or something else you keep on hand,
@@ -176,13 +186,9 @@ namespace SysBot.Pokemon.Discord
             // Create a number to track where the prefix ends and the command begins
             int pos = 0;
             if (msg.HasStringPrefix(Hub.Config.Discord.CommandPrefix, ref pos))
-            {
-                bool handled = await TryHandleCommandAsync(msg, pos).ConfigureAwait(false);
-                if (handled)
-                    return;
-            }
-
-            await TryHandleMessageAsync(msg).ConfigureAwait(false);
+                await TryHandleCommandAsync(msg, pos).ConfigureAwait(false);
+            else
+                await TryHandleMessageAsync(msg).ConfigureAwait(false);
         }
 
         private async Task TryHandleMessageAsync(SocketMessage msg)
@@ -195,7 +201,7 @@ namespace SysBot.Pokemon.Discord
             }
         }
 
-        private async Task<bool> TryHandleCommandAsync(SocketUserMessage msg, int pos)
+        private async Task TryHandleCommandAsync(SocketUserMessage msg, int pos)
         {
             // Create a Command Context.
             var context = new SocketCommandContext(_client, msg);
@@ -205,30 +211,21 @@ namespace SysBot.Pokemon.Discord
             if (!mgr.CanUseCommandUser(msg.Author.Id))
             {
                 await msg.Channel.SendMessageAsync("You are not permitted to use this command.").ConfigureAwait(false);
-                return true;
+                return;
             }
             if (!mgr.CanUseCommandChannel(msg.Channel.Id) && msg.Author.Id != mgr.Owner)
             {
                 await msg.Channel.SendMessageAsync("You can't use that command here.").ConfigureAwait(false);
-                return true;
+                return;
             }
 
             // Execute the command. (result does not indicate a return value, 
             // rather an object stating if the command executed successfully).
             var guild = msg.Channel is SocketGuildChannel g ? g.Guild.Name : "Unknown Guild";
             await Log(new LogMessage(LogSeverity.Info, "Command", $"Executing command from {guild}#{msg.Channel.Name}:@{msg.Author.Username}. Content: {msg}")).ConfigureAwait(false);
-            var result = await _commands.ExecuteAsync(context, pos, _services).ConfigureAwait(false);
+            await _commands.ExecuteAsync(context, pos, _services).ConfigureAwait(false);
 
-            if (result.Error == CommandError.UnknownCommand)
-                return false;
-
-            // Uncomment the following lines if you want the bot
-            // to send a message if it failed.
-            // This does not catch errors from commands with 'RunMode.Async',
-            // subscribe a handler for '_commands.CommandExecuted' to see those.
-            if (!result.IsSuccess)
-                await msg.Channel.SendMessageAsync(result.ErrorReason).ConfigureAwait(false);
-            return true;
+            return;
         }
 
         private async Task MonitorStatusAsync(CancellationToken token)
