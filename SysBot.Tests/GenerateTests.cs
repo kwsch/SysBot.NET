@@ -18,8 +18,8 @@ namespace SysBot.Tests
             var sav = AutoLegalityWrapper.GetTrainerInfo(8);
             var s = new ShowdownSet(set);
             var template = AutoLegalityWrapper.GetTemplate(s);
-            var pk = sav.GetLegal(template, out _);
-            pk.Should().NotBeNull();
+            sav.TryGetLegal(template, out var result);
+            result.Should().NotBeNull();
         }
 
         [Theory]
@@ -41,8 +41,8 @@ namespace SysBot.Tests
             {
                 var s = new ShowdownSet(set);
                 var template = AutoLegalityWrapper.GetTemplate(s);
-                var pk = sav.GetLegal(template, out _);
-                pk.AbilityNumber.Should().Be(abilNumber);
+                sav.TryGetLegal(template, out var result);
+                result.Pokemon.AbilityNumber.Should().Be(abilNumber);
             }
         }
 
@@ -57,9 +57,12 @@ namespace SysBot.Tests
                 var twitch = set.Replace("\r\n", " ").Replace("\n", " ");
                 var s = ShowdownUtil.ConvertToShowdown(twitch);
                 var template = s == null ? null : AutoLegalityWrapper.GetTemplate(s);
-                var pk = template == null ? null : sav.GetLegal(template, out _);
-                pk.Should().NotBeNull();
-                pk!.AbilityNumber.Should().Be(abilNumber);
+                if (template != null)
+                {
+	                sav.TryGetLegal(template, out var result);
+	                result.Pokemon.Should().NotBeNull();
+	                result.Pokemon.AbilityNumber.Should().Be(abilNumber);
+                }
             }
         }
 

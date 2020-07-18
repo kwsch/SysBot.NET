@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using PKHeX.Core;
 using System.Threading.Tasks;
+using SysBot.Base;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -16,7 +17,16 @@ namespace SysBot.Pokemon.Discord
             }
 
             var template = AutoLegalityWrapper.GetTemplate(set);
-            var pkm = sav.GetLegal(template, out var result);
+
+            if (!sav.TryGetLegal(template, out var result))
+            {
+                await channel.SendMessageAsync("Oops! It took to long to legalize this Pokemon!");
+                LogUtil.LogError($"Getting legal pokemon from template timed out, {set}", nameof(AutoLegalityExtensionsDiscord));
+                return;
+            }
+
+            var pkm = result.Pokemon;
+            
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
 

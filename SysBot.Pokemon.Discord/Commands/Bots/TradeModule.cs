@@ -3,6 +3,7 @@ using Discord.Commands;
 using PKHeX.Core;
 using System.Linq;
 using System.Threading.Tasks;
+using SysBot.Base;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -72,7 +73,15 @@ namespace SysBot.Pokemon.Discord
 
             var sav = AutoLegalityWrapper.GetTrainerInfo(gen);
 
-            var pkm = sav.GetLegal(template, out _);
+            if (!sav.TryGetLegal(template, out var result))
+            {
+                await ReplyAsync("Oops! It took to long to legalize this Pokemon!");
+                LogUtil.LogError($"Getting legal pokemon from template timed out, {set}", nameof(TradeModule));
+                return;
+            }
+
+            var pkm = result.Pokemon;
+            
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
             var invalid = !(pkm is PK8) || (!la.Valid && SysCordInstance.Self.Hub.Config.Legality.VerifyLegality);

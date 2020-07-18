@@ -1,7 +1,9 @@
-﻿using PKHeX.Core;
+﻿using System;
+using PKHeX.Core;
 using PKHeX.Core.AutoMod;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace SysBot.Pokemon
 {
@@ -95,11 +97,21 @@ namespace SysBot.Pokemon
 
         public static ITrainerInfo GetTrainerInfo(int gen) => TrainerSettings.GetSavedTrainerData(gen);
 
-        public static PKM GetLegal(this ITrainerInfo sav, IBattleTemplate set, out string res)
+        public static bool TryGetLegal(this ITrainerInfo sav, IBattleTemplate set, out LegalizationResult result)
         {
-            var result = sav.GetLegalFromSet(set, out var type);
-            res = type.ToString();
-            return result;
+            const int timeout = 5000;
+
+            LegalizationResult legalizationResult = default;
+
+            var task = Task.Run(() =>
+            {
+                var pkm = sav.GetLegalFromSet(set, out var res);
+                legalizationResult = new LegalizationResult(pkm, res.ToString());
+            });
+            
+            result = legalizationResult;
+
+            return task.Wait(TimeSpan.FromMilliseconds(timeout));
         }
 
         public static PKM LegalizePokemon(this PKM pk) => pk.Legalize();

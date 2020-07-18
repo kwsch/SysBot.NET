@@ -1,4 +1,5 @@
 using PKHeX.Core;
+using SysBot.Base;
 
 namespace SysBot.Pokemon.Twitch
 {
@@ -33,11 +34,20 @@ namespace SysBot.Pokemon.Twitch
             }
 
             var sav = AutoLegalityWrapper.GetTrainerInfo(PKX.Generation);
-            PKM pkm = sav.GetLegal(template, out _);
+            
+            if (!sav.TryGetLegal(template, out var result))
+            {
+                msg = "Oops! It took to long to legalize this Pokemon!";
+                LogUtil.LogError($"Getting legal pokemon from template timed out, {setstring}", nameof(TwitchCommandsHelper));
+                return false;
+            }
+
+
+            var pkm = result.Pokemon;
 
             if (!pkm.CanBeTraded())
             {
-                msg = $"Skipping trade, @{username}: Provided Pokémon content is blocked from trading!";
+                msg = $"Skipping trade, @{username}: Provided Pokï¿½mon content is blocked from trading!";
                 return false;
             }
 
@@ -51,7 +61,7 @@ namespace SysBot.Pokemon.Twitch
                 return true;
             }
 
-            msg = $"Skipping trade, @{username}: Unable to legalize the Pokémon.";
+            msg = $"Skipping trade, @{username}: Unable to legalize the Pokï¿½mon.";
             return false;
         }
 
