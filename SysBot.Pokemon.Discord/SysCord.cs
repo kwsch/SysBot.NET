@@ -120,7 +120,7 @@ namespace SysBot.Pokemon.Discord
             LogUtil.LogText($"SysCord: {text}");
 
             if (msg.Exception is CommandException exception)
-                await exception.Context.Channel.SendMessageAsync(exception.Message);
+                await exception.Context.Channel.SendMessageAsync(exception.Message).ConfigureAwait(false);;
         }
 
         public async Task MainAsync(string apiToken, CancellationToken token)
