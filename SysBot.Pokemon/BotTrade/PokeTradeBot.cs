@@ -194,8 +194,19 @@ namespace SysBot.Pokemon
             Hub.Config.Stream.EndEnterCode(this);
 
             // Confirming and return to overworld.
+            var delay_count = 0;
             while (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
-                await Click(A, 0_800, token).ConfigureAwait(false);
+            {
+                if (delay_count >= 5)
+                {
+                    await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
+                    return PokeTradeResult.RecoverPostLinkCode;
+                }
+
+                for (int i = 0; i < 5; i++)
+                    await Click(A, 0_800, token).ConfigureAwait(false);
+                delay_count++;
+            }
 
             poke.TradeSearching(this);
             await Task.Delay(0_500, token).ConfigureAwait(false);
@@ -330,7 +341,7 @@ namespace SysBot.Pokemon
             for (int i = 0; i < 5; i++)
                 await Click(A, 1_500, token).ConfigureAwait(false);
 
-            var delay_count = 0;
+            delay_count = 0;
             while (!await IsInBox(token).ConfigureAwait(false))
             {
                 await Click(A, 3_000, token).ConfigureAwait(false);

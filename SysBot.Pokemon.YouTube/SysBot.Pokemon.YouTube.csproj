@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
@@ -12,7 +12,7 @@
 		<PackageReference Include="Google.Apis.Core" Version="1.45.0" />
 		<PackageReference Include="Google.Apis.YouTube.v3" Version="1.45.0.1929" />
 		<PackageReference Include="Google.Apis.YouTubePartner.v1" Version="1.35.1.1334" />
-		<PackageReference Include="PKHeX.Core" Version="20.6.22" />
+		<PackageReference Include="PKHeX.Core" Version="20.7.18" />
 	</ItemGroup>
 
 	<ItemGroup>
