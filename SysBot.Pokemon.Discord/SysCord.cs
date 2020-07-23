@@ -78,7 +78,7 @@ namespace SysBot.Pokemon.Discord
         /// This Checks if a command was executed successful and if not sends the error as message
         private static async Task CommandExecuted(Optional<CommandInfo> info, ICommandContext context, IResult result)
         {
-            if (!result.IsSuccess)
+            if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)
                 await context.Channel.SendMessageAsync(result.ErrorReason).ConfigureAwait(false);
         }
 
