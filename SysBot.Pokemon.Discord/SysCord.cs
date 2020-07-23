@@ -98,7 +98,7 @@ namespace SysBot.Pokemon.Discord
         // Example of a logging handler. This can be re-used by addons
         // that ask for a Func<LogMessage, Task>.
 
-        private static Task Log(LogMessage msg)
+        private static async Task Log(LogMessage msg)
         {
             Console.ForegroundColor = msg.Severity switch
             {
@@ -119,7 +119,8 @@ namespace SysBot.Pokemon.Discord
 
             LogUtil.LogText($"SysCord: {text}");
 
-            return Task.CompletedTask;
+            if (msg.Exception is CommandException exception)
+                await exception.Context.Channel.SendMessageAsync(exception.Message);
         }
 
         public async Task MainAsync(string apiToken, CancellationToken token)
@@ -224,8 +225,6 @@ namespace SysBot.Pokemon.Discord
             var guild = msg.Channel is SocketGuildChannel g ? g.Guild.Name : "Unknown Guild";
             await Log(new LogMessage(LogSeverity.Info, "Command", $"Executing command from {guild}#{msg.Channel.Name}:@{msg.Author.Username}. Content: {msg}")).ConfigureAwait(false);
             await _commands.ExecuteAsync(context, pos, _services).ConfigureAwait(false);
-
-            return;
         }
 
         private async Task MonitorStatusAsync(CancellationToken token)
