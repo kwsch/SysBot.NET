@@ -11,8 +11,11 @@ namespace SysBot.Pokemon
     {
         private readonly PokeTradeHub<PK8> hub;
         private readonly BotCompleteCounts Counts;
+        private readonly Nature DesiredNature;
+        private readonly int[] DesiredIVs = { -1, -1, -1, -1, -1, -1 };
         private readonly IDumper DumpSetting;
         private readonly bool ContinueGettingEggs;
+        
         private const SwordShieldDaycare Location = SwordShieldDaycare.Route5;
 
         public EggBot(PokeBotConfig cfg, PokeTradeHub<PK8> Hub) : base(cfg)
@@ -21,6 +24,22 @@ namespace SysBot.Pokemon
             Counts = Hub.Counts;
             DumpSetting = Hub.Config.Folder;
             ContinueGettingEggs = Hub.Config.Egg.ContinueAfterMatch;
+            AnyRandomEgg = Hub.Config.Egg.AnyRandomEgg;
+            
+            DesiredNature = Hub.Config.Egg.DesiredNature;
+
+            /* Populate DesiredIVs array.  Bot matches 0 and 31 IVs.
+             * Any other nonzero IV is treated as a minimum accepted value.
+             * If they put "x", this is a wild card so we can leave -1. */
+            string[] splitIVs = Hub.Config.Egg.DesiredIVs.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            // Only accept up to 6 values in case people can't count.
+            for (int i = 0; i < 6 && i < splitIVs.Length; i++)
+            {
+                if (splitIVs[i] == "x" || splitIVs[i] == "X")
+                    continue;
+                DesiredIVs[i] = Convert.ToInt32(splitIVs[i]);
+            }
         }
 
         private int encounterCount;
@@ -29,6 +48,57 @@ namespace SysBot.Pokemon
         private const int InjectSlot = 0;
 
         public Func<PK8, bool> StopCondition { private get; set; } = pkm => pkm.IsShiny;
+        
+        private bool StopCondition(PK8 pk)
+        {
+            /*  Match species and look for a shiny. This is only checked for walking encounters.
+             *  If they specified a species, it has to match. */
+             
+            if(AnyRandomEgg){
+            
+                if (DesiredNature != Nature.Random && DesiredNature != (Nature)pk.Nature)
+                        return false;
+
+                    // Reorder the Pokemon's IVs to HP/Atk/Def/SpA/SpD/Spe
+                    int[] pkIVList = PKX.ReorderSpeedLast(pk.IVs);
+
+                    for (int i = 0; i < 6; i++)
+                    {
+                        // Match all 0's.
+                        if (DesiredIVs[i] == 0 && pk.IVs[i] != 0)
+                            return false;
+                        // Wild cards should be -1, so they will always be less than the Pokemon's IVs.
+                        if (DesiredIVs[i] > pkIVList[i])
+                            return false;
+                    }
+            
+                    return true;
+            
+            }
+            
+            if(pk.IsShiny){
+            
+                if (DesiredNature != Nature.Random && DesiredNature != (Nature)pk.Nature)
+                    return false;
+
+                // Reorder the Pokemon's IVs to HP/Atk/Def/SpA/SpD/Spe
+                int[] pkIVList = PKX.ReorderSpeedLast(pk.IVs);
+
+                for (int i = 0; i < 6; i++)
+                {
+                    // Match all 0's.
+                    if (DesiredIVs[i] == 0 && pk.IVs[i] != 0)
+                        return false;
+                    // Wild cards should be -1, so they will always be less than the Pokemon's IVs.
+                    if (DesiredIVs[i] > pkIVList[i])
+                        return false;
+                }
+                
+            }
+       
+            return true;
+        
+        }
 
         protected override async Task MainLoop(CancellationToken token)
         {
