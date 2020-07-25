@@ -46,8 +46,6 @@ namespace SysBot.Pokemon
 
         private const int InjectBox = 0;
         private const int InjectSlot = 0;
-
-        public Func<PK8, bool> StopCondition { private get; set; } = pkm => pkm.IsShiny;
         
         private bool StopCondition(PK8 pk)
         {
