@@ -95,5 +95,26 @@ namespace SysBot.Pokemon.Discord
             bot.Bot.Config.Initialize(task);
             await Context.Channel.EchoAndReply($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to do {task} as its next task.").ConfigureAwait(false);
         }
+
+        [Command("botRestart")]
+        [Summary("Restarts the bot(s) by IP address(es), separated by commas.")]
+        [RequireSudo]
+        public async Task RestartBotAsync(string ip)
+        {
+            string[] ips = ip.Split(',');
+            for (int i = 0; i < ips.Length; i++)
+            {
+                var bot = SysCordInstance.Runner.GetBot(ips[i]);
+                if (bot == null)
+                {
+                    await ReplyAsync($"No bot has that IP address ({ips[i]}).").ConfigureAwait(false);
+                    return;
+                }
+
+                bot.Bot.Connection.Reset(ips[i]);
+                bot.Start();
+                await Context.Channel.EchoAndReply($"The bot at {ips[i]} ({bot.Bot.Connection.Name}) has been commanded to start.").ConfigureAwait(false);
+            }
+        }
     }
 }
