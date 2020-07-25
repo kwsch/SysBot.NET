@@ -15,6 +15,7 @@ namespace SysBot.Pokemon
         private readonly int[] DesiredIVs = { -1, -1, -1, -1, -1, -1 };
         private readonly IDumper DumpSetting;
         private readonly bool ContinueGettingEggs;
+        private readonly bool AnyRandomEgg;
         
         private const SwordShieldDaycare Location = SwordShieldDaycare.Route5;
 
