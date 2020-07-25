@@ -10,6 +10,11 @@ namespace SysBot.Pokemon
         [Category(FeatureToggle), Description("When enabled, the EggBot will continue to get eggs and dump the Pokémon into the egg dump folder")]
         public bool ContinueAfterMatch { get; set; } = false;
         
+        /*Creating a new toggle to override the default behavior if the user needs to search for non-shiny eggs*/
+        
+        [Category(FeatureToggle), Description("When enabled, the Eggbot will not search for Shiny generated eggs. Use for searching desired natures or IVs")]
+        public bool NoShinyEggs { get; set; } = false;
+        
         /*For Pokemon breeding with optimized conditions, a user might benefit from having select IVs and Nature, which can be easily controlled by the user of the
         Everstone and Destiny Knot Items. These settings are borrowed from EncounterBot settings*/
         
