@@ -69,19 +69,18 @@ namespace SysBot.Pokemon.Discord
 
             var seed = Util.GetHexValue64(seedString);
 
-            var r = new SeedSearchResult(Z3SearchResult.Success, seed, -1);
-            var type = r.GetShinyType();
+            var r = new SeedSearchResult(Z3SearchResult.Success, seed, -1, SeedCheckResults.FirstStarAndSquare);
             var msg = r.ToString();
 
-            var embed = new EmbedBuilder { Color = type == Shiny.AlwaysStar ? Color.Gold : Color.LighterGrey };
+            var embed = new EmbedBuilder { Color = Color.LighterGrey };
 
             embed.AddField(x =>
             {
-                x.Name = "Seed Result";
+                x.Name = $"Seed: {seed:X16}";
                 x.Value = msg;
                 x.IsInline = false;
             });
-            await ReplyAsync($"Here's your seed details for `{seed:X16}`:", embed: embed.Build()).ConfigureAwait(false);
+            await ReplyAsync($"Here are the details for `{r.Seed:X16}`:", embed: embed.Build()).ConfigureAwait(false);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using PKHeX.Core;
+using System.Collections.Generic;
 
 namespace SysBot.Pokemon
 {
@@ -17,23 +18,81 @@ namespace SysBot.Pokemon
             return 0;
         }
 
-        public static int GetNextShinyFrame(ulong seed, out uint type)
+        public static void GetShinyFrames(ulong seed, out int[] frames, out uint[] type, out List<uint[,]> IVs, SeedCheckResults mode)
         {
+            int shinyindex = 0;
+            frames = new int[3];
+            type = new uint[3];
+            IVs = new List<uint[,]>();
+            bool foundStar = false;
+            bool foundSquare = false;
+
             var rng = new Xoroshiro128Plus(seed);
             for (int i = 0; ; i++)
             {
                 uint _ = (uint)rng.NextInt(0xFFFFFFFF); // EC
                 uint SIDTID = (uint)rng.NextInt(0xFFFFFFFF);
                 uint PID = (uint)rng.NextInt(0xFFFFFFFF);
-                type = GetShinyType(PID, SIDTID);
-                if (type != 0)
-                    return i;
+                var shinytype = GetShinyType(PID, SIDTID);
+
+                // If we found a shiny, record it and return if we got everything we wanted.
+                if (shinytype != 0)
+                {
+                    if (shinytype == 1)
+                        foundStar = true;
+                    else if (shinytype == 2)
+                        foundSquare = true;
+
+                    if (shinyindex == 0 || mode == SeedCheckResults.FirstThree || (foundStar && foundSquare))
+                    {
+                        frames[shinyindex] = i;
+                        type[shinyindex] = shinytype;
+                        GetShinyIVs(rng, out uint[,] frameIVs);
+                        IVs.Add(frameIVs);
+
+                        shinyindex++;
+                    }
+
+                    if (mode == SeedCheckResults.ClosestOnly || (mode == SeedCheckResults.FirstStarAndSquare && foundStar && foundSquare) || shinyindex >= 3)
+                        return;
+                }
 
                 // Get the next seed, and reset for the next iteration
                 rng = new Xoroshiro128Plus(seed);
                 seed = rng.Next();
                 rng = new Xoroshiro128Plus(seed);
             }
+        }
+
+        public static void GetShinyIVs(Xoroshiro128Plus rng, out uint[,] frameIVs)
+        {
+            frameIVs = new uint[5, 6];
+            Xoroshiro128Plus origrng = rng;
+
+            for (int ivcount = 0; ivcount < 5; ivcount++)
+            {
+                int i = 0;
+                int[] ivs = { -1, -1, -1, -1, -1, -1 };
+
+                while (i < ivcount + 1)
+                {
+                    var stat = (int)rng.NextInt(6);
+                    if (ivs[stat] == -1)
+                    {
+                        ivs[stat] = 31;
+                        i++;
+                    }
+                }
+
+                for (int j = 0; j < 6; j++)
+                {
+                    if (ivs[j] == -1)
+                        ivs[j] = (int)rng.NextInt(32);
+                    frameIVs[ivcount, j] = (uint)ivs[j];
+                }
+                rng = origrng;
+            }
+            return;
         }
 
         public static bool IsMatch(ulong seed, int[] ivs, int fixed_ivs)

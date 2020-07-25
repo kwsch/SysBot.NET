@@ -6,17 +6,19 @@ namespace SysBot.Pokemon
 {
     public class SeedSearchResult
     {
-        public static readonly SeedSearchResult None = new SeedSearchResult(Z3SearchResult.SeedNone, default, 0);
+        public static readonly SeedSearchResult None = new SeedSearchResult(Z3SearchResult.SeedNone, default, 0, SeedCheckResults.ClosestOnly);
 
         public readonly Z3SearchResult Type;
         public readonly ulong Seed;
         public readonly int FlawlessIVCount;
+        public readonly SeedCheckResults Mode;
 
-        public SeedSearchResult(Z3SearchResult type, ulong seed, int ivCount)
+        public SeedSearchResult(Z3SearchResult type, ulong seed, int ivCount, SeedCheckResults mode)
         {
             Type = type;
             Seed = seed;
             FlawlessIVCount = ivCount;
+            Mode = mode;
         }
 
         public override string ToString()
@@ -31,19 +33,29 @@ namespace SysBot.Pokemon
 
         private IEnumerable<string> GetLines()
         {
-            var first = $"Seed: {Seed:X16}";
             if (FlawlessIVCount >= 1)
-                first += $", IVCount: {FlawlessIVCount}";
-            yield return first;
-            yield return $"Next Shiny Frame: {SeedSearchUtil.GetNextShinyFrame(Seed, out var type)}";
-            var shinytype = type == 1 ? "Star" : "Square";
-            yield return $"Shiny Type: {shinytype}";
-        }
+                yield return $"IVCount: {FlawlessIVCount}";
+            yield return "Spreads are listed by flawless IV count.";
 
-        public Shiny GetShinyType()
-        {
-            SeedSearchUtil.GetNextShinyFrame(Seed, out var type);
-            return type == 1 ? Shiny.AlwaysStar : Shiny.AlwaysSquare;
+            SeedSearchUtil.GetShinyFrames(Seed, out int[] frames, out uint[] type, out List<uint[,]> IVs, Mode);
+
+            for (int i = 0; i < 3 && frames[i] != 0; i++)
+            {
+                var shinytype = type[i] == 1 ? "Star" : "Square";
+                yield return $"\nFrame: {frames[i]} - {shinytype}";
+
+                for (int ivcount = 0; ivcount < 5; ivcount++)
+                {
+                    var ivlist = $"{ivcount + 1} - ";
+                    for (int j = 0; j < 6; j++)
+                    {
+                        ivlist += IVs[i][ivcount, j];
+                        if (j < 5)
+                            ivlist += "/";
+                    }
+                    yield return $"{ivlist}";
+                }
+            }
         }
     }
 }

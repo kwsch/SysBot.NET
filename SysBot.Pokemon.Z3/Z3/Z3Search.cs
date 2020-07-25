@@ -8,7 +8,7 @@ namespace SysBot.Pokemon
 {
     public static class Z3Search
     {
-        public static SeedSearchResult GetFirstSeed(uint ec, uint pid, int[] ivs)
+        public static SeedSearchResult GetFirstSeed(uint ec, uint pid, int[] ivs, SeedCheckResults mode)
         {
             var seeds = GetSeeds(ec, pid);
             bool hasClosest = false;
@@ -19,18 +19,18 @@ namespace SysBot.Pokemon
                 for (int i = 1; i <= 5; i++) // fixed IV count
                 {
                     if (IsMatch(seed, ivs, i))
-                        return new SeedSearchResult(Z3SearchResult.Success, seed, i);
+                        return new SeedSearchResult(Z3SearchResult.Success, seed, i, mode);
                 }
                 hasClosest = true;
                 closest = seed;
             }
 
             if (hasClosest)
-                return new SeedSearchResult(Z3SearchResult.SeedMismatch, closest, 0);
+                return new SeedSearchResult(Z3SearchResult.SeedMismatch, closest, 0, mode);
             return SeedSearchResult.None;
         }
 
-        public static IList<SeedSearchResult> GetAllSeeds(uint ec, uint pid, int[] ivs)
+        public static IList<SeedSearchResult> GetAllSeeds(uint ec, uint pid, int[] ivs, SeedCheckResults mode)
         {
             var result = new List<SeedSearchResult>();
             var seeds = GetSeeds(ec, pid);
@@ -42,12 +42,12 @@ namespace SysBot.Pokemon
                 {
                     if (IsMatch(seed, ivs, i))
                     {
-                        result.Add(new SeedSearchResult(Z3SearchResult.Success, seed, i));
+                        result.Add(new SeedSearchResult(Z3SearchResult.Success, seed, i, mode));
                         added = true;
                     }
                 }
                 if (!added)
-                    result.Add(new SeedSearchResult(Z3SearchResult.SeedMismatch, seed, 0));
+                    result.Add(new SeedSearchResult(Z3SearchResult.SeedMismatch, seed, 0, mode));
             }
 
             if (result.Count == 0)

@@ -13,7 +13,7 @@ namespace SysBot.Pokemon
             var IVs = pkm.IVs.Length == 0 ? GetBlankIVTemplate() : PKX.ReorderSpeedLast((int[])pkm.IVs.Clone());
             if (settings.ShowAllZ3Results)
             {
-                var matches = Z3Search.GetAllSeeds(ec, pid, IVs);
+                var matches = Z3Search.GetAllSeeds(ec, pid, IVs, settings.ResultDisplayMode);
                 foreach (var match in matches)
                 {
                     var lump = new PokeTradeSummary("Calculated Seed:", match);
@@ -22,7 +22,7 @@ namespace SysBot.Pokemon
             }
             else
             {
-                var match = Z3Search.GetFirstSeed(ec, pid, IVs);
+                var match = Z3Search.GetFirstSeed(ec, pid, IVs, settings.ResultDisplayMode);
                 var lump = new PokeTradeSummary("Calculated Seed:", match);
                 detail.SendNotification(bot, lump);
             }

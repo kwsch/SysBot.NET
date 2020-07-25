@@ -79,17 +79,16 @@ namespace SysBot.Pokemon.Discord
 
         private void SendNotificationZ3(SeedSearchResult r)
         {
-            var type = r.GetShinyType();
             var lines = r.ToString();
 
-            var embed = new EmbedBuilder { Color = type == Shiny.AlwaysStar ? Color.Gold : Color.LighterGrey };
+            var embed = new EmbedBuilder { Color = Color.LighterGrey };
             embed.AddField(x =>
             {
-                x.Name = "Seed Result";
+                x.Name = $"Seed: {r.Seed:X16}";
                 x.Value = lines;
                 x.IsInline = false;
             });
-            var msg = $"Here's your seed details for `{r.Seed:X16}`:";
+            var msg = $"Here are the details for `{r.Seed:X16}`:";
             Context.User.SendMessageAsync(msg, embed: embed.Build()).ConfigureAwait(false);
         }
     }
