@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,6 +28,20 @@ namespace SysBot.Base
             Log("Connected!");
         }
 
+        public void Reset(string ip)
+        {
+            Connection.Disconnect(true);
+            Log("Connecting to device...");
+            var address = Dns.GetHostAddresses(ip);
+            foreach (IPAddress adr in address)
+            {
+                Connection = new Socket(adr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                Connection.BeginConnect(adr, Port, ConnectCallback, Connection);
+                Connected = true;
+                Log("Connected!");
+            }
+        }
+
         public void Disconnect()
         {
             Log("Disconnecting from device...");
@@ -34,6 +49,18 @@ namespace SysBot.Base
             Connection.BeginDisconnect(true, DisconnectCallback, Connection);
             Connected = false;
             Log("Disconnected!");
+        }
+
+        private readonly AutoResetEvent connectionDone = new AutoResetEvent(false);
+
+        private void ConnectCallback(IAsyncResult ar)
+        {
+            // Complete the connection request.
+            Socket client = (Socket)ar.AsyncState;
+            client.EndConnect(ar);
+            // Signal that the connection is complete.
+            connectionDone.Set();
+            LogUtil.LogInfo("Connected.", Name);
         }
 
         private readonly AutoResetEvent disconnectDone = new AutoResetEvent(false);

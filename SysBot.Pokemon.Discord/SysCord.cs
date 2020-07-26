@@ -263,6 +263,9 @@ namespace SysBot.Pokemon.Discord
                     await _client.SetStatusAsync(state).ConfigureAwait(false);
                 }
                 await Task.Delay(gap, token).ConfigureAwait(false);
+
+                if (_client.ConnectionState == ConnectionState.Disconnected)
+                    await MainAsync(Hub.Config.Discord.Token, token).ConfigureAwait(false);
             }
         }
     }
