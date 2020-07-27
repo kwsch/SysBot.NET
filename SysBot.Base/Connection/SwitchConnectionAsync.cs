@@ -30,13 +30,14 @@ namespace SysBot.Base
 
         public void Reset(string ip)
         {
-            Connection.Disconnect(true);
+            Disconnect();
+            Connection = new Socket(SocketType.Stream, ProtocolType.Tcp);
             Log("Connecting to device...");
             var address = Dns.GetHostAddresses(ip);
             foreach (IPAddress adr in address)
             {
-                Connection = new Socket(adr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                Connection.BeginConnect(adr, Port, ConnectCallback, Connection);
+                IPEndPoint ep = new IPEndPoint(adr, Port);
+                Connection.BeginConnect(ep, ConnectCallback, Connection);
                 Connected = true;
                 Log("Connected!");
             }
@@ -58,6 +59,7 @@ namespace SysBot.Base
             // Complete the connection request.
             Socket client = (Socket)ar.AsyncState;
             client.EndConnect(ar);
+
             // Signal that the connection is complete.
             connectionDone.Set();
             LogUtil.LogInfo("Connected.", Name);
