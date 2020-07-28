@@ -14,7 +14,7 @@ namespace SysBot.Pokemon.Twitch
 {
     public class TwitchBot
     {
-        private static PokeTradeHub<PK8> Hub;
+        private static PokeTradeHub<PK8> Hub = default!;
         internal static TradeQueueInfo<PK8> Info => Hub.Queues.Info;
 
         internal static readonly List<TwitchQueue> QueuePool = new List<TwitchQueue>();
@@ -177,7 +177,7 @@ namespace SysBot.Pokemon.Twitch
             var c = e.Command.CommandText.ToLower();
             var args = e.Command.ArgumentsAsString;
             var response = HandleCommand(msg, c, args, false);
-            if (response == null)
+            if (response.Length == 0)
                 return;
 
             var channel = e.Command.ChatMessage.Channel;
@@ -193,7 +193,7 @@ namespace SysBot.Pokemon.Twitch
             var c = e.Command.CommandText.ToLower();
             var args = e.Command.ArgumentsAsString;
             var response = HandleCommand(msg, c, args, true);
-            if (response == null)
+            if (response.Length == 0)
                 return;
 
             client.SendWhisper(msg.Username, response);
@@ -243,7 +243,7 @@ namespace SysBot.Pokemon.Twitch
                 case "tcu":
                     return TwitchCommandsHelper.ClearTrade(args);
 
-                default: return null;
+                default: return string.Empty;
             }
         }
 
@@ -270,7 +270,7 @@ namespace SysBot.Pokemon.Twitch
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"{ex.Message}");
+                LogUtil.LogError($"{ex.Message}", nameof(TwitchBot));
             }
         }
     }

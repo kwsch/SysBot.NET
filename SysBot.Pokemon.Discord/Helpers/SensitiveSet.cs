@@ -12,13 +12,15 @@ namespace SysBot.Pokemon.Discord
         public string Write() => string.Join(",", List);
         public int Count => List.Count;
 
-        private static IEnumerable<T> Convert(string str, Func<string, T> converter)
+        private static readonly string[] Splitters = {", ", ","};
+
+        private static IEnumerable<T> Convert(string str, Func<string, T> parse)
         {
-            var split = str.Split(new[] { ", ", "," }, StringSplitOptions.RemoveEmptyEntries);
+            var split = str.Split(Splitters, StringSplitOptions.RemoveEmptyEntries);
             foreach (var item in split)
             {
-                // Since the input can be user entered, just trycatch the conversion.
-                T c; try { c = converter(item); }
+                // Since the input can be user entered, just try-catch the conversion.
+                T c; try { c = parse(item); }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
@@ -28,9 +30,14 @@ namespace SysBot.Pokemon.Discord
             }
         }
 
-        public void Read(string configDiscordBlackList, Func<string, T> parse)
+        /// <summary>
+        /// Loads the list of <see cref="SensitiveSet{T}"/> items from the input string, using the provided conversion function.
+        /// </summary>
+        /// <param name="str">String containing the list of items</param>
+        /// <param name="parse">Converts the split elements into <see cref="T"/> items.</param>
+        public void Read(string str, Func<string, T> parse)
         {
-            var list = Convert(configDiscordBlackList, parse);
+            var list = Convert(str, parse);
             foreach (var item in list)
                 List.Add(item);
         }

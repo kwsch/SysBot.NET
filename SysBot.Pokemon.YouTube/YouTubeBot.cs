@@ -12,10 +12,9 @@ namespace SysBot.Pokemon.YouTube
 {
     public class YouTubeBot
     {
-        private static PokeTradeHub<PK8> Hub;
+        private static PokeTradeHub<PK8> Hub = default!;
         internal static TradeQueueInfo<PK8> Info => Hub.Queues.Info;
         private ChatClient client;
-        private Channel channel;
         internal static readonly List<YouTubeQueue> QueuePool = new List<YouTubeQueue>();
         private readonly YouTubeSettings Settings;
 
@@ -24,37 +23,32 @@ namespace SysBot.Pokemon.YouTube
             Hub = hub;
             Settings = settings;
             Logger.LogOccurred += Logger_LogOccurred;
+            client = default!;
 
-            try
+            Task.Run(async () =>
             {
-                Task.Run(async () =>
+                try
                 {
                     var connection = await YouTubeConnection.ConnectViaLocalhostOAuthBrowser(Settings.ClientID, Settings.ClientSecret, Scopes.scopes, true);
-                    if (connection != null)
-                    {
-                        channel = await connection.Channels.GetChannelByID(Settings.ChannelID);
-                        if (channel != null)
-                        {
-                            client = new ChatClient(connection);
-                            
-                            client.OnMessagesReceived += Client_OnMessagesReceived;
-                            if (await client.Connect())
-                            {
-                                await Task.Delay(-1);
-                            }
-                            else
-                            {
-                            }
-                        }
-                    }
+                    if (connection == null)
+                        return;
+
+                    var channel = await connection.Channels.GetChannelByID(Settings.ChannelID);
+                    if (channel == null)
+                        return;
+
+                    client = new ChatClient(connection);
+                    client.OnMessagesReceived += Client_OnMessagesReceived;
                     EchoUtil.Forwarders.Add(msg => client.SendMessage(msg));
 
-                });
-            }
-            catch (Exception ex)
-            {
-                LogUtil.LogError(ex.Message, "YouTubeBot");
-            }
+                    if (await client.Connect())
+                        await Task.Delay(-1);
+                }
+                catch (Exception ex)
+                {
+                    LogUtil.LogError(ex.Message, "YouTubeBot");
+                }
+            });
         }
 
         public void StartingDistribution(string message)
@@ -108,11 +102,11 @@ namespace SysBot.Pokemon.YouTube
             return true;
         }
 
-        private string HandleCommand(LiveChatMessage m, string c, string args)
+        private string HandleCommand(LiveChatMessage m, string cmd, string args)
         {
-            bool sudo() => m is LiveChatMessage ch && (ch.AuthorDetails.IsChatOwner.Equals(true) || Settings.IsSudo(m.AuthorDetails.DisplayName));
+            bool sudo() => m.AuthorDetails.IsChatOwner.Equals(true) || Settings.IsSudo(m.AuthorDetails.DisplayName);
 
-            switch (c)
+            switch (cmd)
             {
                 // User Usable Commands
                 case "trade":
@@ -152,31 +146,33 @@ namespace SysBot.Pokemon.YouTube
                 case "tcu":
                     return YouTubeCommandsHelper.ClearTrade(args);
 
-                default: return null;
+                default: return string.Empty;
             }
         }
+
         private void Logger_LogOccurred(object sender, Log e)
         {
-            LogUtil.LogError(e.Message, "YouTubeBot");
+            LogUtil.LogError(e.Message, nameof(YouTubeBot));
         }
 
         private void Client_OnMessagesReceived(object sender, IEnumerable<LiveChatMessage> messages)
         {
-            foreach (LiveChatMessage message in messages)
+            foreach (var message in messages)
             {
-
                 var msg = message.Snippet.TextMessageDetails.MessageText;
                 try
                 {
-                    string[] CommandArgs = message.Snippet.TextMessageDetails.MessageText.Split(' ');
-                    string c = CommandArgs[0];
-                    string args = CommandArgs[1];
+                    var space = msg.IndexOf(' ');
+                    if (space < 0)
+                        return;
 
-                    var response = HandleCommand(message, c, args);
-                    if (response == null)
+                    var cmd = msg.Substring(0, space + 1);
+                    var args = msg.Substring(space + 1);
+
+                    var response = HandleCommand(message, cmd, args);
+                    if (response.Length == 0)
                         return;
                     client.SendMessage(response);
-
                 }
                 catch { }
             }

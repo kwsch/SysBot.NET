@@ -23,12 +23,13 @@ namespace SysBot.Pokemon.YouTube
             Code = code;
             Username = username;
             Client = client;
+            Channel = settings.ChannelID;
             Settings = settings;
 
             LogUtil.LogText($"Created trade details for {Username} - {Code}");
         }
 
-        public Action<PokeRoutineExecutor> OnFinish { private get; set; }
+        public Action<PokeRoutineExecutor>? OnFinish { private get; set; }
 
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, string message)
         {
