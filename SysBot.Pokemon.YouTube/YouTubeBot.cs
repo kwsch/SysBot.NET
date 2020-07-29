@@ -12,49 +12,43 @@ namespace SysBot.Pokemon.YouTube
 {
     public class YouTubeBot
     {
-        private static PokeTradeHub<PK8> Hub;
-        internal static TradeQueueInfo<PK8> Info => Hub.Queues.Info;
         private ChatClient client;
-        private Channel channel;
-        internal static readonly List<YouTubeQueue> QueuePool = new List<YouTubeQueue>();
         private readonly YouTubeSettings Settings;
+
+        private readonly PokeTradeHub<PK8> Hub;
+        private TradeQueueInfo<PK8> Info => Hub.Queues.Info;
 
         public YouTubeBot(YouTubeSettings settings, PokeTradeHub<PK8> hub)
         {
             Hub = hub;
             Settings = settings;
             Logger.LogOccurred += Logger_LogOccurred;
+            client = default!;
 
-            try
+            Task.Run(async () =>
             {
-                Task.Run(async () =>
+                try
                 {
                     var connection = await YouTubeConnection.ConnectViaLocalhostOAuthBrowser(Settings.ClientID, Settings.ClientSecret, Scopes.scopes, true);
-                    if (connection != null)
-                    {
-                        channel = await connection.Channels.GetChannelByID(Settings.ChannelID);
-                        if (channel != null)
-                        {
-                            client = new ChatClient(connection);
-                            
-                            client.OnMessagesReceived += Client_OnMessagesReceived;
-                            if (await client.Connect())
-                            {
-                                await Task.Delay(-1);
-                            }
-                            else
-                            {
-                            }
-                        }
-                    }
+                    if (connection == null)
+                        return;
+
+                    var channel = await connection.Channels.GetChannelByID(Settings.ChannelID);
+                    if (channel == null)
+                        return;
+
+                    client = new ChatClient(connection);
+                    client.OnMessagesReceived += Client_OnMessagesReceived;
                     EchoUtil.Forwarders.Add(msg => client.SendMessage(msg));
 
-                });
-            }
-            catch (Exception ex)
-            {
-                LogUtil.LogError(ex.Message, "YouTubeBot");
-            }
+                    if (await client.Connect())
+                        await Task.Delay(-1);
+                }
+                catch (Exception ex)
+                {
+                    LogUtil.LogError(ex.Message, nameof(YouTubeBot));
+                }
+            });
         }
 
         public void StartingDistribution(string message)
@@ -76,107 +70,49 @@ namespace SysBot.Pokemon.YouTube
             });
         }
 
-        private bool AddToTradeQueue(PK8 pk8, int code, LiveChatMessage e, bool sudo, PokeRoutineType type, out string msg)
+        private string HandleCommand(LiveChatMessage m, string cmd, string args)
         {
-            // var user = e.WhisperMessage.UserId;
-            var userID = ulong.Parse(e.AuthorDetails.ChannelId);
-            var name = e.AuthorDetails.DisplayName;
+            if (!m.AuthorDetails.IsChatOwner.Equals(true) && Settings.IsSudo(m.AuthorDetails.DisplayName))
+                return string.Empty; // sudo only commands
 
-            var trainer = new PokeTradeTrainerInfo(name);
-            var notifier = new YouTubeTradeNotifier<PK8>(pk8, trainer, code, e.AuthorDetails.DisplayName, client, Hub.Config.YouTube);
-            var tt = type == PokeRoutineType.SeedCheck ? PokeTradeType.Seed : PokeTradeType.Specific;
-            var detail = new PokeTradeDetail<PK8>(pk8, trainer, notifier, tt, code: code);
-            var trade = new TradeEntry<PK8>(detail, userID, type, name);
+            if (args.Length > 0)
+                return "Commands don't use arguments. Try again with just the command code.";
 
-            var added = Info.AddToTradeQueue(trade, userID, sudo);
-
-            if (added == QueueResultAdd.AlreadyInQueue)
+            return cmd switch
             {
-                msg = $"@{name}: Sorry, you are already in the queue.";
-                return false;
-            }
+                "pr" => (Info.Hub.Ledy.Pool.Reload()
+                    ? $"Reloaded from folder. Pool count: {Info.Hub.Ledy.Pool.Count}"
+                    : "Failed to reload from folder."),
 
-            var position = Info.CheckPosition(userID, type);
-            msg = $"@{name}: Added to the {type} queue, unique ID: {detail.ID}. Current Position: {position.Position}";
+                "pc" => $"The pool count is: {Info.Hub.Ledy.Pool.Count}",
 
-            var botct = Info.Hub.Bots.Count;
-            if (position.Position > botct)
-            {
-                var eta = Info.Hub.Config.Queues.EstimateDelay(position.Position, botct);
-                msg += $". Estimated: {eta:F1} minutes.";
-            }
-            return true;
+                _ => string.Empty
+            };
         }
 
-        private string HandleCommand(LiveChatMessage m, string c, string args)
-        {
-            bool sudo() => m is LiveChatMessage ch && (ch.AuthorDetails.IsChatOwner.Equals(true) || Settings.IsSudo(m.AuthorDetails.DisplayName));
-
-            switch (c)
-            {
-                // User Usable Commands
-                case "trade":
-                    var _ = YouTubeCommandsHelper.AddToWaitingList(args, m.AuthorDetails.DisplayName, m.AuthorDetails.DisplayName, out string msg);
-                    return msg;
-                case "ts":
-                    return $"@{m.AuthorDetails.DisplayName}: {Info.GetPositionString(ulong.Parse(m.AuthorDetails.ChannelId))}";
-                case "tc":
-                    return $"@{m.AuthorDetails.DisplayName}: {YouTubeCommandsHelper.ClearTrade(ulong.Parse(m.AuthorDetails.ChannelId))}";
-
-                case "code":
-                    return YouTubeCommandsHelper.GetCode(ulong.Parse(m.AuthorDetails.ChannelId));
-
-                // Sudo Only Commands
-                case "tca" when !sudo():
-                case "pr" when !sudo():
-                case "pc" when !sudo():
-                case "tt" when !sudo():
-                case "tcu" when !sudo():
-                    return "This command is locked for sudo users only!";
-
-                case "tca":
-                    Info.ClearAllQueues();
-                    return "Cleared all queues!";
-
-                case "pr":
-                    return Info.Hub.Ledy.Pool.Reload() ? $"Reloaded from folder. Pool count: {Info.Hub.Ledy.Pool.Count}" : "Failed to reload from folder.";
-
-                case "pc":
-                    return $"The pool count is: {Info.Hub.Ledy.Pool.Count}";
-
-                case "tt":
-                    return Info.Hub.Queues.Info.ToggleQueue()
-                        ? "Users are now able to join the trade queue."
-                        : "Changed queue settings: **Users CANNOT join the queue until it is turned back on.**";
-
-                case "tcu":
-                    return YouTubeCommandsHelper.ClearTrade(args);
-
-                default: return null;
-            }
-        }
         private void Logger_LogOccurred(object sender, Log e)
         {
-            LogUtil.LogError(e.Message, "YouTubeBot");
+            LogUtil.LogError(e.Message, nameof(YouTubeBot));
         }
 
         private void Client_OnMessagesReceived(object sender, IEnumerable<LiveChatMessage> messages)
         {
-            foreach (LiveChatMessage message in messages)
+            foreach (var message in messages)
             {
-
                 var msg = message.Snippet.TextMessageDetails.MessageText;
                 try
                 {
-                    string[] CommandArgs = message.Snippet.TextMessageDetails.MessageText.Split(' ');
-                    string c = CommandArgs[0];
-                    string args = CommandArgs[1];
+                    var space = msg.IndexOf(' ');
+                    if (space < 0)
+                        return;
 
-                    var response = HandleCommand(message, c, args);
-                    if (response == null)
+                    var cmd = msg.Substring(0, space + 1);
+                    var args = msg.Substring(space + 1);
+
+                    var response = HandleCommand(message, cmd, args);
+                    if (response.Length == 0)
                         return;
                     client.SendMessage(response);
-
                 }
                 catch { }
             }
