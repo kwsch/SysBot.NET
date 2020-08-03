@@ -37,6 +37,7 @@ namespace SysBot.AnimalCrossing
                     await CleanUp(token).ConfigureAwait(false);
                     dropCount = 0;
                     idleCount = 0;
+                    CleanRequested = false;
                 }
                 else
                 {
