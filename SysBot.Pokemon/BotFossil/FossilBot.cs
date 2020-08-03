@@ -40,7 +40,7 @@ namespace SysBot.Pokemon
             if (existing.Species != 0 && existing.ChecksumValid)
             {
                 Log("Destination slot is occupied! Dumping the Pokémon found there...");
-                DumpPokemon(DumpSetting.DumpFolder, "fossil", existing);
+                DumpPokemon(DumpSetting.DumpFolder, "saved", existing);
             }
             Log("Clearing destination slot to start the bot.");
             await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
@@ -107,6 +107,7 @@ namespace SysBot.Pokemon
                     else
                     {
                         Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
+                        await DetachController(token).ConfigureAwait(false);
                         return;
                     }
                 }

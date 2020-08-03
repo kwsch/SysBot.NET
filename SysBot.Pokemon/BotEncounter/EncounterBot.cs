@@ -47,6 +47,7 @@ namespace SysBot.Pokemon
             };
             await task.ConfigureAwait(false);
 
+            await DetachController(token).ConfigureAwait(false);
             await ResetStick(token).ConfigureAwait(false);
         }
 
