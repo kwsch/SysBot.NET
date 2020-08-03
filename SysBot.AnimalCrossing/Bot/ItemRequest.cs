@@ -5,9 +5,9 @@ namespace SysBot.AnimalCrossing
     public sealed class ItemRequest
     {
         public readonly string User;
-        public readonly IReadOnlyCollection<byte[]> Items;
+        public readonly IReadOnlyCollection<Item> Items;
 
-        public ItemRequest(string user, IReadOnlyCollection<byte[]> items)
+        public ItemRequest(string user, IReadOnlyCollection<Item> items)
         {
             User = user;
             Items = items;

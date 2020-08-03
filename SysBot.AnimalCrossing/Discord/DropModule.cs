@@ -21,15 +21,14 @@ namespace SysBot.AnimalCrossing
             await ReplyAsync($"Item drop request{(requestInfo.Items.Count > 1 ? "s" : string.Empty)} will be executed momentarily.").ConfigureAwait(false);
         }
 
-        private static IReadOnlyCollection<byte[]> GetItems(IReadOnlyList<string> split, CrossBotConfig botConfig)
+        private static IReadOnlyCollection<Item> GetItems(IReadOnlyList<string> split, IConfigItem config)
         {
-            var result = new byte[split.Count][];
+            var result = new Item[split.Count];
             for (int i = 0; i < result.Length; i++)
             {
                 var text = split[i];
                 var convert = GetBytesFromString(text);
-                var bytes = GetItemBytes(convert, i, botConfig);
-                result[i] = bytes;
+                result[i] = CreateItem(convert, i, config);
             }
             return result;
         }
@@ -42,29 +41,24 @@ namespace SysBot.AnimalCrossing
                 .Reverse().ToArray();
         }
 
-        private static byte[] GetItemBytes(byte[] convert, int i, IConfigItem config)
+        private static Item CreateItem(byte[] convert, int i, IConfigItem config)
         {
-            byte[] bytes;
             Item item;
             try
             {
                 item = convert.ToClass<Item>();
-                bytes = item.ToBytesClass();
             }
             catch (Exception ex)
             {
                 throw new Exception($"Failed to convert item {i}: {ex.Message}");
             }
 
-            if (!IsSaneItem(item) || bytes.Length != Item.SIZE)
+            if (!IsSaneItem(item) || convert.Length != Item.SIZE)
                 throw new Exception($"Unsupported item: {i}");
 
-            if (config.WrapAllItems)
-            {
+            if (config.WrapAllItems && item.ShouldWrapItem())
                 item.SetWrapping(ItemWrapping.WrappingPaper, config.WrappingPaper, true);
-                bytes = item.ToBytesClass();
-            }
-            return bytes;
+            return item;
         }
 
         private static bool IsSaneItem(Item item)
@@ -75,6 +69,15 @@ namespace SysBot.AnimalCrossing
                 return false;
             if (item.IsNone)
                 return false;
+            if (item.SystemParam > 3)
+                return false; // buried, dropped, etc
+
+            if (item.ItemId == Item.MessageBottle || item.ItemId == Item.MessageBottleEgg)
+            {
+                item.ItemId = Item.DIYRecipe;
+                item.FreeParam = 0;
+            }
+
             return true;
         }
     }

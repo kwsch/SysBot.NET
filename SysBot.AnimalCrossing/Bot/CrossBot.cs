@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using SysBot.Base;
@@ -44,21 +43,20 @@ namespace SysBot.AnimalCrossing
             }
         }
 
-        public async Task<int> DropItems(ItemRequest item, CancellationToken token)
+        public async Task<int> DropItems(ItemRequest drop, CancellationToken token)
         {
             int dropped = 0;
             bool first = true;
-            foreach (var drop in item.Items)
+            foreach (var item in drop.Items)
             {
-                LogUtil.LogInfo($"Dropping {BitConverter.ToUInt64(drop, 0):X16} for {item.User}", nameof(CrossBot));
-                await DropItem(drop, first, token).ConfigureAwait(false);
+                await DropItem(item, first, token).ConfigureAwait(false);
                 first = false;
                 dropped++;
             }
             return dropped;
         }
 
-        private async Task DropItem(byte[] drop, bool first, CancellationToken token)
+        private async Task DropItem(Item item, bool first, CancellationToken token)
         {
             // Exit out of any menus.
             if (first)
@@ -68,19 +66,25 @@ namespace SysBot.AnimalCrossing
             }
 
             // Inject item.
-            var poke = SwitchCommand.Poke(Config.Offset, drop);
+            var data = item.ToBytesClass();
+            var poke = SwitchCommand.Poke(Config.Offset, data);
             await Connection.SendAsync(poke, token);
             await Task.Delay(0_300, token).ConfigureAwait(false);
 
-            // Open menu and use the last menu-option
+            // Open player inventory and open the currently selected item slot -- assumed to be the config offset.
             await Click(SwitchButton.X, 0_900, token).ConfigureAwait(false);
             await Click(SwitchButton.A, 0_400, token).ConfigureAwait(false);
-            if (!Config.WrapAllItems)
-                await Click(SwitchButton.DUP, 0_400, token).ConfigureAwait(false);
+
+            // Navigate down to the "drop item" option.
+            var downCount = item.GetItemDropOption();
+            for (int i = 0; i < downCount; i++)
+                await Click(SwitchButton.DDOWN, 0_400, token).ConfigureAwait(false);
+
+            // Drop item, close menu.
             await Click(SwitchButton.A, 0_400, token).ConfigureAwait(false);
             await Click(SwitchButton.X, 0_400, token).ConfigureAwait(false);
 
-            // Exit out of any menus.
+            // Exit out of any menus (fail-safe)
             for (int i = 0; i < 2; i++)
                 await Click(SwitchButton.B, 0_400, token).ConfigureAwait(false);
         }
