@@ -28,6 +28,8 @@ namespace SysBot.Pokemon
         private const int InjectBox = 0;
         private const int InjectSlot = 0;
 
+        private static readonly PK8 Blank = new PK8();
+
         protected override async Task MainLoop(CancellationToken token)
         {
             Log("Identifying trainer data of the host console.");
@@ -35,17 +37,17 @@ namespace SysBot.Pokemon
 
             await SetCurrentBox(0, token).ConfigureAwait(false);
 
-            Log("Checking destination slot...");
-            var existing = await GetBoxSlotQuality(InjectBox, InjectSlot, token).ConfigureAwait(false);
-            if (existing.Quality != SlotQuality.Overwritable)
+            var existing = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
+            if (existing.Species != 0 && existing.ChecksumValid)
             {
-                PrintBadSlotMessage(existing);
-                return;
+                Log("Destination slot is occupied! Dumping the Pokémon found there...");
+                DumpPokemon(DumpSetting.DumpFolder, "egg", existing);
             }
+            Log("Clearing destination slot to start the bot.");
+            await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
 
             Log("Starting main EggBot loop.");
             Config.IterateNextRoutine();
-            var blank = new PK8();
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EggFetch)
             {
                 // Walk a step left, then right => check if egg was generated on this attempt.
@@ -56,7 +58,7 @@ namespace SysBot.Pokemon
                     continue;
 
                 Log($"Egg available after {attempts} attempts! Clearing destination slot.");
-                await SetBoxPokemon(blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
+                await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
 
                 for (int i = 0; i < 4; i++)
                     await Click(A, 0_400, token).ConfigureAwait(false);

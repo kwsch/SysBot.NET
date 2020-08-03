@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;
+using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
@@ -35,13 +36,14 @@ namespace SysBot.Pokemon
 
             await SetCurrentBox(0, token).ConfigureAwait(false);
 
-            Log("Checking destination slot for revived fossil Pokémon...");
-            var existing = await GetBoxSlotQuality(InjectBox, InjectSlot, token).ConfigureAwait(false);
-            if (existing.Quality != SlotQuality.Overwritable)
+            var existing = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
+            if (existing.Species != 0 && existing.ChecksumValid)
             {
-                PrintBadSlotMessage(existing);
-                return;
+                Log("Destination slot is occupied! Dumping the Pokémon found there...");
+                DumpPokemon(DumpSetting.DumpFolder, "fossil", existing);
             }
+            Log("Clearing destination slot to start the bot.");
+            await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
 
             Log("Checking item counts...");
             var pouchData = await Connection.ReadBytesAsync(PokeDataOffsets.ItemTreasureAddress, 80, token).ConfigureAwait(false);

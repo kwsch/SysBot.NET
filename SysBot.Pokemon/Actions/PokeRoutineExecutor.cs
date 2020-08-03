@@ -418,25 +418,5 @@ namespace SysBot.Pokemon
                 _ => OverworldOffset,
             };
         }
-
-        public async Task<SlotQualityCheck> GetBoxSlotQuality(int box, int slot, CancellationToken token)
-        {
-            var result = await ReadBoxPokemon(box, slot, token).ConfigureAwait(false);
-            return new SlotQualityCheck(result);
-        }
-
-        public void PrintBadSlotMessage(SlotQualityCheck q)
-        {
-            switch (q.Quality)
-            {
-                case SlotQuality.BadData:
-                    Log("Garbage detected in required Box Slot. Preventing execution.");
-                    return;
-                case SlotQuality.HasData:
-                    Log("Required Box Slot not empty. Move this Pokémon before using the bot!");
-                    Log(new ShowdownSet(q.Data!).Text);
-                    return;
-            }
-        }
     }
 }
