@@ -10,63 +10,21 @@ namespace SysBot.Pokemon
 {
     public class EncounterBot : PokeRoutineExecutor
     {
-        private readonly PokeTradeHub<PK8> hub;
+        private readonly PokeTradeHub<PK8> Hub;
         private readonly BotCompleteCounts Counts;
         private readonly IDumper DumpSetting;
-        private readonly Nature DesiredNature;
-        private readonly int[] DesiredIVs = { -1, -1, -1, -1, -1, -1 };
+        private readonly int[] DesiredIVs;
         private readonly byte[] BattleMenuReady = { 0, 0, 0, 255 };
 
-        public EncounterBot(PokeBotConfig cfg, PokeTradeHub<PK8> Hub) : base(cfg)
+        public EncounterBot(PokeBotConfig cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
-            hub = Hub;
+            Hub = hub;
             Counts = Hub.Counts;
             DumpSetting = Hub.Config.Folder;
-            DesiredNature = Hub.Config.Encounter.DesiredNature;
-
-            /* Populate DesiredIVs array.  Bot matches 0 and 31 IVs.
-             * Any other nonzero IV is treated as a minimum accepted value.
-             * If they put "x", this is a wild card so we can leave -1. */
-            string[] splitIVs = Hub.Config.Encounter.DesiredIVs.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-
-            // Only accept up to 6 values in case people can't count.
-            for (int i = 0; i < 6 && i < splitIVs.Length; i++)
-            {
-                if (splitIVs[i] == "x" || splitIVs[i] == "X")
-                    continue;
-                DesiredIVs[i] = Convert.ToInt32(splitIVs[i]);
-            }
+            DesiredIVs = StopConditionSettings.InitializeTargetIVs(Hub);
         }
 
         private int encounterCount;
-
-        private bool StopCondition(PK8 pk)
-        {
-            /*  Match species and look for a shiny. This is only checked for walking encounters.
-             *  If they specified a species, it has to match. */
-            if (hub.Config.Encounter.EncounteringType == EncounterMode.HorizontalLine || hub.Config.Encounter.EncounteringType == EncounterMode.VerticalLine)
-            {
-                if (!pk.IsShiny || (hub.Config.Encounter.StopOnSpecies != Species.None && hub.Config.Encounter.StopOnSpecies != (Species)pk.Species))
-                    return false;
-            }
-
-            if (DesiredNature != Nature.Random && DesiredNature != (Nature)pk.Nature)
-                return false;
-
-            // Reorder the Pokemon's IVs to HP/Atk/Def/SpA/SpD/Spe
-            int[] pkIVList = PKX.ReorderSpeedLast(pk.IVs);
-
-            for (int i = 0; i < 6; i++)
-            {
-                // Match all 0's.
-                if (DesiredIVs[i] == 0 && pk.IVs[i] != 0)
-                    return false;
-                // Wild cards should be -1, so they will always be less than the Pokemon's IVs.
-                if (DesiredIVs[i] > pkIVList[i])
-                    return false;
-            }
-            return true;
-        }
 
         protected override async Task MainLoop(CancellationToken token)
         {
@@ -79,7 +37,7 @@ namespace SysBot.Pokemon
             // Clear out any residual stick weirdness.
             await ResetStick(token).ConfigureAwait(false);
 
-            var task = hub.Config.Encounter.EncounteringType switch
+            var task = Hub.Config.Encounter.EncounteringType switch
             {
                 EncounterMode.VerticalLine => WalkInLine(token),
                 EncounterMode.HorizontalLine => WalkInLine(token),
@@ -127,12 +85,14 @@ namespace SysBot.Pokemon
                 for (int i = 0; i < 3; i++)
                     await ReadUntilChanged(BattleMenuOffset, BattleMenuReady, 5_000, 0_100, true, token).ConfigureAwait(false);
 
-                if (StopCondition(pk))
+                if (StopConditionSettings.EncounterFound(pk, DesiredIVs, Hub.Config.StopConditions))
                 {
                     Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
-
-                    if (hub.Config.CaptureVideoClip)
+                    if (Hub.Config.StopConditions.CaptureVideoClip)
+                    {
+                        await Task.Delay(Hub.Config.StopConditions.ExtraTimeWaitCaptureVideo).ConfigureAwait(false);
                         await PressAndHold(CAPTURE, 2_000, 1_000, token).ConfigureAwait(false);
+                    }
                     return;
                 }
 
@@ -164,7 +124,7 @@ namespace SysBot.Pokemon
                 if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
                     DumpPokemon(DumpSetting.DumpFolder, "legends", pk);
 
-                if (StopCondition(pk))
+                if (StopConditionSettings.EncounterFound(pk, DesiredIVs, Hub.Config.StopConditions))
                 {
                     Connection.Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
                     return;
@@ -226,7 +186,7 @@ namespace SysBot.Pokemon
                 if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
                     DumpPokemon(DumpSetting.DumpFolder, "legends", pk);
 
-                if (StopCondition(pk))
+                if (StopConditionSettings.EncounterFound(pk, DesiredIVs, Hub.Config.StopConditions))
                 {
                     Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
                     return;
@@ -259,7 +219,7 @@ namespace SysBot.Pokemon
             {
                 if (!await IsInBattle(token).ConfigureAwait(false))
                 {
-                    switch (hub.Config.Encounter.EncounteringType)
+                    switch (Hub.Config.Encounter.EncounteringType)
                     {
                         case EncounterMode.VerticalLine:
                             await SetStick(LEFT, 0, -30000, 2_400, token).ConfigureAwait(false);

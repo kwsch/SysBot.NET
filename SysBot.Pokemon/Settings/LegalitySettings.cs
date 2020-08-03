@@ -10,34 +10,34 @@ namespace SysBot.Pokemon
         public override string ToString() => "Legality Generating Settings";
 
         // Generate
-        [Category(Generate), Description("MGDB path for wondercards")]
+        [Category(Generate), Description("MGDB directory path for Wonder Cards.")]
         public string MGDBPath { get; set; } = string.Empty;
 
-        [Category(Generate), Description("Regenerated PKM files will attempt to be sourced from games using trainer data info from these PKM Files.")]
+        [Category(Generate), Description("Folder for PKM files with trainer data to use for regenerated PKM files.")]
         public string GeneratePathTrainerInfo { get; set; } = string.Empty;
 
-        [Category(Generate), Description("Default Trainer Name for PKM files that can't originate from any of the provided SaveFiles.")]
+        [Category(Generate), Description("Default Original Trainer name for PKM files that don't match any of the provided PKM files.")]
         public string GenerateOT { get; set; } = "SysBot";
 
-        [Category(Generate), Description("Default 16 Bit Trainer ID (TID) for PKM files that can't originate from any of the provided SaveFiles.")]
+        [Category(Generate), Description("Default 16 Bit Trainer ID (TID) for PKM files that don't match any of the provided PKM files.")]
         public int GenerateTID16 { get; set; } = 12345;
 
-        [Category(Generate), Description("Default 16 Bit Secret ID (SID) for PKM files that can't originate from any of the provided SaveFiles.")]
+        [Category(Generate), Description("Default 16 Bit Secret ID (SID) for PKM files that that don't match any of the provided PKM files.")]
         public int GenerateSID16 { get; set; } = 54321;
 
-        [Category(Generate), Description("Default Language for PKM files that can't originate from any of the provided SaveFiles.")]
+        [Category(Generate), Description("Default Language for PKM files that don't match any of the provided PKM files.")]
         public LanguageID GenerateLanguage { get; set; } = LanguageID.English;
 
-        [Category(Generate), Description("Set all possible ribbons for any generated Pokémon.")]
+        [Category(Generate), Description("Set all possible legal ribbons for any generated Pokémon.")]
         public bool SetAllLegalRibbons { get; set; }
 
         [Category(Generate), Description("Set a matching ball (based on color) for any generated Pokémon.")]
         public bool SetMatchingBalls { get; set; }
 
-        [Category(Generate), Description("Force the specified ball by iterating through all encounters and finding a legal one with the specific ball")]
+        [Category(Generate), Description("Force the specified ball if legal.")]
         public bool ForceSpecifiedBall { get; set; } = false;
 
-        [Category(Generate), Description("Allow XOROSHIRO")]
+        [Category(Generate), Description("Allow XOROSHIRO when generating Gen 8 Raid Pokémon.")]
         public bool UseXOROSHIRO { get; set; } = true;
 
         [Category(Generate), Description("Bot will create an Easter Egg Pokémon if provided an illegal set.")]

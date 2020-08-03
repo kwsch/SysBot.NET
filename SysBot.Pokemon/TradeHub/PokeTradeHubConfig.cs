@@ -22,9 +22,6 @@ namespace SysBot.Pokemon
         [Category(FeatureToggle), Description("ConsoleLanguageSpecific screen detection method only. Set your Switch console language here for bots to work properly. All consoles should be using the same language.")]
         public ConsoleLanguageParameter ConsoleLanguage { get; set; }
 
-        [Category(FeatureToggle), Description("Holds Capture button to record a 30 second clip when a matching shiny Pokémon is found by EncounterBot or Fossilbot.")]
-        public bool CaptureVideoClip { get; set; }
-
         [Category(FeatureToggle), Description("Extra time in milliseconds to wait after clicking + to reconnect to Y-Comm.")]
         public int ExtraTimeReconnectYComm { get; set; } = 0;
 
@@ -44,6 +41,10 @@ namespace SysBot.Pokemon
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public QueueSettings Queues { get; set; } = new QueueSettings();
 
+        [Category(Operation), Description("Stop conditions for EggBot, FossilBot, and EncounterBot.")]
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public StopConditionSettings StopConditions { get; set; } = new StopConditionSettings();
+
         // Bots
 
         [Category(Bots)]
@@ -54,9 +55,13 @@ namespace SysBot.Pokemon
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public SeedCheckSettings SeedCheck { get; set; } = new SeedCheckSettings();
 
-        [Category(Bots)]
+        [Category(Bots), Description("Settings for idle distribution trades.")]
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public DistributionSettings Distribution { get; set; } = new DistributionSettings();
+
+        [Category(Bots)]
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public RaidSettings Raid { get; set; } = new RaidSettings();
 
         [Category(Bots)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
@@ -65,10 +70,6 @@ namespace SysBot.Pokemon
         [Category(Bots)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public FossilSettings Fossil { get; set; } = new FossilSettings();
-
-        [Category(Bots)]
-        [TypeConverter(typeof(ExpandableObjectConverter))]
-        public RaidSettings Raid { get; set; } = new RaidSettings();
 
         [Category(Bots)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
@@ -89,7 +90,7 @@ namespace SysBot.Pokemon
         public YouTubeSettings YouTube { get; set; } = new YouTubeSettings();
 
 
-        [Category(Integration)]
+        [Category(Integration), Description("Configure generation of assets for streaming.")]
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public StreamSettings Stream { get; set; } = new StreamSettings();
 

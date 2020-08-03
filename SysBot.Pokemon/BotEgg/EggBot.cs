@@ -9,26 +9,24 @@ namespace SysBot.Pokemon
 {
     public class EggBot : PokeRoutineExecutor
     {
-        private readonly PokeTradeHub<PK8> hub;
+        private readonly PokeTradeHub<PK8> Hub;
         private readonly BotCompleteCounts Counts;
         private readonly IDumper DumpSetting;
-        private readonly bool ContinueGettingEggs;
+        private readonly int[] DesiredIVs;
         private const SwordShieldDaycare Location = SwordShieldDaycare.Route5;
 
-        public EggBot(PokeBotConfig cfg, PokeTradeHub<PK8> Hub) : base(cfg)
+        public EggBot(PokeBotConfig cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
-            hub = Hub;
+            Hub = hub;
             Counts = Hub.Counts;
             DumpSetting = Hub.Config.Folder;
-            ContinueGettingEggs = Hub.Config.Egg.ContinueAfterMatch;
+            DesiredIVs = StopConditionSettings.InitializeTargetIVs(Hub);
         }
 
         private int encounterCount;
 
         private const int InjectBox = 0;
         private const int InjectSlot = 0;
-
-        public Func<PK8, bool> StopCondition { private get; set; } = pkm => pkm.IsShiny;
 
         protected override async Task MainLoop(CancellationToken token)
         {
@@ -64,7 +62,7 @@ namespace SysBot.Pokemon
                     await Click(A, 0_400, token).ConfigureAwait(false);
 
                 // Safe to mash B from here until we get out of all menus.
-                while (!await IsOnOverworld(hub.Config, token).ConfigureAwait(false))
+                while (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
                     await Click(B, 0_400, token).ConfigureAwait(false);
 
                 Log("Egg received. Checking details.");
@@ -82,9 +80,9 @@ namespace SysBot.Pokemon
                 if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
                     DumpPokemon(DumpSetting.DumpFolder, "egg", pk);
 
-                if (StopCondition(pk))
+                if (StopConditionSettings.EncounterFound(pk, DesiredIVs, Hub.Config.StopConditions))
                 {
-                    if (ContinueGettingEggs)
+                    if (Hub.Config.Egg.ContinueAfterMatch)
                     {
                         Log("Result found! Continuing to collect more eggs.");
                         continue;

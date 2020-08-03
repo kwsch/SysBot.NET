@@ -12,13 +12,13 @@ namespace SysBot.Pokemon
 
         // Startup
 
-        [Category(Startup), Description("Bot Login Token")]
+        [Category(Startup), Description("Bot login token.")]
         public string Token { get; set; } = string.Empty;
 
-        [Category(Startup), Description("Bot Command Prefix")]
+        [Category(Startup), Description("Bot command prefix.")]
         public string CommandPrefix { get; set; } = "$";
 
-        [Category(Startup), Description("List of Modules that will not be loaded when the Bot is started (comma separated).")]
+        [Category(Startup), Description("List of modules that will not be loaded when the bot is started (comma separated).")]
         public string ModuleBlacklist { get; set; } = string.Empty;
 
         [Category(Startup), Description("Toggle to handle commands asynchronously or synchronously.")]
@@ -27,7 +27,7 @@ namespace SysBot.Pokemon
         [Category(Startup), Description("Custom Status for playing a game.")]
         public string BotGameStatus { get; set; } = "SysBot.NET: Pokémon";
 
-        [Category(Operation), Description("Custom message the Bot will reply with when a user says hello to it. Use string formatting to mention the user in the reply.")]
+        [Category(Operation), Description("Custom message the bot will reply with when a user says hello to it. Use string formatting to mention the user in the reply.")]
         public string HelloResponse { get; set; } = "Hi {0}!";
 
         // Whitelists

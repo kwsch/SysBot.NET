@@ -11,22 +11,20 @@ namespace SysBot.Pokemon
         private readonly PokeTradeHub<PK8> Hub;
         private readonly BotCompleteCounts Counts;
         private readonly IDumper DumpSetting;
-        private readonly FossilSettings Settings;
+        private readonly int[] DesiredIVs;
 
         public FossilBot(PokeBotConfig cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
             Hub = hub;
             Counts = Hub.Counts;
             DumpSetting = Hub.Config.Folder;
-            Settings = Hub.Config.Fossil;
+            DesiredIVs = StopConditionSettings.InitializeTargetIVs(Hub);
         }
 
         private int encounterCount;
 
         private const int InjectBox = 0;
         private const int InjectSlot = 0;
-
-        public Func<PK8, bool> StopCondition { private get; set; } = pkm => pkm.IsShiny;
 
         private static readonly PK8 Blank = new PK8();
 
@@ -62,7 +60,7 @@ namespace SysBot.Pokemon
                 if (encounterCount != 0 && encounterCount % reviveCount == 0)
                 {
                     Log($"Ran out of fossils to revive {Hub.Config.Fossil.Species}.");
-                    if (Settings.InjectWhenEmpty)
+                    if (Hub.Config.Fossil.InjectWhenEmpty)
                     {
                         Log("Restoring original pouch data.");
                         await Connection.WriteBytesAsync(pouchData, PokeDataOffsets.ItemTreasureAddress, token).ConfigureAwait(false);
@@ -92,12 +90,15 @@ namespace SysBot.Pokemon
 
                 Counts.AddCompletedFossils();
 
-                if (StopCondition(pk))
+                if (StopConditionSettings.EncounterFound(pk, DesiredIVs, Hub.Config.StopConditions))
                 {
-                    if (Hub.Config.CaptureVideoClip)
+                    if (Hub.Config.StopConditions.CaptureVideoClip)
+                    {
+                        await Task.Delay(Hub.Config.StopConditions.ExtraTimeWaitCaptureVideo).ConfigureAwait(false);
                         await PressAndHold(CAPTURE, 2_000, 1_000, token).ConfigureAwait(false);
+                    }
 
-                    if (Settings.ContinueAfterMatch)
+                    if (Hub.Config.Fossil.ContinueAfterMatch)
                     {
                         Log("Result found! Continuing to collect more fossils.");
                     }
