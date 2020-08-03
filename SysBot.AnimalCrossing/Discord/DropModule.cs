@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using System.Threading.Tasks;
 using Discord.Commands;
 
@@ -35,10 +35,9 @@ namespace SysBot.AnimalCrossing
 
         private static byte[] GetBytesFromString(string text)
         {
-            return Enumerable.Range(0, text.Length)
-                .Where(x => x % 2 == 0)
-                .Select(x => Convert.ToByte(text.Substring(x, 2), 16))
-                .Reverse().ToArray();
+            if (!ulong.TryParse(text.Trim(), NumberStyles.AllowHexSpecifier, CultureInfo.CurrentCulture, out var val))
+                return Item.NONE.ToBytes();
+            return BitConverter.GetBytes(val);
         }
 
         private static Item CreateItem(byte[] convert, int i, IConfigItem config)
