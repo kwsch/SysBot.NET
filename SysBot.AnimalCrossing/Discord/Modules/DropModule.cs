@@ -16,6 +16,13 @@ namespace SysBot.AnimalCrossing
             Globals.Bot.CleanRequested = true;
             await ReplyAsync("A clean request will be executed momentarily.").ConfigureAwait(false);
         }
+        [Command("code")]
+        [Alias("dodo")]
+        [Summary("Prints the Dodo Code for the island.")]
+        public async Task RequestDodoCodeAsync()
+        {
+            await ReplyAsync($"Dodo Code: {Globals.Bot.DodoCode}.").ConfigureAwait(false);
+        }
 
         [Command("drop")]
         [Summary("Drops a custom item (or items).")]

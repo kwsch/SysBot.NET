@@ -9,6 +9,7 @@ namespace SysBot.AnimalCrossing
     {
         public readonly ConcurrentQueue<ItemRequest> Injections = new ConcurrentQueue<ItemRequest>();
         public bool CleanRequested { private get; set; }
+        public string DodoCode { get; set; } = "No code set yet.";
 
         public CrossBot(CrossBotConfig cfg) : base(cfg) { }
         public override void SoftStop() => Config.AcceptingCommands = false;

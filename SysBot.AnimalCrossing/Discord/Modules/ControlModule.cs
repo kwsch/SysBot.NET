@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Discord.Commands;
+using SysBot.Base;
 
 namespace SysBot.AnimalCrossing
 {
@@ -10,8 +12,19 @@ namespace SysBot.AnimalCrossing
         [RequireSudo]
         public async Task DetatchAsync()
         {
-            Globals.Bot.CleanRequested = true;
-            await ReplyAsync("A clean request will be executed momentarily.").ConfigureAwait(false);
+            await ReplyAsync("A controller detatch request will be executed momentarily.").ConfigureAwait(false);
+            var bot = Globals.Bot;
+            await bot.Connection.SendAsync(SwitchCommand.DetachController(), CancellationToken.None).ConfigureAwait(false);
+        }
+
+        [Command("setCode")]
+        [Summary("Sets a string to the Dodo Code property for users to call via the associated command.")]
+        [RequireSudo]
+        public async Task SetDodoCodeAsync([Remainder]string code)
+        {
+            var bot = Globals.Bot;
+            bot.DodoCode = code;
+            await ReplyAsync($"The dodo code for the bot has been set to {code}.").ConfigureAwait(false);
         }
 
         [Command("toggleRequests")]
