@@ -16,7 +16,7 @@ namespace SysBot.AnimalCrossing
     // Copyright 2017, Christopher F. <foxbot@protonmail.com>
     public class InfoModule : ModuleBase<SocketCommandContext>
     {
-        private const string detail = "I am an open source Discord bot powered by PKHeX.Core and other open source software.";
+        private const string detail = "I am an open source Discord bot powered by SysBot.NET and other open source software.";
         private const string repo = "https://github.com/kwsch/SysBot.NET";
 
         [Command("info")]
@@ -57,6 +57,8 @@ namespace SysBot.AnimalCrossing
         private static string GetBuildTime()
         {
             var assembly = Assembly.GetEntryAssembly();
+            if (assembly == null)
+                return DateTime.Now.ToString(@"yy-MM-dd\.hh\:mm");
             return File.GetLastWriteTime(assembly.Location).ToString(@"yy-MM-dd\.hh\:mm");
         }
     }

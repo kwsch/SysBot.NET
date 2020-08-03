@@ -13,9 +13,15 @@ namespace SysBot.AnimalCrossing
         [Summary("Picks up items around the bot.")]
         public async Task RequestCleanAsync()
         {
+            if (!Globals.Bot.Config.AllowClean)
+            {
+                await ReplyAsync("Clean functionality is currently disabled.").ConfigureAwait(false);
+                return;
+            }
             Globals.Bot.CleanRequested = true;
             await ReplyAsync("A clean request will be executed momentarily.").ConfigureAwait(false);
         }
+
         [Command("code")]
         [Alias("dodo")]
         [Summary("Prints the Dodo Code for the island.")]
