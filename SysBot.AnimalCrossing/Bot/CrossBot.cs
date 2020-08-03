@@ -15,6 +15,8 @@ namespace SysBot.AnimalCrossing
 
         protected override async Task MainLoop(CancellationToken token)
         {
+            // Disconnect our virtual controller; will reconnect once we send a button command after a request.
+            await Connection.SendAsync(SwitchCommand.DetachController(), CancellationToken.None);
             int dropCount = 0;
             int idleCount = 0;
             while (!token.IsCancellationRequested)
