@@ -9,6 +9,14 @@ namespace SysBot.AnimalCrossing
 {
     public class DropModule : ModuleBase<SocketCommandContext>
     {
+        [Command("clean")]
+        [Summary("Picks up items around the bot.")]
+        public async Task RequestCleanAsync()
+        {
+            Globals.Bot.CleanRequested = true;
+            await ReplyAsync("A clean request will be executed momentarily.").ConfigureAwait(false);
+        }
+
         [Command("drop")]
         [Summary("Drops a custom item (or items).")]
         public async Task RequestDropAsync([Remainder]string request)

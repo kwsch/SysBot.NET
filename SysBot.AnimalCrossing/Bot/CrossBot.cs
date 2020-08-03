@@ -8,6 +8,7 @@ namespace SysBot.AnimalCrossing
     public sealed class CrossBot : SwitchRoutineExecutor<CrossBotConfig>
     {
         public readonly ConcurrentQueue<ItemRequest> Injections = new ConcurrentQueue<ItemRequest>();
+        public bool CleanRequested { private get; set; }
 
         public CrossBot(CrossBotConfig cfg) : base(cfg) { }
         public override void SoftStop() => Config.AcceptingCommands = false;
@@ -29,7 +30,7 @@ namespace SysBot.AnimalCrossing
                     dropCount += await DropItems(item, token).ConfigureAwait(false);
                     idleCount = 0;
                 }
-                else if (dropCount != 0 && ++idleCount > 60)
+                else if ((Config.AutoClean && dropCount != 0 && ++idleCount > 60) || CleanRequested)
                 {
                     await CleanUp(token).ConfigureAwait(false);
                     dropCount = 0;
