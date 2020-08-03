@@ -30,7 +30,9 @@ namespace SysBot.Base
 
         public void Reset(string ip)
         {
-            Disconnect();
+            if (Connected)
+                Disconnect();
+
             Connection = new Socket(SocketType.Stream, ProtocolType.Tcp);
             Log("Connecting to device...");
             var address = Dns.GetHostAddresses(ip);

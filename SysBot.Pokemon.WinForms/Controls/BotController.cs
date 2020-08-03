@@ -151,6 +151,16 @@ namespace SysBot.Pokemon.WinForms
                 case BotControlCommand.Start: bot.Start(); break;
                 case BotControlCommand.Stop: bot.Stop(); break;
                 case BotControlCommand.Resume: bot.Resume(); break;
+                case BotControlCommand.Restart:
+                {
+                    var prompt = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Are you sure you want to restart the connection?");
+                    if (prompt != DialogResult.Yes)
+                        return;
+
+                    bot.Bot.Connection.Reset(bot.Bot.Config.IP);
+                    bot.Start();
+                    break;
+                }
                 default:
                     WinFormsUtil.Alert($"{cmd} is not a command that can be sent to the Bot.");
                     return;
@@ -195,6 +205,7 @@ namespace SysBot.Pokemon.WinForms
         Stop,
         Idle,
         Resume,
+        Restart,
     }
 
     public static class BotControlCommandExtensions
@@ -207,6 +218,7 @@ namespace SysBot.Pokemon.WinForms
                 BotControlCommand.Stop => running,
                 BotControlCommand.Idle => running && !paused,
                 BotControlCommand.Resume => paused,
+                BotControlCommand.Restart => true,
                 _ => false,
             };
         }
