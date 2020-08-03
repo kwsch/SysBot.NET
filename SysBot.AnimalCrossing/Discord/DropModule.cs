@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
 
@@ -14,6 +15,13 @@ namespace SysBot.AnimalCrossing
         {
             var split = request.Split(new[] {" ", "\n", "\r\n"}, StringSplitOptions.RemoveEmptyEntries);
             var items = GetItems(split, Globals.Bot.Config);
+
+            const int maxRequestCount = 7;
+            if (items.Count > maxRequestCount)
+            {
+                await ReplyAsync($"Users are limited to {maxRequestCount} items per command. Please use this bot responsibly.").ConfigureAwait(false);
+                items = items.Take(maxRequestCount).ToArray();
+            }
 
             var requestInfo = new ItemRequest(Context.User.Username, items);
 
