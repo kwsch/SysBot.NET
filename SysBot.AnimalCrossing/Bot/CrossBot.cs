@@ -18,6 +18,8 @@ namespace SysBot.AnimalCrossing
         {
             // Disconnect our virtual controller; will reconnect once we send a button command after a request.
             await Connection.SendAsync(SwitchCommand.DetachController(), CancellationToken.None);
+            LogUtil.LogInfo("Connected to bot. Starting main loop!", Config.IP);
+
             int dropCount = 0;
             int idleCount = 0;
             while (!token.IsCancellationRequested)
@@ -70,6 +72,8 @@ namespace SysBot.AnimalCrossing
                     await Click(SwitchButton.B, 0_400, token).ConfigureAwait(false);
             }
 
+            LogUtil.LogInfo($"Injecting Item: {item.DisplayItemId:X4}.", Config.IP);
+
             // Inject item.
             var data = item.ToBytesClass();
             var poke = SwitchCommand.Poke(Config.Offset, data);
@@ -98,11 +102,11 @@ namespace SysBot.AnimalCrossing
 
         private async Task CleanUp(CancellationToken token)
         {
-            LogUtil.LogInfo("Picking up leftover items during idle time.", nameof(CrossBot));
+            LogUtil.LogInfo("Picking up leftover items during idle time.", Config.IP);
 
             // Exit out of any menus.
             for (int i = 0; i < 3; i++)
-                await Click(SwitchButton.B, 0_500, token).ConfigureAwait(false);
+                await Click(SwitchButton.B, 0_400, token).ConfigureAwait(false);
 
             // Pick up and delete.
             for (int i = 0; i < PickupCount; i++)
