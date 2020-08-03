@@ -12,7 +12,7 @@ namespace SysBot.AnimalCrossing
         [Summary("Drops a custom item (or items).")]
         public async Task RequestDropAsync([Remainder]string request)
         {
-            var split = request.Split(' ');
+            var split = request.Split(new[] {" ", "\n", "\r\n"}, StringSplitOptions.RemoveEmptyEntries);
             var items = GetItems(split, Globals.Bot.Config);
 
             var requestInfo = new ItemRequest(Context.User.Username, items);

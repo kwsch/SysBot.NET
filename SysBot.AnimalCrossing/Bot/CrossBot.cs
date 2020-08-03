@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using SysBot.Base;
@@ -46,20 +47,25 @@ namespace SysBot.AnimalCrossing
         public async Task<int> DropItems(ItemRequest item, CancellationToken token)
         {
             int dropped = 0;
+            bool first = true;
             foreach (var drop in item.Items)
             {
-                LogUtil.LogInfo($"Dropping item for {item.User}", nameof(CrossBot));
-                await DropItem(drop, token).ConfigureAwait(false);
+                LogUtil.LogInfo($"Dropping {BitConverter.ToUInt64(drop, 0):X16} for {item.User}", nameof(CrossBot));
+                await DropItem(drop, first, token).ConfigureAwait(false);
+                first = false;
                 dropped++;
             }
             return dropped;
         }
 
-        private async Task DropItem(byte[] drop, CancellationToken token)
+        private async Task DropItem(byte[] drop, bool first, CancellationToken token)
         {
             // Exit out of any menus.
-            for (int i = 0; i < 3; i++)
-                await Click(SwitchButton.B, 0_500, token).ConfigureAwait(false);
+            if (first)
+            {
+                for (int i = 0; i < 3; i++)
+                    await Click(SwitchButton.B, 0_400, token).ConfigureAwait(false);
+            }
 
             // Inject item.
             var poke = SwitchCommand.Poke(Config.Offset, drop);
@@ -67,16 +73,16 @@ namespace SysBot.AnimalCrossing
             await Task.Delay(0_300, token).ConfigureAwait(false);
 
             // Open menu and use the last menu-option
-            await Click(SwitchButton.X, 1_500, token).ConfigureAwait(false);
-            await Click(SwitchButton.A, 0_500, token).ConfigureAwait(false);
+            await Click(SwitchButton.X, 0_900, token).ConfigureAwait(false);
+            await Click(SwitchButton.A, 0_400, token).ConfigureAwait(false);
             if (!Config.WrapAllItems)
-                await Click(SwitchButton.DUP, 0_500, token).ConfigureAwait(false);
-            await Click(SwitchButton.A, 1_000, token).ConfigureAwait(false);
-            await Click(SwitchButton.X, 1_000, token).ConfigureAwait(false);
+                await Click(SwitchButton.DUP, 0_400, token).ConfigureAwait(false);
+            await Click(SwitchButton.A, 0_400, token).ConfigureAwait(false);
+            await Click(SwitchButton.X, 0_400, token).ConfigureAwait(false);
 
             // Exit out of any menus.
-            for (int i = 0; i < 3; i++)
-                await Click(SwitchButton.B, 0_500, token).ConfigureAwait(false);
+            for (int i = 0; i < 2; i++)
+                await Click(SwitchButton.B, 0_400, token).ConfigureAwait(false);
         }
 
         private const int PickupCount = 5;
