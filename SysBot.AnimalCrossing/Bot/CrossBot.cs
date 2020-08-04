@@ -81,7 +81,7 @@ namespace SysBot.AnimalCrossing
             await Task.Delay(0_300, token).ConfigureAwait(false);
 
             // Open player inventory and open the currently selected item slot -- assumed to be the config offset.
-            await Click(SwitchButton.X, 0_900, token).ConfigureAwait(false);
+            await Click(SwitchButton.X, 1_100, token).ConfigureAwait(false);
             await Click(SwitchButton.A, 0_400, token).ConfigureAwait(false);
 
             // Navigate down to the "drop item" option.
