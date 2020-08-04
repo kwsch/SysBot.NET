@@ -46,7 +46,7 @@ namespace SysBot.Pokemon
             await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
 
             Log("Checking item counts...");
-            var pouchData = await Connection.ReadBytesAsync(PokeDataOffsets.ItemTreasureAddress, 80, token).ConfigureAwait(false);
+            var pouchData = await Connection.ReadBytesAsync(ItemTreasureAddress, 80, token).ConfigureAwait(false);
             var counts = FossilCount.GetFossilCounts(pouchData);
             int reviveCount = counts.PossibleRevives(Hub.Config.Fossil.Species);
             if (reviveCount == 0)
@@ -65,7 +65,7 @@ namespace SysBot.Pokemon
                     if (Hub.Config.Fossil.InjectWhenEmpty)
                     {
                         Log("Restoring original pouch data.");
-                        await Connection.WriteBytesAsync(pouchData, PokeDataOffsets.ItemTreasureAddress, token).ConfigureAwait(false);
+                        await Connection.WriteBytesAsync(pouchData, ItemTreasureAddress, token).ConfigureAwait(false);
                         await Task.Delay(500, token).ConfigureAwait(false);
                     }
                     else
