@@ -63,13 +63,16 @@ namespace SysBot.Pokemon.Discord
         [Summary("Prints the next shiny frame from the provided seed.")]
         public async Task FindFrameAsync([Remainder] string seedString)
         {
+            var me = SysCordInstance.Self;
+            var hub = me.Hub;
+
             seedString = seedString.ToLower();
             if (seedString.StartsWith("0x"))
                 seedString = seedString.Substring(2);
 
             var seed = Util.GetHexValue64(seedString);
 
-            var r = new SeedSearchResult(Z3SearchResult.Success, seed, -1, SeedCheckResults.FirstStarAndSquare);
+            var r = new SeedSearchResult(Z3SearchResult.Success, seed, -1, hub.Config.SeedCheck.ResultDisplayMode);
             var msg = r.ToString();
 
             var embed = new EmbedBuilder { Color = Color.LighterGrey };
