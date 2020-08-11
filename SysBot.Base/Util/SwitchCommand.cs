@@ -107,6 +107,14 @@ namespace SysBot.Base
         /// <returns>Encoded command bytes</returns>
         public static byte[] PokeAbsolute(ulong offset, byte[] data) => Encode($"pokeAbsolute 0x{offset:X16} 0x{string.Concat(data.Select(z => $"{z:X2}"))}");
 
+        /// <summary>
+        /// Requests the Bot to send <see cref="count"/> bytes from main <see cref="offset"/>.
+        /// </summary>
+        /// <param name="offset">Absolute address of the data</param>
+        /// <param name="count">Amount of bytes</param>
+        /// <returns>Encoded command bytes</returns>
+        public static byte[] PeekMain(ulong offset, int count) => Encode($"peekMain 0x{offset:X16} {count}");
+
         /* 
          *
          * Process Info Commands
