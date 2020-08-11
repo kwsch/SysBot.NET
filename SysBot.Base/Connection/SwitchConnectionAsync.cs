@@ -109,6 +109,11 @@ namespace SysBot.Base
             return await ReadBytesFromCmdAsync(SwitchCommand.PeekAbsolute(offset, length), length, token).ConfigureAwait(false);
         }
 
+        public async Task<byte[]> ReadBytesMainAsync(ulong offset, int length, CancellationToken token)
+        {
+            return await ReadBytesFromCmdAsync(SwitchCommand.PeekMain(offset, length), length, token).ConfigureAwait(false);
+        }
+
         public async Task<ulong> GetMainNsoBaseAsync(CancellationToken token)
         {
             byte[] baseBytes = await ReadBytesFromCmdAsync(SwitchCommand.GetMainNsoBase(), sizeof(ulong), token).ConfigureAwait(false);
