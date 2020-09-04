@@ -59,7 +59,7 @@ namespace SysBot.Pokemon
             for (int i = 0; i < 6; i++)
             {
                 // Match all 0's.
-                if (targetIVs[i] == 0 && pk.IVs[i] != 0)
+                if (targetIVs[i] == 0 && pkIVList[i] != 0)
                     return false;
                 // Wild cards should be -1, so they will always be less than the Pokemon's IVs.
                 if (targetIVs[i] > pkIVList[i])
