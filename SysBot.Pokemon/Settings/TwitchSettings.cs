@@ -79,6 +79,9 @@ namespace SysBot.Pokemon
         [Category(Messages), Description("Determines where Legality/Clone results are sent.")]
         public TwitchMessageDestination DumpResultDestination { get; set; }
 
+        [Category(Messages), Description("Toggles whether Distribution trades count down before starting.")]
+        public bool DistributionCountDown { get; set; } = true;
+
         public bool IsSudo(string username)
         {
             var sudos = SudoList.Split(new[] { ",", ", ", " " }, StringSplitOptions.RemoveEmptyEntries);

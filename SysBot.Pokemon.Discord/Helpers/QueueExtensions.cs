@@ -81,7 +81,7 @@ namespace SysBot.Pokemon.Discord
                 ticketID = $", unique ID: {detail.ID}";
 
             var pokeName = "";
-            if (t == PokeTradeType.Specific && Info.Hub.Config.Discord.DisplayPokeName && pk8.Species != 0)
+            if (t == PokeTradeType.Specific && pk8.Species != 0)
                 pokeName = $" Receiving: {(Species)pk8.Species}.";
             msg = $"{user.Mention} - Added to the {type} queue{ticketID}. Current Position: {position.Position}.{pokeName}";
 
