@@ -77,10 +77,7 @@ namespace SysBot.Pokemon
             Util.SetLocalization(typeof(LegalityCheckStrings), lang);
             Util.SetLocalization(typeof(MessageStrings), lang);
             RibbonStrings.ResetDictionary(GameInfo.Strings.ribbons);
-
-            // Update Legality Analysis strings
-            LegalityAnalysis.MoveStrings = GameInfo.Strings.movelist;
-            LegalityAnalysis.SpeciesStrings = GameInfo.Strings.specieslist;
+            LegalityAnalysis.ChangeLocalizationStrings(GameInfo.Strings.movelist, GameInfo.Strings.specieslist);
         }
 
         public static bool CanBeTraded(this PKM pkm)
