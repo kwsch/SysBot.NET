@@ -85,14 +85,14 @@ namespace SysBot.Pokemon.Twitch
             if (message.Details.Count > 0)
                 msg += ", " + string.Join(", ", message.Details.Select(z => $"{z.Heading}: {z.Detail}"));
             LogUtil.LogText(msg);
-            SendMessage(msg, Settings.SeedCheckResultDestination);
+            SendMessage(msg, Settings.NotifyDestination);
         }
 
         public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result, string message)
         {
             var msg = $"Details for {result.FileName}: " + message;
             LogUtil.LogText(msg);
-            SendMessage(msg, Settings.DumpResultDestination);
+            SendMessage(msg, Settings.NotifyDestination);
         }
 
         private void SendMessage(string message, TwitchMessageDestination dest)

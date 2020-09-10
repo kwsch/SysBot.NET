@@ -73,12 +73,6 @@ namespace SysBot.Pokemon
         [Category(Messages), Description("Determines where TradeCanceled notifications are sent.")]
         public TwitchMessageDestination TradeCanceledDestination { get; set; } = TwitchMessageDestination.Channel;
 
-        [Category(Messages), Description("Determines where Seed Check results are sent.")]
-        public TwitchMessageDestination SeedCheckResultDestination { get; set; } = TwitchMessageDestination.Channel;
-
-        [Category(Messages), Description("Determines where Legality/Clone results are sent.")]
-        public TwitchMessageDestination DumpResultDestination { get; set; }
-
         [Category(Messages), Description("Toggles whether Distribution trades count down before starting.")]
         public bool DistributionCountDown { get; set; } = true;
 
