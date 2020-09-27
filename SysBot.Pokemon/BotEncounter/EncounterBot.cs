@@ -47,8 +47,8 @@ namespace SysBot.Pokemon
             };
             await task.ConfigureAwait(false);
 
-            await DetachController(token).ConfigureAwait(false);
             await ResetStick(token).ConfigureAwait(false);
+            await DetachController(token).ConfigureAwait(false);
         }
 
         private async Task WalkInLine(CancellationToken token)
@@ -75,27 +75,12 @@ namespace SysBot.Pokemon
                     continue;
                 }
 
-                encounterCount++;
-                Log($"Encounter: {encounterCount}{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}");
-                Counts.AddCompletedEncounters();
-
-                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                    DumpPokemon(DumpSetting.DumpFolder, "encounters", pk);
-
                 // Offsets are flickery so make sure we see it 3 times.
                 for (int i = 0; i < 3; i++)
                     await ReadUntilChanged(BattleMenuOffset, BattleMenuReady, 5_000, 0_100, true, token).ConfigureAwait(false);
 
-                if (StopConditionSettings.EncounterFound(pk, DesiredIVs, Hub.Config.StopConditions))
-                {
-                    Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
-                    if (Hub.Config.StopConditions.CaptureVideoClip)
-                    {
-                        await Task.Delay(Hub.Config.StopConditions.ExtraTimeWaitCaptureVideo).ConfigureAwait(false);
-                        await PressAndHold(CAPTURE, 2_000, 1_000, token).ConfigureAwait(false);
-                    }
+                if (await HandleEncounter(pk, false, token).ConfigureAwait(false))
                     return;
-                }
 
                 Log("Running away...");
                 while (await IsInBattle(token).ConfigureAwait(false))
@@ -118,18 +103,8 @@ namespace SysBot.Pokemon
                     continue;
                 }
 
-                encounterCount++;
-                Connection.Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
-                Counts.AddCompletedLegends();
-
-                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                    DumpPokemon(DumpSetting.DumpFolder, "legends", pk);
-
-                if (StopConditionSettings.EncounterFound(pk, DesiredIVs, Hub.Config.StopConditions))
-                {
-                    Connection.Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
+                if (await HandleEncounter(pk, true, token).ConfigureAwait(false))
                     return;
-                }
 
                 Connection.Log("Resetting raid by restarting the game");
                 // Close out of the game
@@ -180,19 +155,6 @@ namespace SysBot.Pokemon
                     continue;
                 }
 
-                encounterCount++;
-                Log($"Encounter: {encounterCount}{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}");
-                Counts.AddCompletedLegends();
-
-                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                    DumpPokemon(DumpSetting.DumpFolder, "legends", pk);
-
-                if (StopConditionSettings.EncounterFound(pk, DesiredIVs, Hub.Config.StopConditions))
-                {
-                    Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
-                    return;
-                }
-
                 // Get rid of any stick stuff left over so we can flee properly.
                 await ResetStick(token).ConfigureAwait(false);
 
@@ -202,6 +164,9 @@ namespace SysBot.Pokemon
                 // Offsets are flickery so make sure we see it 3 times.
                 for (int i = 0; i < 3; i++)
                     await ReadUntilChanged(BattleMenuOffset, BattleMenuReady, 5_000, 0_100, true, token).ConfigureAwait(false);
+
+                if (await HandleEncounter(pk, true, token).ConfigureAwait(false))
+                    return;
 
                 Log("Running away...");
                 while (await IsInBattle(token).ConfigureAwait(false))
@@ -256,6 +221,32 @@ namespace SysBot.Pokemon
             }
 
             return -1; // aborted
+        }
+
+        private async Task<bool> HandleEncounter(PK8 pk, bool legends, CancellationToken token)
+        {
+            encounterCount++;
+            Log($"Encounter: {encounterCount}{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}");
+            if (legends)
+                Counts.AddCompletedLegends();
+            else
+                Counts.AddCompletedEncounters();
+
+            if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                DumpPokemon(DumpSetting.DumpFolder, legends ? "legends" : "encounters", pk);
+
+            if (StopConditionSettings.EncounterFound(pk, DesiredIVs, Hub.Config.StopConditions))
+            {
+                Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
+                if (Hub.Config.StopConditions.CaptureVideoClip)
+                {
+                    await Task.Delay(Hub.Config.StopConditions.ExtraTimeWaitCaptureVideo).ConfigureAwait(false);
+                    await PressAndHold(CAPTURE, 2_000, 1_000, token).ConfigureAwait(false);
+                }
+                return true;
+            }
+
+            return false;
         }
 
         private async Task ResetStick(CancellationToken token)
