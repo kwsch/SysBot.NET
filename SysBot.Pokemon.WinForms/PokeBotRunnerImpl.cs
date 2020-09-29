@@ -5,7 +5,6 @@ using SysBot.Pokemon.WinForms;
 using SysBot.Pokemon.YouTube;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace SysBot.Pokemon
 {

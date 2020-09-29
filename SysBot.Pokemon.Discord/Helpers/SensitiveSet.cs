@@ -12,6 +12,7 @@ namespace SysBot.Pokemon.Discord
         public string Write() => string.Join(",", List);
         public int Count => List.Count;
 
+        // ReSharper disable once StaticMemberInGenericType
         private static readonly string[] Splitters = {", ", ","};
 
         private static IEnumerable<T> Convert(string str, Func<string, T> parse)
@@ -21,7 +22,9 @@ namespace SysBot.Pokemon.Discord
             {
                 // Since the input can be user entered, just try-catch the conversion.
                 T c; try { c = parse(item); }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     Console.WriteLine(ex.Message);
                     continue;

@@ -213,7 +213,7 @@ namespace SysBot.Pokemon
 
             // Wait for a Trainer...
             Log("Waiting for trainer...");
-            bool partnerFound = await WaitForPokemonChanged(LinkTradePartnerPokemonOffset, Hub.Config.Trade.TradeWaitTime * 1_000, 0_200, token);
+            bool partnerFound = await WaitForPokemonChanged(LinkTradePartnerPokemonOffset, Hub.Config.Trade.TradeWaitTime * 1_000, 0_200, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
@@ -577,7 +577,9 @@ namespace SysBot.Pokemon
                 {
                     ReplyWithSeedCheckResults(detail, pk);
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     detail.SendNotification(this, $"Unable to calculate seeds: {ex.Message}\r\n{ex.StackTrace}");
                 }

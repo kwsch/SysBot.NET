@@ -268,7 +268,9 @@ namespace SysBot.Pokemon.Twitch
                 var _ = AddToTradeQueue(user.Pokemon, code, e, Settings.IsSudo(user.UserName), PokeRoutineType.LinkTrade, out string message);
                 client.SendMessage(Channel, message);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogUtil.LogError($"{ex.Message}", nameof(TwitchBot));
             }

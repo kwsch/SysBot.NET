@@ -3,9 +3,9 @@ using YouTube.Base;
 
 namespace SysBot.Pokemon.YouTube
 {
-    class Scopes
+    internal static class Scopes
     {
-        public readonly static IReadOnlyList<OAuthClientScopeEnum> scopes = new[]
+        public static readonly IReadOnlyList<OAuthClientScopeEnum> scopes = new[]
         {
             OAuthClientScopeEnum.ManageAccount,
             OAuthClientScopeEnum.ManageData,

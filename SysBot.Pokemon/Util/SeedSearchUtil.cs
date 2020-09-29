@@ -92,7 +92,6 @@ namespace SysBot.Pokemon
                 }
                 rng = origrng;
             }
-            return;
         }
 
         public static bool IsMatch(ulong seed, int[] ivs, int fixed_ivs)

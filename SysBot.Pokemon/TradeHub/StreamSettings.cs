@@ -150,7 +150,9 @@ namespace SysBot.Pokemon
                 if (CreateTradeStartSprite)
                     GenerateBotSprite(b, detail);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogUtil.LogError(e.Message, nameof(StreamSettings));
             }
@@ -186,7 +188,9 @@ namespace SysBot.Pokemon
                 if (CreateUsersInQueue)
                     File.WriteAllText("queuecount.txt", "Users in Queue: 0");
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogUtil.LogError(e.Message, nameof(StreamSettings));
             }
@@ -235,7 +239,9 @@ namespace SysBot.Pokemon
                 else
                     File.WriteAllBytes(file, BlackPixel);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogUtil.LogError(e.Message, nameof(StreamSettings));
             }
@@ -261,7 +267,9 @@ namespace SysBot.Pokemon
                 if (File.Exists(file))
                     File.Delete(file);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogUtil.LogError(e.Message, nameof(StreamSettings));
             }

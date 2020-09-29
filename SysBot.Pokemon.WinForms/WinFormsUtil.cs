@@ -42,7 +42,7 @@ namespace SysBot.Pokemon.WinForms
         /// <param name="cb">ComboBox to retrieve value for.</param>
         internal static int GetIndex(ListControl cb)
         {
-            return (int)(cb?.SelectedValue ?? 0);
+            return (int)(cb.SelectedValue ?? 0);
         }
     }
 }
