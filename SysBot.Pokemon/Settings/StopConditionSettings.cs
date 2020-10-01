@@ -49,11 +49,11 @@ namespace SysBot.Pokemon
             {
                 bool shinymatch = settings.ShinyTarget switch
                 {
-                    TargetShinyType.AnyShiny when pk.IsShiny => true,
-                    TargetShinyType.NonShiny when !pk.IsShiny => true,
-                    TargetShinyType.StarOnly when pk.IsShiny && pk.ShinyXor != 0 => true,
-                    TargetShinyType.SquareOnly when pk.ShinyXor == 0 => true,
-                    TargetShinyType.DisableOption => false,
+                    TargetShinyType.AnyShiny => pk.IsShiny,
+                    TargetShinyType.NonShiny => !pk.IsShiny,
+                    TargetShinyType.StarOnly => pk.IsShiny && pk.ShinyXor != 0,
+                    TargetShinyType.SquareOnly => pk.ShinyXor == 0,
+                    TargetShinyType.DisableOption => true,
                     _ => throw new ArgumentException(nameof(TargetShinyType)),
                 };
 
