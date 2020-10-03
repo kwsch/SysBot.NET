@@ -234,7 +234,7 @@ namespace SysBot.Pokemon
                 {
                     softBanAttempts++;
                     if (softBanAttempts > 10)
-                        await ReOpenGame(token).ConfigureAwait(false);
+                        await ReOpenGame(config, token).ConfigureAwait(false);
                 }
 
                 attempts++;
@@ -264,16 +264,12 @@ namespace SysBot.Pokemon
             await Task.Delay(3_000, token).ConfigureAwait(false);
         }
 
-        public async Task ReOpenGame(CancellationToken token)
+        public async Task ReOpenGame(PokeTradeHubConfig config, CancellationToken token)
         {
             // Reopen the game if we get softbanned
             Log("Potential softban detected, reopening game just in case!");
-            await Click(HOME, 2000, token).ConfigureAwait(false);
-            await Click(X, 1000, token).ConfigureAwait(false);
-            await Click(A, 5000, token).ConfigureAwait(false);
-
-            for (int i = 0; i < 30; i++)
-                await Click(A, 1000, token).ConfigureAwait(false);
+            await CloseGame(config, token).ConfigureAwait(false);
+            await StartGame(config, token).ConfigureAwait(false);
 
             // In case we are softbanned, reset the timestamp
             await Unban(token).ConfigureAwait(false);
@@ -293,6 +289,39 @@ namespace SysBot.Pokemon
             // Check if the Unix Timestamp isn't Zero, if so we are Softbanned.
             var data = await Connection.ReadBytesAsync(SoftBanUnixTimespanOffset, 1, token).ConfigureAwait(false);
             return data[0] > 1;
+        }
+
+        public async Task CloseGame(PokeTradeHubConfig config, CancellationToken token)
+        {
+            // Close out of the game
+            await Click(HOME, 4_000, token).ConfigureAwait(false);
+            await Click(X, 1_000, token).ConfigureAwait(false);
+            await Click(A, 5_000 + config.Timings.ExtraTimeCloseGame, token).ConfigureAwait(false); // Closing software prompt
+            Log("Closed out of the game!");
+        }
+
+        public async Task StartGame(PokeTradeHubConfig config, CancellationToken token)
+        {
+            // Open game and select profile.
+            await Click(A, 1_000 + config.Timings.ExtraTimeLoadProfile, token).ConfigureAwait(false);
+            await Click(A, 1_000 + config.Timings.ExtraTimeCheckDLC, token).ConfigureAwait(false);
+            // If they have DLC on the system and can't use it, requires an UP + A to start the game.
+            // Should be harmless otherwise since they'll be in loading screen.
+            await Click(DUP, 0_600, token).ConfigureAwait(false);
+            await Click(A, 0_600, token).ConfigureAwait(false);
+
+            Log("Restarting the game!");
+
+            // Switch Logo lag, skip cutscene, game load screen
+            await Task.Delay(11_000 + config.Timings.ExtraTimeLoadGame, token).ConfigureAwait(false);
+
+            for (int i = 0; i < 5; i++)
+                await Click(A, 1_000, token).ConfigureAwait(false);
+
+            while (!await IsOnOverworld(config, token).ConfigureAwait(false))
+                await Task.Delay(2_000, token).ConfigureAwait(false);
+
+            Log("Back in the overworld!");
         }
 
         public async Task<bool> CheckIfSearchingForLinkTradePartner(CancellationToken token)

@@ -202,37 +202,13 @@ namespace SysBot.Pokemon
         private async Task ResetGameAsync(CancellationToken token)
         {
             Log("Resetting raid by restarting the game");
-            // Close out of the game
-            await Click(HOME, 4_000, token).ConfigureAwait(false);
-            await Click(X, 1_000, token).ConfigureAwait(false);
-            await Click(A, 5_000 + Hub.Config.Timings.ExtraTimeCloseGame, token).ConfigureAwait(false); // Closing software prompt
-            Log("Closed out of the game!");
+            await CloseGame(Hub.Config, token).ConfigureAwait(false);
 
             if (addFriends || deleteFriends)
                 await DeleteAddFriends(token).ConfigureAwait(false);
 
-            // Open game and select profile.
-            await Click(A, 1_000 + Hub.Config.Timings.ExtraTimeLoadProfile, token).ConfigureAwait(false);
-            await Click(A, 1_000 + Hub.Config.Timings.ExtraTimeCheckDLC, token).ConfigureAwait(false);
-            // If they have DLC on the system and can't use it, requires an UP + A to start the game.
-            // Should be harmless otherwise since they'll be in loading screen.
-            await Click(DUP, 0_600, token).ConfigureAwait(false);
-            await Click(A, 0_600, token).ConfigureAwait(false);
+            await StartGame(Hub.Config, token).ConfigureAwait(false);
 
-            Log("Restarting the game!");
-
-            // Switch Logo lag, skip cutscene, game load screen
-            await Task.Delay(11_000 + Hub.Config.Timings.ExtraTimeLoadGame, token).ConfigureAwait(false);
-
-            for (int i = 0; i < 5; i++)
-                await Click(A, 1_000, token).ConfigureAwait(false);
-
-            while (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
-                await Task.Delay(2_000, token).ConfigureAwait(false);
-
-            Log("Back in the overworld!");
-
-            // Reconnect to Y-Comm.
             await EnsureConnectedToYComm(Hub.Config, token).ConfigureAwait(false);
             Log("Reconnected to Y-Comm!");
         }

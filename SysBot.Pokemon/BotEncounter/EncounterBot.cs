@@ -93,37 +93,18 @@ namespace SysBot.Pokemon
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EncounterBot)
             {
                 await SetStick(LEFT, 0, 20_000, 500, token).ConfigureAwait(false);
-                await SetStick(LEFT, 0, 0, 1_000, token).ConfigureAwait(false);
+                await ResetStick(token).ConfigureAwait(false);
 
                 var pk = await ReadPokemon(RaidPokemonOffset, token).ConfigureAwait(false);
-                if (pk.Species == 0)
+                if (pk.Species != 0)
                 {
-                    Connection.Log("Invalid data detected. Restarting loop.");
-                    // add stuff for recovering
-                    continue;
+                    if (await HandleEncounter(pk, true, token).ConfigureAwait(false))
+                        return;
                 }
 
-                if (await HandleEncounter(pk, true, token).ConfigureAwait(false))
-                    return;
-
-                Connection.Log("Resetting raid by restarting the game");
-                // Close out of the game
-                await Click(HOME, 1_600, token).ConfigureAwait(false);
-                await Click(X, 0_800, token).ConfigureAwait(false);
-                await Click(A, 4_000, token).ConfigureAwait(false); // Closing software prompt
-                Connection.Log("Closed out of the game!");
-
-                // Open game and select profile
-                await Click(A, 1_000, token).ConfigureAwait(false);
-                await Click(A, 1_000, token).ConfigureAwait(false);
-                Connection.Log("Restarting the game!");
-
-                // Switch Logo lag, skip cutscene, game load screen
-                await Task.Delay(14_000, token).ConfigureAwait(false);
-                await Click(A, 1_000, token).ConfigureAwait(false);
-                await Task.Delay(3_500, token).ConfigureAwait(false);
-                Connection.Log("Back in the overworld!");
-                await ResetStick(token).ConfigureAwait(false);
+                Connection.Log("Resetting Eternatus by restarting the game");
+                await CloseGame(Hub.Config, token).ConfigureAwait(false);
+                await StartGame(Hub.Config, token).ConfigureAwait(false); 
             }
         }
 
