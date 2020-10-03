@@ -42,7 +42,7 @@ namespace SysBot.Pokemon
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public StopConditionSettings StopConditions { get; set; } = new StopConditionSettings();
 
-        [Category(Operation)]
+        [Category(Operation), Description("Add extra time for slower Switches.")]
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public TimingSettings Timings { get; set; } = new TimingSettings();
 

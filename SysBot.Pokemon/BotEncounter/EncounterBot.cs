@@ -92,10 +92,11 @@ namespace SysBot.Pokemon
         {
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EncounterBot)
             {
-                await SetStick(LEFT, 0, 20_000, 500, token).ConfigureAwait(false);
+                await SetStick(LEFT, 0, 20_000, 1_000, token).ConfigureAwait(false);
                 await ResetStick(token).ConfigureAwait(false);
 
-                var pk = await ReadPokemon(RaidPokemonOffset, token).ConfigureAwait(false);
+                await ReadUntilPresent(RaidPokemonOffset, 2_000, 0_200, token).ConfigureAwait(false);
+                var pk = await ReadUntilPresent(RaidPokemonOffset, 0_200, 0_200, token).ConfigureAwait(false);
                 if (pk.Species != 0)
                 {
                     if (await HandleEncounter(pk, true, token).ConfigureAwait(false))

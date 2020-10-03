@@ -8,6 +8,7 @@ namespace SysBot.Pokemon
         private const string CloseGame = nameof(CloseGame);
         private const string Raid = nameof(Raid);
         private const string Misc = nameof(Misc);
+        public override string ToString() => "Extra Time Settings";
 
         // Opening the game.
         [Category(OpenGame), Description("Extra time in milliseconds to wait for profiles to load when starting the game.")]
@@ -20,6 +21,9 @@ namespace SysBot.Pokemon
         public int ExtraTimeLoadGame { get; set; } = 0;
 
         // Closing the game.
+        [Category(CloseGame), Description("Extra time in milliseconds to wait after pressing HOME to minimize the game.")]
+        public int ExtraTimeReturnHome { get; set; } = 0;
+
         [Category(CloseGame), Description("Extra time in milliseconds to wait after clicking to close the game.")]
         public int ExtraTimeCloseGame { get; set; } = 0;
 

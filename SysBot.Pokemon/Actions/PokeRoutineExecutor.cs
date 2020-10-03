@@ -294,9 +294,9 @@ namespace SysBot.Pokemon
         public async Task CloseGame(PokeTradeHubConfig config, CancellationToken token)
         {
             // Close out of the game
-            await Click(HOME, 4_000, token).ConfigureAwait(false);
+            await Click(HOME, 2_000 + config.Timings.ExtraTimeReturnHome, token).ConfigureAwait(false);
             await Click(X, 1_000, token).ConfigureAwait(false);
-            await Click(A, 5_000 + config.Timings.ExtraTimeCloseGame, token).ConfigureAwait(false); // Closing software prompt
+            await Click(A, 5_000 + config.Timings.ExtraTimeCloseGame, token).ConfigureAwait(false);
             Log("Closed out of the game!");
         }
 
