@@ -92,7 +92,7 @@ namespace SysBot.Pokemon
             await EnsureConnectedToYComm(Hub.Config, token).ConfigureAwait(false);
 
             // Press A and stall out a bit for the loading
-            await Click(A, 5_000 + Hub.Config.Raid.ExtraTimeLoadRaid, token).ConfigureAwait(false);
+            await Click(A, 5_000 + Hub.Config.Timings.ExtraTimeLoadRaid, token).ConfigureAwait(false);
 
             if (raidBossSpecies == -1)
             {
@@ -114,7 +114,7 @@ namespace SysBot.Pokemon
                 EchoUtil.Echo($"Send a friend request to Friend Code **{Settings.FriendCode}** to join in! Friends will be added after this raid.");
 
             // Invite others, confirm Pokémon and wait
-            await Click(A, 7_000 + Hub.Config.Raid.ExtraTimeOpenRaid, token).ConfigureAwait(false);
+            await Click(A, 7_000 + Hub.Config.Timings.ExtraTimeOpenRaid, token).ConfigureAwait(false);
             await Click(DUP, 1_000, token).ConfigureAwait(false);
             await Click(A, 1_000, token).ConfigureAwait(false);
 
@@ -150,7 +150,7 @@ namespace SysBot.Pokemon
                 PlayerReady[i] = false;
 
             Log("Finishing raid routine.");
-            await Task.Delay(5_000 + Hub.Config.Raid.ExtraTimeEndRaid, token).ConfigureAwait(false);
+            await Task.Delay(5_000 + Hub.Config.Timings.ExtraTimeEndRaid, token).ConfigureAwait(false);
         }
 
         private async Task<bool> GetRaidPartyReady(CancellationToken token)
@@ -205,15 +205,15 @@ namespace SysBot.Pokemon
             // Close out of the game
             await Click(HOME, 4_000, token).ConfigureAwait(false);
             await Click(X, 1_000, token).ConfigureAwait(false);
-            await Click(A, 5_000 + Hub.Config.Raid.ExtraTimeCloseGame, token).ConfigureAwait(false); // Closing software prompt
+            await Click(A, 5_000 + Hub.Config.Timings.ExtraTimeCloseGame, token).ConfigureAwait(false); // Closing software prompt
             Log("Closed out of the game!");
 
             if (addFriends || deleteFriends)
                 await DeleteAddFriends(token).ConfigureAwait(false);
 
             // Open game and select profile.
-            await Click(A, 1_000 + Hub.Config.Raid.ExtraTimeLoadProfile, token).ConfigureAwait(false);
-            await Click(A, 1_000 + Hub.Config.Raid.ExtraTimeCheckDLC, token).ConfigureAwait(false);
+            await Click(A, 1_000 + Hub.Config.Timings.ExtraTimeLoadProfile, token).ConfigureAwait(false);
+            await Click(A, 1_000 + Hub.Config.Timings.ExtraTimeCheckDLC, token).ConfigureAwait(false);
             // If they have DLC on the system and can't use it, requires an UP + A to start the game.
             // Should be harmless otherwise since they'll be in loading screen.
             await Click(DUP, 0_600, token).ConfigureAwait(false);
@@ -222,7 +222,7 @@ namespace SysBot.Pokemon
             Log("Restarting the game!");
 
             // Switch Logo lag, skip cutscene, game load screen
-            await Task.Delay(11_000 + Hub.Config.Raid.ExtraTimeLoadGame, token).ConfigureAwait(false);
+            await Task.Delay(11_000 + Hub.Config.Timings.ExtraTimeLoadGame, token).ConfigureAwait(false);
 
             for (int i = 0; i < 5; i++)
                 await Click(A, 1_000, token).ConfigureAwait(false);
@@ -331,15 +331,15 @@ namespace SysBot.Pokemon
             await Click(A, 0_600, token).ConfigureAwait(false);
             // Click "Remove Friend", confirm "Delete", return to next card.
             await Click(A, 1_000, token).ConfigureAwait(false);
-            await Click(A, 5_000 + Hub.Config.Raid.ExtraTimeDeleteFriend, token).ConfigureAwait(false);
+            await Click(A, 5_000 + Hub.Config.Timings.ExtraTimeDeleteFriend, token).ConfigureAwait(false);
             await Click(A, 1_000, token).ConfigureAwait(false);
         }
 
         // Adds one friend. Timing may need to be adjusted since delays vary with connection.
         private async Task AddFriend(CancellationToken token)
         {
-            await Click(A, 3_500 + Hub.Config.Raid.ExtraTimeAddFriend, token).ConfigureAwait(false);
-            await Click(A, 3_000 + Hub.Config.Raid.ExtraTimeAddFriend, token).ConfigureAwait(false);
+            await Click(A, 3_500 + Hub.Config.Timings.ExtraTimeAddFriend, token).ConfigureAwait(false);
+            await Click(A, 3_000 + Hub.Config.Timings.ExtraTimeAddFriend, token).ConfigureAwait(false);
         }
     }
 }

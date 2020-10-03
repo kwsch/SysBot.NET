@@ -22,9 +22,6 @@ namespace SysBot.Pokemon
         [Category(FeatureToggle), Description("ConsoleLanguageSpecific screen detection method only. Set your Switch console language here for bots to work properly. All consoles should be using the same language.")]
         public ConsoleLanguageParameter ConsoleLanguage { get; set; }
 
-        [Category(FeatureToggle), Description("Extra time in milliseconds to wait after clicking + to reconnect to Y-Comm.")]
-        public int ExtraTimeReconnectYComm { get; set; } = 0;
-
         [Category(Operation)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public CountSettings Counts { get; set; } = new CountSettings();
@@ -44,6 +41,10 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Stop conditions for EggBot, FossilBot, and EncounterBot.")]
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public StopConditionSettings StopConditions { get; set; } = new StopConditionSettings();
+
+        [Category(Operation)]
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public TimingSettings Timings { get; set; } = new TimingSettings();
 
         // Bots
 
