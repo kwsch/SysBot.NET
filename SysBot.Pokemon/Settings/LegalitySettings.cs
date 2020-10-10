@@ -46,6 +46,10 @@ namespace SysBot.Pokemon
         [Category(Generate), Description("When set, the bot will only send a Pokémon if it is legal!")]
         public bool VerifyLegality { get; set; } = true;
 
+
+        [Category(Generate), Description("Allow users to submit custom OT, TID, SID, and OT Gender in Showdown sets.")]
+        public bool AllowTrainerDataOverride { get; set; } = false;
+
         // Misc
 
         [Category(Misc), Description("Zero out HOME tracker regardless of current tracker value. Applies to user requested PKM files as well.")]
