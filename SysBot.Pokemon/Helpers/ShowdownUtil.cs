@@ -35,7 +35,8 @@ namespace SysBot.Pokemon
 
         private static readonly string[] splittables =
         {
-            "Ability:", "EVs:", "IVs:", "Shiny:", "Gigantamax:", "Ball:", "- ", "Level:", "Happiness:",
+            "Ability:", "EVs:", "IVs:", "Shiny:", "Gigantamax:", "Ball:", "- ", "Level:",
+            "Happiness:", "Language:", "OT:", "OTGender:", "TID:", "SID:",
             "Adamant Nature", "Bashful Nature", "Brave Nature", "Bold Nature", "Calm Nature",
             "Careful Nature", "Docile Nature", "Gentle Nature", "Hardy Nature", "Hasty Nature",
             "Impish Nature", "Jolly Nature", "Lax Nature", "Lonely Nature", "Mild Nature",
