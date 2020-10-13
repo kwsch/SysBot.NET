@@ -34,6 +34,7 @@ namespace SysBot.Pokemon
             APILegality.UseXOROSHIRO = cfg.UseXOROSHIRO;
             Legalizer.EnableEasterEggs = cfg.EnableEasterEggs;
             APILegality.AllowTrainerOverride = cfg.AllowTrainerDataOverride;
+            APILegality.AllowBatchCommands = cfg.AllowBatchCommands;
         }
 
         private static void InitializeTrainerDatabase(LegalitySettings cfg)
