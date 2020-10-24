@@ -4,18 +4,18 @@ namespace SysBot.Pokemon
 {
     public static class PokeDataOffsets
     {
-        public const uint BoxStartOffset = 0x4506d890;
-        public const uint CurrentBoxOffset = 0x450BE81E;
-        public const uint TrainerDataOffset = 0x45061108;
-        public const uint SoftBanUnixTimespanOffset = 0x450C09F8;
-        public const uint IsConnectedOffset = 0x2F71D593;
-        public const uint TextSpeedOffset = 0x45061290;
-        public const uint ItemTreasureAddress = 0x45060B60;
+        public const uint BoxStartOffset = 0x45075880;
+        public const uint CurrentBoxOffset = 0x450C680E;
+        public const uint TrainerDataOffset = 0x45068F18;
+        public const uint SoftBanUnixTimespanOffset = 0x450C89E8;
+        public const uint IsConnectedOffset = 0x30c7cca8;
+        public const uint TextSpeedOffset = 0x450690A0;
+        public const uint ItemTreasureAddress = 0x45068970;
 
         // Raid Offsets
         // The dex number of the Pokémon the host currently has chosen. 
         // Details for each player span 0x30, so add 0x30 to get to the next offset.
-        public const uint RaidP0PokemonOffset = 0x8398A184;
+        public const uint RaidP0PokemonOffset = 0x8398A294;
         // Add to each Pokémon offset.  AltForm used.
         public const uint RaidAltFormInc = 0x4;
         // Add to each Pokémon offset.  0 = male, 1 = female, 2 = genderless.
@@ -24,40 +24,41 @@ namespace SysBot.Pokemon
         public const uint RaidShinyIncr = 0xC;
         // Add to each Pokémon offset.  Bool for whether they have locked in their Pokémon.
         public const uint RaidLockedInIncr = 0x1C;
-        public const uint RaidBossOffset = 0x8398A14C;
+        public const uint RaidBossOffset = 0x8398A25C;
 
-        // 1 when in a battle or raid, 0 otherwise.
-        public const uint InBattleRaidOffset = 0x3F12850D;
+        // 0 when not in a battle or raid, 0x40 or 0x41 otherwise.
+        public const uint InBattleRaidOffsetSW = 0x3F128624;
+        public const uint InBattleRaidOffsetSH = 0x3F128626;
 
         // Pokémon Encounter Offsets
-        public const uint WildPokemonOffset = 0x8FEA3358;
-        public const uint RaidPokemonOffset = 0x886A92C8;
-        public const uint LegendaryPokemonOffset = 0x886BC058;
+        public const uint WildPokemonOffset = 0x8FEA3648;
+        public const uint RaidPokemonOffset = 0x886A95B8;
+        public const uint LegendaryPokemonOffset = 0x886BC348;
 
         // Link Trade Offsets
-        public const uint LinkTradePartnerPokemonOffset = 0xAF285F68;
-        public const uint LinkTradePartnerNameOffset = 0xAF28373C;
-        public const uint LinkTradeSearchingOffset = 0x2f76c2b8;
+        public const uint LinkTradePartnerPokemonOffset = 0xAF286078;
+        public const uint LinkTradePartnerNameOffset = 0xAF28384C;
+        public const uint LinkTradeSearchingOffset = 0x2F76C3C8;
 
         // Suprise Trade Offsets
-        public const uint SurpriseTradePartnerPokemonOffset = 0x4505f790;
+        public const uint SurpriseTradePartnerPokemonOffset = 0x450675a0;
 
-        public const uint SurpriseTradeLockSlot = 0x4505f8ec;
-        public const uint SurpriseTradeLockBox = 0x4505f8e8;
+        public const uint SurpriseTradeLockSlot = 0x450676fc;
+        public const uint SurpriseTradeLockBox = 0x450676f8;
 
-        public const uint SurpriseTradeSearchOffset = 0x4505f8f4;
+        public const uint SurpriseTradeSearchOffset = 0x45067704;
         public const uint SurpriseTradeSearch_Empty = 0x00000000;
         public const uint SurpriseTradeSearch_Searching = 0x01000000;
         public const uint SurpriseTradeSearch_Found = 0x0200012C;
-        public const uint SurpriseTradePartnerNameOffset = 0x4505f8f8;
+        public const uint SurpriseTradePartnerNameOffset = 0x45067708;
 
         /* Route 5 Daycare */
-        public const uint DayCare_Wildarea_Step_Counter = 0x45117C64;
-        public const uint DayCare_Wildarea_Egg_Is_Ready = 0x45117C70;
+        public const uint DayCare_Wildarea_Step_Counter = 0x4511FC54;
+        public const uint DayCare_Wildarea_Egg_Is_Ready = 0x4511FC60;
 
         /* Wild Area Daycare */
-        public const uint DayCare_Route5_Step_Counter = 0x451179AC;
-        public const uint DayCare_Route5_Egg_Is_Ready = 0x451179B8;
+        public const uint DayCare_Route5_Step_Counter = 0x4511F99C;
+        public const uint DayCare_Route5_Egg_Is_Ready = 0x4511F9A8;
 
         public const int BoxFormatSlotSize = 0x158;
         public const int TrainerDataLength = 0x110;
@@ -66,21 +67,21 @@ namespace SysBot.Pokemon
         // CurrentScreenOffset can be unreliable for Overworld; this one is 1 on Overworld and 0 otherwise.
         // Varies based on console language which is configured in Hub.
         // Default setting works for English, Dutch, Portuguese, and Russian
-        public const uint OverworldOffset = 0x2F770528;
-        public const uint OverworldOffsetFrench = 0x2F770718;
-        public const uint OverworldOffsetGerman = 0x2F7707F8;
-        public const uint OverworldOffsetSpanish = 0x2F7706E8;
-        public const uint OverworldOffsetItalian = 0x2F7704A8;
-        public const uint OverworldOffsetJapanese = 0x2F770688;
-        public const uint OverworldOffsetChineseT = 0x2F76F6C8;
-        public const uint OverworldOffsetChineseS = 0x2F76F728;
-        public const uint OverworldOffsetKorean = 0x2F76FB28;
+        public const uint OverworldOffset = 0x2F770638;
+        public const uint OverworldOffsetFrench = 0x2F770828;
+        public const uint OverworldOffsetGerman = 0x2F770908;
+        public const uint OverworldOffsetSpanish = 0x2F7707F8;
+        public const uint OverworldOffsetItalian = 0x2F7705B8;
+        public const uint OverworldOffsetJapanese = 0x2F770798;
+        public const uint OverworldOffsetChineseT = 0x2F76F7D8;
+        public const uint OverworldOffsetChineseS = 0x2F76F838;
+        public const uint OverworldOffsetKorean = 0x2F76FC38;
 
-        // For detecting when we're able to interact with the menu in a battle.
-        public const uint BattleMenuOffset = 0x69B99418;
+        // For detecting when we're on the in-battle menu. 
+        public const uint BattleMenuOffset = 0x6B578EDC;
 
-        // Most screen detection checks the values at this offset.
-        public const uint CurrentScreenOffset = 0x6b30f9e0;
+        // Original screen detection offset.
+        public const uint CurrentScreenOffset = 0x6B30FA00;
 
         // Value goes between either of these; not game or area specific.
         public const uint CurrentScreen_Overworld1 = 0xFFFF5127;
