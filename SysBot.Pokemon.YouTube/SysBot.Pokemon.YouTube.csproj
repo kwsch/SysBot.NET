@@ -13,7 +13,7 @@
 		<PackageReference Include="Google.Apis.Core" Version="1.45.0" />
 		<PackageReference Include="Google.Apis.YouTube.v3" Version="1.45.0.1929" />
 		<PackageReference Include="Google.Apis.YouTubePartner.v1" Version="1.35.1.1334" />
-		<PackageReference Include="PKHeX.Core" Version="20.10.10" />
+		<PackageReference Include="PKHeX.Core" Version="20.10.11" />
 	</ItemGroup>
 
 	<ItemGroup>
