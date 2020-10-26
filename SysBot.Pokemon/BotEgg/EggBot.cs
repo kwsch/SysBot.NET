@@ -60,7 +60,7 @@ namespace SysBot.Pokemon
                 Log($"Egg available after {attempts} attempts! Clearing destination slot.");
                 await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
 
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < 6; i++)
                     await Click(A, 0_400, token).ConfigureAwait(false);
 
                 // Safe to mash B from here until we get out of all menus.
@@ -76,7 +76,7 @@ namespace SysBot.Pokemon
                 }
 
                 encounterCount++;
-                Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
+                Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}");
                 Counts.AddCompletedEggs();
 
                 if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
