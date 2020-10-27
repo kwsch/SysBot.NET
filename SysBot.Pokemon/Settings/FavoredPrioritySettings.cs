@@ -12,10 +12,13 @@ namespace SysBot.Pokemon
         // We want to allow hosts to give preferential treatment, while still providing service to users without favor.
         // These are the minimum values that we permit. These values yield a fair placement for the favored.
         private const int _mfi = 15;
+        private const float _bmin = 1;
+        private const float _bmax = 3;
         private const float _mexp = 0.5f;
         private const float _mmul = 0.1f;
 
         private int _minimumFreeAhead = _mfi;
+        private float _bypassFactor = 1.5f;
         private float _exponent = 0.777f;
         private float _multiply = 0.5f;
 
@@ -41,6 +44,16 @@ namespace SysBot.Pokemon
         {
             get => _minimumFreeAhead;
             set => _minimumFreeAhead = Math.Max(_mfi, value);
+        }
+
+        [Category(Configure), Description("Minimum amount of unfavored users to trigger MinimumFreeAhead from activating.")]
+        public int MinimumFreeBypass => (int)Math.Ceiling(MinimumFreeAhead * MinimumFreeBypassFactor);
+
+        [Category(Configure), Description("Scalar that is multiplied to MinimumFreeAhead to determine the minimum activation threshold.")]
+        public float MinimumFreeBypassFactor
+        {
+            get => _bypassFactor;
+            set => _bypassFactor = Math.Min(_bmax, Math.Max(_bmin, value));
         }
     }
 }

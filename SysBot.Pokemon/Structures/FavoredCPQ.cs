@@ -62,14 +62,19 @@ namespace SysBot.Pokemon
 
         private static int GetInsertPosition(int total, int favored, IFavoredCPQSetting s)
         {
-            int free = total - favored;
+            int unfavored = total - favored;
             int pos = s.Mode switch
             {
-                FavoredMode.Exponent => (int) Math.Ceiling(Math.Pow(free, s.Exponent)),
-                FavoredMode.Multiply => (int) Math.Ceiling(free * s.Multiply),
-                _ => free,
+                FavoredMode.Exponent => (int) Math.Ceiling(Math.Pow(unfavored, s.Exponent)),
+                FavoredMode.Multiply => (int) Math.Ceiling(unfavored * s.Multiply),
+                _ => unfavored,
             };
-            return Math.Max(s.MinimumFreeAhead, Math.Max(0, pos));
+
+            var clamp = Math.Max(0, pos);
+            // If there are enough unfavored users to require our minimum, then clamp.
+            if (unfavored >= s.MinimumFreeBypass)
+                return Math.Max(s.MinimumFreeAhead, clamp);
+            return clamp;
         }
     }
 
@@ -79,6 +84,8 @@ namespace SysBot.Pokemon
         float Exponent { get; }
         float Multiply { get; }
         int MinimumFreeAhead { get; }
+        int MinimumFreeBypass { get; }
+        float MinimumFreeBypassFactor { get; }
     }
 
     public enum FavoredMode
