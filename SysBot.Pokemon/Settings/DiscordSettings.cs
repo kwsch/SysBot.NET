@@ -52,6 +52,9 @@ namespace SysBot.Pokemon
 
         // Operation
 
+        [Category(Operation), Description("Users with this role are allowed to join the queue with a better position.")]
+        public string RoleFavored { get; set; } = DefaultDisable;
+
         [Category(Operation), Description("Users with these user IDs cannot use the bot.")]
         public string UserBlacklist { get; set; } = string.Empty;
 

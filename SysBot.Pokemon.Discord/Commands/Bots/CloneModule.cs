@@ -16,8 +16,8 @@ namespace SysBot.Pokemon.Discord
         [RequireQueueRole(nameof(DiscordManager.RolesClone))]
         public async Task CloneAsync(int code)
         {
-            bool sudo = Context.User.GetIsSudo();
-            await Context.AddToQueueAsync(code, Context.User.Username, sudo, new PK8(), PokeRoutineType.Clone, PokeTradeType.Clone).ConfigureAwait(false);
+            var sig = Context.User.GetFavor();
+            await Context.AddToQueueAsync(code, Context.User.Username, sig, new PK8(), PokeRoutineType.Clone, PokeTradeType.Clone).ConfigureAwait(false);
         }
 
         [Command("clone")]
@@ -27,8 +27,8 @@ namespace SysBot.Pokemon.Discord
         public async Task CloneAsync([Summary("Trade Code")][Remainder] string code)
         {
             int tradeCode = Util.ToInt32(code);
-            bool sudo = Context.User.GetIsSudo();
-            await Context.AddToQueueAsync(tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sudo, new PK8(), PokeRoutineType.Clone, PokeTradeType.Clone).ConfigureAwait(false);
+            var sig = Context.User.GetFavor();
+            await Context.AddToQueueAsync(tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new PK8(), PokeRoutineType.Clone, PokeTradeType.Clone).ConfigureAwait(false);
         }
 
         [Command("clone")]

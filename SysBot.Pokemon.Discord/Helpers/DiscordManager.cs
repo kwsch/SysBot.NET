@@ -14,6 +14,7 @@ namespace SysBot.Pokemon.Discord
 
         public readonly SensitiveSet<ulong> SudoDiscord = new SensitiveSet<ulong>();
         public readonly SensitiveSet<string> SudoRoles = new SensitiveSet<string>();
+        public readonly SensitiveSet<string> FavoredRoles = new SensitiveSet<string>();
 
         public readonly SensitiveSet<string> RolesClone = new SensitiveSet<string>();
         public readonly SensitiveSet<string> RolesTrade = new SensitiveSet<string>();
@@ -26,6 +27,19 @@ namespace SysBot.Pokemon.Discord
 
         public bool CanUseCommandChannel(ulong channel) => WhitelistedChannels.Count == 0 || WhitelistedChannels.Contains(channel);
         public bool CanUseCommandUser(ulong uid) => !BlacklistedUsers.Contains(uid);
+
+        public RequestSignificance GetSignificance(IEnumerable<string> roles)
+        {
+            var result = RequestSignificance.None;
+            foreach (var r in roles)
+            {
+                if (SudoRoles.Contains(r))
+                    return RequestSignificance.Sudo;
+                if (FavoredRoles.Contains(r))
+                    result = RequestSignificance.Favored;
+            }
+            return result;
+        }
 
         public DiscordManager(PokeTradeHubConfig cfg)
         {
@@ -60,6 +74,7 @@ namespace SysBot.Pokemon.Discord
 
             SudoDiscord.Read(cfg.Discord.GlobalSudoList, ulong.Parse);
             SudoRoles.Read(cfg.Discord.RoleSudo, z => z);
+            FavoredRoles.Read(cfg.Discord.RoleFavored, z => z);
 
             RolesClone.Read(cfg.Discord.RoleCanClone, z => z);
             RolesTrade.Read(cfg.Discord.RoleCanTrade, z => z);
@@ -74,6 +89,7 @@ namespace SysBot.Pokemon.Discord
             Config.Discord.ChannelWhitelist = WhitelistedChannels.Write();
             Config.Discord.RoleSudo = SudoRoles.Write();
             Config.Discord.GlobalSudoList = SudoDiscord.Write();
+            Config.Discord.RoleFavored = FavoredRoles.Write();
 
             Config.Discord.RoleCanClone = RolesClone.Write();
             Config.Discord.RoleCanTrade = RolesTrade.Write();

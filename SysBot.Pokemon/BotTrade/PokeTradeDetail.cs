@@ -4,10 +4,12 @@ using System.Threading;
 
 namespace SysBot.Pokemon
 {
-    public class PokeTradeDetail<TPoke> : IEquatable<PokeTradeDetail<TPoke>> where TPoke : PKM, new()
+    public class PokeTradeDetail<TPoke> : IEquatable<PokeTradeDetail<TPoke>>, IFavoredEntry where TPoke : PKM, new()
     {
         // ReSharper disable once StaticMemberInGenericType
         private static int CreatedCount;
+
+        public bool IsFavored { get; }
 
         public readonly int Code;
         public TPoke TradeData;
@@ -20,7 +22,7 @@ namespace SysBot.Pokemon
         public bool IsSynchronized => Type == PokeTradeType.Random;
         public bool IsRetry;
 
-        public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code)
+        public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code, bool favored = false)
         {
             Code = code;
             TradeData = pkm;
@@ -28,6 +30,7 @@ namespace SysBot.Pokemon
             Notifier = notifier;
             Type = type;
             Time = DateTime.Now;
+            IsFavored = favored;
 
             ID = Interlocked.Increment(ref CreatedCount) % 3000;
         }

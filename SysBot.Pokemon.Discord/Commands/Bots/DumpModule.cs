@@ -16,8 +16,8 @@ namespace SysBot.Pokemon.Discord
         [RequireQueueRole(nameof(DiscordManager.RolesDump))]
         public async Task DumpAsync(int code)
         {
-            bool sudo = Context.User.GetIsSudo();
-            await Context.AddToQueueAsync(code, Context.User.Username, sudo, new PK8(), PokeRoutineType.Dump, PokeTradeType.Dump).ConfigureAwait(false);
+            var sig = Context.User.GetFavor();
+            await Context.AddToQueueAsync(code, Context.User.Username, sig, new PK8(), PokeRoutineType.Dump, PokeTradeType.Dump).ConfigureAwait(false);
         }
 
         [Command("dump")]
@@ -27,8 +27,8 @@ namespace SysBot.Pokemon.Discord
         public async Task DumpAsync([Summary("Trade Code")][Remainder] string code)
         {
             int tradeCode = Util.ToInt32(code);
-            bool sudo = Context.User.GetIsSudo();
-            await Context.AddToQueueAsync(tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sudo, new PK8(), PokeRoutineType.Dump, PokeTradeType.Dump).ConfigureAwait(false);
+            var sig = Context.User.GetFavor();
+            await Context.AddToQueueAsync(tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new PK8(), PokeRoutineType.Dump, PokeTradeType.Dump).ConfigureAwait(false);
         }
 
         [Command("dump")]

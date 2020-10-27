@@ -20,6 +20,9 @@ namespace SysBot.Pokemon
             Hub = hub;
             Info = new TradeQueueInfo<T>(hub);
             AllQueues = new[] { Seed, Dump, Clone, Trade, };
+
+            foreach (var q in AllQueues)
+                q.Queue.Settings = hub.Config.Favoritism;
         }
 
         public PokeTradeQueue<T> GetQueue(PokeRoutineType type)
@@ -52,7 +55,7 @@ namespace SysBot.Pokemon
             var random = Hub.Ledy.Pool.GetRandomPoke();
             var code = cfg.RandomCode ? Hub.Config.Trade.GetRandomTradeCode() : cfg.TradeCode;
             var trainer = new PokeTradeTrainerInfo("Random Distribution");
-            detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random, code);
+            detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random, code, false);
             return true;
         }
 

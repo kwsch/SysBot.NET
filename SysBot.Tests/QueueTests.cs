@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using PKHeX.Core;
 using SysBot.Pokemon;
 using System.Threading;
@@ -79,9 +80,9 @@ namespace SysBot.Tests
             public override void SoftStop() { }
         }
 
-        private static TradeEntry<PK8> GetTestTrade(TradeQueueInfo<PK8> info, int tag)
+        private static TradeEntry<PK8> GetTestTrade(TradeQueueInfo<PK8> info, int tag, bool favor = false)
         {
-            var trade = GetTestTrade(tag);
+            var trade = GetTestTrade(tag, favor);
             trade.Trade.Notifier.OnFinish = r => RemoveAndCheck(info, trade, r);
             return trade;
         }
@@ -93,10 +94,56 @@ namespace SysBot.Tests
             routine.Should().NotBeNull();
         }
 
-        private static TradeEntry<PK8> GetTestTrade(int tag)
+        private static TradeEntry<PK8> GetTestTrade(int tag, bool favor)
         {
-            var d3 = new PokeTradeDetail<PK8>(new PK8 { Species = tag }, new PokeTradeTrainerInfo($"Test {tag}"), new PokeTradeLogNotifier<PK8>(), PokeTradeType.Specific, tag);
+            var d3 = new PokeTradeDetail<PK8>(new PK8 { Species = tag }, new PokeTradeTrainerInfo($"{(favor ? "*" : "")}Test {tag}"), new PokeTradeLogNotifier<PK8>(), PokeTradeType.Specific, tag, favor);
             return new TradeEntry<PK8>(d3, (ulong)tag, PokeRoutineType.LinkTrade, $"Test Trade {tag}");
+        }
+
+        [Fact]
+        public void TestFavortism()
+        {
+            var settings = new PokeTradeHubConfig();
+            var hub = new PokeTradeHub<PK8>(settings);
+            var info = new TradeQueueInfo<PK8>(hub);
+            var queue = info.Hub.Queues.GetQueue(PokeRoutineType.LinkTrade);
+
+            const int count = 100;
+
+            // Enqueue a bunch
+            for (int i = 0; i < count; i++)
+            {
+                var s = GetTestTrade(info, i + 1);
+                var r = info.AddToTradeQueue(s, s.UserID);
+                r.Should().Be(QueueResultAdd.Added);
+            }
+
+            queue.Count.Should().Be(count);
+
+            var f = settings.Favoritism;
+            f.Mode = FavoredMode.Exponent;
+            f.Multiply = 0.4f;
+            f.Exponent = 0.777f;
+
+            // Enqueue some favorites
+            for (int i = 0; i < count / 10; i++)
+            {
+                var s = GetTestTrade(info, count + i + 1, true);
+                var r = info.AddToTradeQueue(s, s.UserID);
+                r.Should().Be(QueueResultAdd.Added);
+            }
+
+            int expectedPosition = (int)Math.Ceiling(Math.Pow(count, f.Exponent));
+            for (int i = 0; i < expectedPosition; i++)
+            {
+                queue.TryDequeue(out var detail, out _);
+                detail.IsFavored.Should().Be(false);
+            }
+
+            {
+                queue.TryDequeue(out var detail, out _);
+                detail.IsFavored.Should().Be(true);
+            }
         }
     }
 }

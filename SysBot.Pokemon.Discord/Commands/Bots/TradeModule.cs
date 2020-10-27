@@ -34,8 +34,6 @@ namespace SysBot.Pokemon.Discord
         [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
         public async Task TradeAsyncAttach([Summary("Trade Code")] int code)
         {
-            var sudo = Context.User.GetIsSudo();
-
             var attachment = Context.Message.Attachments.FirstOrDefault();
             if (attachment == default)
             {
@@ -50,7 +48,8 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            await AddTradeToQueueAsync(code, Context.User.Username, pk8, sudo).ConfigureAwait(false);
+            var sig = Context.User.GetFavor();
+            await AddTradeToQueueAsync(code, Context.User.Username, pk8, sig).ConfigureAwait(false);
         }
 
         [Command("trade")]
@@ -84,8 +83,8 @@ namespace SysBot.Pokemon.Discord
             }
 
             pkm.ResetPartyStats();
-            var sudo = Context.User.GetIsSudo();
-            await AddTradeToQueueAsync(code, Context.User.Username, (PK8)pkm, sudo).ConfigureAwait(false);
+            var sig = Context.User.GetFavor();
+            await AddTradeToQueueAsync(code, Context.User.Username, (PK8)pkm, sig).ConfigureAwait(false);
         }
 
         [Command("trade")]
@@ -108,7 +107,7 @@ namespace SysBot.Pokemon.Discord
             await TradeAsyncAttach(code).ConfigureAwait(false);
         }
 
-        private async Task AddTradeToQueueAsync(int code, string trainerName, PK8 pk8, bool sudo)
+        private async Task AddTradeToQueueAsync(int code, string trainerName, PK8 pk8, RequestSignificance sig)
         {
             if (!pk8.CanBeTraded())
             {
@@ -123,7 +122,7 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            await Context.AddToQueueAsync(code, trainerName, sudo, pk8, PokeRoutineType.LinkTrade, PokeTradeType.Specific).ConfigureAwait(false);
+            await Context.AddToQueueAsync(code, trainerName, sig, pk8, PokeRoutineType.LinkTrade, PokeTradeType.Specific).ConfigureAwait(false);
         }
     }
 }

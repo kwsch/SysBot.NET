@@ -90,6 +90,9 @@ namespace SysBot.Pokemon
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public YouTubeSettings YouTube { get; set; } = new YouTubeSettings();
 
+        [Category(Integration), Description("Allows favored users to join the queue with a more favorable position than unfavored users.")]
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public FavoredPrioritySettings Favoritism { get; set; } = new FavoredPrioritySettings();
 
         [Category(Integration), Description("Configure generation of assets for streaming.")]
         [TypeConverter(typeof(ExpandableObjectConverter))]

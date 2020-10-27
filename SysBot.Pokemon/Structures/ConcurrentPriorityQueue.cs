@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 
-// ms-lpl, removed from their website but archived on the internet
+// ms-lpl, removed from their website but archived on the internet, with alterations to be inheritable
 
 namespace System.Collections.Concurrent
 {
@@ -11,8 +11,8 @@ namespace System.Collections.Concurrent
     [DebuggerDisplay("Count={" + nameof(Count) + "}")]
     public class ConcurrentPriorityQueue<TKey, TValue> : IProducerConsumerCollection<KeyValuePair<TKey, TValue>> where TKey : IComparable<TKey> where TValue : IEquatable<TValue>
     {
-        private readonly object _syncLock = new object();
-        private readonly MinQueue Queue = new MinQueue();
+        protected readonly object _syncLock = new object();
+        protected readonly MinQueue Queue = new MinQueue();
 
         /// <summary>Initializes a new instance of the ConcurrentPriorityQueue class.</summary>
         public ConcurrentPriorityQueue() { }
@@ -203,7 +203,7 @@ namespace System.Collections.Concurrent
         object ICollection.SyncRoot => _syncLock;
 
         /// <summary>Implements a queue that prioritizes smaller values.</summary>
-        private sealed class MinQueue
+        protected sealed class MinQueue
         {
             /// <summary>Gets the number of objects stored in the Queue.</summary>
             public int Count => Items.Count;
