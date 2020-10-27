@@ -46,10 +46,10 @@ namespace SysBot.Pokemon
             set => _minimumFreeAhead = Math.Max(_mfi, value);
         }
 
-        [Category(Configure), Description("Minimum amount of unfavored users to trigger MinimumFreeAhead from activating.")]
+        [Category(Configure), Description("Minimum amount of unfavored users in queue to trigger {MinimumFreeAhead} from activating. When the aforementioned amount is higher than this value, a favored user is not placed ahead of {MinimumFreeAhead} unfavored users.")]
         public int MinimumFreeBypass => (int)Math.Ceiling(MinimumFreeAhead * MinimumFreeBypassFactor);
 
-        [Category(Configure), Description("Scalar that is multiplied to MinimumFreeAhead to determine the minimum activation threshold.")]
+        [Category(Configure), Description("Scalar that is multiplied with {MinimumFreeAhead} to determine the {MinimumFreeBypass} value.")]
         public float MinimumFreeBypassFactor
         {
             get => _bypassFactor;

@@ -85,7 +85,6 @@ namespace SysBot.Pokemon
         float Multiply { get; }
         int MinimumFreeAhead { get; }
         int MinimumFreeBypass { get; }
-        float MinimumFreeBypassFactor { get; }
     }
 
     public enum FavoredMode
