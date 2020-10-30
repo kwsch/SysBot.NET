@@ -18,7 +18,7 @@ namespace SysBot.Pokemon
         public int ExtraTimeCheckDLC { get; set; } = 0;
 
         [Category(OpenGame), Description("Extra time in milliseconds to wait before clicking A in title screen.")]
-        public int ExtraTimeLoadGame { get; set; } = 0;
+        public int ExtraTimeLoadGame { get; set; } = 3000;
 
         // Closing the game.
         [Category(CloseGame), Description("Extra time in milliseconds to wait after pressing HOME to minimize the game.")]
