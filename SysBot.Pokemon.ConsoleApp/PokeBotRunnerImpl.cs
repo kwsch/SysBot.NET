@@ -4,7 +4,7 @@ using SysBot.Pokemon.Twitch;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SysBot.Pokemon
+namespace SysBot.Pokemon.ConsoleApp
 {
     /// <summary>
     /// Bot Environment implementation with Integrations added.
