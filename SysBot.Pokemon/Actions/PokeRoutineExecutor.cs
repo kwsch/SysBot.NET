@@ -154,12 +154,12 @@ namespace SysBot.Pokemon
             return sav;
         }
 
-        protected async Task EnterTradeCode(int code, CancellationToken token)
+        protected async Task EnterTradeCode(int code, PokeTradeHubConfig config, CancellationToken token)
         {
             var keys = TradeUtil.GetPresses(code);
             foreach (var key in keys)
             {
-                const int delay = 0_500;
+                int delay = config.Timings.KeypressTime;
                 await Click(key, delay, token).ConfigureAwait(false);
             }
             // Confirm Code outside of this method (allow synchronization)

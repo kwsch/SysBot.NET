@@ -185,7 +185,7 @@ namespace SysBot.Pokemon
 
             var code = poke.Code;
             Log($"Entering Link Trade Code: {code:0000 0000}...");
-            await EnterTradeCode(code, token).ConfigureAwait(false);
+            await EnterTradeCode(code, Hub.Config, token).ConfigureAwait(false);
 
             // Wait for Barrier to trigger all bots simultaneously.
             WaitAtBarrierIfApplicable(token);
