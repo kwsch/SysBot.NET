@@ -1,7 +1,9 @@
-﻿using PKHeX.Core;
+﻿using System;
+using PKHeX.Core;
 using SysBot.Base;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace SysBot.Pokemon
 {
@@ -90,7 +92,7 @@ namespace SysBot.Pokemon
                     continue;
                 }
 
-                if (DisallowSurpriseTrade(pk8))
+                if (DisallowSurpriseTrade(pk8, la.EncounterMatch))
                 {
                     LogUtil.LogInfo("Provided pk8 was loaded but can't be Surprise Traded: " + dest.FileName, nameof(PokemonPool<T>));
                     surpriseBlocked++;
@@ -115,16 +117,54 @@ namespace SysBot.Pokemon
                 loadedAny = true;
             }
 
+            // Anti-spam: Same trainer names.
+            if (Files.Count != 1 && Files.Select(z => z.Value.RequestInfo.OT_Name).Distinct().Count() == 1)
+            {
+                surpriseBlocked = Count;
+                Files.Clear();
+            }
+
             if (surpriseBlocked == Count)
                 LogUtil.LogInfo("Surprise trading will fail; failed to load any compatible files.", nameof(PokemonPool<T>));
 
             return loadedAny;
         }
 
-        private static bool DisallowSurpriseTrade(PK8 pk8)
+        private static bool DisallowSurpriseTrade(PKM pk, IEncounterable enc)
         {
+            // Anti-spam
+            if (pk.IsNicknamed && !(enc is EncounterTrade t && t.IsNicknamed))
+                return true;
+            return DisallowSurpriseTrade(pk);
+        }
+
+        private static bool DisallowSurpriseTrade(PKM pk)
+        {
+            // Anti-spam
+            if (IsSpammyString(pk.OT_Name))
+                return true;
+
             // Surprise Trade currently bans Mythicals and Legendaries, not Sub-Legendaries.
-            return Legal.Legends.Contains(pk8.Species);
+            if (Legal.Legends.Contains(pk.Species))
+                return true;
+
+            // Can't surprise trade fused stuff.
+            if (AltFormInfo.IsFusedForm(pk.Species, pk.AltForm, pk.Format))
+                return true;
+
+            return false;
+        }
+
+        private static bool IsSpammyString(string name)
+        {
+            bool isUri = Uri.IsWellFormedUriString(name, UriKind.RelativeOrAbsolute);
+            if (isUri)
+                return true;
+
+            if (name.IndexOf('.') >= 0)
+                return true;
+
+            return name.IndexOf("pkm", StringComparison.OrdinalIgnoreCase) >= 0;
         }
     }
 }
