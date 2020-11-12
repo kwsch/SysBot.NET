@@ -133,7 +133,7 @@ namespace SysBot.Pokemon
         private static bool DisallowSurpriseTrade(PKM pk, IEncounterable enc)
         {
             // Anti-spam
-            if (pk.IsNicknamed && !(enc is EncounterTrade t && t.IsNicknamed))
+            if (pk.IsNicknamed && !(enc is EncounterTrade t && t.IsNicknamed) && pk.Nickname.Length > 6)
                 return true;
             return DisallowSurpriseTrade(pk);
         }
@@ -157,6 +157,9 @@ namespace SysBot.Pokemon
 
         private static bool IsSpammyString(string name)
         {
+            if (name.Length <= 6)
+                return false;
+
             bool isUri = Uri.IsWellFormedUriString(name, UriKind.RelativeOrAbsolute);
             if (isUri)
                 return true;
