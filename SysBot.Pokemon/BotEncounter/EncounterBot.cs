@@ -104,7 +104,7 @@ namespace SysBot.Pokemon
 
                 Connection.Log("Resetting Eternatus by restarting the game");
                 await CloseGame(Hub.Config, token).ConfigureAwait(false);
-                await StartGame(Hub.Config, token).ConfigureAwait(false); 
+                await StartGame(Hub.Config, token).ConfigureAwait(false);
             }
         }
 

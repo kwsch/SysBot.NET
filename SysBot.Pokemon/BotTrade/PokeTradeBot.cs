@@ -281,6 +281,62 @@ namespace SysBot.Pokemon
                 for (int i = 0; i < 5; i++)
                     await Click(A, 0_500, token).ConfigureAwait(false);
             }
+
+            else if (poke.Type == PokeTradeType.FixOT)
+            {
+                var clone = (PK8)pk.Clone();
+                var adOT = System.Text.RegularExpressions.Regex.Match(clone.OT_Name, @"(YT$)|(YT\w*$)|(Lab$)|(\.\w*)|(TV$)|(PKHeX)|(FB:)|(SysBot)|(AuSLove)").Value != ""
+                    || System.Text.RegularExpressions.Regex.Match(clone.Nickname, @"(YT$)|(YT\w*$)|(Lab$)|(\.\w*)|(TV$)|(PKHeX)|(FB:)|(SysBot)|(AuSLove)").Value != "";
+
+                if (adOT && clone.OT_Name != $"{TrainerName}")
+                {
+                    clone.OT_Name = clone.FatefulEncounter ? clone.OT_Name : $"{TrainerName}";
+                    clone.ClearNickname();
+                    clone.PKRS_Infected = false;
+                    clone.PKRS_Cured = false;
+                    clone.PKRS_Days = 0;
+                    clone.PKRS_Strain = 0;
+                    clone.MetDate = DateTime.Parse("2020/10/20");
+                    poke.SendNotification(this, $"```fix\nDetected an ad OT/Nickname with your {(Species)clone.Species}!```");
+                }
+                else
+                {
+                    poke.SendNotification(this, "```fix\nNo ad detected in Nickname or OT. Exiting trade...```");
+                    await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
+                    return PokeTradeResult.IllegalTrade;
+                }
+
+                var la = new LegalityAnalysis(clone);
+                if (!la.Valid && Hub.Config.Legality.VerifyLegality)
+                {
+                    Log($"FixOT request has detected an invalid Pokémon: {(Species)clone.Species}");
+                    if (DumpSetting.Dump)
+                        DumpPokemon(DumpSetting.DumpFolder, "hacked", clone);
+
+                    var report = la.Report();
+                    Log(report);
+                    poke.SendNotification(this, "This Pokémon is not legal per PKHeX's legality checks. I am forbidden from fixing this. Exiting trade.");
+                    poke.SendNotification(this, report);
+
+                    await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
+                    return PokeTradeResult.IllegalTrade;
+                }
+
+                if (Hub.Config.Legality.ResetHOMETracker)
+                    clone.Tracker = 0;
+
+                poke.SendNotification(this, $"```fix\nFixed your {(Species)clone.Species}! Now confirm the trade!```");
+                Log($"Fixed Nickname/OT for {(Species)clone.Species}.");
+
+                await ReadUntilPresent(LinkTradePartnerPokemonOffset, 3_000, 1_000, token).ConfigureAwait(false);
+                await Click(A, 0_800, token).ConfigureAwait(false);
+                await SetBoxPokemon(clone, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+                pkm = clone;
+
+                for (int i = 0; i < 5; i++)
+                    await Click(A, 0_500, token).ConfigureAwait(false);
+            }
+
             else if (poke.Type == PokeTradeType.Clone)
             {
                 // Inject the shown Pokémon.

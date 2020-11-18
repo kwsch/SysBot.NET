@@ -10,6 +10,7 @@
         LinkTrade,
         SeedCheck,
         Clone,
+        FixOT,
         Dump,
 
         EggFetch,
