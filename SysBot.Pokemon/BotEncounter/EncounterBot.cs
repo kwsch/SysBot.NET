@@ -115,18 +115,12 @@ namespace SysBot.Pokemon
                 Log("Looking for a new dog...");
 
                 // At the start of each loop, an A press is needed to exit out of a prompt.
-                await Click(A, 0_500, token).ConfigureAwait(false);
+                await Click(A, 0_200, token).ConfigureAwait(false);
                 await SetStick(LEFT, 0, 30000, 1_000, token).ConfigureAwait(false);
 
-                // Encounters Zacian/Zamazenta
-                await Click(A, 0_600, token).ConfigureAwait(false);
-
-                // Cutscene loads
-                await Click(A, 2_600, token).ConfigureAwait(false);
-
-                // Click through all the menus.
+                // Encounters Zacian/Zamazenta and clicks through all the menus.
                 while (!await IsInBattle(token).ConfigureAwait(false))
-                    await Click(A, 1_000, token).ConfigureAwait(false);
+                    await Click(A, 0_300, token).ConfigureAwait(false);
 
                 Log("Encounter started! Checking details...");
                 var pk = await ReadUntilPresent(LegendaryPokemonOffset, 2_000, 0_200, token).ConfigureAwait(false);
