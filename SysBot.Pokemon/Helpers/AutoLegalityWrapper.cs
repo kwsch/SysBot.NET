@@ -35,6 +35,7 @@ namespace SysBot.Pokemon
             Legalizer.EnableEasterEggs = cfg.EnableEasterEggs;
             APILegality.AllowTrainerOverride = cfg.AllowTrainerDataOverride;
             APILegality.AllowBatchCommands = cfg.AllowBatchCommands;
+            APILegality.Timeout = cfg.Timeout;
         }
 
         private static void InitializeTrainerDatabase(LegalitySettings cfg)
@@ -77,7 +78,7 @@ namespace SysBot.Pokemon
             Util.SetLocalization(typeof(LegalityCheckStrings), lang);
             Util.SetLocalization(typeof(MessageStrings), lang);
             RibbonStrings.ResetDictionary(GameInfo.Strings.ribbons);
-            LegalityAnalysis.ChangeLocalizationStrings(GameInfo.Strings.movelist, GameInfo.Strings.specieslist);
+            ParseSettings.ChangeLocalizationStrings(GameInfo.Strings.movelist, GameInfo.Strings.specieslist);
         }
 
         public static bool CanBeTraded(this PKM pkm)
