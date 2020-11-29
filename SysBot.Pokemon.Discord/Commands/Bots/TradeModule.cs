@@ -71,13 +71,14 @@ namespace SysBot.Pokemon.Discord
 
             var sav = AutoLegalityWrapper.GetTrainerInfo(gen);
 
-            var pkm = sav.GetLegal(template, out _);
+            var pkm = sav.GetLegal(template, out var result);
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
             var invalid = !(pkm is PK8) || (!la.Valid && SysCordInstance.Self.Hub.Config.Legality.VerifyLegality);
             if (invalid)
             {
-                var imsg = $"Oops! I wasn't able to create something from that. Here's my best attempt for that {spec}!";
+                var reason = result == "Timeout" ? "That set took too long to generate." : "I wasn't able to create something from that.";
+                var imsg = $"Oops! {reason} Here's my best attempt for that {spec}!";
                 await Context.Channel.SendPKMAsync(pkm, imsg).ConfigureAwait(false);
                 return;
             }

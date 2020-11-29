@@ -33,7 +33,7 @@ namespace SysBot.Pokemon.Twitch
             }
 
             var sav = AutoLegalityWrapper.GetTrainerInfo(PKX.Generation);
-            PKM pkm = sav.GetLegal(template, out _);
+            PKM pkm = sav.GetLegal(template, out var result);
 
             if (!pkm.CanBeTraded())
             {
@@ -51,7 +51,8 @@ namespace SysBot.Pokemon.Twitch
                 return true;
             }
 
-            msg = $"Skipping trade, @{username}: Unable to legalize the Pokémon.";
+            var reason = result == "Timeout" ? "Set took too long to generate." : "Unable to legalize the Pokémon.";
+            msg = $"Skipping trade, @{username}: {reason}";
             return false;
         }
 
