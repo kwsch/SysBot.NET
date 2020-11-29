@@ -28,7 +28,8 @@ namespace SysBot.Pokemon.Discord
             catch (HttpException ex)
             {
                 await Context.Channel.SendMessageAsync($"{ex.HttpCode}: {ex.Reason}!").ConfigureAwait(false);
-                await Context.Channel.SendMessageAsync("You must enable private messages in order to be queued!").ConfigureAwait(false);
+                var noAccessMsg = Context.User == trader ? "You must enable private messages in order to be queued!" : "The mentioned user must enable private messages in order for them to be queued!";
+                await Context.Channel.SendMessageAsync(noAccessMsg).ConfigureAwait(false);
                 return;
             }
 
