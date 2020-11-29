@@ -25,7 +25,7 @@ namespace SysBot.Pokemon
         [Category(Generate), Description("Default 16 Bit Secret ID (SID) for PKM files that that don't match any of the provided PKM files.")]
         public int GenerateSID16 { get; set; } = 54321;
 
-        [Category(Generate), Description("Default Language for PKM files that don't match any of the provided PKM files.")]
+        [Category(Generate), Description("Default language for PKM files that don't match any of the provided PKM files.")]
         public LanguageID GenerateLanguage { get; set; } = LanguageID.English;
 
         [Category(Generate), Description("Set all possible legal ribbons for any generated Pokémon.")]
@@ -51,6 +51,9 @@ namespace SysBot.Pokemon
 
         [Category(Generate), Description("Allow users to submit further customization with Batch Editor commands.")]
         public bool AllowBatchCommands { get; set; } = false;
+
+        [Category(Generate), Description("Maximum time in seconds to spend when generating a set before canceling. This prevents difficult sets from freezing the bot.")]
+        public int Timeout { get; set; } = 15;
 
         // Misc
 
