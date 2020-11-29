@@ -67,7 +67,7 @@ namespace SysBot.Pokemon.Discord
             var name = user.Username;
 
             var trainer = new PokeTradeTrainerInfo(trainerName);
-            var notifier = new DiscordTradeNotifier<PK8>(pk8, trainer, code, trader);
+            var notifier = new DiscordTradeNotifier<PK8>(pk8, trainer, code, user);
             var detail = new PokeTradeDetail<PK8>(pk8, trainer, notifier, t, code: code, sig == RequestSignificance.Favored);
             var trade = new TradeEntry<PK8>(detail, userID, type, name);
 
