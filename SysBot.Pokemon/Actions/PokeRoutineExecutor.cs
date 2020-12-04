@@ -302,8 +302,17 @@ namespace SysBot.Pokemon
 
         public async Task StartGame(PokeTradeHubConfig config, CancellationToken token)
         {
-            // Open game and select profile.
+            // Open game.
             await Click(A, 1_000 + config.Timings.ExtraTimeLoadProfile, token).ConfigureAwait(false);
+
+            // Menus here can go in the order: Update Prompt -> Profile -> DLC check -> Unable to use DLC.
+            //  The user can optionally turn on the setting if they know of a breaking system update incoming.
+            if (config.Timings.AvoidSystemUpdate)
+            {
+                await Click(DUP, 0_600, token).ConfigureAwait(false);
+                await Click(A, 1_000 + config.Timings.ExtraTimeLoadProfile, token).ConfigureAwait(false);
+            }
+
             await Click(A, 1_000 + config.Timings.ExtraTimeCheckDLC, token).ConfigureAwait(false);
             // If they have DLC on the system and can't use it, requires an UP + A to start the game.
             // Should be harmless otherwise since they'll be in loading screen.
@@ -313,7 +322,7 @@ namespace SysBot.Pokemon
             Log("Restarting the game!");
 
             // Switch Logo lag, skip cutscene, game load screen
-            await Task.Delay(11_000 + config.Timings.ExtraTimeLoadGame, token).ConfigureAwait(false);
+            await Task.Delay(10_000 + config.Timings.ExtraTimeLoadGame, token).ConfigureAwait(false);
 
             for (int i = 0; i < 5; i++)
                 await Click(A, 1_000, token).ConfigureAwait(false);

@@ -18,7 +18,7 @@ namespace SysBot.Pokemon
         public int ExtraTimeCheckDLC { get; set; } = 0;
 
         [Category(OpenGame), Description("Extra time in milliseconds to wait before clicking A in title screen.")]
-        public int ExtraTimeLoadGame { get; set; } = 3000;
+        public int ExtraTimeLoadGame { get; set; } = 5000;
 
         // Closing the game.
         [Category(CloseGame), Description("Extra time in milliseconds to wait after pressing HOME to minimize the game.")]
@@ -50,5 +50,8 @@ namespace SysBot.Pokemon
 
         [Category(Misc), Description("Time to wait after each keypress when navigating Switch menus or entering Link Code.")]
         public int KeypressTime { get; set; } = 200;
+
+        [Category(Misc), Description("Enable this to decline incoming system updates.")]
+        public bool AvoidSystemUpdate { get; set; } = false;
     }
 }
