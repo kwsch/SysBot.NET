@@ -120,6 +120,7 @@ namespace SysBot.Pokemon
             // Anti-spam: Same trainer names.
             if (Files.Count != 1 && Files.Select(z => z.Value.RequestInfo.OT_Name).Distinct().Count() == 1)
             {
+                LogUtil.LogInfo("Provided pool to distribute has the same OT for all loaded. Pool is not valid; please distribute from a variety of trainers.", nameof(PokemonPool<T>));
                 surpriseBlocked = Count;
                 Files.Clear();
             }
@@ -157,15 +158,11 @@ namespace SysBot.Pokemon
 
         private static bool IsSpammyString(string name)
         {
+            if (name.IndexOf('.') >= 0 || name.IndexOf('\\') >= 0 || name.IndexOf('/') >= 0)
+                return true;
+
             if (name.Length <= 6)
                 return false;
-
-            bool isUri = Uri.IsWellFormedUriString(name, UriKind.RelativeOrAbsolute);
-            if (isUri)
-                return true;
-
-            if (name.IndexOf('.') >= 0)
-                return true;
 
             return name.IndexOf("pkm", StringComparison.OrdinalIgnoreCase) >= 0;
         }
