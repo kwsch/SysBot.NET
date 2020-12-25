@@ -9,7 +9,7 @@ namespace SysBot.Pokemon
         public readonly int Position;
         public readonly int QueueCount;
 
-        public static readonly QueueCheckResult<T> None = new QueueCheckResult<T>();
+        public static readonly QueueCheckResult<T> None = new();
 
         public QueueCheckResult(bool inQueue = false, TradeEntry<T>? detail = default, int position = -1, int queueCount = -1)
         {

@@ -23,7 +23,7 @@ namespace SysBot.Pokemon.Discord
     public sealed class SysCord
     {
         private readonly DiscordSocketClient _client;
-        public PokeTradeHub<PK8> Hub;
+        public readonly PokeTradeHub<PK8> Hub;
 
         // Keep the CommandService and DI container around for use with commands.
         // These two types require you install the Discord.Net.Commands package.
@@ -166,7 +166,7 @@ namespace SysBot.Pokemon.Discord
         private async Task HandleMessageAsync(SocketMessage arg)
         {
             // Bail out if it's a System Message.
-            if (!(arg is SocketUserMessage msg))
+            if (arg is not SocketUserMessage msg)
                 return;
 
             // We don't want the bot to respond to itself or other bots.

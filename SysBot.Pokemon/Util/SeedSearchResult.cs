@@ -5,7 +5,7 @@ namespace SysBot.Pokemon
 {
     public class SeedSearchResult
     {
-        public static readonly SeedSearchResult None = new SeedSearchResult(Z3SearchResult.SeedNone, default, 0, SeedCheckResults.ClosestOnly);
+        public static readonly SeedSearchResult None = new(Z3SearchResult.SeedNone, default, 0, SeedCheckResults.ClosestOnly);
 
         public readonly Z3SearchResult Type;
         public readonly ulong Seed;

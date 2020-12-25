@@ -7,8 +7,8 @@ namespace System.Collections.Concurrent
     [DebuggerDisplay("Count={" + nameof(Count) + "}")]
     public class ConcurrentPool<T>
     {
-        private readonly object _syncLock = new object();
-        private readonly List<T> _list = new List<T>();
+        private readonly object _syncLock = new();
+        private readonly List<T> _list = new();
 
         public void Add(T item)
         {

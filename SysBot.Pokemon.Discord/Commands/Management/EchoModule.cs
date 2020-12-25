@@ -23,7 +23,7 @@ namespace SysBot.Pokemon.Discord
             }
         }
 
-        private static readonly Dictionary<ulong, EchoChannel> Channels = new Dictionary<ulong, EchoChannel>();
+        private static readonly Dictionary<ulong, EchoChannel> Channels = new();
 
         private static void Remove(EchoChannel entry)
         {

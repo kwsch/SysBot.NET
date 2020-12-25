@@ -89,37 +89,22 @@ namespace SysBot.Pokemon
                 LogUtil.LogError("Nothing to distribute for Empty Trade Queues!", "Hub");
         }
 
-        public PokeRoutineExecutor CreateBotFromConfig(PokeBotConfig cfg)
+        public PokeRoutineExecutor CreateBotFromConfig(PokeBotConfig cfg) => cfg.NextRoutineType switch
         {
-            switch (cfg.NextRoutineType)
-            {
-                case PokeRoutineType.Idle:
-                case PokeRoutineType.SurpriseTrade:
-                case PokeRoutineType.FlexTrade:
-                case PokeRoutineType.LinkTrade:
-                case PokeRoutineType.Clone:
-                case PokeRoutineType.Dump:
-                case PokeRoutineType.SeedCheck:
-                    return new PokeTradeBot(Hub, cfg);
+            PokeRoutineType.FlexTrade or PokeRoutineType.Idle
+                or PokeRoutineType.SurpriseTrade
+                or PokeRoutineType.LinkTrade
+                or PokeRoutineType.Clone
+                or PokeRoutineType.Dump
+                or PokeRoutineType.SeedCheck
+                => new PokeTradeBot(Hub, cfg),
 
-                case PokeRoutineType.EggFetch:
-                    return new EggBot(cfg, Hub);
-
-                case PokeRoutineType.FossilBot:
-                    return new FossilBot(cfg, Hub);
-
-                case PokeRoutineType.RaidBot:
-                    return new RaidBot(cfg, Hub);
-
-                case PokeRoutineType.EncounterBot:
-                    return new EncounterBot(cfg, Hub);
-
-                case PokeRoutineType.RemoteControl:
-                    return new RemoteControlBot(cfg);
-
-                default:
-                    throw new ArgumentException(nameof(cfg.NextRoutineType));
-            }
-        }
+            PokeRoutineType.EggFetch => new EggBot(cfg, Hub),
+            PokeRoutineType.FossilBot => new FossilBot(cfg, Hub),
+            PokeRoutineType.RaidBot => new RaidBot(cfg, Hub),
+            PokeRoutineType.EncounterBot => new EncounterBot(cfg, Hub),
+            PokeRoutineType.RemoteControl => new RemoteControlBot(cfg),
+            _ => throw new ArgumentException(nameof(cfg.NextRoutineType)),
+        };
     }
 }

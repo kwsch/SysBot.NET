@@ -6,7 +6,7 @@ namespace SysBot.Base
 {
     public class BotRunner<T> where T : SwitchBotConfig
     {
-        public readonly List<BotSource<T>> Bots = new List<BotSource<T>>();
+        public readonly List<BotSource<T>> Bots = new();
 
         public bool IsRunning => Bots.Any(z => z.IsRunning);
         public bool RunOnce { get; private set; }

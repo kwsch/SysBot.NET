@@ -104,7 +104,7 @@ namespace SysBot.Pokemon
 
                 Connection.Log("Resetting Eternatus by restarting the game");
                 await CloseGame(Hub.Config, token).ConfigureAwait(false);
-                await StartGame(Hub.Config, token).ConfigureAwait(false); 
+                await StartGame(Hub.Config, token).ConfigureAwait(false);
             }
         }
 
@@ -215,7 +215,7 @@ namespace SysBot.Pokemon
                 Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
                 if (Hub.Config.StopConditions.CaptureVideoClip)
                 {
-                    await Task.Delay(Hub.Config.StopConditions.ExtraTimeWaitCaptureVideo).ConfigureAwait(false);
+                    await Task.Delay(Hub.Config.StopConditions.ExtraTimeWaitCaptureVideo, token).ConfigureAwait(false);
                     await PressAndHold(CAPTURE, 2_000, 1_000, token).ConfigureAwait(false);
                 }
                 return true;

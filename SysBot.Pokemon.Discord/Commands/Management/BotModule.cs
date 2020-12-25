@@ -99,21 +99,21 @@ namespace SysBot.Pokemon.Discord
         [Command("botRestart")]
         [Summary("Restarts the bot(s) by IP address(es), separated by commas.")]
         [RequireSudo]
-        public async Task RestartBotAsync(string ip)
+        public async Task RestartBotAsync(string ipAddressesCommaSeparated)
         {
-            string[] ips = ip.Split(',');
-            for (int i = 0; i < ips.Length; i++)
+            var ips = ipAddressesCommaSeparated.Split(',');
+            foreach (var ip in ips)
             {
-                var bot = SysCordInstance.Runner.GetBot(ips[i]);
+                var bot = SysCordInstance.Runner.GetBot(ip);
                 if (bot == null)
                 {
-                    await ReplyAsync($"No bot has that IP address ({ips[i]}).").ConfigureAwait(false);
+                    await ReplyAsync($"No bot has that IP address ({ip}).").ConfigureAwait(false);
                     return;
                 }
 
-                bot.Bot.Connection.Reset(ips[i]);
+                bot.Bot.Connection.Reset(ip);
                 bot.Start();
-                await Context.Channel.EchoAndReply($"The bot at {ips[i]} ({bot.Bot.Connection.Name}) has been commanded to start.").ConfigureAwait(false);
+                await Context.Channel.EchoAndReply($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to start.").ConfigureAwait(false);
             }
         }
     }

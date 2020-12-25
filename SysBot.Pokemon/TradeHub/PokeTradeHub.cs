@@ -22,12 +22,12 @@ namespace SysBot.Pokemon
             Queues = new TradeQueueManager<T>(this);
         }
 
-        public static readonly PokeTradeLogNotifier<T> LogNotifier = new PokeTradeLogNotifier<T>();
+        public static readonly PokeTradeLogNotifier<T> LogNotifier = new();
 
         public readonly PokeTradeHubConfig Config;
         public readonly BotSynchronizer BotSync;
         public readonly BotCompleteCounts Counts;
-        public readonly ConcurrentPool<PokeTradeBot> Bots = new ConcurrentPool<PokeTradeBot>();
+        public readonly ConcurrentPool<PokeTradeBot> Bots = new();
         public readonly TradeQueueManager<T> Queues;
 
         #region Distribution Queue

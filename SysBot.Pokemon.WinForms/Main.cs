@@ -15,7 +15,7 @@ namespace SysBot.Pokemon.WinForms
     {
         private static readonly string WorkingDirectory = Application.StartupPath;
         private static readonly string ConfigPath = Path.Combine(WorkingDirectory, "config.json");
-        private readonly List<PokeBotConfig> Bots = new List<PokeBotConfig>();
+        private readonly List<PokeBotConfig> Bots = new();
         private readonly PokeBotRunner RunningEnvironment;
 
         public Main()
@@ -91,7 +91,7 @@ namespace SysBot.Pokemon.WinForms
 
         private ProgramConfig GetCurrentConfiguration()
         {
-            return new ProgramConfig
+            return new()
             {
                 Bots = Bots.ToArray(),
                 Hub = RunningEnvironment.Hub.Config,

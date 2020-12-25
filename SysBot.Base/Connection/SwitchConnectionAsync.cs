@@ -38,7 +38,7 @@ namespace SysBot.Base
             var address = Dns.GetHostAddresses(ip);
             foreach (IPAddress adr in address)
             {
-                IPEndPoint ep = new IPEndPoint(adr, Port);
+                IPEndPoint ep = new(adr, Port);
                 Connection.BeginConnect(ep, ConnectCallback, Connection);
                 Connected = true;
                 Log("Connected!");
@@ -54,7 +54,7 @@ namespace SysBot.Base
             Log("Disconnected!");
         }
 
-        private readonly AutoResetEvent connectionDone = new AutoResetEvent(false);
+        private readonly AutoResetEvent connectionDone = new(false);
 
         private void ConnectCallback(IAsyncResult ar)
         {
@@ -67,7 +67,7 @@ namespace SysBot.Base
             LogUtil.LogInfo("Connected.", Name);
         }
 
-        private readonly AutoResetEvent disconnectDone = new AutoResetEvent(false);
+        private readonly AutoResetEvent disconnectDone = new(false);
 
         private void DisconnectCallback(IAsyncResult ar)
         {

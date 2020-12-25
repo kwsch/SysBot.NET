@@ -9,7 +9,7 @@ namespace SysBot.Pokemon.WinForms
 {
     public partial class BotController : UserControl
     {
-        public PokeBotConfig Config = new PokeBotConfig();
+        public PokeBotConfig Config = new();
         private PokeBotRunner? Runner;
         public EventHandler? Remove;
 

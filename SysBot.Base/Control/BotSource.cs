@@ -6,7 +6,7 @@ namespace SysBot.Base
     public class BotSource<T> where T : SwitchBotConfig
     {
         public readonly SwitchRoutineExecutor<T> Bot;
-        private CancellationTokenSource Source = new CancellationTokenSource();
+        private CancellationTokenSource Source = new();
 
         public BotSource(SwitchRoutineExecutor<T> bot) => Bot = bot;
 

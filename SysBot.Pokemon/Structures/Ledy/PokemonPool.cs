@@ -51,7 +51,7 @@ namespace SysBot.Pokemon
             return LoadFolder(Settings.Folder.DistributeFolder);
         }
 
-        public readonly Dictionary<string, LedyRequest<T>> Files = new Dictionary<string, LedyRequest<T>>();
+        public readonly Dictionary<string, LedyRequest<T>> Files = new();
 
         public bool LoadFolder(string path)
         {
@@ -69,10 +69,10 @@ namespace SysBot.Pokemon
             {
                 var data = File.ReadAllBytes(file);
                 var pkm = PKMConverter.GetPKMfromBytes(data);
-                if (!(pkm is T dest))
+                if (pkm is not T dest)
                     continue;
 
-                if (dest.Species == 0 || !(dest is PK8 pk8))
+                if (dest.Species == 0 || dest is not PK8 pk8)
                 {
                     LogUtil.LogInfo("SKIPPED: Provided pk8 is not valid: " + dest.FileName, nameof(PokemonPool<T>));
                     continue;
@@ -134,7 +134,7 @@ namespace SysBot.Pokemon
         private static bool DisallowSurpriseTrade(PKM pk, IEncounterable enc)
         {
             // Anti-spam
-            if (pk.IsNicknamed && !(enc is EncounterTrade t && t.IsNicknamed) && pk.Nickname.Length > 6)
+            if (pk.IsNicknamed && !(enc is EncounterTrade {IsNicknamed: true}) && pk.Nickname.Length > 6)
                 return true;
             return DisallowSurpriseTrade(pk);
         }

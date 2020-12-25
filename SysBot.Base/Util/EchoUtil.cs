@@ -5,7 +5,7 @@ namespace SysBot.Base
 {
     public static class EchoUtil
     {
-        public static readonly List<Action<string>> Forwarders = new List<Action<string>>();
+        public static readonly List<Action<string>> Forwarders = new();
 
         public static void Echo(string message)
         {

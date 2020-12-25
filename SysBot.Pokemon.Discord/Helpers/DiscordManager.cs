@@ -9,18 +9,18 @@ namespace SysBot.Pokemon.Discord
         public readonly PokeTradeHubConfig Config;
         public ulong Owner;
 
-        public readonly SensitiveSet<ulong> BlacklistedUsers = new SensitiveSet<ulong>();
-        public readonly SensitiveSet<ulong> WhitelistedChannels = new SensitiveSet<ulong>();
+        public readonly SensitiveSet<ulong> BlacklistedUsers = new();
+        public readonly SensitiveSet<ulong> WhitelistedChannels = new();
 
-        public readonly SensitiveSet<ulong> SudoDiscord = new SensitiveSet<ulong>();
-        public readonly SensitiveSet<string> SudoRoles = new SensitiveSet<string>();
-        public readonly SensitiveSet<string> FavoredRoles = new SensitiveSet<string>();
+        public readonly SensitiveSet<ulong> SudoDiscord = new();
+        public readonly SensitiveSet<string> SudoRoles = new();
+        public readonly SensitiveSet<string> FavoredRoles = new();
 
-        public readonly SensitiveSet<string> RolesClone = new SensitiveSet<string>();
-        public readonly SensitiveSet<string> RolesTrade = new SensitiveSet<string>();
-        public readonly SensitiveSet<string> RolesSeed = new SensitiveSet<string>();
-        public readonly SensitiveSet<string> RolesDump = new SensitiveSet<string>();
-        public readonly SensitiveSet<string> RolesRemoteControl = new SensitiveSet<string>();
+        public readonly SensitiveSet<string> RolesClone = new();
+        public readonly SensitiveSet<string> RolesTrade = new();
+        public readonly SensitiveSet<string> RolesSeed = new();
+        public readonly SensitiveSet<string> RolesDump = new();
+        public readonly SensitiveSet<string> RolesRemoteControl = new();
 
         public bool CanUseSudo(ulong uid) => SudoDiscord.Contains(uid);
         public bool CanUseSudo(IEnumerable<string> roles) => roles.Any(SudoRoles.Contains);

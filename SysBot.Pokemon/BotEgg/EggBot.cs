@@ -28,7 +28,7 @@ namespace SysBot.Pokemon
         private const int InjectBox = 0;
         private const int InjectSlot = 0;
 
-        private static readonly PK8 Blank = new PK8();
+        private static readonly PK8 Blank = new();
 
         protected override async Task MainLoop(CancellationToken token)
         {

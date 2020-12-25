@@ -12,7 +12,7 @@
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <StartupObject>SysBot.Pokemon.WinForms.Program</StartupObject>
     <AssemblyName>SysBot</AssemblyName>
-    <LangVersion>8</LangVersion>
+    <LangVersion>9</LangVersion>
     <Version>01.00.00</Version>
     <Nullable>enable</Nullable>
     <Platforms>x64;x86</Platforms>

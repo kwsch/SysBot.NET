@@ -20,7 +20,7 @@ namespace SysBot.Pokemon.Discord
             // Since no async work is done, the result has to be wrapped with `Task.FromResult` to avoid compiler errors
 
             // Check if this user is a Guild User, which is the only context where roles exist
-            if (!(context.User is SocketGuildUser gUser))
+            if (context.User is not SocketGuildUser gUser)
                 return Task.FromResult(PreconditionResult.FromError("You must be in a guild to run this command."));
 
             // If this command was executed by a user with the appropriate role, return a success

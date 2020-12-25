@@ -103,7 +103,7 @@ namespace SysBot.Pokemon.Discord
         {
             if (Context.Message.MentionedUsers.Count > 1)
             {
-                await ReplyAsync("Too many mentions. Queue one user at a time.").ConfigureAwait(false); 
+                await ReplyAsync("Too many mentions. Queue one user at a time.").ConfigureAwait(false);
                 return;
             }
 
@@ -138,7 +138,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             var att = await NetUtil.DownloadPKMAsync(attachment).ConfigureAwait(false);
-            if (!att.Success || !(att.Data is PK8 pk8))
+            if (!att.Success || att.Data is not PK8 pk8)
             {
                 await ReplyAsync("No PK8 attachment provided!").ConfigureAwait(false);
                 return;

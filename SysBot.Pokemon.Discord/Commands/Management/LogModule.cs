@@ -16,7 +16,7 @@ namespace SysBot.Pokemon.Discord
             }
         }
 
-        private static readonly Dictionary<ulong, LogAction> Channels = new Dictionary<ulong, LogAction>();
+        private static readonly Dictionary<ulong, LogAction> Channels = new();
 
         private static void Remove(LogAction entry)
         {

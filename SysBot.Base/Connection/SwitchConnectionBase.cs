@@ -4,7 +4,7 @@ namespace SysBot.Base
 {
     public abstract class SwitchConnectionBase
     {
-        public Socket Connection = new Socket(SocketType.Stream, ProtocolType.Tcp);
+        public Socket Connection = new(SocketType.Stream, ProtocolType.Tcp);
         public readonly string IP;
         public readonly int Port;
 

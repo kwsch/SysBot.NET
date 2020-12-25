@@ -17,7 +17,7 @@ namespace SysBot.Pokemon.Discord
             }
         }
 
-        private static readonly Dictionary<ulong, TradeStartAction> Channels = new Dictionary<ulong, TradeStartAction>();
+        private static readonly Dictionary<ulong, TradeStartAction> Channels = new();
 
         private static void Remove(TradeStartAction entry)
         {

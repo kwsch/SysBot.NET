@@ -5,7 +5,7 @@ namespace SysBot.Pokemon.Discord
 {
     public class SensitiveSet<T>
     {
-        private readonly HashSet<T> List = new HashSet<T>();
+        private readonly HashSet<T> List = new();
         public bool Add(T id) => !List.Contains(id) && List.Add(id);
         public bool Remove(T id) => List.Contains(id) && List.Remove(id);
         public bool Contains(T id) => List.Contains(id);

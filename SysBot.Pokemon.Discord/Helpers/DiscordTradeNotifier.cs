@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using PKHeX.Core;
 using System;
@@ -14,7 +13,7 @@ namespace SysBot.Pokemon.Discord
         private int Code { get; }
         private SocketUser Trader { get; }
         public Action<PokeRoutineExecutor>? OnFinish { private get; set; }
-        public PokeTradeHub<PK8> Hub = SysCordInstance.Self.Hub;
+        public readonly PokeTradeHub<PK8> Hub = SysCordInstance.Self.Hub;
 
         public DiscordTradeNotifier(T data, PokeTradeTrainerInfo info, int code, SocketUser trader)
         {

@@ -5,7 +5,7 @@ namespace SysBot.Pokemon
 {
     public class LedyDistributor<T> where T : PKM, new()
     {
-        public readonly Dictionary<string, LedyRequest<T>> UserRequests = new Dictionary<string, LedyRequest<T>>();
+        public readonly Dictionary<string, LedyRequest<T>> UserRequests = new();
         public readonly Dictionary<string, LedyRequest<T>> Distribution;
         public readonly PokemonPool<T> Pool;
 

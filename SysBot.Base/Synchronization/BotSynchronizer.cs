@@ -19,7 +19,7 @@ namespace SysBot.Base
         /// </summary>
         public readonly Barrier Barrier;
 
-        public readonly List<Action> BarrierReleasingActions = new List<Action>();
+        public readonly List<Action> BarrierReleasingActions = new();
 
         /// <summary>
         /// When the Barrier releases the bots, this method is executed before the bots continue execution.
