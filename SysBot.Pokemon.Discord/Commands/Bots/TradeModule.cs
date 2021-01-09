@@ -61,8 +61,8 @@ namespace SysBot.Pokemon.Discord
             var pkm = sav.GetLegal(template, out var result);
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
-            var invalid = !(pkm is PK8) || (!la.Valid && SysCordInstance.Self.Hub.Config.Legality.VerifyLegality);
-            if (invalid)
+            pkm = PKMConverter.ConvertToType(pkm, typeof(PK8), out _) ?? pkm;
+            if (pkm is not PK8 || !la.Valid)
             {
                 var reason = result == "Timeout" ? "That set took too long to generate." : "I wasn't able to create something from that.";
                 var imsg = $"Oops! {reason} Here's my best attempt for that {spec}!";
@@ -138,13 +138,26 @@ namespace SysBot.Pokemon.Discord
             }
 
             var att = await NetUtil.DownloadPKMAsync(attachment).ConfigureAwait(false);
-            if (!att.Success || att.Data is not PK8 pk8)
+            var pk8 = GetRequest(att);
+            if (pk8 == null)
             {
-                await ReplyAsync("No PK8 attachment provided!").ConfigureAwait(false);
+                await ReplyAsync("Attachment provided is not compatible with this module!").ConfigureAwait(false);
                 return;
             }
 
             await AddTradeToQueueAsync(code, usr.Username, pk8, sig, usr).ConfigureAwait(false);
+        }
+
+        private static PK8? GetRequest(Download<PKM> dl)
+        {
+            if (!dl.Success)
+                return null;
+            return dl.Data switch
+            {
+                null => null,
+                PK8 pk8 => pk8,
+                _ => PKMConverter.ConvertToType(dl.Data, typeof(PK8), out _) as PK8
+            };
         }
 
         private async Task AddTradeToQueueAsync(int code, string trainerName, PK8 pk8, RequestSignificance sig, SocketUser usr)
@@ -156,7 +169,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             var la = new LegalityAnalysis(pk8);
-            if (!la.Valid && SysCordInstance.Self.Hub.Config.Legality.VerifyLegality)
+            if (!la.Valid)
             {
                 await ReplyAsync("PK8 attachment is not legal, and cannot be traded!").ConfigureAwait(false);
                 return;
