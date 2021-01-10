@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net47;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net47;net5.0-windows</TargetFrameworks>
     <UseWindowsForms>true</UseWindowsForms>
     <PackageId>SysBot.Pokemon.WinForms</PackageId>
     <Company>Project Pokémon</Company>
