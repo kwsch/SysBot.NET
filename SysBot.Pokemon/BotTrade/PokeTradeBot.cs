@@ -290,9 +290,9 @@ namespace SysBot.Pokemon
                     poke.SendNotification(this, clone, "Here's what you showed me!");
 
                 var la = new LegalityAnalysis(clone);
-                if (!la.Valid && Hub.Config.Legality.VerifyLegality)
+                if (!la.Valid)
                 {
-                    Log($"Clone request has detected an invalid Pokémon: {(Species)clone.Species}");
+                    Log($"Clone request (from {poke.Trainer.TrainerName}) has detected an invalid Pokémon: {(Species)clone.Species}.");
                     if (DumpSetting.Dump)
                         DumpPokemon(DumpSetting.DumpFolder, "hacked", pk);
 

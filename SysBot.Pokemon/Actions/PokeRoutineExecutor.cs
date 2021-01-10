@@ -140,6 +140,7 @@ namespace SysBot.Pokemon
             Directory.CreateDirectory(dir);
             var fn = Path.Combine(dir, Util.CleanFileName(pk.FileName));
             File.WriteAllBytes(fn, pk.DecryptedPartyData);
+            LogUtil.LogInfo($"Saved file: {fn}", "Dump");
         }
 
         /// <summary>
