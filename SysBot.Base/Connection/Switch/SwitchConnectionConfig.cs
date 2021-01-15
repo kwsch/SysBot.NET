@@ -10,6 +10,8 @@ namespace SysBot.Base
         public string IP { get; set; } = string.Empty;
         public int Port { get; set; } = 6000;
 
+        public bool UseCRLF => Protocol is WiFi;
+
         public bool IsValid() => Protocol switch
         {
             WiFi => IPAddress.TryParse(IP, out _),

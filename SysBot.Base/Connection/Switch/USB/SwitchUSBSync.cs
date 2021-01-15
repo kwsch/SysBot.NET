@@ -1,65 +1,36 @@
-﻿namespace SysBot.Base
+﻿using System;
+using static SysBot.Base.SwitchOffsetType;
+
+namespace SysBot.Base
 {
-#pragma warning disable RCS1079 // Throwing of new NotImplementedException.
     public sealed class SwitchUSBSync : SwitchUSB, ISwitchConnectionSync
     {
         public SwitchUSBSync(int port) : base(port)
         {
         }
 
-        public override void Connect()
-        {
-            throw new System.NotImplementedException();
-        }
+        public byte[] ReadBytes(uint offset, int length) => Read(offset, length, Heap.GetReadMethod(false));
+        public byte[] ReadBytesMain(ulong offset, int length) => Read(offset, length, Main.GetReadMethod(false));
+        public byte[] ReadBytesAbsolute(ulong offset, int length) => Read(offset, length, Absolute.GetReadMethod(false));
 
-        public override void Reset()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override void Disconnect()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public byte[] ReadBytes(uint offset, int length)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void WriteBytes(byte[] data, uint offset)
-        {
-            throw new System.NotImplementedException();
-        }
+        public void WriteBytes(byte[] data, uint offset) => Write(data, offset, Heap.GetWriteMethod(false));
+        public void WriteBytesMain(byte[] data, ulong offset) => Write(data, offset, Main.GetWriteMethod(false));
+        public void WriteBytesAbsolute(byte[] data, ulong offset) => Write(data, offset, Absolute.GetWriteMethod(false));
 
         public ulong GetMainNsoBase()
         {
-            throw new System.NotImplementedException();
+            Send(SwitchCommand.GetMainNsoBase(false));
+            byte[] baseBytes = ReadResponse(8);
+            Array.Reverse(baseBytes, 0, 8);
+            return BitConverter.ToUInt64(baseBytes, 0);
         }
 
         public ulong GetHeapBase()
         {
-            throw new System.NotImplementedException();
-        }
-
-        public byte[] ReadBytesMain(ulong offset, int length)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public byte[] ReadBytesAbsolute(ulong offset, int length)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void WriteBytesMain(byte[] data, ulong offset)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void WriteBytesAbsolute(byte[] data, ulong offset)
-        {
-            throw new System.NotImplementedException();
+            Send(SwitchCommand.GetHeapBase(false));
+            byte[] baseBytes = ReadResponse(8);
+            Array.Reverse(baseBytes, 0, 8);
+            return BitConverter.ToUInt64(baseBytes, 0);
         }
     }
 }

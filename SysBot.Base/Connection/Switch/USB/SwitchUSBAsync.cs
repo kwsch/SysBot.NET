@@ -1,73 +1,51 @@
-﻿using System.Threading;
+﻿using System;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
+using static SysBot.Base.SwitchOffsetType;
 
 namespace SysBot.Base
 {
-#pragma warning disable RCS1079 // Throwing of new NotImplementedException.
     public sealed class SwitchUSBAsync : SwitchUSB, ISwitchConnectionAsync
     {
         public SwitchUSBAsync(int port) : base(port)
         {
         }
 
-        public override void Connect()
+        public Task<int> SendAsync(byte[] data, CancellationToken token)
         {
-            throw new System.NotImplementedException();
+            Debug.Assert(data.Length < MaximumTransferSize);
+            return Task.Run(() => Send(data), token);
         }
 
-        public override void Reset()
-        {
-            throw new System.NotImplementedException();
-        }
+        public Task<byte[]> ReadBytesAsync(uint offset, int length, CancellationToken token) => Task.Run(() => Read(offset, length, Heap.GetReadMethod(false)), token);
+        public Task<byte[]> ReadBytesMainAsync(ulong offset, int length, CancellationToken token) => Task.Run(() => Read(offset, length, Main.GetReadMethod(false)), token);
+        public Task<byte[]> ReadBytesAbsoluteAsync(ulong offset, int length, CancellationToken token) => Task.Run(() => Read(offset, length, Absolute.GetReadMethod(false)), token);
 
-        public override void Disconnect()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public Task<int> SendAsync(byte[] buffer, CancellationToken token)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public Task<byte[]> ReadBytesAsync(uint offset, int length, CancellationToken token)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token)
-        {
-            throw new System.NotImplementedException();
-        }
+        public Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token) => Task.Run(() => Write(data, offset, Heap.GetWriteMethod(false)), token);
+        public Task WriteBytesMainAsync(byte[] data, ulong offset, CancellationToken token) => Task.Run(() => Write(data, offset, Main.GetWriteMethod(false)), token);
+        public Task WriteBytesAbsoluteAsync(byte[] data, ulong offset, CancellationToken token) => Task.Run(() => Write(data, offset, Absolute.GetWriteMethod(false)), token);
 
         public Task<ulong> GetMainNsoBaseAsync(CancellationToken token)
         {
-            throw new System.NotImplementedException();
+            return Task.Run(() =>
+            {
+                Send(SwitchCommand.GetMainNsoBase(false));
+                byte[] baseBytes = ReadResponse(8);
+                Array.Reverse(baseBytes, 0, 8);
+                return BitConverter.ToUInt64(baseBytes, 0);
+            }, token);
         }
 
         public Task<ulong> GetHeapBaseAsync(CancellationToken token)
         {
-            throw new System.NotImplementedException();
-        }
-
-        public Task<byte[]> ReadBytesMainAsync(ulong offset, int length, CancellationToken token)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public Task<byte[]> ReadBytesAbsoluteAsync(ulong offset, int length, CancellationToken token)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public Task WriteBytesMainAsync(byte[] data, ulong offset, CancellationToken token)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public Task WriteBytesAbsoluteAsync(byte[] data, ulong offset, CancellationToken token)
-        {
-            throw new System.NotImplementedException();
+            return Task.Run(() =>
+            {
+                Send(SwitchCommand.GetHeapBase(false));
+                byte[] baseBytes = ReadResponse(8);
+                Array.Reverse(baseBytes, 0, 8);
+                return BitConverter.ToUInt64(baseBytes, 0);
+            }, token);
         }
     }
 }
