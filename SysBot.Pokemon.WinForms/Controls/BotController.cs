@@ -9,7 +9,7 @@ namespace SysBot.Pokemon.WinForms
 {
     public partial class BotController : UserControl
     {
-        public PokeBotConfig Config = new();
+        public PokeBotConfig Config { get; private set; } = new();
         private PokeBotRunner? Runner;
         public EventHandler? Remove;
 
@@ -69,7 +69,8 @@ namespace SysBot.Pokemon.WinForms
 
         public void ReloadStatus()
         {
-            L_Left.Text = $"{Config.IP}{Environment.NewLine}{Config.InitialRoutine}";
+            var bot = GetBot().Bot;
+            L_Left.Text = $"{bot.Connection.Name}{Environment.NewLine}{Config.InitialRoutine}";
         }
 
         private DateTime LastUpdateStatus = DateTime.Now;
@@ -78,8 +79,8 @@ namespace SysBot.Pokemon.WinForms
         {
             ReloadStatus();
             var bot = b.Bot;
-            L_Description.Text = $"[{bot.LastTime:hh:mm:ss}] {bot.Connection.Name}: {bot.LastLogged}";
-            L_Left.Text = $"{Config.IP}{Environment.NewLine}{Config.InitialRoutine}";
+            L_Description.Text = $"[{bot.LastTime:hh:mm:ss}] {bot.Connection.Label}: {bot.LastLogged}";
+            L_Left.Text = $"{bot.Connection.Name}{Environment.NewLine}{Config.InitialRoutine}";
 
             var lastTime = bot.LastTime;
             if (!b.IsRunning)
@@ -157,7 +158,7 @@ namespace SysBot.Pokemon.WinForms
                     if (prompt != DialogResult.Yes)
                         return;
 
-                    bot.Bot.Connection.Reset(bot.Bot.Config.IP);
+                    bot.Bot.Connection.Reset();
                     bot.Start();
                     break;
                 }

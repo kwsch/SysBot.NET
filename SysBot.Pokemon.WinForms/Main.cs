@@ -178,7 +178,7 @@ namespace SysBot.Pokemon.WinForms
 
         private bool AddBot(PokeBotConfig cfg)
         {
-            if (!cfg.IsValidIP())
+            if (!cfg.IsValid())
                 return false;
 
             var newbot = RunningEnvironment.CreateBotFromConfig(cfg);
@@ -205,15 +205,19 @@ namespace SysBot.Pokemon.WinForms
             FLP_Bots.SetFlowBreak(row, true);
             row.Click += (s, e) =>
             {
-                TB_IP.Text = cfg.IP;
-                NUD_Port.Value = cfg.Port;
+                var details = cfg.Connection;
+                if (details is IWirelessBotConfig w)
+                {
+                    TB_IP.Text = w.IP;
+                    NUD_Port.Value = w.Port;
+                }
                 CB_Routine.SelectedValue = (int)cfg.InitialRoutine;
             };
 
             row.Remove += (s, e) =>
             {
                 Bots.Remove(row.Config);
-                RunningEnvironment.Remove(row.Config.IP, !RunningEnvironment.Hub.Config.SkipConsoleBotCreation);
+                RunningEnvironment.Remove(row.Config, !RunningEnvironment.Hub.Config.SkipConsoleBotCreation);
                 FLP_Bots.Controls.Remove(row);
             };
         }
@@ -224,9 +228,10 @@ namespace SysBot.Pokemon.WinForms
             var ip = TB_IP.Text;
             var port = (int)NUD_Port.Value;
 
-            var cfg = SwitchBotConfig.GetConfig<PokeBotConfig>(ip, port);
-            cfg.Initialize(type);
-            return cfg;
+            var cfg = BotConfigUtil.GetConfig<SwitchConnectionConfig>(ip, port);
+            var pk = new PokeBotConfig {Connection = cfg};
+            pk.Initialize(type);
+            return pk;
         }
 
         private void FLP_Bots_Resize(object sender, EventArgs e)

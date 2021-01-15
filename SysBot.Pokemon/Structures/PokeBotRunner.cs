@@ -16,19 +16,19 @@ namespace SysBot.Pokemon
 
         protected virtual void AddIntegrations() { }
 
-        public override void Add(SwitchRoutineExecutor<PokeBotConfig> bot)
+        public override void Add(RoutineExecutor<PokeBotConfig> bot)
         {
             base.Add(bot);
             if (bot is PokeTradeBot b)
                 Hub.Bots.Add(b);
         }
 
-        public override bool Remove(string ip, bool callStop)
+        public override bool Remove(IConsoleBotConfig cfg, bool callStop)
         {
-            var bot = Bots.Find(z => z.Bot.Connection.IP == ip)?.Bot;
+            var bot = Bots.Find(z => z.Bot.Config.Equals(cfg))?.Bot;
             if (bot is PokeTradeBot b)
                 Hub.Bots.Remove(b);
-            return base.Remove(ip, callStop);
+            return base.Remove(cfg, callStop);
         }
 
         public override void StartAll()

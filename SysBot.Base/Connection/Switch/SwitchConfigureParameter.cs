@@ -17,26 +17,4 @@
         /// </summary>
         echoCommands,
     }
-
-    // Overworld detection using new method depends on Switch console language setting
-    public enum ConsoleLanguageParameter
-    {
-        English,
-        French,
-        German,
-        Spanish,
-        Italian,
-        Dutch,
-        Portuguese,
-        Russian,
-        Japanese,
-        ChineseTraditional,
-        ChineseSimplified,
-        Korean,
-    }
-    public enum ScreenDetectionMode
-    {
-        Original,
-        ConsoleLanguageSpecific,
-    }
 }

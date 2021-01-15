@@ -2,7 +2,7 @@
 
 namespace SysBot.Base
 {
-    public class BotList<T> where T : SwitchBotConfig
+    public class BotList<T> where T : IConsoleBotConfig
     {
 #pragma warning disable CA1819 // Properties should not return arrays
         public T[] Bots { get; set; } = Array.Empty<T>();

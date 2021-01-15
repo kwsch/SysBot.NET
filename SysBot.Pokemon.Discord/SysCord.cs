@@ -17,7 +17,7 @@ namespace SysBot.Pokemon.Discord
         public static SysCord Self = default!;
         public static DiscordManager Manager = default!;
         public static DiscordSettings Settings => Self.Hub.Config.Discord;
-        public static BotRunner<PokeBotConfig> Runner = default!;
+        public static PokeBotRunner Runner = default!;
     }
 
     public sealed class SysCord

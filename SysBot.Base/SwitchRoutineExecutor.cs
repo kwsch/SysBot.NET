@@ -8,21 +8,21 @@ namespace SysBot.Base
     /// <summary>
     /// Commands a Bot to a perform a routine asynchronously.
     /// </summary>
-    public abstract class SwitchRoutineExecutor<T> where T : SwitchBotConfig
+    public abstract class RoutineExecutor<T> : IRoutineExecutor where T : class, IConsoleBotConfig
     {
-        public readonly SwitchConnectionAsync Connection;
+        public readonly IConsoleConnectionAsync Connection;
         public readonly T Config;
 
-        protected SwitchRoutineExecutor(T cfg)
+        protected RoutineExecutor(IConsoleBotManaged<IConsoleConnection, IConsoleConnectionAsync> cfg)
         {
-            Config = cfg;
-            Connection = new SwitchConnectionAsync(cfg.IP, cfg.Port);
+            Config = (T)cfg;
+            Connection = cfg.CreateAsynchronous();
         }
 
         public string LastLogged { get; private set; } = "Not Started";
         public DateTime LastTime { get; private set; } = DateTime.Now;
 
-        protected void ReportStatus() => LastTime = DateTime.Now;
+        public void ReportStatus() => LastTime = DateTime.Now;
 
         public void Log(string message)
         {
@@ -44,7 +44,7 @@ namespace SysBot.Base
             Connection.Disconnect();
         }
 
-        protected abstract Task MainLoop(CancellationToken token);
+        public abstract Task MainLoop(CancellationToken token);
         public abstract void SoftStop();
 
         public async Task Click(SwitchButton b, int delay, CancellationToken token)

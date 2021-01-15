@@ -7,14 +7,13 @@ using System.Threading.Tasks;
 namespace SysBot.Base
 {
     /// <summary>
-    /// Connection to a Nintendo Switch hosting the sys-module.
+    /// Connection to a Nintendo Switch hosting the sys-module via a socket (WiFi).
     /// </summary>
-    public class SwitchConnectionAsync : SwitchConnectionBase
+    public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync, IAsyncConnection
     {
-        public SwitchConnectionAsync(string ipaddress, int port) : base(ipaddress, port) { }
-        public SwitchConnectionAsync(SwitchBotConfig cfg) : this(cfg.IP, cfg.Port) { }
+        public SwitchSocketAsync(IWirelessBotConfig cfg) : base(cfg) { }
 
-        public void Connect()
+        public override void Connect()
         {
             if (Connected)
             {
@@ -23,13 +22,15 @@ namespace SysBot.Base
             }
 
             Log("Connecting to device...");
-            Connection.Connect(IP, Port);
+            Connection.Connect(Info.IP, Info.Port);
             Connected = true;
             Log("Connected!");
+            Label = Name;
         }
 
-        public void Reset(string ip)
+        public override void Reset()
         {
+            var ip = Info.IP;
             if (Connected)
                 Disconnect();
 
@@ -38,14 +39,14 @@ namespace SysBot.Base
             var address = Dns.GetHostAddresses(ip);
             foreach (IPAddress adr in address)
             {
-                IPEndPoint ep = new(adr, Port);
+                IPEndPoint ep = new(adr, Info.Port);
                 Connection.BeginConnect(ep, ConnectCallback, Connection);
                 Connected = true;
                 Log("Connected!");
             }
         }
 
-        public void Disconnect()
+        public override void Disconnect()
         {
             Log("Disconnecting from device...");
             Connection.Shutdown(SocketShutdown.Both);
@@ -56,7 +57,7 @@ namespace SysBot.Base
 
         private readonly AutoResetEvent connectionDone = new(false);
 
-        private void ConnectCallback(IAsyncResult ar)
+        public void ConnectCallback(IAsyncResult ar)
         {
             // Complete the connection request.
             Socket client = (Socket)ar.AsyncState;
@@ -69,7 +70,7 @@ namespace SysBot.Base
 
         private readonly AutoResetEvent disconnectDone = new(false);
 
-        private void DisconnectCallback(IAsyncResult ar)
+        public void DisconnectCallback(IAsyncResult ar)
         {
             // Complete the disconnect request.
             Socket client = (Socket)ar.AsyncState;
@@ -90,7 +91,7 @@ namespace SysBot.Base
 
         public async Task<int> SendAsync(byte[] buffer, CancellationToken token) => await Task.Run(() => Connection.Send(buffer), token).ConfigureAwait(false);
 
-        private async Task<byte[]> ReadBytesFromCmdAsync(byte[] cmd, int length, CancellationToken token)
+        public async Task<byte[]> ReadBytesFromCmdAsync(byte[] cmd, int length, CancellationToken token)
         {
             await SendAsync(cmd, token).ConfigureAwait(false);
 
@@ -131,6 +132,12 @@ namespace SysBot.Base
         public async Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token)
         {
             var cmd = SwitchCommand.Poke(offset, data);
+            await SendAsync(cmd, token).ConfigureAwait(false);
+        }
+
+        public async Task WriteBytesMainAsync(byte[] data, ulong offset, CancellationToken token)
+        {
+            var cmd = SwitchCommand.PokeMain(offset, data);
             await SendAsync(cmd, token).ConfigureAwait(false);
         }
 

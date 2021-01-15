@@ -76,7 +76,7 @@ namespace SysBot.Tests
         private class MockExecutor : PokeRoutineExecutor
         {
             public MockExecutor(PokeBotConfig cfg) : base(cfg) { }
-            protected override Task MainLoop(CancellationToken token) => Task.CompletedTask;
+            public override Task MainLoop(CancellationToken token) => Task.CompletedTask;
             public override void SoftStop() { }
         }
 

@@ -4,7 +4,7 @@ using System.Text;
 namespace SysBot.Base
 {
     /// <summary>
-    /// Encodes commands for a <see cref="SwitchConnectionAsync"/> to be sent as a <see cref="byte"/> array.
+    /// Encodes commands to be sent as a <see cref="byte"/> array to a Switch running a sys-module.
     /// </summary>
     public static class SwitchCommand
     {
@@ -110,10 +110,18 @@ namespace SysBot.Base
         /// <summary>
         /// Requests the Bot to send <see cref="count"/> bytes from main <see cref="offset"/>.
         /// </summary>
-        /// <param name="offset">Absolute address of the data</param>
+        /// <param name="offset">Main NSO address of the data</param>
         /// <param name="count">Amount of bytes</param>
         /// <returns>Encoded command bytes</returns>
         public static byte[] PeekMain(ulong offset, int count) => Encode($"peekMain 0x{offset:X16} {count}");
+
+        /// <summary>
+        /// Sends the Bot <see cref="data"/> to be written to main <see cref="offset"/>.
+        /// </summary>
+        /// <param name="offset">Main NSO address of the data</param>
+        /// <param name="data">Data to write</param>
+        /// <returns>Encoded command bytes</returns>
+        public static byte[] PokeMain(ulong offset, byte[] data) => Encode($"pokeMain 0x{offset:X16} 0x{string.Concat(data.Select(z => $"{z:X2}"))}");
 
         /* 
          *

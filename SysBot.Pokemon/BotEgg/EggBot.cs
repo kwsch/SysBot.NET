@@ -30,7 +30,7 @@ namespace SysBot.Pokemon
 
         private static readonly PK8 Blank = new();
 
-        protected override async Task MainLoop(CancellationToken token)
+        public override async Task MainLoop(CancellationToken token)
         {
             Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);

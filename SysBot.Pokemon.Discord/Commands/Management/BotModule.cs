@@ -28,7 +28,7 @@ namespace SysBot.Pokemon.Discord
 
         private static string GetDetailedSummary(PokeRoutineExecutor z)
         {
-            return $"- {z.Connection.IP} | {z.Connection.Name} - {z.Config.CurrentRoutineType} ~ {z.LastTime:hh:mm:ss} | {z.LastLogged}";
+            return $"- {z.Connection.Name} | {z.Connection.Label} - {z.Config.CurrentRoutineType} ~ {z.LastTime:hh:mm:ss} | {z.LastLogged}";
         }
 
         [Command("botStart")]
@@ -111,9 +111,10 @@ namespace SysBot.Pokemon.Discord
                     return;
                 }
 
-                bot.Bot.Connection.Reset(ip);
+                var c = bot.Bot.Connection;
+                c.Reset();
                 bot.Start();
-                await Context.Channel.EchoAndReply($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to start.").ConfigureAwait(false);
+                await Context.Channel.EchoAndReply($"The bot at {ip} ({c.Name}) has been commanded to start.").ConfigureAwait(false);
             }
         }
     }

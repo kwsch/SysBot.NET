@@ -1,9 +1,19 @@
-﻿using SysBot.Base;
+﻿using System;
+using SysBot.Base;
 
 namespace SysBot.Pokemon
 {
-    public sealed class PokeBotConfig : SwitchBotConfig
+    /// <summary>
+    /// Tracks the state of the bot and what it should execute next.
+    /// </summary>
+    [Serializable]
+    public sealed class PokeBotConfig : IConsoleBotManaged<IConsoleConnection, IConsoleConnectionAsync>
     {
+        public IConsoleBotManaged<IConsoleConnection, IConsoleConnectionAsync> Connection { get; set; } = new SwitchConnectionConfig();
+        public bool IsValid() => Connection.IsValid();
+        public IConsoleConnection CreateSync() => Connection.CreateSync();
+        public IConsoleConnectionAsync CreateAsynchronous() => Connection.CreateAsynchronous();
+
         // we need to have the setter public for json serialization
         // ReSharper disable once MemberCanBePrivate.Global
         public PokeRoutineType InitialRoutine { get; set; }
