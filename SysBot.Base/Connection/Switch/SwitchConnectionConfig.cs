@@ -15,27 +15,36 @@ namespace SysBot.Base
         public bool IsValid() => Protocol switch
         {
             WiFi => IPAddress.TryParse(IP, out _),
+            USB => Port < ushort.MaxValue,
+            _ => false,
+        };
+
+        public bool Matches(string magic) => Protocol switch
+        {
+            WiFi => IPAddress.TryParse(magic, out var val) && val.ToString() == IP,
+            USB => magic == Port.ToString(),
             _ => false,
         };
 
         public override string ToString() => Protocol switch
         {
             WiFi => IP,
-            _ => Port.ToString(),
+            USB => Port.ToString(),
+            _ => throw new ArgumentOutOfRangeException(nameof(SwitchProtocol)),
         };
 
         public ISwitchConnectionAsync CreateAsynchronous() => Protocol switch
         {
             WiFi => new SwitchSocketAsync(this),
             USB => new SwitchUSBAsync(Port),
-            _ => throw new IndexOutOfRangeException(nameof(SwitchProtocol)),
+            _ => throw new ArgumentOutOfRangeException(nameof(SwitchProtocol)),
         };
 
         public ISwitchConnectionSync CreateSync() => Protocol switch
         {
             WiFi => new SwitchSocketSync(this),
             USB => new SwitchUSBSync(Port),
-            _ => throw new IndexOutOfRangeException(nameof(SwitchProtocol)),
+            _ => throw new ArgumentOutOfRangeException(nameof(SwitchProtocol)),
         };
     }
 

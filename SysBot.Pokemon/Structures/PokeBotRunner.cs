@@ -25,7 +25,7 @@ namespace SysBot.Pokemon
 
         public override bool Remove(IConsoleBotConfig cfg, bool callStop)
         {
-            var bot = Bots.Find(z => z.Bot.Config.Equals(cfg))?.Bot;
+            var bot = GetBot(cfg)?.Bot;
             if (bot is PokeTradeBot b)
                 Hub.Bots.Remove(b);
             return base.Remove(cfg, callStop);

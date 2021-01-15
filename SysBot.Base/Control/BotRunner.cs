@@ -20,7 +20,7 @@ namespace SysBot.Base
 
         public virtual bool Remove(IConsoleBotConfig cfg, bool callStop)
         {
-            var match = Bots.Find(z => z.Bot.Config.Equals(cfg));
+            var match = GetBot(cfg);
             if (match == null)
                 return false;
 
@@ -60,7 +60,7 @@ namespace SysBot.Base
                 b.Resume();
         }
 
-        public BotSource<T>? GetBot(T config) => Bots.Find(z => z.Bot.Config.Equals(config));
-        public BotSource<T>? GetBot(string ip) => Bots.Find(z => z.Bot.Config is IWirelessBotConfig s && s.IP == ip);
+        public BotSource<T>? GetBot(IConsoleBotConfig config) => Bots.Find(z => z.Bot.Config.Equals(config));
+        public BotSource<T>? GetBot(string ip) => Bots.Find(z => z.Bot.Config.Matches(ip));
     }
 }

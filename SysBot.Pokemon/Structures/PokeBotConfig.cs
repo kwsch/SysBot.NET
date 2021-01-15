@@ -11,6 +11,8 @@ namespace SysBot.Pokemon
     {
         public IConsoleBotManaged<IConsoleConnection, IConsoleConnectionAsync> Connection { get; set; } = new SwitchConnectionConfig();
         public bool IsValid() => Connection.IsValid();
+        public bool Matches(string magic) => Connection.Matches(magic);
+
         public IConsoleConnection CreateSync() => Connection.CreateSync();
         public IConsoleConnectionAsync CreateAsynchronous() => Connection.CreateAsynchronous();
 

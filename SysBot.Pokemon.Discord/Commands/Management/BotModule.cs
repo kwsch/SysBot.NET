@@ -32,7 +32,7 @@ namespace SysBot.Pokemon.Discord
         }
 
         [Command("botStart")]
-        [Summary("Starts a bot by IP address.")]
+        [Summary("Starts a bot by IP address/port.")]
         [RequireSudo]
         public async Task StartBotAsync(string ip)
         {
@@ -48,7 +48,7 @@ namespace SysBot.Pokemon.Discord
         }
 
         [Command("botStop")]
-        [Summary("Stops a bot by IP address.")]
+        [Summary("Stops a bot by IP address/port.")]
         [RequireSudo]
         public async Task StopBotAsync(string ip)
         {
@@ -65,7 +65,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("botIdle")]
         [Alias("botPause")]
-        [Summary("Commands a bot to Idle by IP address.")]
+        [Summary("Commands a bot to Idle by IP address/port.")]
         [RequireSudo]
         public async Task IdleBotAsync(string ip)
         {

@@ -3,6 +3,7 @@
     public interface IConsoleBotConfig
     {
         bool IsValid();
+        bool Matches(string magic);
     }
 
     public interface IConsoleBotConnector<out TSync, out TAsync>
