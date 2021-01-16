@@ -9,7 +9,7 @@ namespace SysBot.Pokemon.WinForms
 {
     public partial class BotController : UserControl
     {
-        public PokeBotConfig Config { get; private set; } = new();
+        public PokeBotState State { get; private set; } = new();
         private PokeBotRunner? Runner;
         public EventHandler? Remove;
 
@@ -46,7 +46,7 @@ namespace SysBot.Pokemon.WinForms
                 return;
 
             bool runOnce = Runner.RunOnce;
-            var bot = Runner.GetBot(Config);
+            var bot = Runner.GetBot(State);
             if (bot == null)
                 return;
 
@@ -59,10 +59,10 @@ namespace SysBot.Pokemon.WinForms
             }
         }
 
-        public void Initialize(PokeBotRunner runner, PokeBotConfig cfg)
+        public void Initialize(PokeBotRunner runner, PokeBotState cfg)
         {
             Runner = runner;
-            Config = cfg;
+            State = cfg;
             ReloadStatus();
             L_Description.Text = string.Empty;
         }
@@ -70,17 +70,17 @@ namespace SysBot.Pokemon.WinForms
         public void ReloadStatus()
         {
             var bot = GetBot().Bot;
-            L_Left.Text = $"{bot.Connection.Name}{Environment.NewLine}{Config.InitialRoutine}";
+            L_Left.Text = $"{bot.Connection.Name}{Environment.NewLine}{State.InitialRoutine}";
         }
 
         private DateTime LastUpdateStatus = DateTime.Now;
 
-        public void ReloadStatus(BotSource<PokeBotConfig> b)
+        public void ReloadStatus(BotSource<PokeBotState> b)
         {
             ReloadStatus();
             var bot = b.Bot;
             L_Description.Text = $"[{bot.LastTime:hh:mm:ss}] {bot.Connection.Label}: {bot.LastLogged}";
-            L_Left.Text = $"{bot.Connection.Name}{Environment.NewLine}{Config.InitialRoutine}";
+            L_Left.Text = $"{bot.Connection.Name}{Environment.NewLine}{State.InitialRoutine}";
 
             var lastTime = bot.LastTime;
             if (!b.IsRunning)
@@ -170,12 +170,12 @@ namespace SysBot.Pokemon.WinForms
                 EchoUtil.Echo($"{bot.Bot.Connection.Name} has been issued a command to {cmd}.");
         }
 
-        private BotSource<PokeBotConfig> GetBot()
+        private BotSource<PokeBotState> GetBot()
         {
             if (Runner == null)
                 throw new ArgumentNullException(nameof(Runner));
 
-            var bot = Runner.GetBot(Config);
+            var bot = Runner.GetBot(State);
             if (bot == null)
                 throw new ArgumentNullException(nameof(bot));
             return bot;

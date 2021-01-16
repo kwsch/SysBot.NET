@@ -5,7 +5,7 @@ namespace SysBot.Pokemon
 {
     public class RemoteControlBot : PokeRoutineExecutor
     {
-        public RemoteControlBot(PokeBotConfig cfg) : base(cfg)
+        public RemoteControlBot(PokeBotState cfg) : base(cfg)
         {
         }
 

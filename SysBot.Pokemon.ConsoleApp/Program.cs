@@ -39,7 +39,7 @@ namespace SysBot.Pokemon.ConsoleApp
 
         private static void ExitNoConfig()
         {
-            var cfg = new PokeBotConfig();
+            var cfg = new ProgramConfig();
             var created = JsonConvert.SerializeObject(cfg);
             File.WriteAllText(ConfigPath, created);
             Console.WriteLine("Created new config file since none was found in the program's path. Please configure it and restart the program.");
@@ -67,7 +67,7 @@ namespace SysBot.Pokemon.ConsoleApp
             env.StopAll();
         }
 
-        private static bool AddBot(PokeBotRunner env, PokeBotConfig cfg)
+        private static bool AddBot(PokeBotRunnerImpl env, PokeBotState cfg)
         {
             if (!cfg.IsValid())
             {

@@ -14,7 +14,7 @@ namespace SysBot.Pokemon
         private readonly IDumper DumpSetting;
         private readonly int[] DesiredIVs;
 
-        public FossilBot(PokeBotConfig cfg, PokeTradeHub<PK8> hub) : base(cfg)
+        public FossilBot(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
             Hub = hub;
             Counts = Hub.Counts;

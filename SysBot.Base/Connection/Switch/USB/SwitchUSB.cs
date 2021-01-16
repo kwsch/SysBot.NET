@@ -90,7 +90,7 @@ namespace SysBot.Base
             {
                 if (SwDevice != null)
                 {
-                    Send(SwitchCommand.DetachController());
+                    Send(SwitchCommand.DetachController(false));
                     if (SwDevice.IsOpen)
                     {
                         if (SwDevice is IUsbDevice wholeUsbDevice)

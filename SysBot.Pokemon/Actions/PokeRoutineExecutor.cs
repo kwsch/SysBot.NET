@@ -11,9 +11,9 @@ using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
-    public abstract class PokeRoutineExecutor : RoutineExecutor<PokeBotConfig>
+    public abstract class PokeRoutineExecutor : SwitchRoutineExecutor<PokeBotState>
     {
-        protected PokeRoutineExecutor(PokeBotConfig cfg) : base(cfg) { }
+        protected PokeRoutineExecutor(PokeBotState cfg) : base(cfg) { }
 
         public LanguageID GameLang { get; private set; }
         public GameVersion Version { get; private set; }

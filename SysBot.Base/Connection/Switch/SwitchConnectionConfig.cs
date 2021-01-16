@@ -4,7 +4,7 @@ using static SysBot.Base.SwitchProtocol;
 
 namespace SysBot.Base
 {
-    public record SwitchConnectionConfig : ISwitchBotConfig, IWirelessBotConfig
+    public record SwitchConnectionConfig : ISwitchConnectionConfig, IWirelessBotConfig
     {
         public SwitchProtocol Protocol { get; set; }
         public string IP { get; set; } = string.Empty;

@@ -15,7 +15,7 @@ namespace SysBot.Pokemon
         private readonly int[] DesiredIVs;
         private const SwordShieldDaycare Location = SwordShieldDaycare.Route5;
 
-        public EggBot(PokeBotConfig cfg, PokeTradeHub<PK8> hub) : base(cfg)
+        public EggBot(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
             Hub = hub;
             Counts = Hub.Counts;

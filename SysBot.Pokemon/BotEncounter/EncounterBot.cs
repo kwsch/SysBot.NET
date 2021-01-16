@@ -16,7 +16,7 @@ namespace SysBot.Pokemon
         private readonly int[] DesiredIVs;
         private readonly byte[] BattleMenuReady = { 0, 0, 0, 255 };
 
-        public EncounterBot(PokeBotConfig cfg, PokeTradeHub<PK8> hub) : base(cfg)
+        public EncounterBot(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
             Hub = hub;
             Counts = Hub.Counts;

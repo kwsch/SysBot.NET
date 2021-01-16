@@ -14,7 +14,7 @@ namespace SysBot.Pokemon
         private readonly BotCompleteCounts Counts;
         private readonly RaidSettings Settings;
 
-        public RaidBot(PokeBotConfig cfg, PokeTradeHub<PK8> hub) : base(cfg)
+        public RaidBot(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
             Hub = hub;
             Settings = hub.Config.Raid;

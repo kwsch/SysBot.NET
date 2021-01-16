@@ -15,7 +15,7 @@ namespace SysBot.Pokemon.WinForms
     {
         private static readonly string WorkingDirectory = Application.StartupPath;
         private static readonly string ConfigPath = Path.Combine(WorkingDirectory, "config.json");
-        private readonly List<PokeBotConfig> Bots = new();
+        private readonly List<PokeBotState> Bots = new();
         private readonly PokeBotRunner RunningEnvironment;
 
         public Main()
@@ -176,9 +176,12 @@ namespace SysBot.Pokemon.WinForms
             System.Media.SystemSounds.Asterisk.Play();
         }
 
-        private bool AddBot(PokeBotConfig cfg)
+        private bool AddBot(PokeBotState cfg)
         {
             if (!cfg.IsValid())
+                return false;
+
+            if (Bots.Any(z => z.Connection.Equals(cfg.Connection)))
                 return false;
 
             var newbot = RunningEnvironment.CreateBotFromConfig(cfg);
@@ -197,7 +200,7 @@ namespace SysBot.Pokemon.WinForms
             return true;
         }
 
-        private void AddBotControl(PokeBotConfig cfg)
+        private void AddBotControl(PokeBotState cfg)
         {
             var row = new BotController { Width = FLP_Bots.Width };
             row.Initialize(RunningEnvironment, cfg);
@@ -216,20 +219,20 @@ namespace SysBot.Pokemon.WinForms
 
             row.Remove += (s, e) =>
             {
-                Bots.Remove(row.Config);
-                RunningEnvironment.Remove(row.Config, !RunningEnvironment.Hub.Config.SkipConsoleBotCreation);
+                Bots.Remove(row.State);
+                RunningEnvironment.Remove(row.State, !RunningEnvironment.Hub.Config.SkipConsoleBotCreation);
                 FLP_Bots.Controls.Remove(row);
             };
         }
 
-        private PokeBotConfig CreateNewBotConfig()
+        private PokeBotState CreateNewBotConfig()
         {
             var type = (PokeRoutineType)WinFormsUtil.GetIndex(CB_Routine);
             var ip = TB_IP.Text;
             var port = (int)NUD_Port.Value;
 
             var cfg = BotConfigUtil.GetConfig<SwitchConnectionConfig>(ip, port);
-            var pk = new PokeBotConfig {Connection = cfg};
+            var pk = new PokeBotState {Connection = cfg};
             pk.Initialize(type);
             return pk;
         }

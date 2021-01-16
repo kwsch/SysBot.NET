@@ -18,6 +18,7 @@ namespace SysBot.Base
         Task RunAsync(CancellationToken token);
 
         Task MainLoop(CancellationToken token);
+        Task InitialStartup(CancellationToken token);
         void SoftStop();
     }
 }
