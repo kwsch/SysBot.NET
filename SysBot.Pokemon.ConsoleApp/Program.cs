@@ -39,11 +39,12 @@ namespace SysBot.Pokemon.ConsoleApp
 
         private static void ExitNoConfig()
         {
-            var cfg = new ProgramConfig();
+            var bot = new PokeBotState { Connection = new SwitchConnectionConfig { IP = "192.168.0.1", Port = 6000 }, InitialRoutine = PokeRoutineType.FlexTrade };
+            var cfg = new ProgramConfig { Bots = new[] { bot } };
             var created = JsonConvert.SerializeObject(cfg, new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented,
-                DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                DefaultValueHandling = DefaultValueHandling.Include,
                 NullValueHandling = NullValueHandling.Ignore
             });
             File.WriteAllText(ConfigPath, created);

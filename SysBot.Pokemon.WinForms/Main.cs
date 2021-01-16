@@ -123,7 +123,7 @@ namespace SysBot.Pokemon.WinForms
             var lines = JsonConvert.SerializeObject(cfg, new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented,
-                DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                DefaultValueHandling = DefaultValueHandling.Include,
                 NullValueHandling = NullValueHandling.Ignore
             });
             File.WriteAllText(ConfigPath, lines);
