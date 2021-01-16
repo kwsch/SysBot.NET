@@ -67,6 +67,13 @@ namespace SysBot.Pokemon.WinForms
             CB_Routine.DataSource = list;
             CB_Routine.SelectedIndex = 2; // default option
 
+            var protocols = (SwitchProtocol[])Enum.GetValues(typeof(SwitchProtocol));
+            var listP = protocols.Select(z => new ComboItem(z.ToString(), (int)z)).ToArray();
+            CB_Protocol.DisplayMember = nameof(ComboItem.Text);
+            CB_Protocol.ValueMember = nameof(ComboItem.Value);
+            CB_Protocol.DataSource = listP;
+            CB_Protocol.SelectedIndex = 0; // default option
+
             LogUtil.Forwarders.Add(AppendLog);
         }
 
@@ -214,11 +221,9 @@ namespace SysBot.Pokemon.WinForms
             row.Click += (s, e) =>
             {
                 var details = cfg.Connection;
-                if (details is IWirelessBotConfig w)
-                {
-                    TB_IP.Text = w.IP;
-                    NUD_Port.Value = w.Port;
-                }
+                TB_IP.Text = details.IP;
+                NUD_Port.Value = details.Port;
+                CB_Protocol.SelectedIndex = (int)details.Protocol;
                 CB_Routine.SelectedValue = (int)cfg.InitialRoutine;
             };
 
@@ -232,12 +237,13 @@ namespace SysBot.Pokemon.WinForms
 
         private PokeBotState CreateNewBotConfig()
         {
-            var type = (PokeRoutineType)WinFormsUtil.GetIndex(CB_Routine);
             var ip = TB_IP.Text;
             var port = (int)NUD_Port.Value;
-
             var cfg = BotConfigUtil.GetConfig<SwitchConnectionConfig>(ip, port);
+            cfg.Protocol = (SwitchProtocol)WinFormsUtil.GetIndex(CB_Protocol);
+
             var pk = new PokeBotState {Connection = cfg};
+            var type = (PokeRoutineType)WinFormsUtil.GetIndex(CB_Routine);
             pk.Initialize(type);
             return pk;
         }
@@ -246,6 +252,11 @@ namespace SysBot.Pokemon.WinForms
         {
             foreach (var c in FLP_Bots.Controls.OfType<BotController>())
                 c.Width = FLP_Bots.Width;
+        }
+
+        private void CB_Protocol_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            TB_IP.Visible = CB_Protocol.SelectedIndex == 0;
         }
     }
 }

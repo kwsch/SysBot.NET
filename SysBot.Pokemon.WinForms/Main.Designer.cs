@@ -43,6 +43,7 @@ namespace SysBot.Pokemon.WinForms
             this.RTB_Logs = new System.Windows.Forms.RichTextBox();
             this.B_Stop = new System.Windows.Forms.Button();
             this.B_Start = new System.Windows.Forms.Button();
+            this.CB_Protocol = new System.Windows.Forms.ComboBox();
             this.TC_Main.SuspendLayout();
             this.Tab_Bots.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.NUD_Port)).BeginInit();
@@ -64,6 +65,7 @@ namespace SysBot.Pokemon.WinForms
             // 
             // Tab_Bots
             // 
+            this.Tab_Bots.Controls.Add(this.CB_Protocol);
             this.Tab_Bots.Controls.Add(this.FLP_Bots);
             this.Tab_Bots.Controls.Add(this.TB_IP);
             this.Tab_Bots.Controls.Add(this.CB_Routine);
@@ -102,7 +104,7 @@ namespace SysBot.Pokemon.WinForms
             // 
             this.CB_Routine.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CB_Routine.FormattingEnabled = true;
-            this.CB_Routine.Location = new System.Drawing.Point(248, 5);
+            this.CB_Routine.Location = new System.Drawing.Point(312, 5);
             this.CB_Routine.Name = "CB_Routine";
             this.CB_Routine.Size = new System.Drawing.Size(101, 21);
             this.CB_Routine.TabIndex = 7;
@@ -197,6 +199,16 @@ namespace SysBot.Pokemon.WinForms
             this.B_Start.UseVisualStyleBackColor = true;
             this.B_Start.Click += new System.EventHandler(this.B_Start_Click);
             // 
+            // CB_Protocol
+            // 
+            this.CB_Protocol.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CB_Protocol.FormattingEnabled = true;
+            this.CB_Protocol.Location = new System.Drawing.Point(248, 5);
+            this.CB_Protocol.Name = "CB_Protocol";
+            this.CB_Protocol.Size = new System.Drawing.Size(58, 21);
+            this.CB_Protocol.TabIndex = 10;
+            this.CB_Protocol.SelectedIndexChanged += new System.EventHandler(this.CB_Protocol_SelectedIndexChanged);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -236,6 +248,7 @@ namespace SysBot.Pokemon.WinForms
         private System.Windows.Forms.NumericUpDown NUD_Port;
         private System.Windows.Forms.Button B_New;
         private System.Windows.Forms.FlowLayoutPanel FLP_Bots;
+        private System.Windows.Forms.ComboBox CB_Protocol;
     }
 }
 
