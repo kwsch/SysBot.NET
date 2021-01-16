@@ -113,7 +113,12 @@ namespace SysBot.Pokemon.WinForms
         private void SaveCurrentConfig()
         {
             var cfg = GetCurrentConfiguration();
-            var lines = JsonConvert.SerializeObject(cfg);
+            var lines = JsonConvert.SerializeObject(cfg, new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+                DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                NullValueHandling = NullValueHandling.Ignore
+            });
             File.WriteAllText(ConfigPath, lines);
         }
 

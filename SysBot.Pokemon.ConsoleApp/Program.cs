@@ -40,7 +40,12 @@ namespace SysBot.Pokemon.ConsoleApp
         private static void ExitNoConfig()
         {
             var cfg = new ProgramConfig();
-            var created = JsonConvert.SerializeObject(cfg);
+            var created = JsonConvert.SerializeObject(cfg, new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+                DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                NullValueHandling = NullValueHandling.Ignore
+            });
             File.WriteAllText(ConfigPath, created);
             Console.WriteLine("Created new config file since none was found in the program's path. Please configure it and restart the program.");
             Console.WriteLine("It is suggested to configure this config file using the GUI project if possible, as it will help you assign values correctly.");
