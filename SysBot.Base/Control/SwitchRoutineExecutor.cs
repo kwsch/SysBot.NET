@@ -10,7 +10,7 @@ namespace SysBot.Base
 
         protected SwitchRoutineExecutor(IConsoleBotManaged<IConsoleConnection, IConsoleConnectionAsync> cfg) : base(cfg)
         {
-            UseCRLF = cfg is ISwitchConnectionConfig {UseCRLF: true};
+            UseCRLF = cfg.GetInnerConfig() is ISwitchConnectionConfig {UseCRLF: true};
         }
 
         public override async Task InitialStartup(CancellationToken token) => await EchoCommands(false, token).ConfigureAwait(false);

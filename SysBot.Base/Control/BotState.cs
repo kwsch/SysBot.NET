@@ -15,6 +15,11 @@ namespace SysBot.Base
         /// </summary>
         public TConnection Connection { get; set; } = new();
 
+        /// <summary>
+        /// Connection Configuration
+        /// </summary>
+        public IConsoleBotConfig GetConfig() => Connection;
+
         /// <inheritdoc/>
         public bool IsValid() => Connection.IsValid();
 
