@@ -9,9 +9,12 @@ namespace SysBot.Base
     /// <summary>
     /// Connection to a Nintendo Switch hosting the sys-module via a socket (WiFi).
     /// </summary>
+    /// <remarks>
+    /// Interactions are performed asynchronously.
+    /// </remarks>
     public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync, IAsyncConnection
     {
-        public SwitchSocketAsync(IWirelessBotConfig cfg) : base(cfg) { }
+        public SwitchSocketAsync(IWirelessConnectionConfig cfg) : base(cfg) { }
 
         public override void Connect()
         {

@@ -2,16 +2,19 @@
 
 namespace SysBot.Base
 {
+    /// <summary>
+    /// Abstract class representing the communication over a WiFi socket.
+    /// </summary>
     public abstract class SwitchSocket : IConsoleConnection
     {
         protected Socket Connection;
-        protected readonly IWirelessBotConfig Info;
+        protected readonly IWirelessConnectionConfig Info;
 
         public string Name { get; }
         public string Label { get; set; }
         public bool Connected { get; protected set; }
 
-        protected SwitchSocket(IWirelessBotConfig wi, SocketType type = SocketType.Stream, ProtocolType proto = ProtocolType.Tcp)
+        protected SwitchSocket(IWirelessConnectionConfig wi, SocketType type = SocketType.Stream, ProtocolType proto = ProtocolType.Tcp)
         {
             Connection = new Socket(type, proto);
             Info = wi;

@@ -4,14 +4,24 @@ using static SysBot.Base.SwitchProtocol;
 
 namespace SysBot.Base
 {
-    public record SwitchConnectionConfig : ISwitchConnectionConfig, IWirelessBotConfig
+    /// <summary>
+    /// Represents the connection details (but not the communication implementation) for the connection.
+    /// </summary>
+    public record SwitchConnectionConfig : ISwitchConnectionConfig, IWirelessConnectionConfig
     {
+        /// <inheritdoc/>
         public SwitchProtocol Protocol { get; set; }
+
+        /// <inheritdoc/>
         public string IP { get; set; } = string.Empty;
+
+        /// <inheritdoc/>
         public int Port { get; set; } = 6000;
 
+        /// <inheritdoc/>
         public bool UseCRLF => Protocol is WiFi;
 
+        /// <inheritdoc/>
         public bool IsValid() => Protocol switch
         {
             WiFi => IPAddress.TryParse(IP, out _),
@@ -19,6 +29,7 @@ namespace SysBot.Base
             _ => false,
         };
 
+        /// <inheritdoc/>
         public bool Matches(string magic) => Protocol switch
         {
             WiFi => IPAddress.TryParse(magic, out var val) && val.ToString() == IP,
@@ -33,6 +44,7 @@ namespace SysBot.Base
             _ => throw new ArgumentOutOfRangeException(nameof(SwitchProtocol)),
         };
 
+        /// <inheritdoc/>
         public ISwitchConnectionAsync CreateAsynchronous() => Protocol switch
         {
             WiFi => new SwitchSocketAsync(this),

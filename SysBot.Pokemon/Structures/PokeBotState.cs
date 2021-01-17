@@ -9,9 +9,13 @@ namespace SysBot.Pokemon
     [Serializable]
     public sealed class PokeBotState : BotState<PokeRoutineType, SwitchConnectionConfig>
     {
+        /// <inheritdoc/>
         public override void IterateNextRoutine() => CurrentRoutineType = NextRoutineType;
+        /// <inheritdoc/>
         public override void Initialize() => Resume();
+        /// <inheritdoc/>
         public override void Pause() => NextRoutineType = PokeRoutineType.Idle;
+        /// <inheritdoc/>
         public override void Resume() => NextRoutineType = InitialRoutine;
     }
 }

@@ -6,6 +6,12 @@ using static SysBot.Base.SwitchOffsetType;
 
 namespace SysBot.Base
 {
+    /// <summary>
+    /// Connection to a Nintendo Switch hosting the sys-module via USB.
+    /// </summary>
+    /// <remarks>
+    /// Interactions are performed asynchronously.
+    /// </remarks>
     public sealed class SwitchUSBAsync : SwitchUSB, ISwitchConnectionAsync
     {
         public SwitchUSBAsync(int port) : base(port)

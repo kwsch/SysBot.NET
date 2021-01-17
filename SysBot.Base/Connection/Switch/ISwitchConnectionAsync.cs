@@ -3,6 +3,9 @@ using System.Threading.Tasks;
 
 namespace SysBot.Base
 {
+    /// <summary>
+    /// Exposes the available interactions for asynchronous communications with a Nintendo Switch.
+    /// </summary>
     public interface ISwitchConnectionAsync : IConsoleConnectionAsync
     {
         Task<ulong> GetMainNsoBaseAsync(CancellationToken token);

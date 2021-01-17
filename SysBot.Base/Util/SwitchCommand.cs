@@ -4,7 +4,7 @@ using System.Text;
 namespace SysBot.Base
 {
     /// <summary>
-    /// Encodes commands to be sent as a <see cref="byte"/> array to a Switch running a sys-module.
+    /// Encodes commands to be sent as a <see cref="byte"/> array to a Nintendo Switch running a sys-module.
     /// </summary>
     public static class SwitchCommand
     {

@@ -4,11 +4,14 @@ using System.Threading;
 namespace SysBot.Base
 {
     /// <summary>
-    /// Connection to a Nintendo Switch hosting the sys-module.
+    /// Connection to a Nintendo Switch hosting the sys-module via a socket (WiFi).
     /// </summary>
+    /// <remarks>
+    /// Interactions are performed synchronously.
+    /// </remarks>
     public sealed class SwitchSocketSync : SwitchSocket, ISwitchConnectionSync
     {
-        public SwitchSocketSync(IWirelessBotConfig cfg) : base(cfg) { }
+        public SwitchSocketSync(IWirelessConnectionConfig cfg) : base(cfg) { }
 
         public override void Connect()
         {

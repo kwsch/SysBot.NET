@@ -5,6 +5,9 @@ using LibUsbDotNet.Main;
 
 namespace SysBot.Base
 {
+    /// <summary>
+    /// Abstract class representing the communication over USB.
+    /// </summary>
     public abstract class SwitchUSB : IConsoleConnection
     {
         public string Name { get; }
