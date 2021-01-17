@@ -40,6 +40,6 @@
     /// </summary>
     public interface IConsoleBotManaged<out TSync, out TAsync> : IConsoleBotConfig, IConsoleBotConnector<TSync, TAsync>
     {
-        IConsoleBotConfig GetConfig();
+        IConsoleBotConfig GetInnerConfig();
     }
 }

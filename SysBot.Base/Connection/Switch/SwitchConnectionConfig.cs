@@ -37,6 +37,8 @@ namespace SysBot.Base
             _ => false,
         };
 
+        public IConsoleBotConfig GetInnerConfig() => this;
+
         public override string ToString() => Protocol switch
         {
             WiFi => IP,

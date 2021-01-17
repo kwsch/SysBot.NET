@@ -18,7 +18,7 @@ namespace SysBot.Base
         /// <summary>
         /// Connection Configuration
         /// </summary>
-        public IConsoleBotConfig GetConfig() => Connection;
+        public IConsoleBotConfig GetInnerConfig() => Connection;
 
         /// <inheritdoc/>
         public bool IsValid() => Connection.IsValid();
