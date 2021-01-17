@@ -22,8 +22,8 @@ namespace SysBot.Base
         }
 
         public void Log(string message) => LogInfo(message);
-        public void LogInfo(string message) => LogUtil.LogInfo(message, Name);
-        public void LogError(string message) => LogUtil.LogError(message, Name);
+        public void LogInfo(string message) => LogUtil.LogInfo(message, Label);
+        public void LogError(string message) => LogUtil.LogError(message, Label);
 
         public abstract void Connect();
         public abstract void Reset();
