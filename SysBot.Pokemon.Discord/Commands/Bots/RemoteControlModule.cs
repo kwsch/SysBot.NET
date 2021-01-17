@@ -69,19 +69,21 @@ namespace SysBot.Pokemon.Discord
             await SetStickAsyncImpl(s, x, y, ms, bot).ConfigureAwait(false);
         }
 
-        private async Task ClickAsyncImpl(SwitchButton b, BotSource<PokeBotConfig> bot)
+        private async Task ClickAsyncImpl(SwitchButton button,BotSource<PokeBotState> bot)
         {
-            if (!Enum.IsDefined(typeof(SwitchButton), b))
+            if (!Enum.IsDefined(typeof(SwitchButton), button))
             {
-                await ReplyAsync($"Unknown button value: {b}").ConfigureAwait(false);
+                await ReplyAsync($"Unknown button value: {button}").ConfigureAwait(false);
                 return;
             }
 
-            await bot.Bot.Connection.SendAsync(SwitchCommand.Click(b), CancellationToken.None).ConfigureAwait(false);
-            await ReplyAsync($"{bot.Bot.Connection.Name} has performed: {b}").ConfigureAwait(false);
+            var b = bot.Bot;
+            var crlf = b is SwitchRoutineExecutor<PokeBotState> { UseCRLF: true };
+            await b.Connection.SendAsync(SwitchCommand.Click(button, crlf), CancellationToken.None).ConfigureAwait(false);
+            await ReplyAsync($"{b.Connection.Name} has performed: {button}").ConfigureAwait(false);
         }
 
-        private async Task SetStickAsyncImpl(SwitchStick s, short x, short y, ushort ms, BotSource<PokeBotConfig> bot)
+        private async Task SetStickAsyncImpl(SwitchStick s, short x, short y, ushort ms,BotSource<PokeBotState> bot)
         {
             if (!Enum.IsDefined(typeof(SwitchStick), s))
             {
@@ -89,11 +91,13 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            await bot.Bot.Connection.SendAsync(SwitchCommand.SetStick(s, x, y), CancellationToken.None).ConfigureAwait(false);
-            await ReplyAsync($"{bot.Bot.Connection.Name} has performed: {s}").ConfigureAwait(false);
+            var b = bot.Bot;
+            var crlf = b is SwitchRoutineExecutor<PokeBotState> { UseCRLF: true };
+            await b.Connection.SendAsync(SwitchCommand.SetStick(s, x, y, crlf), CancellationToken.None).ConfigureAwait(false);
+            await ReplyAsync($"{b.Connection.Name} has performed: {s}").ConfigureAwait(false);
             await Task.Delay(ms).ConfigureAwait(false);
-            await bot.Bot.Connection.SendAsync(SwitchCommand.ResetStick(s), CancellationToken.None).ConfigureAwait(false);
-            await ReplyAsync($"{bot.Bot.Connection.Name} has reset the stick position.").ConfigureAwait(false);
+            await b.Connection.SendAsync(SwitchCommand.ResetStick(s, crlf), CancellationToken.None).ConfigureAwait(false);
+            await ReplyAsync($"{b.Connection.Name} has reset the stick position.").ConfigureAwait(false);
         }
     }
 }

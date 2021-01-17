@@ -22,7 +22,7 @@ namespace SysBot.Tests
             var t3 = GetTestTrade(info, 3);
             var s = GetTestTrade(info, 4);
 
-            var executor = new MockExecutor(new PokeBotConfig());
+            var executor = new MockExecutor(new PokeBotState());
 
             // Enqueue a bunch
             var r1 = info.AddToTradeQueue(t1, t1.UserID);
@@ -75,8 +75,8 @@ namespace SysBot.Tests
 
         private class MockExecutor : PokeRoutineExecutor
         {
-            public MockExecutor(PokeBotConfig cfg) : base(cfg) { }
-            protected override Task MainLoop(CancellationToken token) => Task.CompletedTask;
+            public MockExecutor(PokeBotState cfg) : base(cfg) { }
+            public override Task MainLoop(CancellationToken token) => Task.CompletedTask;
             public override void SoftStop() { }
         }
 

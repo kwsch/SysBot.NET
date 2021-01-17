@@ -1,5 +1,4 @@
-﻿using SysBot.Base;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 

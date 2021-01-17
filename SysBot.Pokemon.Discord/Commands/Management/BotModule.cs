@@ -28,11 +28,11 @@ namespace SysBot.Pokemon.Discord
 
         private static string GetDetailedSummary(PokeRoutineExecutor z)
         {
-            return $"- {z.Connection.IP} | {z.Connection.Name} - {z.Config.CurrentRoutineType} ~ {z.LastTime:hh:mm:ss} | {z.LastLogged}";
+            return $"- {z.Connection.Name} | {z.Connection.Label} - {z.Config.CurrentRoutineType} ~ {z.LastTime:hh:mm:ss} | {z.LastLogged}";
         }
 
         [Command("botStart")]
-        [Summary("Starts a bot by IP address.")]
+        [Summary("Starts a bot by IP address/port.")]
         [RequireSudo]
         public async Task StartBotAsync(string ip)
         {
@@ -48,7 +48,7 @@ namespace SysBot.Pokemon.Discord
         }
 
         [Command("botStop")]
-        [Summary("Stops a bot by IP address.")]
+        [Summary("Stops a bot by IP address/port.")]
         [RequireSudo]
         public async Task StopBotAsync(string ip)
         {
@@ -65,7 +65,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("botIdle")]
         [Alias("botPause")]
-        [Summary("Commands a bot to Idle by IP address.")]
+        [Summary("Commands a bot to Idle by IP address/port.")]
         [RequireSudo]
         public async Task IdleBotAsync(string ip)
         {
@@ -111,9 +111,10 @@ namespace SysBot.Pokemon.Discord
                     return;
                 }
 
-                bot.Bot.Connection.Reset(ip);
+                var c = bot.Bot.Connection;
+                c.Reset();
                 bot.Start();
-                await Context.Channel.EchoAndReply($"The bot at {ip} ({bot.Bot.Connection.Name}) has been commanded to start.").ConfigureAwait(false);
+                await Context.Channel.EchoAndReply($"The bot at {ip} ({c.Name}) has been commanded to start.").ConfigureAwait(false);
             }
         }
     }

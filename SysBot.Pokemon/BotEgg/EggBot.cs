@@ -15,7 +15,7 @@ namespace SysBot.Pokemon
         private readonly int[] DesiredIVs;
         private const SwordShieldDaycare Location = SwordShieldDaycare.Route5;
 
-        public EggBot(PokeBotConfig cfg, PokeTradeHub<PK8> hub) : base(cfg)
+        public EggBot(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
             Hub = hub;
             Counts = Hub.Counts;
@@ -30,7 +30,7 @@ namespace SysBot.Pokemon
 
         private static readonly PK8 Blank = new();
 
-        protected override async Task MainLoop(CancellationToken token)
+        public override async Task MainLoop(CancellationToken token)
         {
             Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);

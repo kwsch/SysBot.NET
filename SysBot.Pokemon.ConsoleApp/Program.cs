@@ -28,7 +28,9 @@ namespace SysBot.Pokemon.ConsoleApp
                 var cfg = JsonConvert.DeserializeObject<ProgramConfig>(lines);
                 RunBots(cfg);
             }
-            catch
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Console.WriteLine("Unable to start bots with saved config file. Please copy your config from the WinForms project or delete it and reconfigure.");
                 Console.ReadKey();
@@ -37,8 +39,14 @@ namespace SysBot.Pokemon.ConsoleApp
 
         private static void ExitNoConfig()
         {
-            var cfg = new PokeBotConfig();
-            var created = JsonConvert.SerializeObject(cfg);
+            var bot = new PokeBotState { Connection = new SwitchConnectionConfig { IP = "192.168.0.1", Port = 6000 }, InitialRoutine = PokeRoutineType.FlexTrade };
+            var cfg = new ProgramConfig { Bots = new[] { bot } };
+            var created = JsonConvert.SerializeObject(cfg, new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+                DefaultValueHandling = DefaultValueHandling.Include,
+                NullValueHandling = NullValueHandling.Ignore
+            });
             File.WriteAllText(ConfigPath, created);
             Console.WriteLine("Created new config file since none was found in the program's path. Please configure it and restart the program.");
             Console.WriteLine("It is suggested to configure this config file using the GUI project if possible, as it will help you assign values correctly.");
@@ -53,7 +61,7 @@ namespace SysBot.Pokemon.ConsoleApp
             {
                 bot.Initialize();
                 if (!AddBot(env, bot))
-                    Console.WriteLine($"Failed to add bot: {bot.IP}");
+                    Console.WriteLine($"Failed to add bot: {bot}");
             }
 
             PokeTradeBot.SeedChecker = new Z3SeedSearchHandler<PK8>();
@@ -65,11 +73,11 @@ namespace SysBot.Pokemon.ConsoleApp
             env.StopAll();
         }
 
-        private static bool AddBot(PokeBotRunner env, PokeBotConfig cfg)
+        private static bool AddBot(PokeBotRunnerImpl env, PokeBotState cfg)
         {
-            if (!cfg.IsValidIP())
+            if (!cfg.IsValid())
             {
-                Console.WriteLine($"{cfg.IP}'s config is not valid.");
+                Console.WriteLine($"{cfg}'s config is not valid.");
                 return false;
             }
 
@@ -84,7 +92,7 @@ namespace SysBot.Pokemon.ConsoleApp
                 return false;
             }
 
-            Console.WriteLine($"Added: {cfg.IP}: {cfg.InitialRoutine}");
+            Console.WriteLine($"Added: {cfg}: {cfg.InitialRoutine}");
             return true;
         }
     }

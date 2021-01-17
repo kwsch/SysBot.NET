@@ -15,7 +15,7 @@ namespace SysBot.Pokemon.WinForms
     {
         private static readonly string WorkingDirectory = Application.StartupPath;
         private static readonly string ConfigPath = Path.Combine(WorkingDirectory, "config.json");
-        private readonly List<PokeBotConfig> Bots = new();
+        private readonly List<PokeBotState> Bots = new();
         private readonly PokeBotRunner RunningEnvironment;
 
         public Main()
@@ -67,6 +67,13 @@ namespace SysBot.Pokemon.WinForms
             CB_Routine.DataSource = list;
             CB_Routine.SelectedIndex = 2; // default option
 
+            var protocols = (SwitchProtocol[])Enum.GetValues(typeof(SwitchProtocol));
+            var listP = protocols.Select(z => new ComboItem(z.ToString(), (int)z)).ToArray();
+            CB_Protocol.DisplayMember = nameof(ComboItem.Text);
+            CB_Protocol.ValueMember = nameof(ComboItem.Value);
+            CB_Protocol.DataSource = listP;
+            CB_Protocol.SelectedIndex = 0; // default option
+
             LogUtil.Forwarders.Add(AppendLog);
         }
 
@@ -113,7 +120,12 @@ namespace SysBot.Pokemon.WinForms
         private void SaveCurrentConfig()
         {
             var cfg = GetCurrentConfiguration();
-            var lines = JsonConvert.SerializeObject(cfg);
+            var lines = JsonConvert.SerializeObject(cfg, new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+                DefaultValueHandling = DefaultValueHandling.Include,
+                NullValueHandling = NullValueHandling.Ignore
+            });
             File.WriteAllText(ConfigPath, lines);
         }
 
@@ -176,9 +188,12 @@ namespace SysBot.Pokemon.WinForms
             System.Media.SystemSounds.Asterisk.Play();
         }
 
-        private bool AddBot(PokeBotConfig cfg)
+        private bool AddBot(PokeBotState cfg)
         {
-            if (!cfg.IsValidIP())
+            if (!cfg.IsValid())
+                return false;
+
+            if (Bots.Any(z => z.Connection.Equals(cfg.Connection)))
                 return false;
 
             var newbot = RunningEnvironment.CreateBotFromConfig(cfg);
@@ -197,7 +212,7 @@ namespace SysBot.Pokemon.WinForms
             return true;
         }
 
-        private void AddBotControl(PokeBotConfig cfg)
+        private void AddBotControl(PokeBotState cfg)
         {
             var row = new BotController { Width = FLP_Bots.Width };
             row.Initialize(RunningEnvironment, cfg);
@@ -205,34 +220,43 @@ namespace SysBot.Pokemon.WinForms
             FLP_Bots.SetFlowBreak(row, true);
             row.Click += (s, e) =>
             {
-                TB_IP.Text = cfg.IP;
-                NUD_Port.Value = cfg.Port;
+                var details = cfg.Connection;
+                TB_IP.Text = details.IP;
+                NUD_Port.Value = details.Port;
+                CB_Protocol.SelectedIndex = (int)details.Protocol;
                 CB_Routine.SelectedValue = (int)cfg.InitialRoutine;
             };
 
             row.Remove += (s, e) =>
             {
-                Bots.Remove(row.Config);
-                RunningEnvironment.Remove(row.Config.IP, !RunningEnvironment.Hub.Config.SkipConsoleBotCreation);
+                Bots.Remove(row.State);
+                RunningEnvironment.Remove(row.State, !RunningEnvironment.Hub.Config.SkipConsoleBotCreation);
                 FLP_Bots.Controls.Remove(row);
             };
         }
 
-        private PokeBotConfig CreateNewBotConfig()
+        private PokeBotState CreateNewBotConfig()
         {
-            var type = (PokeRoutineType)WinFormsUtil.GetIndex(CB_Routine);
             var ip = TB_IP.Text;
             var port = (int)NUD_Port.Value;
+            var cfg = BotConfigUtil.GetConfig<SwitchConnectionConfig>(ip, port);
+            cfg.Protocol = (SwitchProtocol)WinFormsUtil.GetIndex(CB_Protocol);
 
-            var cfg = SwitchBotConfig.GetConfig<PokeBotConfig>(ip, port);
-            cfg.Initialize(type);
-            return cfg;
+            var pk = new PokeBotState {Connection = cfg};
+            var type = (PokeRoutineType)WinFormsUtil.GetIndex(CB_Routine);
+            pk.Initialize(type);
+            return pk;
         }
 
         private void FLP_Bots_Resize(object sender, EventArgs e)
         {
             foreach (var c in FLP_Bots.Controls.OfType<BotController>())
                 c.Width = FLP_Bots.Width;
+        }
+
+        private void CB_Protocol_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            TB_IP.Visible = CB_Protocol.SelectedIndex == 0;
         }
     }
 }

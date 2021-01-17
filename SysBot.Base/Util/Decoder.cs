@@ -2,6 +2,9 @@
 
 namespace SysBot.Base
 {
+    /// <summary>
+    /// Decodes a sys-botbase protocol message into raw data.
+    /// </summary>
     public static class Decoder
     {
         private static bool IsNum(char c) => (uint)(c - '0') <= 9;

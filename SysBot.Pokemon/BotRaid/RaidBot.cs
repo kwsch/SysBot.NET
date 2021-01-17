@@ -14,7 +14,7 @@ namespace SysBot.Pokemon
         private readonly BotCompleteCounts Counts;
         private readonly RaidSettings Settings;
 
-        public RaidBot(PokeBotConfig cfg, PokeTradeHub<PK8> hub) : base(cfg)
+        public RaidBot(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
             Hub = hub;
             Settings = hub.Config.Raid;
@@ -27,7 +27,7 @@ namespace SysBot.Pokemon
         private readonly bool[] PlayerReady = new bool[4];
         private int raidBossSpecies = -1;
 
-        protected override async Task MainLoop(CancellationToken token)
+        public override async Task MainLoop(CancellationToken token)
         {
             Log("Identifying trainer data of the host console.");
             _ = await IdentifyTrainer(token).ConfigureAwait(false);

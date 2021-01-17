@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 
 namespace SysBot.Base
 {
-    public class BotSource<T> where T : SwitchBotConfig
+    public class BotSource<T> where T : class, IConsoleBotConfig
     {
-        public readonly SwitchRoutineExecutor<T> Bot;
+        public readonly RoutineExecutor<T> Bot;
         private CancellationTokenSource Source = new();
 
-        public BotSource(SwitchRoutineExecutor<T> bot) => Bot = bot;
+        public BotSource(RoutineExecutor<T> bot) => Bot = bot;
 
         public bool IsRunning { get; private set; }
         public bool IsPaused { get; private set; }
