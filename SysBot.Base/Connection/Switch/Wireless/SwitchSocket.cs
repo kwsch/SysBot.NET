@@ -28,5 +28,7 @@ namespace SysBot.Base
         public abstract void Connect();
         public abstract void Reset();
         public abstract void Disconnect();
+
+        protected const int MaximumTransferSize = 468;
     }
 }

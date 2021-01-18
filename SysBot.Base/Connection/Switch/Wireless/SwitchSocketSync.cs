@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using static SysBot.Base.SwitchOffsetType;
 
 namespace SysBot.Base
 {
@@ -12,6 +13,9 @@ namespace SysBot.Base
     public sealed class SwitchSocketSync : SwitchSocket, ISwitchConnectionSync
     {
         public SwitchSocketSync(IWirelessConnectionConfig cfg) : base(cfg) { }
+
+        public int BaseDelay { get; set; } = 64;
+        public int DelayFactor { get; set; } = 256;
 
         public override void Connect()
         {
@@ -35,17 +39,8 @@ namespace SysBot.Base
             Log("Disconnected!");
         }
 
-        public int Read(byte[] buffer) => Connection.Receive(buffer);
+        private int Read(byte[] buffer) => Connection.Receive(buffer);
         public int Send(byte[] buffer) => Connection.Send(buffer);
-
-        private const int BaseDelay = 64;
-        private const int DelayFactor = 256;
-
-        public byte[] ReadBytes(uint offset, int length)
-        {
-            Send(SwitchCommand.Peek(offset, length));
-            return ReadResponse(length);
-        }
 
         private byte[] ReadResponse(int length)
         {
@@ -54,13 +49,6 @@ namespace SysBot.Base
             var buffer = new byte[(length * 2) + 1];
             var _ = Read(buffer);
             return Decoder.ConvertHexByteStringToBytes(buffer);
-        }
-
-        public void WriteBytes(byte[] data, uint offset)
-        {
-            Send(SwitchCommand.Poke(offset, data));
-            // give it time to push data back
-            Thread.Sleep((data.Length / DelayFactor) + BaseDelay);
         }
 
         public ulong GetMainNsoBase()
@@ -79,26 +67,56 @@ namespace SysBot.Base
             return BitConverter.ToUInt64(baseBytes, 0);
         }
 
-        public byte[] ReadBytesMain(ulong offset, int length)
+        public byte[] ReadBytes(uint offset, int length) => Read(offset, length, Heap);
+        public byte[] ReadBytesMain(ulong offset, int length) => Read(offset, length, Main);
+        public byte[] ReadBytesAbsolute(ulong offset, int length) => Read(offset, length, Absolute);
+
+        public void WriteBytes(byte[] data, uint offset) => Write(data, offset, Heap);
+        public void WriteBytesMain(byte[] data, ulong offset) => Write(data, offset, Main);
+        public void WriteBytesAbsolute(byte[] data, ulong offset) => Write(data, offset, Absolute);
+
+        private byte[] Read(ulong offset, int length, SwitchOffsetType type)
         {
-            Send(SwitchCommand.PeekMain(offset, length));
-            return ReadResponse(length);
+            var method = type.GetReadMethod();
+            if (length <= MaximumTransferSize)
+            {
+                var cmd = method(offset, length);
+                Send(cmd);
+                return ReadResponse(length);
+            }
+
+            byte[] result = new byte[length];
+            for (int i = 0; i < length; i += MaximumTransferSize)
+            {
+                int len = MaximumTransferSize;
+                int delta = length - i;
+                if (delta < MaximumTransferSize)
+                    len = delta;
+
+                var cmd = method(offset + (uint)i, len);
+                Send(cmd);
+                var bytes = ReadResponse(length);
+                bytes.CopyTo(result, i);
+            }
+            return result;
         }
 
-        public byte[] ReadBytesAbsolute(ulong offset, int length)
+        private void Write(byte[] data, ulong offset, SwitchOffsetType type)
         {
-            Send(SwitchCommand.PeekAbsolute(offset, length));
-            return ReadResponse(length);
-        }
-
-        public void WriteBytesMain(byte[] data, ulong offset)
-        {
-            Send(SwitchCommand.PokeMain(offset, data));
-        }
-
-        public void WriteBytesAbsolute(byte[] data, ulong offset)
-        {
-            Send(SwitchCommand.PokeAbsolute(offset, data));
+            var method = type.GetWriteMethod();
+            if (data.Length <= MaximumTransferSize)
+            {
+                var cmd = method(offset, data);
+                Send(cmd);
+                return;
+            }
+            int byteCount = data.Length;
+            for (int i = 0; i < byteCount; i += MaximumTransferSize)
+            {
+                var slice = data.SliceSafe(i, MaximumTransferSize);
+                var cmd = method(offset + (uint)i, slice);
+                Send(cmd);
+            }
         }
     }
 }

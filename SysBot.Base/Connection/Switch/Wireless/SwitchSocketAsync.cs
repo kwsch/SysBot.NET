@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using static SysBot.Base.SwitchOffsetType;
 
 namespace SysBot.Base
 {
@@ -84,7 +85,7 @@ namespace SysBot.Base
             LogUtil.LogInfo("Disconnected.", Name);
         }
 
-        public int Read(byte[] buffer)
+        private int Read(byte[] buffer)
         {
             int br = Connection.Receive(buffer, 0, 1, SocketFlags.None);
             while (buffer[br - 1] != (byte)'\n')
@@ -92,9 +93,10 @@ namespace SysBot.Base
             return br;
         }
 
+        /// <summary> Only call this if you are sending small commands. </summary>
         public async Task<int> SendAsync(byte[] buffer, CancellationToken token) => await Task.Run(() => Connection.Send(buffer), token).ConfigureAwait(false);
 
-        public async Task<byte[]> ReadBytesFromCmdAsync(byte[] cmd, int length, CancellationToken token)
+        private async Task<byte[]> ReadBytesFromCmdAsync(byte[] cmd, int length, CancellationToken token)
         {
             await SendAsync(cmd, token).ConfigureAwait(false);
 
@@ -103,20 +105,13 @@ namespace SysBot.Base
             return Decoder.ConvertHexByteStringToBytes(buffer);
         }
 
-        public async Task<byte[]> ReadBytesAsync(uint offset, int length, CancellationToken token)
-        {
-            return await ReadBytesFromCmdAsync(SwitchCommand.Peek(offset, length), length, token).ConfigureAwait(false);
-        }
+        public async Task<byte[]> ReadBytesAsync(uint offset, int length, CancellationToken token) => await Read(offset, length, Heap, token).ConfigureAwait(false);
+        public async Task<byte[]> ReadBytesMainAsync(ulong offset, int length, CancellationToken token) => await Read(offset, length, Main, token).ConfigureAwait(false);
+        public async Task<byte[]> ReadBytesAbsoluteAsync(ulong offset, int length, CancellationToken token) => await Read(offset, length, Absolute, token).ConfigureAwait(false);
 
-        public async Task<byte[]> ReadBytesAbsoluteAsync(ulong offset, int length, CancellationToken token)
-        {
-            return await ReadBytesFromCmdAsync(SwitchCommand.PeekAbsolute(offset, length), length, token).ConfigureAwait(false);
-        }
-
-        public async Task<byte[]> ReadBytesMainAsync(ulong offset, int length, CancellationToken token)
-        {
-            return await ReadBytesFromCmdAsync(SwitchCommand.PeekMain(offset, length), length, token).ConfigureAwait(false);
-        }
+        public async Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token) => await Write(data, offset, Heap, token).ConfigureAwait(false);
+        public async Task WriteBytesMainAsync(byte[] data, ulong offset, CancellationToken token) => await Write(data, offset, Main, token).ConfigureAwait(false);
+        public async Task WriteBytesAbsoluteAsync(byte[] data, ulong offset, CancellationToken token) => await Write(data, offset, Absolute, token).ConfigureAwait(false);
 
         public async Task<ulong> GetMainNsoBaseAsync(CancellationToken token)
         {
@@ -132,22 +127,46 @@ namespace SysBot.Base
             return BitConverter.ToUInt64(baseBytes, 0);
         }
 
-        public async Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token)
+        private async Task<byte[]> Read(ulong offset, int length, SwitchOffsetType type, CancellationToken token)
         {
-            var cmd = SwitchCommand.Poke(offset, data);
-            await SendAsync(cmd, token).ConfigureAwait(false);
+            var method = type.GetReadMethod();
+            if (length <= MaximumTransferSize)
+            {
+                var cmd = method(offset, length);
+                return await ReadBytesFromCmdAsync(cmd, length, token).ConfigureAwait(false);
+            }
+
+            byte[] result = new byte[length];
+            for (int i = 0; i < length; i += MaximumTransferSize)
+            {
+                int len = MaximumTransferSize;
+                int delta = length - i;
+                if (delta < MaximumTransferSize)
+                    len = delta;
+
+                var cmd = method(offset + (uint)i, len);
+                var bytes = await ReadBytesFromCmdAsync(cmd, len, token).ConfigureAwait(false);
+                bytes.CopyTo(result, i);
+            }
+            return result;
         }
 
-        public async Task WriteBytesMainAsync(byte[] data, ulong offset, CancellationToken token)
+        private async Task Write(byte[] data, ulong offset, SwitchOffsetType type, CancellationToken token)
         {
-            var cmd = SwitchCommand.PokeMain(offset, data);
-            await SendAsync(cmd, token).ConfigureAwait(false);
-        }
-
-        public async Task WriteBytesAbsoluteAsync(byte[] data, ulong offset, CancellationToken token)
-        {
-            var cmd = SwitchCommand.PokeAbsolute(offset, data);
-            await SendAsync(cmd, token).ConfigureAwait(false);
+            var method = type.GetWriteMethod();
+            if (data.Length <= MaximumTransferSize)
+            {
+                var cmd = method(offset, data);
+                await SendAsync(cmd, token).ConfigureAwait(false);
+                return;
+            }
+            int byteCount = data.Length;
+            for (int i = 0; i < byteCount; i += MaximumTransferSize)
+            {
+                var slice = data.SliceSafe(i, MaximumTransferSize);
+                var cmd = method(offset + (uint)i, slice);
+                await SendAsync(cmd, token).ConfigureAwait(false);
+            }
         }
     }
 }
