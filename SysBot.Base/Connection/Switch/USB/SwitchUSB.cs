@@ -195,7 +195,7 @@ namespace SysBot.Base
         {
             int byteCount = data.Length;
             for (int i = 0; i < byteCount; i += MaximumTransferSize)
-                Write(data.Slice(i, MaximumTransferSize), offset + (uint)i, method);
+                Write(data.SliceSafe(i, MaximumTransferSize), offset + (uint)i, method);
         }
 
         private byte[] ReadLarge(uint offset, int length, Func<ulong, int, byte[]> method)
