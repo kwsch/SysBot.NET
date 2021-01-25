@@ -29,6 +29,7 @@ namespace SysBot.Base
         public abstract void Reset();
         public abstract void Disconnect();
 
-        protected const int MaximumTransferSize = 468;
+        /// <inheritdoc/>
+        public int MaximumTransferSize { get; set; } = 468;
     }
 }

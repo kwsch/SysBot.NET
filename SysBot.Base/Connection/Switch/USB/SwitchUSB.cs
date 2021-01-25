@@ -28,7 +28,9 @@ namespace SysBot.Base
         private UsbDevice? SwDevice;
         private UsbEndpointReader? reader;
         private UsbEndpointWriter? writer;
-        protected const int MaximumTransferSize = 468;
+
+        /// <inheritdoc/>
+        public int MaximumTransferSize { get; set; } = 468;
 
         private readonly object _sync = new();
         private static readonly object _registry = new();
