@@ -53,5 +53,11 @@
         /// </summary>
         /// <param name="message"></param>
         abstract void LogError(string message);
+
+        /// <summary>
+        /// Maximum amount of data to be sent in a single packet to the device.
+        /// </summary>
+        /// <remarks>Whenever the amount of data to be sent exceeds this amount, the data payload is split into smaller chunks.</remarks>
+        int MaximumTransferSize { get; set; }
     }
 }
