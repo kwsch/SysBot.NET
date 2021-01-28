@@ -14,9 +14,6 @@ namespace SysBot.Base
     {
         public SwitchSocketSync(IWirelessConnectionConfig cfg) : base(cfg) { }
 
-        public int BaseDelay { get; set; } = 64;
-        public int DelayFactor { get; set; } = 256;
-
         public override void Connect()
         {
             Log("Connecting to device...");
@@ -45,7 +42,7 @@ namespace SysBot.Base
         private byte[] ReadResponse(int length)
         {
             // give it time to push data back
-            Thread.Sleep((length / DelayFactor) + BaseDelay);
+            Thread.Sleep((MaximumTransferSize / DelayFactor) + BaseDelay);
             var buffer = new byte[(length * 2) + 1];
             var _ = Read(buffer);
             return Decoder.ConvertHexByteStringToBytes(buffer);
@@ -116,6 +113,7 @@ namespace SysBot.Base
                 var slice = data.SliceSafe(i, MaximumTransferSize);
                 var cmd = method(offset + (uint)i, slice);
                 Send(cmd);
+                Thread.Sleep((MaximumTransferSize / DelayFactor) + BaseDelay);
             }
         }
     }

@@ -59,5 +59,16 @@
         /// </summary>
         /// <remarks>Whenever the amount of data to be sent exceeds this amount, the data payload is split into smaller chunks.</remarks>
         int MaximumTransferSize { get; set; }
+
+        /// <summary>
+        /// Base amount of time (in milliseconds) to wait when sending successive commands.
+        /// </summary>
+        int BaseDelay { get; set; }
+
+        /// <summary>
+        /// Slows down the communication for successive commands by dividing the packet length to get a delay (in milliseconds).
+        /// </summary>
+        /// <remarks>Set this value >= the <see cref="MaximumTransferSize"/> to result in 0 bonus delay.</remarks>
+        int DelayFactor { get; set; }
     }
 }

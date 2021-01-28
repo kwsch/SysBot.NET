@@ -147,6 +147,7 @@ namespace SysBot.Base
                 var cmd = method(offset + (uint)i, len);
                 var bytes = await ReadBytesFromCmdAsync(cmd, len, token).ConfigureAwait(false);
                 bytes.CopyTo(result, i);
+                await Task.Delay(MaximumTransferSize / DelayFactor + BaseDelay, token).ConfigureAwait(false);
             }
             return result;
         }
@@ -166,6 +167,7 @@ namespace SysBot.Base
                 var slice = data.SliceSafe(i, MaximumTransferSize);
                 var cmd = method(offset + (uint)i, slice);
                 await SendAsync(cmd, token).ConfigureAwait(false);
+                await Task.Delay(MaximumTransferSize / DelayFactor + BaseDelay, token).ConfigureAwait(false);
             }
         }
     }
