@@ -86,7 +86,7 @@ namespace SysBot.Pokemon
                 }
 
                 encounterCount++;
-                Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownSet.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
+                Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownParsing.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
                 if (DumpSetting.Dump)
                     DumpPokemon(DumpSetting.DumpFolder, "fossil", pk);
 

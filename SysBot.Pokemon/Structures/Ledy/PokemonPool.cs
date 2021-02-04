@@ -154,7 +154,7 @@ namespace SysBot.Pokemon
                 return true;
 
             // Can't surprise trade fused stuff.
-            if (AltFormInfo.IsFusedForm(pk.Species, pk.AltForm, pk.Format))
+            if (FormInfo.IsFusedForm(pk.Species, pk.Form, pk.Format))
                 return true;
 
             return false;
