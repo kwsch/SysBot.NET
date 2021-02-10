@@ -144,7 +144,10 @@ namespace SysBot.Pokemon.WinForms
         public void SendCommand(BotControlCommand cmd, bool echo = true)
         {
             if (Runner?.Hub.Config.SkipConsoleBotCreation != false)
+            {
+                LogUtil.LogError("No bots were created because SkipConsoleBotCreation is on!", "Hub");
                 return;
+            }
             var bot = GetBot();
             switch (cmd)
             {
