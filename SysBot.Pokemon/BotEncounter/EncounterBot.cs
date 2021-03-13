@@ -70,8 +70,7 @@ namespace SysBot.Pokemon
                     Log("Invalid data detected. Restarting loop.");
 
                     // Flee and continue looping.
-                    while (await IsInBattle(token).ConfigureAwait(false))
-                        await FleeToOverworld(token).ConfigureAwait(false);
+                    await FleeToOverworld(token).ConfigureAwait(false);
                     continue;
                 }
 
@@ -83,8 +82,7 @@ namespace SysBot.Pokemon
                     return;
 
                 Log("Running away...");
-                while (await IsInBattle(token).ConfigureAwait(false))
-                    await FleeToOverworld(token).ConfigureAwait(false);
+                await FleeToOverworld(token).ConfigureAwait(false);
             }
         }
 
@@ -115,7 +113,7 @@ namespace SysBot.Pokemon
                 Log("Looking for a new dog...");
 
                 // At the start of each loop, an A press is needed to exit out of a prompt.
-                await Click(A, 0_200, token).ConfigureAwait(false);
+                await Click(A, 0_100, token).ConfigureAwait(false);
                 await SetStick(LEFT, 0, 30000, 1_000, token).ConfigureAwait(false);
 
                 // Encounters Zacian/Zamazenta and clicks through all the menus.
@@ -144,8 +142,7 @@ namespace SysBot.Pokemon
                     return;
 
                 Log("Running away...");
-                while (await IsInBattle(token).ConfigureAwait(false))
-                    await FleeToOverworld(token).ConfigureAwait(false);
+                await FleeToOverworld(token).ConfigureAwait(false);
 
                 // Extra delay to be sure we're fully out of the battle.
                 await Task.Delay(0_250, token).ConfigureAwait(false);
@@ -233,10 +230,16 @@ namespace SysBot.Pokemon
         private async Task FleeToOverworld(CancellationToken token)
         {
             // This routine will always escape a battle.
-            await Click(DUP, 0_400, token).ConfigureAwait(false);
-            await Click(A, 0_400, token).ConfigureAwait(false);
-            await Click(B, 0_400, token).ConfigureAwait(false);
-            await Click(B, 0_400, token).ConfigureAwait(false);
+            await Click(DUP, 0_200, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
+
+            while (await IsInBattle(token).ConfigureAwait(false))
+            {
+                await Click(B, 0_500, token).ConfigureAwait(false);
+                await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(DUP, 0_200, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
+            }
         }
     }
 }
