@@ -7,6 +7,8 @@
     {
         ulong GetMainNsoBase();
         ulong GetHeapBase();
+        ulong GetTitleID();
+        ulong GetBuildID();
 
         byte[] ReadBytesMain(ulong offset, int length);
         byte[] ReadBytesAbsolute(ulong offset, int length);

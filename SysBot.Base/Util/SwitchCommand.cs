@@ -8,14 +8,10 @@ namespace SysBot.Base
     /// </summary>
     public static class SwitchCommand
     {
-        private static readonly Encoding Encoder = Encoding.ASCII;
+        // private static readonly Encoding Encoder = Encoding.ASCII;
+        private static readonly Encoding Encoder = Encoding.UTF8;
 
-        private static byte[] Encode(string command, bool crlf = true)
-        {
-            if (crlf)
-                command += "\r\n";
-            return Encoder.GetBytes(command);
-        }
+        private static byte[] Encode(string command, bool crlf = true) => Encoder.GetBytes(crlf ? command + "\r\n" : command);
 
         /// <summary>
         /// Removes the virtual controller from the bot. Allows physical controllers to control manually.
@@ -163,5 +159,15 @@ namespace SysBot.Base
         /// <param name="crlf">Line terminator (unused by USB's protocol)</param>
         /// <returns>Encoded command bytes</returns>
         public static byte[] GetHeapBase(bool crlf = true) => Encode("getHeapBase", crlf);
+
+        /// <summary>
+        /// Requests the title id of attached process.
+        /// </summary>
+        /// <param name="crlf">Line terminator (unused by USB's protocol)</param>
+        /// <returns>Encoded command bytes(u64)</returns>
+        public static byte[] GetTitleID(bool crlf = true) => Encode("getTitleID", crlf);
+
+        /// Requests the build id of attached process(usb not support).
+        public static byte[] GetBuildID(bool crlf = true) => Encode("getBuildID", crlf);
     }
 }

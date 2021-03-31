@@ -38,5 +38,19 @@ namespace SysBot.Base
             Array.Reverse(baseBytes, 0, 8);
             return BitConverter.ToUInt64(baseBytes, 0);
         }
+
+        public ulong GetTitleID()
+        {
+            Send(SwitchCommand.GetTitleID(false));
+            byte[] baseBytes = ReadResponse(8);
+            Array.Reverse(baseBytes, 0, 8);
+            return BitConverter.ToUInt64(baseBytes, 0);
+        }
+
+        public ulong GetBuildID()
+        {
+            // cause usb-botbase dont have this command impl
+            return ulong.MaxValue;
+        }
     }
 }

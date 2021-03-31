@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using LibUsbDotNet;
+using LibUsbDotNet.LibUsb;
 using LibUsbDotNet.Main;
 
 namespace SysBot.Base
@@ -25,7 +27,10 @@ namespace SysBot.Base
         public void LogInfo(string message) => LogUtil.LogInfo(message, Label);
         public void LogError(string message) => LogUtil.LogError(message, Label);
 
-        private UsbDevice? SwDevice;
+        private static readonly ushort VID = 0x057E;
+        private static readonly ushort PID = 0x3000;
+
+        private IUsbDevice? SwDevice;
         private UsbEndpointReader? reader;
         private UsbEndpointWriter? writer;
 
@@ -66,28 +71,32 @@ namespace SysBot.Base
 
                 reader = SwDevice.OpenEndpointReader(ReadEndpointID.Ep01);
                 writer = SwDevice.OpenEndpointWriter(WriteEndpointID.Ep01);
+                Connected = true;
             }
         }
 
-        private UsbDevice? TryFindUSB()
+        private IUsbDevice? TryFindUSB()
         {
             lock (_registry)
             {
-                foreach (UsbRegistry ur in UsbDevice.AllLibUsbDevices)
-                {
-                    if (ur.Vid != 0x057E)
-                        continue;
-                    if (ur.Pid != 0x3000)
-                        continue;
+                var LibUsbCtx = new UsbContext();
+                var usbDeviceCollection = LibUsbCtx.List();
+                return usbDeviceCollection.FirstOrDefault(d => d.ProductId == PID && d.VendorId == VID);
 
-                    ur.DeviceProperties.TryGetValue("Address", out object addr);
-                    if (Port.ToString() != addr.ToString())
-                        continue;
+                //foreach (UsbRegistry ur in UsbDevice.AllLibUsbDevices)
+                //{
+                //    if (ur.Vid != 0x057E)
+                //        continue;
+                //    if (ur.Pid != 0x3000)
+                //        continue;
 
-                    return ur.Device;
-                }
+                //    ur.DeviceProperties.TryGetValue("Address", out object addr);
+                //    if (Port.ToString() != addr.ToString())
+                //        continue;
+
+                //    return ur.Device;
+                //}
             }
-            return null;
         }
 
         public void Disconnect()
@@ -99,14 +108,18 @@ namespace SysBot.Base
                     Send(SwitchCommand.DetachController(false));
                     if (SwDevice.IsOpen)
                     {
-                        if (SwDevice is IUsbDevice wholeUsbDevice)
-                            wholeUsbDevice.ReleaseInterface(0);
+                        //if (SwDevice is IUsbDevice wholeUsbDevice)
+                        //    wholeUsbDevice.ReleaseInterface(0);
                         SwDevice.Close();
                     }
                 }
 
-                reader?.Dispose();
-                writer?.Dispose();
+                //reader?.Dispose();
+                //writer?.Dispose();
+
+                reader = null;
+                writer = null;
+                Connected = false;
             }
         }
 
@@ -180,16 +193,16 @@ namespace SysBot.Base
 
             uint pack = (uint)buffer.Length + 2;
             var ec = writer.Write(BitConverter.GetBytes(pack), 2000, out _);
-            if (ec != ErrorCode.None)
+            if (ec != Error.Success)
             {
                 Disconnect();
-                throw new Exception(UsbDevice.LastErrorString);
+                throw new Exception(ec.ToString());
             }
             ec = writer.Write(buffer, 2000, out var l);
-            if (ec != ErrorCode.None)
+            if (ec != Error.Success)
             {
                 Disconnect();
-                throw new Exception(UsbDevice.LastErrorString);
+                throw new Exception(ec.ToString());
             }
             return l;
         }
@@ -223,7 +236,9 @@ namespace SysBot.Base
             {
                 var buffer = new byte[(length * 2) + 0];
                 var _ = Read(buffer);
-                return Decoder.ConvertHexByteStringToBytes(buffer);
+                //return Decoder.ConvertHexByteStringToBytes(buffer);
+                Array.Reverse(buffer, 0, length);
+                return buffer;
             }
         }
     }

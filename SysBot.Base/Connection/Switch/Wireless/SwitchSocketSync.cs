@@ -116,5 +116,21 @@ namespace SysBot.Base
                 Thread.Sleep((MaximumTransferSize / DelayFactor) + BaseDelay);
             }
         }
+
+        public ulong GetTitleID()
+        {
+            Send(SwitchCommand.GetTitleID());
+            byte[] baseBytes = ReadResponse(8);
+            Array.Reverse(baseBytes, 0, 8);
+            return BitConverter.ToUInt64(baseBytes, 0);
+        }
+
+        public ulong GetBuildID()
+        {
+            Send(SwitchCommand.GetBuildID());
+            byte[] baseBytes = ReadResponse(8);
+            Array.Reverse(baseBytes, 0, 8);
+            return BitConverter.ToUInt64(baseBytes, 0);
+        }
     }
 }
