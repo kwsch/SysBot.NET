@@ -1,5 +1,6 @@
 ﻿using PKHeX.Core;
 using SysBot.Base;
+using SysBot.Pokemon.BotTournament;
 using System;
 using System.IO;
 using System.Threading;
@@ -103,6 +104,7 @@ namespace SysBot.Pokemon
             PokeRoutineType.FossilBot => new FossilBot(cfg, Hub),
             PokeRoutineType.RaidBot => new RaidBot(cfg, Hub),
             PokeRoutineType.EncounterBot => new EncounterBot(cfg, Hub),
+            PokeRoutineType.TournamentBot => new TournamentBot(cfg, Hub),
             PokeRoutineType.RemoteControl => new RemoteControlBot(cfg),
             _ => throw new ArgumentException(nameof(cfg.NextRoutineType)),
         };

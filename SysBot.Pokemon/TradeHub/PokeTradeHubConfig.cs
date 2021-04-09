@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using SysBot.Pokemon.BotTournament;
+using System.ComponentModel;
 
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
@@ -66,6 +67,10 @@ namespace SysBot.Pokemon
         [Category(Bots)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public EggSettings Egg { get; set; } = new();
+
+        [Category(Bots)]
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public TournamentSettings Tournament { get; set; } = new();
 
         [Category(Bots)]
         [TypeConverter(typeof(ExpandableObjectConverter))]

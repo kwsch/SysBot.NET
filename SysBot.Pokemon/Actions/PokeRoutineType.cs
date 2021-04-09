@@ -16,6 +16,7 @@
         FossilBot,
         RaidBot,
         EncounterBot,
+        TournamentBot,
 
         RemoteControl,
     }
