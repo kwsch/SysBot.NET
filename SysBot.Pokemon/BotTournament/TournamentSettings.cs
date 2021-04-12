@@ -9,5 +9,8 @@ namespace SysBot.Pokemon.BotTournament
 
         [Category(FeatureToggle), Description("When enabled, the TournamentBot send the tournament infinitely")]
         public bool ContinueAfterSending { get; set; } = true;
+
+        [Category(FeatureToggle), Description("When enabled, a new tournament is created on startup")]
+        public bool CreateRulesOnStart { get; set; } = false;
     }
 }

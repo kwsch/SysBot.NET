@@ -411,6 +411,46 @@ namespace SysBot.Pokemon
             return dataint == CurrentScreen_Box1 || dataint == CurrentScreen_Box2;
         }
 
+        public async Task<uint> GetCurrentMenuPoint(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(CurrentMenuPointOffset, 4, token).ConfigureAwait(false);
+            return BitConverter.ToUInt32(data, 0);
+        }
+
+        public async Task NavigateToMenuPoint(uint menuPoint, CancellationToken token)
+        {
+            var currentMenuPoint = await GetCurrentMenuPoint(token).ConfigureAwait(false);
+
+            var lineSize = 5;
+
+            var currentXOffset = currentMenuPoint % lineSize;
+            var goingToXOffset = menuPoint % lineSize;
+
+            if (menuPoint >= lineSize && currentMenuPoint < lineSize)
+            {
+                await Click(DDOWN, 1_000, token).ConfigureAwait(false);
+            }
+            else if (menuPoint < lineSize && currentMenuPoint >= lineSize)
+            {
+                await Click(DUP, 1_000, token).ConfigureAwait(false);
+            }
+
+            var xPath = goingToXOffset - currentXOffset;
+            while (xPath != 0)
+            {
+                if (xPath < 0)
+                {
+                    await Click(DLEFT, 1_000, token).ConfigureAwait(false);
+                    xPath++;
+                } 
+                else
+                {
+                    await Click(DRIGHT, 1_000, token).ConfigureAwait(false);
+                    xPath--;
+                }
+            }
+        }
+
         public async Task<bool> IsOnOverworld(PokeTradeHubConfig config, CancellationToken token)
         {
             // Uses CurrentScreenOffset and compares the value to CurrentScreen_Overworld.

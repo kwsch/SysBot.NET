@@ -96,6 +96,8 @@ namespace SysBot.Pokemon
 
         //public const uint CurrentScreen_YMenu = 0xFFFF7983;
         public const uint CurrentScreen_RaidParty = 0xFF1461DB;
+
+        public const uint CurrentMenuPointOffset = 0x83B91B78;
         #endregion
 
         public static uint GetTrainerNameOffset(TradeMethod tradeMethod)
