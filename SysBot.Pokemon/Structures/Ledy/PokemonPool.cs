@@ -148,6 +148,8 @@ namespace SysBot.Pokemon
             // Anti-spam
             if (IsSpammyString(pk.OT_Name))
                 return true;
+            if (pk.IsNicknamed && IsSpammyString(pk.Nickname))
+                return true;
 
             // Surprise Trade currently bans Mythicals and Legendaries, not Sub-Legendaries.
             if (Legal.Legends.Contains(pk.Species))

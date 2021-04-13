@@ -15,8 +15,11 @@ namespace SysBot.Pokemon
         [Category(StopConditions), Description("Stop only on Pokémon of the specified nature.")]
         public Nature TargetNature { get; set; } = Nature.Random;
 
-        [Category(StopConditions), Description("Targets the specified IVs HP/Atk/Def/SpA/SpD/Spe. Matches 0's and 31's, checks min value otherwise. Use \"x\" for unchecked IVs and \"/\" as a separator.")]
-        public string TargetIVs { get; set; } = "";
+        [Category(StopConditions), Description("Minimum accepted IVs in the format HP/Atk/Def/SpA/SpD/Spe. Use \"x\" for unchecked IVs and \"/\" as a separator.")]
+        public string TargetMinIVs { get; set; } = "";
+
+        [Category(StopConditions), Description("Maximum accepted IVs in the format HP/Atk/Def/SpA/SpD/Spe. Use \"x\" for unchecked IVs and \"/\" as a separator.")]
+        public string TargetMaxIVs { get; set; } = "";
 
         [Category(StopConditions), Description("Selects the shiny type to stop on.")]
         public TargetShinyType ShinyTarget { get; set; } = TargetShinyType.DisableOption;
@@ -33,7 +36,7 @@ namespace SysBot.Pokemon
         [Category(StopConditions), Description("If set to TRUE, matches both ShinyTarget and TargetIVs settings. Otherwise, looks for either ShinyTarget or TargetIVs match.")]
         public bool MatchShinyAndIV { get; set; } = true;
 
-        public static bool EncounterFound(PK8 pk, int[] targetIVs, StopConditionSettings settings)
+        public static bool EncounterFound(PK8 pk, int[] targetminIVs, int[] targetmaxIVs, StopConditionSettings settings)
         {
             // Match Nature and Species if they were specified.
             if (settings.StopOnSpecies != Species.None && settings.StopOnSpecies != (Species)pk.Species)
@@ -69,31 +72,41 @@ namespace SysBot.Pokemon
 
             for (int i = 0; i < 6; i++)
             {
-                // Match all 0's.
-                if (targetIVs[i] == 0 && pkIVList[i] != 0)
-                    return false;
-                // Wild cards should be -1, so they will always be less than the Pokemon's IVs.
-                if (targetIVs[i] > pkIVList[i])
+                if (targetminIVs[i] > pkIVList[i] || targetmaxIVs[i] < pkIVList[i])
                     return false;
             }
             return true;
         }
 
-        public static int[] InitializeTargetIVs(PokeTradeHub<PK8> hub)
+        public static void InitializeTargetIVs(PokeTradeHub<PK8> hub, out int[] min, out int[] max)
         {
-            int[] targetIVs = { -1, -1, -1, -1, -1, -1 };
+            min = ReadTargetIVs(hub.Config.StopConditions, true);
+            max = ReadTargetIVs(hub.Config.StopConditions, false);
+            return;
+        }
 
-            /* Populate targetIVs array.  Bot matches 0 and 31 IVs.
-             * Any other nonzero IV is treated as a minimum accepted value.
-             * If they put "x", this is a wild card so we can leave -1. */
-            string[] splitIVs = hub.Config.StopConditions.TargetIVs.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+        private static int[] ReadTargetIVs(StopConditionSettings settings, bool min)
+        {
+            int[] targetIVs = new int[6];
 
-            // Only accept up to 6 values in case people can't count.
+            string[] splitIVs = min 
+                ? settings.TargetMinIVs.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
+                : settings.TargetMaxIVs.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            // Only accept up to 6 values.  Fill it in with default values if they don't provide 6.
+            // Anything that isn't an integer will be a wild card.
             for (int i = 0; i < 6 && i < splitIVs.Length; i++)
             {
-                var str = splitIVs[i];
-                if (int.TryParse(str, out var val))
-                    targetIVs[i] = val;
+                if (i < splitIVs.Length)
+                {
+                    var str = splitIVs[i];
+                    if (int.TryParse(str, out var val))
+                    {
+                        targetIVs[i] = val;
+                        continue;
+                    }
+                }
+                targetIVs[i] = min ? 0 : 31;
             }
             return targetIVs;
         }
