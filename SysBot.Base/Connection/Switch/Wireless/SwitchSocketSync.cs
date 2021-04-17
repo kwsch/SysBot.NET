@@ -92,7 +92,7 @@ namespace SysBot.Base
 
                 var cmd = method(offset + (uint)i, len);
                 Send(cmd);
-                var bytes = ReadResponse(length);
+                var bytes = ReadResponse(len);
                 bytes.CopyTo(result, i);
             }
             return result;
