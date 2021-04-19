@@ -29,7 +29,15 @@ namespace SysBot.Pokemon.BotTournament
                 await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
 
             Log("Go to share the rules for a local tournament.");
-            await GoToSharingLocalTournament(token).ConfigureAwait(false);
+            await GoToLocalTournament(token).ConfigureAwait(false);
+
+            if (Hub.Config.Tournament.CreateRulesOnStart)
+            {
+            }
+            else
+            {
+                await GoToSendingExistingTournament(token).ConfigureAwait(false);
+            }
 
             Log("Switching to Lan Play Mode.");
             await SwitchToLanPlayMode(token).ConfigureAwait(false);
@@ -39,19 +47,24 @@ namespace SysBot.Pokemon.BotTournament
             Log("Start sending the rules.");
             await Click(A, 1_000, token).ConfigureAwait(false);
 
+            Log("Sending the rules.");
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.TournamentBot)
             { 
                 Config.IterateNextRoutine();
 
-                Log("Sending the rules.");
-                while (Hub.Config.Tournament.ContinueAfterSending && !token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.TournamentBot)
-                {
-                    await Click(A, 1_000, token).ConfigureAwait(false);
-                }
+                // When sending the rules, pressing A is enough to continue sending rules when they are sent to someone
+                await Click(A, 1_000, token).ConfigureAwait(false);
             }
         }
 
-        private async Task GoToSharingLocalTournament(CancellationToken token)
+        private async Task GoToSendingExistingTournament(CancellationToken token)
+        {
+            await Click(A, 1_000, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
+        }
+
+        private async Task GoToLocalTournament(CancellationToken token)
         {
             await Click(X, 1_000, token).ConfigureAwait(false);
 
@@ -61,9 +74,6 @@ namespace SysBot.Pokemon.BotTournament
             await Click(DRIGHT, 500, token).ConfigureAwait(false);
             await Click(A, 2_000, token).ConfigureAwait(false);
             await Click(DDOWN, 500, token).ConfigureAwait(false);
-            await Click(A, 1_000, token).ConfigureAwait(false);
-            await Click(A, 1_000, token).ConfigureAwait(false);
-            await Click(A, 1_000, token).ConfigureAwait(false);
             await Click(A, 1_000, token).ConfigureAwait(false);
         }
 
