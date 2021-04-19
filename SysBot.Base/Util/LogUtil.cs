@@ -56,5 +56,10 @@ namespace SysBot.Base
 
             LastLogged = DateTime.Now;
         }
+
+        public static void LogSafe(Exception exception, string identity)
+        {
+            Logger.Log(LogLevel.Error, exception, identity);
+        }
     }
 }

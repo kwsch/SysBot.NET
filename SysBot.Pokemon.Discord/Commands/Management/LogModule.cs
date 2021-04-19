@@ -63,7 +63,18 @@ namespace SysBot.Pokemon.Discord
 
         private static void AddLogChannel(ISocketMessageChannel c, ulong cid)
         {
-            void Logger(string msg, string identity) => c.SendMessageAsync(GetMessage(msg, identity));
+            void Logger(string msg, string identity)
+            {
+                try
+                {
+                    c.SendMessageAsync(GetMessage(msg, identity));
+                }
+                catch (Exception ex)
+                {
+                    LogUtil.LogSafe(ex, identity);
+                }
+            }
+
             Action<string, string> l = Logger;
             LogUtil.Forwarders.Add(l);
             static string GetMessage(string msg, string identity) => $"> [{DateTime.Now:hh:mm:ss}] - {identity}: {msg}";
