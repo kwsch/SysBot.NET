@@ -95,7 +95,7 @@ namespace SysBot.Pokemon
 
             // Only accept up to 6 values.  Fill it in with default values if they don't provide 6.
             // Anything that isn't an integer will be a wild card.
-            for (int i = 0; i < 6 && i < splitIVs.Length; i++)
+            for (int i = 0; i < 6; i++)
             {
                 if (i < splitIVs.Length)
                 {
