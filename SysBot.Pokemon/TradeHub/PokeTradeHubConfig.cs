@@ -1,5 +1,4 @@
-﻿using SysBot.Pokemon.BotTournament;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 

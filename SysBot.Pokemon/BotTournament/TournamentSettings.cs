@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace SysBot.Pokemon.BotTournament
+namespace SysBot.Pokemon
 {
     public class TournamentSettings
     {
