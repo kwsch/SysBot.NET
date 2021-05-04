@@ -1,8 +1,10 @@
 ﻿using PKHeX.Core;
 using SysBot.Base;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;
+using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon.BotTournament
 {
@@ -31,8 +33,10 @@ namespace SysBot.Pokemon.BotTournament
             Log("Go to share the rules for a local tournament.");
             await GoToLocalTournament(token).ConfigureAwait(false);
 
+            // This option should only be true if no tournament exists yet
             if (Hub.Config.Tournament.CreateRulesOnStart)
             {
+                await CreateTournament(Hub.Config, token).ConfigureAwait(false);
             }
             else
             {
@@ -55,6 +59,63 @@ namespace SysBot.Pokemon.BotTournament
                 // When sending the rules, pressing A is enough to continue sending rules when they are sent to someone
                 await Click(A, 1_000, token).ConfigureAwait(false);
             }
+        }
+
+        private async Task CreateTournament(PokeTradeHubConfig config, CancellationToken token)
+        {
+            Log("Enter Create Tournament.");
+            await Click(A, 1_000, token).ConfigureAwait(false);
+            await Click(A, 1_500, token).ConfigureAwait(false);
+
+            Log("Create Tournament Name.");
+            await Click(A, 2_500, token).ConfigureAwait(false);
+            await Click(PLUS, 1_500, token).ConfigureAwait(false);
+            await Click(DDOWN, 1_000, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
+
+            Log("Create Custom Rules.");
+            await Click(DDOWN, 500, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
+            for (var i = 0; i < config.Tournament.CustomRuleSet; i++)
+            {
+                await Click(DDOWN, 500, token).ConfigureAwait(false);
+            }
+            await Click(A, 2_000, token).ConfigureAwait(false);
+            await Click(A, 1_500, token).ConfigureAwait(false);
+
+            Log("Create Custom Timer.");
+            await Click(DDOWN, 500, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
+            await Click(DDOWN, 500, token).ConfigureAwait(false);
+            await Click(DDOWN, 500, token).ConfigureAwait(false);
+            await Click(DDOWN, 500, token).ConfigureAwait(false);
+            await Click(DDOWN, 500, token).ConfigureAwait(false);
+            await Click(DDOWN, 500, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
+
+            Log("Set Custom Timer Value.");
+            await Connection.WriteBytesAsync(BitConverter.GetBytes(config.Tournament.CustomTimerValue), TournamentTimerOffset, token).ConfigureAwait(false);
+
+            Log("Set a number of 25 Battles.");
+            await Click(DDOWN, 500, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
+            await Click(DDOWN, 500, token).ConfigureAwait(false);
+            await Click(DDOWN, 500, token).ConfigureAwait(false);
+            await Click(DDOWN, 500, token).ConfigureAwait(false);
+            await Click(DDOWN, 500, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
+
+            Log("Create Tournament Ruleset.");
+            await Click(DDOWN, 500, token).ConfigureAwait(false);
+            await Click(A, 5_000, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
+
+            Log("Go to sharing Tournaments.");
+            await Click(DDOWN, 500, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
         }
 
         private async Task GoToSendingExistingTournament(CancellationToken token)

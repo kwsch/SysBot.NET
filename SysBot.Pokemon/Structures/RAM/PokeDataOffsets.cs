@@ -63,6 +63,9 @@ namespace SysBot.Pokemon
         public const int BoxFormatSlotSize = 0x158;
         public const int TrainerDataLength = 0x110;
 
+        /* Tournament Creation */
+        public const uint TournamentTimerOffset = 0xAF285AD0;
+
         #region ScreenDetection
         // CurrentScreenOffset can be unreliable for Overworld; this one is 1 on Overworld and 0 otherwise.
         // Varies based on console language which is configured in Hub.
