@@ -38,7 +38,7 @@ The driving force to develop this project is automated bots for Nintendo Switch 
 
 ## SysBot.Pokemon.YouTube:
 - YouTube.com interface for remotely announcing when the distribution starts.
-- Provide a YouTube login ClientID, ClientSecrtet and ChannelD for login.
+- Provide a YouTube login ClientID, ClientSecret, and ChannelID for login.
 
 Uses [Discord.Net](https://github.com/discord-net/Discord.Net) , [TwitchLib](https://github.com/TwitchLib/TwitchLib) and [StreamingClientLibary](https://github.com/SaviorXTanren/StreamingClientLibrary) as a dependency via Nuget.
 
