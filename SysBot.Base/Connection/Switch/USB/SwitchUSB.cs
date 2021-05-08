@@ -223,7 +223,8 @@ namespace SysBot.Base
             {
                 var buffer = new byte[(length * 2) + 0];
                 var _ = Read(buffer);
-                return Decoder.ConvertHexByteStringToBytes(buffer);
+                Array.Reverse(buffer, 0, length);
+                return buffer;
             }
         }
     }
