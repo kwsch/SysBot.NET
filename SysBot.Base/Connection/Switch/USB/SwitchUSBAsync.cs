@@ -38,7 +38,6 @@ namespace SysBot.Base
             {
                 Send(SwitchCommand.GetMainNsoBase(false));
                 byte[] baseBytes = ReadResponse(8);
-                Array.Reverse(baseBytes, 0, 8);
                 return BitConverter.ToUInt64(baseBytes, 0);
             }, token);
         }
@@ -49,7 +48,6 @@ namespace SysBot.Base
             {
                 Send(SwitchCommand.GetHeapBase(false));
                 byte[] baseBytes = ReadResponse(8);
-                Array.Reverse(baseBytes, 0, 8);
                 return BitConverter.ToUInt64(baseBytes, 0);
             }, token);
         }
