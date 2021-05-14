@@ -163,5 +163,19 @@ namespace SysBot.Base
         /// <param name="crlf">Line terminator (unused by USB's protocol)</param>
         /// <returns>Encoded command bytes</returns>
         public static byte[] GetHeapBase(bool crlf = true) => Encode("getHeapBase", crlf);
+
+        /// <summary>
+        /// Requests the title id of attached process.
+        /// </summary>
+        /// <param name="crlf">Line terminator (unused by USB's protocol)</param>
+        /// <returns>Encoded command bytes</returns>
+        public static byte[] GetTitleID(bool crlf = true) => Encode("getTitleID", crlf);
+
+        /// <summary>
+        /// Requests the build id of attached process.
+        /// </summary>
+        /// <param name="crlf">Line terminator (unused by USB's protocol)</param>
+        /// <returns>Encoded command bytes</returns>
+        public static byte[] GetBuildID(bool crlf = true) => Encode("getBuildID", crlf);
     }
 }
