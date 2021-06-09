@@ -15,16 +15,24 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            var template = AutoLegalityWrapper.GetTemplate(set);
-            var pkm = sav.GetLegal(template, out var result);
-            var la = new LegalityAnalysis(pkm);
-            var spec = GameInfo.Strings.Species[template.Species];
-            var reason = result == "Timeout" ? "That set took too long to generate." : "I wasn't able to create something from that.";
+            try
+            {
+                var template = AutoLegalityWrapper.GetTemplate(set);
+                var pkm = sav.GetLegal(template, out var result);
+                var la = new LegalityAnalysis(pkm);
+                var spec = GameInfo.Strings.Species[template.Species];
+                var reason = result == "Timeout" ? "That set took too long to generate." : "I wasn't able to create something from that.";
 
-            var msg = la.Valid
-                ? $"Here's your ({result}) legalized PKM for {spec} ({la.EncounterOriginal.Name})!"
-                : $"Oops! {reason} Here's my best attempt for that {spec}!";
-            await channel.SendPKMAsync(pkm, msg + $"\n{ReusableActions.GetFormattedShowdownText(pkm)}").ConfigureAwait(false);
+                var msg = la.Valid
+                    ? $"Here's your ({result}) legalized PKM for {spec} ({la.EncounterOriginal.Name})!"
+                    : $"Oops! {reason} Here's my best attempt for that {spec}!";
+                await channel.SendPKMAsync(pkm, msg + $"\n{ReusableActions.GetFormattedShowdownText(pkm)}").ConfigureAwait(false);
+            }
+            catch
+            {
+                var msg = $"Oops! An unexpected problem happened with this Showdown Set:\n```{string.Join("\n", set.GetSetLines())}```";
+                await channel.SendMessageAsync(msg).ConfigureAwait(false);
+            }
         }
 
         public static async Task ReplyWithLegalizedSetAsync(this ISocketMessageChannel channel, string content, int gen)

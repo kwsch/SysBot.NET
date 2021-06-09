@@ -32,27 +32,34 @@ namespace SysBot.Pokemon.Twitch
                 return false;
             }
 
-            var sav = AutoLegalityWrapper.GetTrainerInfo(PKX.Generation);
-            PKM pkm = sav.GetLegal(template, out var result);
-
-            if (!pkm.CanBeTraded())
+            try
             {
-                msg = $"Skipping trade, @{username}: Provided Pokémon content is blocked from trading!";
-                return false;
-            }
+                var sav = AutoLegalityWrapper.GetTrainerInfo(PKX.Generation);
+                PKM pkm = sav.GetLegal(template, out var result);
 
-            var valid = new LegalityAnalysis(pkm).Valid;
-            if (valid && pkm is PK8 pk8)
+                if (!pkm.CanBeTraded())
+                {
+                    msg = $"Skipping trade, @{username}: Provided Pokémon content is blocked from trading!";
+                    return false;
+                }
+
+                var valid = new LegalityAnalysis(pkm).Valid;
+                if (valid && pkm is PK8 pk8)
+                {
+                    var tq = new TwitchQueue(pk8, new PokeTradeTrainerInfo(display), username, sub);
+                    TwitchBot.QueuePool.RemoveAll(z => z.UserName == username); // remove old requests if any
+                    TwitchBot.QueuePool.Add(tq);
+                    msg = $"@{username} - added to the waiting list. Please whisper your trade code to me! Your request from the waiting list will be removed if you are too slow!";
+                    return true;
+                }
+
+                var reason = result == "Timeout" ? "Set took too long to generate." : "Unable to legalize the Pokémon.";
+                msg = $"Skipping trade, @{username}: {reason}";
+            }
+            catch
             {
-                var tq = new TwitchQueue(pk8, new PokeTradeTrainerInfo(display), username, sub);
-                TwitchBot.QueuePool.RemoveAll(z => z.UserName == username); // remove old requests if any
-                TwitchBot.QueuePool.Add(tq);
-                msg = $"@{username} - added to the waiting list. Please whisper your trade code to me! Your request from the waiting list will be removed if you are too slow!";
-                return true;
+                msg = $"Skipping trade, @{username}: An unexpected problem occurred.";
             }
-
-            var reason = result == "Timeout" ? "Set took too long to generate." : "Unable to legalize the Pokémon.";
-            msg = $"Skipping trade, @{username}: {reason}";
             return false;
         }
 

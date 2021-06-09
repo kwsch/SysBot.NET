@@ -56,23 +56,30 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            var sav = AutoLegalityWrapper.GetTrainerInfo(gen);
-
-            var pkm = sav.GetLegal(template, out var result);
-            var la = new LegalityAnalysis(pkm);
-            var spec = GameInfo.Strings.Species[template.Species];
-            pkm = PKMConverter.ConvertToType(pkm, typeof(PK8), out _) ?? pkm;
-            if (pkm is not PK8 || !la.Valid)
+            try
             {
-                var reason = result == "Timeout" ? "That set took too long to generate." : "I wasn't able to create something from that.";
-                var imsg = $"Oops! {reason} Here's my best attempt for that {spec}!";
-                await Context.Channel.SendPKMAsync(pkm, imsg).ConfigureAwait(false);
-                return;
-            }
+                var sav = AutoLegalityWrapper.GetTrainerInfo(gen);
+                var pkm = sav.GetLegal(template, out var result);
+                var la = new LegalityAnalysis(pkm);
+                var spec = GameInfo.Strings.Species[template.Species];
+                pkm = PKMConverter.ConvertToType(pkm, typeof(PK8), out _) ?? pkm;
+                if (pkm is not PK8 || !la.Valid)
+                {
+                    var reason = result == "Timeout" ? "That set took too long to generate." : "I wasn't able to create something from that.";
+                    var imsg = $"Oops! {reason} Here's my best attempt for that {spec}!";
+                    await Context.Channel.SendPKMAsync(pkm, imsg).ConfigureAwait(false);
+                    return;
+                }
+                pkm.ResetPartyStats();
 
-            pkm.ResetPartyStats();
-            var sig = Context.User.GetFavor();
-            await AddTradeToQueueAsync(code, Context.User.Username, (PK8)pkm, sig, Context.User).ConfigureAwait(false);
+                var sig = Context.User.GetFavor();
+                await AddTradeToQueueAsync(code, Context.User.Username, (PK8)pkm, sig, Context.User).ConfigureAwait(false);
+            }
+            catch
+            {
+                var msg = $"Oops! An unexpected problem happened with this Showdown Set:\n```{string.Join("\n", set.GetSetLines())}```";
+                await ReplyAsync(msg).ConfigureAwait(false);
+            }
         }
 
         [Command("trade")]
