@@ -33,6 +33,9 @@ namespace SysBot.Pokemon.Discord
         // Bot listens to channel messages to reply with a ShowdownSet whenever a PKM file is attached (not with a command).
         private bool ConvertPKMToShowdownSet { get; } = true;
 
+        // Track loading of Echo/Logging channels so they aren't loaded multiple times.
+        private bool MessageChannelsLoaded { get; set; }
+
         public SysCord(PokeTradeHub<PK8> hub)
         {
             Hub = hub;
@@ -256,12 +259,19 @@ namespace SysBot.Pokemon.Discord
 
         private async Task LoadLoggingAndEcho()
         {
+            if (MessageChannelsLoaded)
+                return;
+
             // Restore Echoes
             EchoModule.RestoreChannels(_client);
 
             // Restore Logging
             LogModule.RestoreLogging(_client);
             TradeStartModule.RestoreTradeStarting(_client);
+
+            // Don't let it load more than once in case of Discord hiccups.
+            await Log(new LogMessage(LogSeverity.Info, "LoadLoggingAndEcho()", "Logging and Echo channels loaded!")).ConfigureAwait(false);
+            MessageChannelsLoaded = true;
 
             var game = SysCordInstance.Settings.BotGameStatus;
             if (!string.IsNullOrWhiteSpace(game))
