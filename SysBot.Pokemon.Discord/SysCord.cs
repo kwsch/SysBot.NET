@@ -121,19 +121,6 @@ namespace SysBot.Pokemon.Discord
             await _client.LoginAsync(TokenType.Bot, apiToken).ConfigureAwait(false);
             await _client.StartAsync().ConfigureAwait(false);
 
-            // Restore Echoes
-            await Task.Delay(5_000, token).ConfigureAwait(false);
-            EchoModule.RestoreChannels(_client);
-
-            // Restore Logging
-            await Task.Delay(5_000, token).ConfigureAwait(false);
-            LogModule.RestoreLogging(_client);
-            TradeStartModule.RestoreTradeStarting(_client);
-
-            var game = SysCordInstance.Settings.BotGameStatus;
-            if (!string.IsNullOrWhiteSpace(game))
-                await _client.SetGameAsync(game).ConfigureAwait(false);
-
             var app = await _client.GetApplicationInfoAsync().ConfigureAwait(false);
             SysCordInstance.Manager.Owner = app.Owner.Id;
 
@@ -160,6 +147,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             // Subscribe a handler to see if a message invokes a command.
+            _client.Ready += LoadLoggingAndEcho;
             _client.MessageReceived += HandleMessageAsync;
         }
 
@@ -264,6 +252,20 @@ namespace SysBot.Pokemon.Discord
                 }
                 await Task.Delay(gap, token).ConfigureAwait(false);
             }
+        }
+
+        private async Task LoadLoggingAndEcho()
+        {
+            // Restore Echoes
+            EchoModule.RestoreChannels(_client);
+
+            // Restore Logging
+            LogModule.RestoreLogging(_client);
+            TradeStartModule.RestoreTradeStarting(_client);
+
+            var game = SysCordInstance.Settings.BotGameStatus;
+            if (!string.IsNullOrWhiteSpace(game))
+                await _client.SetGameAsync(game).ConfigureAwait(false);
         }
     }
 }
