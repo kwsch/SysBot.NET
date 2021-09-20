@@ -1,5 +1,4 @@
-﻿using System;
-using PKHeX.Core;
+﻿using PKHeX.Core;
 using SysBot.Base;
 using System.Collections.Generic;
 using System.IO;
@@ -146,9 +145,9 @@ namespace SysBot.Pokemon
         private static bool DisallowSurpriseTrade(PKM pk)
         {
             // Anti-spam
-            if (IsSpammyString(pk.OT_Name))
+            if (StringsUtil.IsSpammyString(pk.OT_Name))
                 return true;
-            if (pk.IsNicknamed && IsSpammyString(pk.Nickname))
+            if (pk.IsNicknamed && StringsUtil.IsSpammyString(pk.Nickname))
                 return true;
 
             // Surprise Trade currently bans Mythicals and Legendaries, not Sub-Legendaries.
@@ -160,17 +159,6 @@ namespace SysBot.Pokemon
                 return true;
 
             return false;
-        }
-
-        private static bool IsSpammyString(string name)
-        {
-            if (name.IndexOf('.') >= 0 || name.IndexOf('\\') >= 0 || name.IndexOf('/') >= 0)
-                return true;
-
-            if (name.Length <= 6)
-                return false;
-
-            return name.IndexOf("pkm", StringComparison.OrdinalIgnoreCase) >= 0;
         }
     }
 }
