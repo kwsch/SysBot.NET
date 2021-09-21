@@ -71,7 +71,7 @@ namespace SysBot.Pokemon.Discord
             var detail = new PokeTradeDetail<T>(pk, trainer, notifier, t, code: code, sig == RequestSignificance.Favored);
             var trade = new TradeEntry<T>(detail, userID, type, name);
 
-            var hub = SysCordInstance<T>.Self.Hub;
+            var hub = SysCord<T>.Runner.Hub;
             var Info = hub.Queues.Info;
             var added = Info.AddToTradeQueue(trade, userID, sig == RequestSignificance.Sudo);
 

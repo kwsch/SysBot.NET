@@ -14,7 +14,7 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task ReloadPoolAsync()
         {
-            var me = SysCordInstance<T>.Self;
+            var me = SysCord<T>.Runner;
             var hub = me.Hub;
 
             var pool = hub.Ledy.Pool.Reload(hub.Config.Folder.DistributeFolder);
@@ -28,7 +28,7 @@ namespace SysBot.Pokemon.Discord
         [Summary("Displays the details of Pokémon files in the random pool.")]
         public async Task DisplayPoolCountAsync()
         {
-            var me = SysCordInstance<T>.Self;
+            var me = SysCord<T>.Runner;
             var hub = me.Hub;
             var pool = hub.Ledy.Pool;
             var count = pool.Count;

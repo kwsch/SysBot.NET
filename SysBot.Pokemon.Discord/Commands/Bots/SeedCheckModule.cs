@@ -8,7 +8,7 @@ namespace SysBot.Pokemon.Discord
     [Summary("Queues new Seed Check trades")]
     public class SeedCheckModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
     {
-        private static TradeQueueInfo<T> Info => SysCordInstance<T>.Self.Hub.Queues.Info;
+        private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
 
         [Command("seedCheck")]
         [Alias("checkMySeed", "checkSeed", "seed", "s", "sc")]
@@ -63,7 +63,7 @@ namespace SysBot.Pokemon.Discord
         [Summary("Prints the next shiny frame from the provided seed.")]
         public async Task FindFrameAsync([Remainder] string seedString)
         {
-            var me = SysCordInstance<T>.Self;
+            var me = SysCord<T>.Runner;
             var hub = me.Hub;
 
             seedString = seedString.ToLower();

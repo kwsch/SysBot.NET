@@ -10,7 +10,7 @@ namespace SysBot.Pokemon.Discord
     [Summary("Queues new Link Code trades")]
     public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
     {
-        private static TradeQueueInfo<T> Info => SysCordInstance<T>.Self.Hub.Queues.Info;
+        private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
 
         [Command("tradeList")]
         [Alias("tl")]

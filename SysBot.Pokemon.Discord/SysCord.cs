@@ -19,14 +19,10 @@ namespace SysBot.Pokemon.Discord
         public static PokeTradeHubConfig Config => Manager.Config;
     }
 
-    public static class SysCordInstance<T> where T : PKM, new()
-    {
-        public static SysCord<T> Self = default!;
-        public static PokeBotRunner<T> Runner = default!;
-    }
-
     public sealed class SysCord<T> where T : PKM, new()
     {
+        public static PokeBotRunner<T> Runner { get; private set; } = default!;
+
         private readonly DiscordSocketClient _client;
         private readonly DiscordManager Manager;
         public readonly PokeTradeHub<T> Hub;
@@ -42,11 +38,14 @@ namespace SysBot.Pokemon.Discord
         // Track loading of Echo/Logging channels so they aren't loaded multiple times.
         private bool MessageChannelsLoaded { get; set; }
 
-        public SysCord(PokeTradeHub<T> hub)
+        public SysCord(PokeBotRunner<T> runner)
         {
-            Hub = hub;
+            if (Runner is null)
+                throw new ArgumentException("Cannot create multiple instances of this bot.");
+
+            Runner = runner;
+            Hub = runner.Hub;
             Manager = new DiscordManager(Hub.Config);
-            SysCordInstance<T>.Self = this; // hack
 
             SysCordSettings.Manager = Manager;
 

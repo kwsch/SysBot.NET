@@ -22,7 +22,7 @@ namespace SysBot.Pokemon.Discord
         private static void Remove(TradeStartAction entry)
         {
             Channels.Remove(entry.ChannelID);
-            SysCordInstance<T>.Self.Hub.Queues.Forwarders.Remove(entry.Action);
+            SysCord<T>.Runner.Hub.Queues.Forwarders.Remove(entry.Action);
         }
 
 #pragma warning disable RCS1158 // Static member in generic type should use a type parameter.
@@ -80,7 +80,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             Action<PokeRoutineExecutorBase, PokeTradeDetail<T>> l = Logger;
-            SysCordInstance<T>.Self.Hub.Queues.Forwarders.Add(l);
+            SysCord<T>.Runner.Hub.Queues.Forwarders.Add(l);
             static string GetMessage(PokeRoutineExecutorBase bot, PokeTradeDetail<T> detail) => $"> [{DateTime.Now:hh:mm:ss}] - {bot.Connection.Name} is now trading (ID {detail.ID}) {detail.Trainer.TrainerName}";
 
             var entry = new TradeStartAction(cid, l, c.Name);
@@ -126,7 +126,7 @@ namespace SysBot.Pokemon.Discord
             {
                 var entry = l.Value;
                 await ReplyAsync($"Logging cleared from {entry.ChannelName} ({entry.ChannelID}!").ConfigureAwait(false);
-                SysCordInstance<T>.Self.Hub.Queues.Forwarders.Remove(entry.Action);
+                SysCord<T>.Runner.Hub.Queues.Forwarders.Remove(entry.Action);
             }
             Channels.Clear();
             var cfg = SysCordSettings.Settings;

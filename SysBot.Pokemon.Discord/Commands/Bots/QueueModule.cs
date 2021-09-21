@@ -8,7 +8,7 @@ namespace SysBot.Pokemon.Discord
     [Summary("Clears and toggles Queue features.")]
     public class QueueModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
     {
-        private static TradeQueueInfo<T> Info => SysCordInstance<T>.Self.Hub.Queues.Info;
+        private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
 
         [Command("queueStatus")]
         [Alias("qs", "ts")]
@@ -97,7 +97,7 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task ChangeQueueModeAsync([Summary("Queue mode")] QueueOpening mode)
         {
-            SysCordInstance<T>.Self.Hub.Config.Queues.QueueToggleMode = mode;
+            SysCord<T>.Runner.Hub.Config.Queues.QueueToggleMode = mode;
             await ReplyAsync($"Changed queue mode to {mode}.").ConfigureAwait(false);
         }
 
@@ -107,7 +107,7 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task ListUserQueue()
         {
-            var lines = SysCordInstance<T>.Self.Hub.Queues.Info.GetUserList("(ID {0}) - Code: {1} - {2} - {3}");
+            var lines = SysCord<T>.Runner.Hub.Queues.Info.GetUserList("(ID {0}) - Code: {1} - {2} - {3}");
             var msg = string.Join("\n", lines);
             if (msg.Length < 3)
                 await ReplyAsync("Queue list is empty.").ConfigureAwait(false);

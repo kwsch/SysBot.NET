@@ -15,7 +15,7 @@ namespace SysBot.Pokemon.Discord
         [RequireQueueRole(nameof(DiscordManager.RolesRemoteControl))]
         public async Task ClickAsync(SwitchButton b)
         {
-            var bot = SysCordInstance<T>.Runner.Bots.Find(z => z.Bot is RemoteControlBot);
+            var bot = SysCord<T>.Runner.Bots.Find(z => z.Bot is RemoteControlBot);
             if (bot == null)
             {
                 await ReplyAsync($"No bot is available to execute your command: {b}").ConfigureAwait(false);
@@ -30,7 +30,7 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task ClickAsync(string ip, SwitchButton b)
         {
-            var bot = SysCordInstance<T>.Runner.GetBot(ip);
+            var bot = SysCord<T>.Runner.GetBot(ip);
             if (bot == null)
             {
                 await ReplyAsync($"No bot is available to execute your command: {b}").ConfigureAwait(false);
@@ -45,7 +45,7 @@ namespace SysBot.Pokemon.Discord
         [RequireQueueRole(nameof(DiscordManager.RolesRemoteControl))]
         public async Task SetStickAsync(SwitchStick s, short x, short y, ushort ms = 1_000)
         {
-            var bot = SysCordInstance<T>.Runner.Bots.Find(z => z.Bot is RemoteControlBot);
+            var bot = SysCord<T>.Runner.Bots.Find(z => z.Bot is RemoteControlBot);
             if (bot == null)
             {
                 await ReplyAsync($"No bot is available to execute your command: {s}").ConfigureAwait(false);
@@ -60,7 +60,7 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task SetStickAsync(string ip, SwitchStick s, short x, short y, ushort ms = 1_000)
         {
-            var bot = SysCordInstance<T>.Runner.GetBot(ip);
+            var bot = SysCord<T>.Runner.GetBot(ip);
             if (bot == null)
             {
                 await ReplyAsync($"No bot has that IP address ({ip}).").ConfigureAwait(false);
