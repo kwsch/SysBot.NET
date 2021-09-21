@@ -31,9 +31,8 @@ namespace SysBot.Pokemon.Discord
             EchoUtil.Forwarders.Remove(entry.Action);
         }
 
-        public static void RestoreChannels(DiscordSocketClient discord)
+        public static void RestoreChannels(DiscordSocketClient discord, DiscordSettings cfg)
         {
-            var cfg = SysCordInstance.Settings;
             var channels = ReusableActions.GetListFromString(cfg.EchoChannels);
             foreach (var ch in channels)
             {
@@ -62,9 +61,10 @@ namespace SysBot.Pokemon.Discord
             AddEchoChannel(c, cid);
 
             // Add to discord global loggers (saves on program close)
-            var loggers = ReusableActions.GetListFromString(SysCordInstance.Settings.EchoChannels);
+            var settings = SysCordSettings.Settings;
+            var loggers = ReusableActions.GetListFromString(settings.EchoChannels);
             loggers.Add(cid.ToString());
-            SysCordInstance.Settings.EchoChannels = string.Join(", ", new HashSet<string>(loggers));
+            settings.EchoChannels = string.Join(", ", new HashSet<string>(loggers));
             await ReplyAsync("Added Echo output to this channel!").ConfigureAwait(false);
         }
 
@@ -98,8 +98,8 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task ClearEchosAsync()
         {
-            var cfg = SysCordInstance.Settings;
-            var channels = cfg.EchoChannels.Split(new[] { ",", ", ", " " }, StringSplitOptions.RemoveEmptyEntries);
+            var settings = SysCordSettings.Settings;
+            var channels = settings.EchoChannels.Split(new[] { ",", ", ", " " }, StringSplitOptions.RemoveEmptyEntries);
             var updatedch = new List<string>();
             foreach (var ch in channels)
             {
@@ -110,7 +110,7 @@ namespace SysBot.Pokemon.Discord
                 else if (Channels.TryGetValue(cid, out var entry))
                     Remove(entry);
             }
-            SysCordInstance.Settings.EchoChannels = string.Join(", ", updatedch);
+            settings.EchoChannels = string.Join(", ", updatedch);
             await ReplyAsync($"Echoes cleared from channel: {Context.Channel.Name}").ConfigureAwait(false);
         }
 
@@ -126,7 +126,8 @@ namespace SysBot.Pokemon.Discord
                 EchoUtil.Forwarders.Remove(entry.Action);
             }
             Channels.Clear();
-            SysCordInstance.Settings.EchoChannels = string.Empty;
+            var settings = SysCordSettings.Settings;
+            settings.EchoChannels = string.Empty;
             await ReplyAsync("Echoes cleared from all channels!").ConfigureAwait(false);
         }
     }

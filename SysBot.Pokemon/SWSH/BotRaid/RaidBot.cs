@@ -8,7 +8,7 @@ using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
-    public class RaidBot : PokeRoutineExecutor
+    public class RaidBot : PokeRoutineExecutor8
     {
         private readonly PokeTradeHub<PK8> Hub;
         private readonly BotCompleteCounts Counts;

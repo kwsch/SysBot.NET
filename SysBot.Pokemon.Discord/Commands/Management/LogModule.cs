@@ -26,8 +26,8 @@ namespace SysBot.Pokemon.Discord
 
         public static void RestoreLogging(DiscordSocketClient discord)
         {
-            var cfg = SysCordInstance.Settings;
-            var channels = ReusableActions.GetListFromString(cfg.LoggingChannels);
+            var settings = SysCordSettings.Settings;
+            var channels = ReusableActions.GetListFromString(settings.LoggingChannels);
             foreach (var ch in channels)
             {
                 if (!ulong.TryParse(ch, out var cid))
@@ -55,9 +55,10 @@ namespace SysBot.Pokemon.Discord
             AddLogChannel(c, cid);
 
             // Add to discord global loggers (saves on program close)
-            var loggers = ReusableActions.GetListFromString(SysCordInstance.Settings.LoggingChannels);
+            var settings = SysCordSettings.Settings;
+            var loggers = ReusableActions.GetListFromString(settings.LoggingChannels);
             loggers.Add(cid.ToString());
-            SysCordInstance.Settings.LoggingChannels = string.Join(", ", new HashSet<string>(loggers));
+            settings.LoggingChannels = string.Join(", ", new HashSet<string>(loggers));
             await ReplyAsync("Added logging output to this channel!").ConfigureAwait(false);
         }
 
@@ -69,7 +70,9 @@ namespace SysBot.Pokemon.Discord
                 {
                     c.SendMessageAsync(GetMessage(msg, identity));
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     LogUtil.LogSafe(ex, identity);
                 }
@@ -97,8 +100,8 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task ClearLogsAsync()
         {
-            var cfg = SysCordInstance.Settings;
-            var channels = cfg.LoggingChannels.Split(new[] { ",", ", ", " " }, StringSplitOptions.RemoveEmptyEntries);
+            var settings = SysCordSettings.Settings;
+            var channels = settings.LoggingChannels.Split(new[] { ",", ", ", " " }, StringSplitOptions.RemoveEmptyEntries);
             var updatedch = new List<string>();
             foreach (var ch in channels)
             {
@@ -109,7 +112,7 @@ namespace SysBot.Pokemon.Discord
                 else if (Channels.TryGetValue(cid, out var entry))
                     Remove(entry);
             }
-            SysCordInstance.Settings.LoggingChannels = string.Join(", ", updatedch);
+            settings.LoggingChannels = string.Join(", ", updatedch);
             await ReplyAsync($"Logging cleared from channel: {Context.Channel.Name}").ConfigureAwait(false);
         }
 
@@ -125,7 +128,8 @@ namespace SysBot.Pokemon.Discord
                 LogUtil.Forwarders.Remove(entry.Action);
             }
             Channels.Clear();
-            SysCordInstance.Settings.LoggingChannels = string.Empty;
+            var settings = SysCordSettings.Settings;
+            settings.LoggingChannels = string.Empty;
             await ReplyAsync("Logging cleared from all channels!").ConfigureAwait(false);
         }
     }

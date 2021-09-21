@@ -10,15 +10,15 @@ using YouTube.Base.Clients;
 
 namespace SysBot.Pokemon.YouTube
 {
-    public class YouTubeBot
+    public class YouTubeBot<T> where T : PKM, new()
     {
         private ChatClient client;
         private readonly YouTubeSettings Settings;
 
-        private readonly PokeTradeHub<PK8> Hub;
-        private TradeQueueInfo<PK8> Info => Hub.Queues.Info;
+        private readonly PokeTradeHub<T> Hub;
+        private TradeQueueInfo<T> Info => Hub.Queues.Info;
 
-        public YouTubeBot(YouTubeSettings settings, PokeTradeHub<PK8> hub)
+        public YouTubeBot(YouTubeSettings settings, PokeTradeHub<T> hub)
         {
             Hub = hub;
             Settings = settings;
@@ -48,7 +48,7 @@ namespace SysBot.Pokemon.YouTube
                 catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
                 {
-                    LogUtil.LogError(ex.Message, nameof(YouTubeBot));
+                    LogUtil.LogError(ex.Message, nameof(YouTubeBot<T>));
                 }
             });
         }
@@ -94,7 +94,7 @@ namespace SysBot.Pokemon.YouTube
 
         private static void Logger_LogOccurred(object sender, Log e)
         {
-            LogUtil.LogError(e.Message, nameof(YouTubeBot));
+            LogUtil.LogError(e.Message, nameof(YouTubeBot<T>));
         }
 
         private void Client_OnMessagesReceived(object sender, IEnumerable<LiveChatMessage> messages)

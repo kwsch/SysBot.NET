@@ -11,10 +11,15 @@ namespace SysBot.Tests
     public class QueueTests
     {
         [Fact]
-        public void TestEnqueue()
+        public void TestEnqueuePK8() => EnqueueTest<PK8>();
+
+        [Fact]
+        public void TestFavortism() => TestFavor<PK8>();
+
+        private static void EnqueueTest<T>() where T : PKM, new()
         {
-            var hub = new PokeTradeHub<PK8>(new PokeTradeHubConfig());
-            var info = new TradeQueueInfo<PK8>(hub);
+            var hub = new PokeTradeHub<T>(new PokeTradeHubConfig());
+            var info = new TradeQueueInfo<T>(hub);
             var queue = info.Hub.Queues.GetQueue(PokeRoutineType.LinkTrade);
 
             var t1 = GetTestTrade(info, 1);
@@ -22,7 +27,7 @@ namespace SysBot.Tests
             var t3 = GetTestTrade(info, 3);
             var s = GetTestTrade(info, 4);
 
-            var executor = new MockExecutor(new PokeBotState());
+            var executor = new MockExecutor<T>(new PokeBotState());
 
             // Enqueue a bunch
             var r1 = info.AddToTradeQueue(t1, t1.UserID);
@@ -49,7 +54,7 @@ namespace SysBot.Tests
 
             first.Notifier.TradeInitialize(executor, first);
             first.Notifier.TradeSearching(executor, first);
-            first.Notifier.TradeFinished(executor, first, new PK8 { Species = 777 });
+            first.Notifier.TradeFinished(executor, first, new T { Species = 777 });
 
             var status = info.CheckPosition(t1.UserID, PokeRoutineType.LinkTrade);
             status.Position.Should().Be(1); // not zero indexed
@@ -73,39 +78,42 @@ namespace SysBot.Tests
             queue.Count.Should().Be(2);
         }
 
-        private class MockExecutor : PokeRoutineExecutor
+        private class MockExecutor<T> : PokeRoutineExecutor<T> where T : PKM, new()
         {
             public MockExecutor(PokeBotState cfg) : base(cfg) { }
             public override Task MainLoop(CancellationToken token) => Task.CompletedTask;
             public override void SoftStop() { }
+            public override Task<T> ReadPokemon(uint offset, CancellationToken token) => Task.Run(() => new T(), token);
+
+            public override Task<T> ReadPokemon(uint offset, int size, CancellationToken token) => Task.Run(() => new T(), token);
+            public override Task<T> ReadBoxPokemon(int box, int slot, CancellationToken token) => Task.Run(() => new T(), token);
         }
 
-        private static TradeEntry<PK8> GetTestTrade(TradeQueueInfo<PK8> info, int tag, bool favor = false)
+        private static TradeEntry<T> GetTestTrade<T>(TradeQueueInfo<T> info, int tag, bool favor = false) where T : PKM, new()
         {
-            var trade = GetTestTrade(tag, favor);
+            var trade = GetTestTrade<T>(tag, favor);
             trade.Trade.Notifier.OnFinish = r => RemoveAndCheck(info, trade, r);
             return trade;
         }
 
-        private static void RemoveAndCheck(TradeQueueInfo<PK8> info, TradeEntry<PK8> trade, PokeRoutineExecutor routine)
+        private static void RemoveAndCheck<T>(TradeQueueInfo<T> info, TradeEntry<T> trade, PokeRoutineExecutorBase routine) where T : PKM, new()
         {
             var result = info.Remove(trade);
             result.Should().BeTrue();
             routine.Should().NotBeNull();
         }
 
-        private static TradeEntry<PK8> GetTestTrade(int tag, bool favor)
+        private static TradeEntry<T> GetTestTrade<T>(int tag, bool favor) where T : PKM, new()
         {
-            var d3 = new PokeTradeDetail<PK8>(new PK8 { Species = tag }, new PokeTradeTrainerInfo($"{(favor ? "*" : "")}Test {tag}"), new PokeTradeLogNotifier<PK8>(), PokeTradeType.Specific, tag, favor);
-            return new TradeEntry<PK8>(d3, (ulong)tag, PokeRoutineType.LinkTrade, $"Test Trade {tag}");
+            var d3 = new PokeTradeDetail<T>(new T { Species = tag }, new PokeTradeTrainerInfo($"{(favor ? "*" : "")}Test {tag}"), new PokeTradeLogNotifier<T>(), PokeTradeType.Specific, tag, favor);
+            return new TradeEntry<T>(d3, (ulong)tag, PokeRoutineType.LinkTrade, $"Test Trade {tag}");
         }
 
-        [Fact]
-        public void TestFavortism()
+        private static void TestFavor<T>() where T : PKM, new()
         {
             var settings = new PokeTradeHubConfig();
-            var hub = new PokeTradeHub<PK8>(settings);
-            var info = new TradeQueueInfo<PK8>(hub);
+            var hub = new PokeTradeHub<T>(settings);
+            var info = new TradeQueueInfo<T>(hub);
             var queue = info.Hub.Queues.GetQueue(PokeRoutineType.LinkTrade);
 
             const int count = 100;

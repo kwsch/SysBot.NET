@@ -76,7 +76,7 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Comma separated Echo channel IDs that will log special messages.")]
         public string EchoChannels { get; set; } = string.Empty;
 
-        [Category(Operation), Description("Returns PK8s of Pokémon shown in the trade to the user.")]
+        [Category(Operation), Description("Returns PKMs of Pokémon shown in the trade to the user.")]
         public bool ReturnPK8s { get; set; } = true;
     }
 }

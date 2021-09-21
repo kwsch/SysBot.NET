@@ -16,7 +16,7 @@ namespace SysBot.Pokemon.Discord
 
         public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
-            var mgr = SysCordInstance.Manager;
+            var mgr = SysCordSettings.Manager;
             if (mgr.Config.Discord.AllowGlobalSudo && mgr.CanUseSudo(context.User.Id))
                 return Task.FromResult(PreconditionResult.FromSuccess());
 
@@ -28,7 +28,7 @@ namespace SysBot.Pokemon.Discord
             if (mgr.CanUseSudo(roles.Select(z => z.Name)))
                 return Task.FromResult(PreconditionResult.FromSuccess());
 
-            bool canQueue = SysCordInstance.Self.Hub.Queues.Info.GetCanQueue();
+            bool canQueue = SysCordSettings.Config.Queues.CanQueue;
             if (!canQueue)
                 return Task.FromResult(PreconditionResult.FromError("Sorry, I am not currently accepting queue requests!"));
 

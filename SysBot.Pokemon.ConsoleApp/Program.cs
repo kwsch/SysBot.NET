@@ -27,7 +27,8 @@ namespace SysBot.Pokemon.ConsoleApp
             {
                 var lines = File.ReadAllText(ConfigPath);
                 var cfg = JsonConvert.DeserializeObject<ProgramConfig>(lines);
-                RunBots(cfg);
+                PokeTradeBot.SeedChecker = new Z3SeedSearchHandler<PK8>();
+                BotContainer<PK8>.RunBots(cfg);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
@@ -54,10 +55,13 @@ namespace SysBot.Pokemon.ConsoleApp
             Console.WriteLine("Press any key to exit.");
             Console.ReadKey();
         }
+    }
 
-        private static void RunBots(ProgramConfig prog)
+    public static class BotContainer<T> where T : PKM, new()
+    {
+        public static void RunBots(ProgramConfig prog)
         {
-            var env = new PokeBotRunnerImpl(prog.Hub);
+            var env = new PokeBotRunnerImpl<T>(prog.Hub, GetFactory()!);
             foreach (var bot in prog.Bots)
             {
                 bot.Initialize();
@@ -65,7 +69,6 @@ namespace SysBot.Pokemon.ConsoleApp
                     Console.WriteLine($"Failed to add bot: {bot}");
             }
 
-            PokeTradeBot.SeedChecker = new Z3SeedSearchHandler<PK8>();
             LogUtil.Forwarders.Add((msg, ident) => Console.WriteLine($"{ident}: {msg}"));
             env.StartAll();
             Console.WriteLine($"Started all bots (Count: {prog.Bots.Length}.");
@@ -74,7 +77,15 @@ namespace SysBot.Pokemon.ConsoleApp
             env.StopAll();
         }
 
-        private static bool AddBot(PokeBotRunnerImpl env, PokeBotState cfg)
+        private static BotFactory<T>? GetFactory()
+        {
+            var type = typeof(T);
+            if (type == typeof(PK8))
+                return new BotFactory8() as BotFactory<T>;
+            return null;
+        }
+
+        private static bool AddBot(IPokeBotRunner env, PokeBotState cfg)
         {
             if (!cfg.IsValid())
             {

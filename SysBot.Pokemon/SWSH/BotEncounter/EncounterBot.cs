@@ -8,7 +8,7 @@ using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
-    public class EncounterBot : PokeRoutineExecutor
+    public class EncounterBot : PokeRoutineExecutor8
     {
         private readonly PokeTradeHub<PK8> Hub;
         private readonly BotCompleteCounts Counts;
@@ -65,7 +65,7 @@ namespace SysBot.Pokemon
                 // Reset stick while we wait for the encounter to load.
                 await ResetStick(token).ConfigureAwait(false);
 
-                var pk = await ReadUntilPresent(WildPokemonOffset, 2_000, 0_200, token).ConfigureAwait(false);
+                var pk = await ReadUntilPresent(WildPokemonOffset, 2_000, 0_200, BoxFormatSlotSize, token).ConfigureAwait(false);
                 if (pk == null)
                 {
                     Log("Invalid data detected. Restarting loop.");
@@ -94,7 +94,7 @@ namespace SysBot.Pokemon
                 await SetStick(LEFT, 0, 20_000, 1_000, token).ConfigureAwait(false);
                 await ResetStick(token).ConfigureAwait(false);
 
-                var pk = await ReadUntilPresent(RaidPokemonOffset, 2_000, 0_200, token).ConfigureAwait(false);
+                var pk = await ReadUntilPresent(RaidPokemonOffset, 2_000, 0_200, BoxFormatSlotSize, token).ConfigureAwait(false);
                 if (pk != null)
                 {
                     if (await HandleEncounter(pk, true, token).ConfigureAwait(false))
@@ -122,7 +122,7 @@ namespace SysBot.Pokemon
                     await Click(A, 0_300, token).ConfigureAwait(false);
 
                 Log("Encounter started! Checking details...");
-                var pk = await ReadUntilPresent(LegendaryPokemonOffset, 2_000, 0_200, token).ConfigureAwait(false);
+                var pk = await ReadUntilPresent(LegendaryPokemonOffset, 2_000, 0_200, BoxFormatSlotSize, token).ConfigureAwait(false);
                 if (pk == null)
                 {
                     Log("Invalid data detected. Restarting loop.");

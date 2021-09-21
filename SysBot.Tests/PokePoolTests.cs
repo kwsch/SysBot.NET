@@ -8,12 +8,14 @@ namespace SysBot.Tests
     public class PokePoolTests
     {
         [Fact]
-        public void TestPool()
+        public void TestPool() => Test<PK8>();
+
+        private static void Test<T>() where T : PKM, new()
         {
             // Ensure that we can get more than one Pokémon out of the pool.
-            var pool = new PokemonPool<PK8>(new PokeTradeHubConfig());
-            var a = new PK8 { Species = 5 };
-            var b = new PK8 { Species = 12 };
+            var pool = new PokemonPool<T>(new PokeTradeHubConfig());
+            var a = new T { Species = 5 };
+            var b = new T { Species = 12 };
             pool.Add(a);
             pool.Add(b);
 

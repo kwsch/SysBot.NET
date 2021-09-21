@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace SysBot.Pokemon.Discord
 {
     [Summary("Queues new Link Code trades")]
-    public class TradeModule : ModuleBase<SocketCommandContext>
+    public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
     {
-        private static TradeQueueInfo<PK8> Info => SysCordInstance.Self.Hub.Queues.Info;
+        private static TradeQueueInfo<T> Info => SysCordInstance<T>.Self.Hub.Queues.Info;
 
         [Command("tradeList")]
         [Alias("tl")]
@@ -62,18 +62,18 @@ namespace SysBot.Pokemon.Discord
                 var pkm = sav.GetLegal(template, out var result);
                 var la = new LegalityAnalysis(pkm);
                 var spec = GameInfo.Strings.Species[template.Species];
-                pkm = PKMConverter.ConvertToType(pkm, typeof(PK8), out _) ?? pkm;
-                if (pkm is not PK8 pk8 || !la.Valid)
+                pkm = PKMConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
+                if (pkm is not T pk || !la.Valid)
                 {
                     var reason = result == "Timeout" ? "That set took too long to generate." : "I wasn't able to create something from that.";
                     var imsg = $"Oops! {reason} Here's my best attempt for that {spec}!";
                     await Context.Channel.SendPKMAsync(pkm, imsg).ConfigureAwait(false);
                     return;
                 }
-                pk8.ResetPartyStats();
+                pk.ResetPartyStats();
 
                 var sig = Context.User.GetFavor();
-                await AddTradeToQueueAsync(code, Context.User.Username, pk8, sig, Context.User).ConfigureAwait(false);
+                await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User).ConfigureAwait(false);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch
@@ -147,44 +147,44 @@ namespace SysBot.Pokemon.Discord
             }
 
             var att = await NetUtil.DownloadPKMAsync(attachment).ConfigureAwait(false);
-            var pk8 = GetRequest(att);
-            if (pk8 == null)
+            var pk = GetRequest(att);
+            if (pk == null)
             {
                 await ReplyAsync("Attachment provided is not compatible with this module!").ConfigureAwait(false);
                 return;
             }
 
-            await AddTradeToQueueAsync(code, usr.Username, pk8, sig, usr).ConfigureAwait(false);
+            await AddTradeToQueueAsync(code, usr.Username, pk, sig, usr).ConfigureAwait(false);
         }
 
-        private static PK8? GetRequest(Download<PKM> dl)
+        private static T? GetRequest(Download<PKM> dl)
         {
             if (!dl.Success)
                 return null;
             return dl.Data switch
             {
                 null => null,
-                PK8 pk8 => pk8,
-                _ => PKMConverter.ConvertToType(dl.Data, typeof(PK8), out _) as PK8
+                T pk => pk,
+                _ => PKMConverter.ConvertToType(dl.Data, typeof(T), out _) as T,
             };
         }
 
-        private async Task AddTradeToQueueAsync(int code, string trainerName, PK8 pk8, RequestSignificance sig, SocketUser usr)
+        private async Task AddTradeToQueueAsync(int code, string trainerName, T pk, RequestSignificance sig, SocketUser usr)
         {
-            if (!pk8.CanBeTraded())
+            if (!pk.CanBeTraded())
             {
                 await ReplyAsync("Provided Pokémon content is blocked from trading!").ConfigureAwait(false);
                 return;
             }
 
-            var la = new LegalityAnalysis(pk8);
+            var la = new LegalityAnalysis(pk);
             if (!la.Valid)
             {
-                await ReplyAsync("PK8 attachment is not legal, and cannot be traded!").ConfigureAwait(false);
+                await ReplyAsync($"{typeof(T).Name} attachment is not legal, and cannot be traded!").ConfigureAwait(false);
                 return;
             }
 
-            await Context.AddToQueueAsync(code, trainerName, sig, pk8, PokeRoutineType.LinkTrade, PokeTradeType.Specific, usr).ConfigureAwait(false);
+            await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk, PokeRoutineType.LinkTrade, PokeTradeType.Specific, usr).ConfigureAwait(false);
         }
     }
 }

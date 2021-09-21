@@ -3,18 +3,19 @@ using SysBot.Base;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord
 {
     [Summary("Remotely controls a bot.")]
-    public class RemoteControlModule : ModuleBase<SocketCommandContext>
+    public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
     {
         [Command("click")]
         [Summary("Clicks the specified button.")]
         [RequireQueueRole(nameof(DiscordManager.RolesRemoteControl))]
         public async Task ClickAsync(SwitchButton b)
         {
-            var bot = SysCordInstance.Runner.Bots.Find(z => z.Bot is RemoteControlBot);
+            var bot = SysCordInstance<T>.Runner.Bots.Find(z => z.Bot is RemoteControlBot);
             if (bot == null)
             {
                 await ReplyAsync($"No bot is available to execute your command: {b}").ConfigureAwait(false);
@@ -29,7 +30,7 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task ClickAsync(string ip, SwitchButton b)
         {
-            var bot = SysCordInstance.Runner.GetBot(ip);
+            var bot = SysCordInstance<T>.Runner.GetBot(ip);
             if (bot == null)
             {
                 await ReplyAsync($"No bot is available to execute your command: {b}").ConfigureAwait(false);
@@ -44,7 +45,7 @@ namespace SysBot.Pokemon.Discord
         [RequireQueueRole(nameof(DiscordManager.RolesRemoteControl))]
         public async Task SetStickAsync(SwitchStick s, short x, short y, ushort ms = 1_000)
         {
-            var bot = SysCordInstance.Runner.Bots.Find(z => z.Bot is RemoteControlBot);
+            var bot = SysCordInstance<T>.Runner.Bots.Find(z => z.Bot is RemoteControlBot);
             if (bot == null)
             {
                 await ReplyAsync($"No bot is available to execute your command: {s}").ConfigureAwait(false);
@@ -59,7 +60,7 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task SetStickAsync(string ip, SwitchStick s, short x, short y, ushort ms = 1_000)
         {
-            var bot = SysCordInstance.Runner.GetBot(ip);
+            var bot = SysCordInstance<T>.Runner.GetBot(ip);
             if (bot == null)
             {
                 await ReplyAsync($"No bot has that IP address ({ip}).").ConfigureAwait(false);

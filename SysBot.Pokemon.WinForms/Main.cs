@@ -17,7 +17,7 @@ namespace SysBot.Pokemon.WinForms
         private static readonly string WorkingDirectory = Application.StartupPath;
         private static readonly string ConfigPath = Path.Combine(WorkingDirectory, "config.json");
         private readonly List<PokeBotState> Bots = new();
-        private readonly PokeBotRunner RunningEnvironment;
+        private readonly IPokeBotRunner RunningEnvironment;
 
         public Main()
         {
@@ -28,7 +28,7 @@ namespace SysBot.Pokemon.WinForms
             {
                 var lines = File.ReadAllText(ConfigPath);
                 var prog = JsonConvert.DeserializeObject<ProgramConfig>(lines);
-                RunningEnvironment = new PokeBotRunnerImpl(prog.Hub);
+                RunningEnvironment = new PokeBotRunnerImpl<PK8>(prog.Hub, new BotFactory8());
                 foreach (var bot in prog.Bots)
                 {
                     bot.Initialize();
@@ -38,7 +38,7 @@ namespace SysBot.Pokemon.WinForms
             else
             {
                 var hub = new PokeTradeHubConfig();
-                RunningEnvironment = new PokeBotRunnerImpl(hub);
+                RunningEnvironment = new PokeBotRunnerImpl<PK8>(hub, new BotFactory8());
                 hub.Folder.CreateDefaults(WorkingDirectory);
             }
 
@@ -59,7 +59,7 @@ namespace SysBot.Pokemon.WinForms
         private void LoadControls()
         {
             MinimumSize = Size;
-            PG_Hub.SelectedObject = RunningEnvironment.Hub.Config;
+            PG_Hub.SelectedObject = RunningEnvironment.Config;
 
             var routines = (PokeRoutineType[])Enum.GetValues(typeof(PokeRoutineType));
             var list = routines.Select(z => new ComboItem(z.ToString(), (int)z)).ToArray();
@@ -102,7 +102,7 @@ namespace SysBot.Pokemon.WinForms
             return new()
             {
                 Bots = Bots.ToArray(),
-                Hub = RunningEnvironment.Hub.Config,
+                Hub = RunningEnvironment.Config,
             };
         }
 
@@ -231,7 +231,7 @@ namespace SysBot.Pokemon.WinForms
             row.Remove += (s, e) =>
             {
                 Bots.Remove(row.State);
-                RunningEnvironment.Remove(row.State, !RunningEnvironment.Hub.Config.SkipConsoleBotCreation);
+                RunningEnvironment.Remove(row.State, !RunningEnvironment.Config.SkipConsoleBotCreation);
                 FLP_Bots.Controls.Remove(row);
             };
         }

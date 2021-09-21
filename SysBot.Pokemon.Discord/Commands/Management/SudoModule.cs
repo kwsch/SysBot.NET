@@ -44,8 +44,8 @@ namespace SysBot.Pokemon.Discord
 
         protected async Task Process(IEnumerable<ulong> values, Func<SensitiveSet<ulong>, ulong, bool> process, Func<DiscordManager, SensitiveSet<ulong>> fetch)
         {
-            var mgr = SysCordInstance.Manager;
-            var list = fetch(SysCordInstance.Manager);
+            var mgr = SysCordSettings.Manager;
+            var list = fetch(mgr);
             var any = false;
             foreach (var v in values)
                 any |= process(list, v);

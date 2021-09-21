@@ -25,7 +25,7 @@ namespace SysBot.Pokemon.Discord
                 Description = "These are the commands you can use:"
             };
 
-            var mgr = SysCordInstance.Manager;
+            var mgr = SysCordSettings.Manager;
             var app = await Context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
             var owner = app.Owner.Id;
             var uid = Context.User.Id;

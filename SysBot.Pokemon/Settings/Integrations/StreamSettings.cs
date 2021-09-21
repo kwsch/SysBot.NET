@@ -13,7 +13,7 @@ namespace SysBot.Pokemon
         private const string Operation = nameof(Operation);
 
         public override string ToString() => "Stream Settings";
-        public static Action<PK8, string>? CreateSpriteFile { get; set; }
+        public static Action<PKM, string>? CreateSpriteFile { get; set; }
 
         [Category(Operation), Description("Generate stream assets; turning off will prevent generation of assets.")]
         public bool CreateAssets { get; set; } = false;

@@ -12,8 +12,8 @@ namespace SysBot.Pokemon.Discord
         private PokeTradeTrainerInfo Info { get; }
         private int Code { get; }
         private SocketUser Trader { get; }
-        public Action<PokeRoutineExecutor>? OnFinish { private get; set; }
-        public readonly PokeTradeHub<PK8> Hub = SysCordInstance.Self.Hub;
+        public Action<PokeRoutineExecutor<T>>? OnFinish { private get; set; }
+        public readonly PokeTradeHub<T> Hub = SysCordInstance<T>.Self.Hub;
 
         public DiscordTradeNotifier(T data, PokeTradeTrainerInfo info, int code, SocketUser trader)
         {
@@ -23,26 +23,26 @@ namespace SysBot.Pokemon.Discord
             Trader = trader;
         }
 
-        public void TradeInitialize(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
+        public void TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
         {
             var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";
             Trader.SendMessageAsync($"Initializing trade{receive}. Please be ready. Your code is **{Code:0000 0000}**.").ConfigureAwait(false);
         }
 
-        public void TradeSearching(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
+        public void TradeSearching(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
         {
             var name = Info.TrainerName;
             var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", {name}";
             Trader.SendMessageAsync($"I'm waiting for you{trainer}! Your code is **{Code:0000 0000}**. My IGN is **{routine.InGameName}**.").ConfigureAwait(false);
         }
 
-        public void TradeCanceled(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeResult msg)
+        public void TradeCanceled(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeResult msg)
         {
             OnFinish?.Invoke(routine);
             Trader.SendMessageAsync($"Trade canceled: {msg}").ConfigureAwait(false);
         }
 
-        public void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result)
+        public void TradeFinished(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result)
         {
             OnFinish?.Invoke(routine);
             var tradedToUser = Data.Species;
@@ -52,12 +52,12 @@ namespace SysBot.Pokemon.Discord
                 Trader.SendPKMAsync(result, "Here's what you traded me!").ConfigureAwait(false);
         }
 
-        public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, string message)
+        public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, string message)
         {
             Trader.SendMessageAsync(message).ConfigureAwait(false);
         }
 
-        public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeSummary message)
+        public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeSummary message)
         {
             if (message.ExtraInfo is SeedSearchResult r)
             {
@@ -71,7 +71,7 @@ namespace SysBot.Pokemon.Discord
             Trader.SendMessageAsync(msg).ConfigureAwait(false);
         }
 
-        public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result, string message)
+        public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result, string message)
         {
             if (result.Species != 0 && (Hub.Config.Discord.ReturnPK8s || info.Type == PokeTradeType.Dump))
                 Trader.SendPKMAsync(result, message).ConfigureAwait(false);

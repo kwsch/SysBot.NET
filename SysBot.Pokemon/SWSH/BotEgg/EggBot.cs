@@ -7,7 +7,7 @@ using static SysBot.Base.SwitchStick;
 
 namespace SysBot.Pokemon
 {
-    public class EggBot : PokeRoutineExecutor
+    public class EggBot : PokeRoutineExecutor8
     {
         private readonly PokeTradeHub<PK8> Hub;
         private readonly BotCompleteCounts Counts;

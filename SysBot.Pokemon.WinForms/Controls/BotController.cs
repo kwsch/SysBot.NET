@@ -10,7 +10,7 @@ namespace SysBot.Pokemon.WinForms
     public partial class BotController : UserControl
     {
         public PokeBotState State { get; private set; } = new();
-        private PokeBotRunner? Runner;
+        private IPokeBotRunner? Runner;
         public EventHandler? Remove;
 
         public BotController()
@@ -47,7 +47,7 @@ namespace SysBot.Pokemon.WinForms
 
             bool runOnce = Runner.RunOnce;
             var bot = Runner.GetBot(State);
-            if (bot == null)
+            if (bot is null)
                 return;
 
             foreach (var tsi in RCMenu.Items.OfType<ToolStripMenuItem>())
@@ -59,7 +59,7 @@ namespace SysBot.Pokemon.WinForms
             }
         }
 
-        public void Initialize(PokeBotRunner runner, PokeBotState cfg)
+        public void Initialize(IPokeBotRunner runner, PokeBotState cfg)
         {
             Runner = runner;
             State = cfg;
@@ -136,14 +136,14 @@ namespace SysBot.Pokemon.WinForms
         public void TryRemove()
         {
             var bot = GetBot();
-            if (!Runner!.Hub.Config.SkipConsoleBotCreation)
+            if (!Runner!.Config.SkipConsoleBotCreation)
                 bot.Stop();
             Remove?.Invoke(this, EventArgs.Empty);
         }
 
         public void SendCommand(BotControlCommand cmd, bool echo = true)
         {
-            if (Runner?.Hub.Config.SkipConsoleBotCreation != false)
+            if (Runner?.Config.SkipConsoleBotCreation != false)
             {
                 LogUtil.LogError("No bots were created because SkipConsoleBotCreation is on!", "Hub");
                 return;

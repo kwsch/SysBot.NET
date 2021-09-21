@@ -35,18 +35,18 @@ namespace SysBot.Pokemon
             ID = Interlocked.Increment(ref CreatedCount) % 3000;
         }
 
-        public void TradeInitialize(PokeRoutineExecutor routine) => Notifier.TradeInitialize(routine, this);
-        public void TradeSearching(PokeRoutineExecutor routine) => Notifier.TradeSearching(routine, this);
-        public void TradeCanceled(PokeRoutineExecutor routine, PokeTradeResult msg) => Notifier.TradeCanceled(routine, this, msg);
+        public void TradeInitialize(PokeRoutineExecutor<TPoke> routine) => Notifier.TradeInitialize(routine, this);
+        public void TradeSearching(PokeRoutineExecutor<TPoke> routine) => Notifier.TradeSearching(routine, this);
+        public void TradeCanceled(PokeRoutineExecutor<TPoke> routine, PokeTradeResult msg) => Notifier.TradeCanceled(routine, this, msg);
 
-        public virtual void TradeFinished(PokeRoutineExecutor routine, TPoke result)
+        public virtual void TradeFinished(PokeRoutineExecutor<TPoke> routine, TPoke result)
         {
             Notifier.TradeFinished(routine, this, result);
         }
 
-        public void SendNotification(PokeRoutineExecutor routine, string message) => Notifier.SendNotification(routine, this, message);
-        public void SendNotification(PokeRoutineExecutor routine, PokeTradeSummary obj) => Notifier.SendNotification(routine, this, obj);
-        public void SendNotification(PokeRoutineExecutor routine, TPoke obj, string message) => Notifier.SendNotification(routine, this, obj, message);
+        public void SendNotification(PokeRoutineExecutor<TPoke> routine, string message) => Notifier.SendNotification(routine, this, message);
+        public void SendNotification(PokeRoutineExecutor<TPoke> routine, PokeTradeSummary obj) => Notifier.SendNotification(routine, this, obj);
+        public void SendNotification(PokeRoutineExecutor<TPoke> routine, TPoke obj, string message) => Notifier.SendNotification(routine, this, obj, message);
 
         public bool Equals(PokeTradeDetail<TPoke>? other)
         {

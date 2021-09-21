@@ -1,25 +1,21 @@
-﻿using PKHeX.Core;
-using SysBot.Base;
+﻿using SysBot.Base;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon
 {
     public class PokemonPool<T> : List<T> where T : PKM, new()
     {
-        public readonly int ExpectedSize = new T().Data.Length;
+        private readonly int ExpectedSize = new T().Data.Length;
+        private readonly BaseConfig Settings;
+        private bool Randomized => Settings.Shuffled;
 
-        public readonly BaseConfig Settings;
-
-        public PokemonPool(BaseConfig settings)
-        {
-            Settings = settings;
-        }
-
-        public bool Randomized => Settings.Shuffled;
-
+        public readonly Dictionary<string, LedyRequest<T>> Files = new();
         private int Counter;
+
+        public PokemonPool(BaseConfig settings) => Settings = settings;
 
         public T GetRandomPoke()
         {
@@ -32,35 +28,31 @@ namespace SysBot.Pokemon
 
         public T GetRandomSurprise()
         {
-            int ctr = 0;
             while (true)
             {
                 var rand = GetRandomPoke();
-                if (rand is PK8 pk8 && DisallowSurpriseTrade(pk8))
+                if (DisallowRandomRecipientTrade(rand))
                     continue;
-
-                ctr++; // if the pool has no valid matches, yield out eventually
-                if (ctr > Count * 2)
-                    return rand;
+                return rand;
             }
         }
 
-        public bool Reload(string path)
+        public bool Reload(string path, SearchOption opt = SearchOption.AllDirectories)
         {
-            return LoadFolder(path);
-        }
-
-        public readonly Dictionary<string, LedyRequest<T>> Files = new();
-
-        public bool LoadFolder(string path)
-        {
+            if (!Directory.Exists(path))
+                return false;
             Clear();
             Files.Clear();
+            return LoadFolder(path, opt);
+        }
+
+        public bool LoadFolder(string path, SearchOption opt = SearchOption.AllDirectories)
+        {
             if (!Directory.Exists(path))
                 return false;
 
             var loadedAny = false;
-            var files = Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories);
+            var files = Directory.EnumerateFiles(path, "*", opt);
             var matchFiles = LoadUtil.GetFilesOfSize(files, ExpectedSize);
 
             int surpriseBlocked = 0;
@@ -95,7 +87,7 @@ namespace SysBot.Pokemon
                     continue;
                 }
 
-                if (DisallowSurpriseTrade(dest, la.EncounterMatch))
+                if (DisallowRandomRecipientTrade(dest, la.EncounterMatch))
                 {
                     LogUtil.LogInfo("Provided file was loaded but can't be Surprise Traded: " + dest.FileName, nameof(PokemonPool<T>));
                     surpriseBlocked++;
@@ -134,15 +126,15 @@ namespace SysBot.Pokemon
             return loadedAny;
         }
 
-        private static bool DisallowSurpriseTrade(PKM pk, IEncounterTemplate enc)
+        private static bool DisallowRandomRecipientTrade(T pk, IEncounterTemplate enc)
         {
             // Anti-spam
             if (pk.IsNicknamed && enc is not EncounterTrade {IsNicknamed: true} && pk.Nickname.Length > 6)
                 return true;
-            return DisallowSurpriseTrade(pk);
+            return DisallowRandomRecipientTrade(pk);
         }
 
-        private static bool DisallowSurpriseTrade(PKM pk)
+        public static bool DisallowRandomRecipientTrade(T pk)
         {
             // Anti-spam
             if (StringsUtil.IsSpammyString(pk.OT_Name))

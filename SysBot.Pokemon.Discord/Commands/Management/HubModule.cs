@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.Discord
 {
-    public class HubModule : ModuleBase<SocketCommandContext>
+    public class HubModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
     {
         [Command("status")]
         [Alias("stats")]
         [Summary("Gets the status of the bot environment.")]
         public async Task GetStatusAsync()
         {
-            var me = SysCordInstance.Self;
+            var me = SysCordInstance<T>.Self;
             var hub = me.Hub;
 
             var builder = new EmbedBuilder
@@ -74,7 +74,7 @@ namespace SysBot.Pokemon.Discord
             await ReplyAsync("Bot Status", false, builder.Build()).ConfigureAwait(false);
         }
 
-        private static string GetNextName(PokeTradeQueue<PK8> q)
+        private static string GetNextName(PokeTradeQueue<T> q)
         {
             var next = q.TryPeek(out var detail, out _);
             if (!next)
@@ -89,7 +89,7 @@ namespace SysBot.Pokemon.Discord
             return name;
         }
 
-        private static string SummarizeBots(PokeTradeHub<PK8> hub)
+        private static string SummarizeBots(PokeTradeHub<T> hub)
         {
             var bots = hub.Bots.ToArray();
             if (bots.Length == 0)

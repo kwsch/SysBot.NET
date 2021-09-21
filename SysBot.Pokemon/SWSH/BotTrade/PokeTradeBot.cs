@@ -9,7 +9,7 @@ using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
-    public class PokeTradeBot : PokeRoutineExecutor
+    public class PokeTradeBot : PokeRoutineExecutor8
     {
         public static ISeedSearchHandler<PK8> SeedChecker = new NoSeedSearchHandler<PK8>();
         private readonly PokeTradeHub<PK8> Hub;
@@ -248,7 +248,7 @@ namespace SysBot.Pokemon
                 return await ProcessDumpTradeAsync(poke, token).ConfigureAwait(false);
 
             // Wait for User Input...
-            var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 25_000, 1_000, token).ConfigureAwait(false);
+            var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 25_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
             var oldEC = await Connection.ReadBytesAsync(LinkTradePartnerPokemonOffset, 4, token).ConfigureAwait(false);
             if (pk == null)
             {
@@ -323,7 +323,7 @@ namespace SysBot.Pokemon
                     partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, oldEC, 15_000, 0_200, false, token).ConfigureAwait(false);
                 }
 
-                var pk2 = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 3_000, 1_000, token).ConfigureAwait(false);
+                var pk2 = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 3_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
                 if (!partnerFound || pk2 == null || SearchUtil.HashByDetails(pk2) == SearchUtil.HashByDetails(pk))
                 {
                     Log("Trading partner did not change their Pokémon.");
@@ -405,7 +405,7 @@ namespace SysBot.Pokemon
             var pkprev = new PK8();
             while (ctr < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.Now - start < time)
             {
-                var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 3_000, 1_000, token).ConfigureAwait(false);
+                var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 3_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
                 if (pk == null || pk.Species < 1 || !pk.ChecksumValid || SearchUtil.HashByDetails(pk) == SearchUtil.HashByDetails(pkprev))
                     continue;
 

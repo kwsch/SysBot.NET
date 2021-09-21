@@ -1,0 +1,35 @@
+﻿using System.Threading;
+using System.Threading.Tasks;
+using PKHeX.Core;
+using SysBot.Base;
+
+namespace SysBot.Pokemon
+{
+    public abstract class PokeRoutineExecutorBase : SwitchRoutineExecutor<PokeBotState>
+    {
+        protected PokeRoutineExecutorBase(IConsoleBotManaged<IConsoleConnection, IConsoleConnectionAsync> cfg) : base(cfg)
+        {
+        }
+
+        public LanguageID GameLang { get; protected set; }
+        public GameVersion Version { get; protected set; }
+        public string InGameName { get; protected set; } = "SysBot.NET";
+
+        protected void InitSaveData(SaveFile sav)
+        {
+            GameLang = (LanguageID)sav.Language;
+            Version = sav.Version;
+            InGameName = sav.OT;
+            Connection.Label = $"{InGameName}-{sav.DisplayTID:000000}";
+            Log($"{Connection.Name} identified as {Connection.Label}, using {GameLang}.");
+        }
+
+        public override void SoftStop() => Config.Pause();
+
+        public async Task Click(SwitchButton b, int delayMin, int delayMax, CancellationToken token) =>
+            await Click(b, Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
+
+        public async Task SetStick(SwitchStick stick, short x, short y, int delayMin, int delayMax, CancellationToken token) =>
+            await SetStick(stick, x, y, Util.Rand.Next(delayMin, delayMax), token).ConfigureAwait(false);
+    }
+}

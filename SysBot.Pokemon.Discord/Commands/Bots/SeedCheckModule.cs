@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 namespace SysBot.Pokemon.Discord
 {
     [Summary("Queues new Seed Check trades")]
-    public class SeedCheckModule : ModuleBase<SocketCommandContext>
+    public class SeedCheckModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
     {
-        private static TradeQueueInfo<PK8> Info => SysCordInstance.Self.Hub.Queues.Info;
+        private static TradeQueueInfo<T> Info => SysCordInstance<T>.Self.Hub.Queues.Info;
 
         [Command("seedCheck")]
         [Alias("checkMySeed", "checkSeed", "seed", "s", "sc")]
@@ -17,7 +17,7 @@ namespace SysBot.Pokemon.Discord
         public async Task SeedCheckAsync(int code)
         {
             var sig = Context.User.GetFavor();
-            await Context.AddToQueueAsync(code, Context.User.Username, sig, new PK8(), PokeRoutineType.SeedCheck, PokeTradeType.Seed).ConfigureAwait(false);
+            await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed).ConfigureAwait(false);
         }
 
         [Command("seedCheck")]
@@ -28,7 +28,7 @@ namespace SysBot.Pokemon.Discord
         {
             int tradeCode = Util.ToInt32(code);
             var sig = Context.User.GetFavor();
-            await Context.AddToQueueAsync(tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new PK8(), PokeRoutineType.SeedCheck, PokeTradeType.Seed).ConfigureAwait(false);
+            await QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed).ConfigureAwait(false);
         }
 
         [Command("seedCheck")]
@@ -63,7 +63,7 @@ namespace SysBot.Pokemon.Discord
         [Summary("Prints the next shiny frame from the provided seed.")]
         public async Task FindFrameAsync([Remainder] string seedString)
         {
-            var me = SysCordInstance.Self;
+            var me = SysCordInstance<T>.Self;
             var hub = me.Hub;
 
             seedString = seedString.ToLower();

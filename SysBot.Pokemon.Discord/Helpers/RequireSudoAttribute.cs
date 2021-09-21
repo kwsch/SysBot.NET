@@ -11,7 +11,7 @@ namespace SysBot.Pokemon.Discord
         // Override the CheckPermissions method
         public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
-            var mgr = SysCordInstance.Manager;
+            var mgr = SysCordSettings.Manager;
             if (mgr.Config.Discord.AllowGlobalSudo && mgr.CanUseSudo(context.User.Id))
                 return Task.FromResult(PreconditionResult.FromSuccess());
 

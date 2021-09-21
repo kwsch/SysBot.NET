@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace SysBot.Pokemon
 {
-    public class RemoteControlBot : PokeRoutineExecutor
+    public class RemoteControlBot : PokeRoutineExecutor8
     {
         public RemoteControlBot(PokeBotState cfg) : base(cfg)
         {

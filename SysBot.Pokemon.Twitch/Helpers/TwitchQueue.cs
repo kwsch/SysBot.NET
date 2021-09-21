@@ -2,15 +2,15 @@
 
 namespace SysBot.Pokemon.Twitch
 {
-    public class TwitchQueue
+    public class TwitchQueue<T> where T : PKM, new()
     {
-        public PK8 Pokemon { get; }
+        public T Pokemon { get; }
         public PokeTradeTrainerInfo Trainer { get; }
         public string UserName { get; }
         public string DisplayName => Trainer.TrainerName;
         public bool IsSubscriber { get; }
 
-        public TwitchQueue(PK8 pkm, PokeTradeTrainerInfo trainer, string username, bool subscriber)
+        public TwitchQueue(T pkm, PokeTradeTrainerInfo trainer, string username, bool subscriber)
         {
             Pokemon = pkm;
             Trainer = trainer;
