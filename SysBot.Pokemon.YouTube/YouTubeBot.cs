@@ -82,7 +82,7 @@ namespace SysBot.Pokemon.YouTube
 
             return cmd switch
             {
-                "pr" => (Info.Hub.Ledy.Pool.Reload()
+                "pr" => (Info.Hub.Ledy.Pool.Reload(Hub.Config.Folder.DistributeFolder)
                     ? $"Reloaded from folder. Pool count: {Info.Hub.Ledy.Pool.Count}"
                     : "Failed to reload from folder."),
 

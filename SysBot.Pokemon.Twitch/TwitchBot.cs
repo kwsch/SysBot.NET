@@ -231,7 +231,7 @@ namespace SysBot.Pokemon.Twitch
                     return "Cleared all queues!";
 
                 case "pr":
-                    return Info.Hub.Ledy.Pool.Reload() ? $"Reloaded from folder. Pool count: {Info.Hub.Ledy.Pool.Count}" : "Failed to reload from folder.";
+                    return Info.Hub.Ledy.Pool.Reload(Hub.Config.Folder.DistributeFolder) ? $"Reloaded from folder. Pool count: {Info.Hub.Ledy.Pool.Count}" : "Failed to reload from folder.";
 
                 case "pc":
                     return $"The pool count is: {Info.Hub.Ledy.Pool.Count}";

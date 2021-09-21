@@ -85,7 +85,7 @@ namespace SysBot.Pokemon
                 LogUtil.LogError("The distribution folder was not found. Please verify that it exists!", "Hub");
 
             var pool = Hub.Ledy.Pool;
-            if (!pool.Reload())
+            if (!pool.Reload(Hub.Config.Folder.DistributeFolder))
                 LogUtil.LogError("Nothing to distribute for Empty Trade Queues!", "Hub");
         }
 
