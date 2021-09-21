@@ -3,6 +3,7 @@ using System.IO;
 using Newtonsoft.Json;
 using PKHeX.Core;
 using SysBot.Base;
+using SysBot.Pokemon.Z3;
 
 namespace SysBot.Pokemon.ConsoleApp
 {

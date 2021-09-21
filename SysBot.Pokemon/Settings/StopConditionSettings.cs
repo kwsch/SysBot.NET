@@ -82,16 +82,16 @@ namespace SysBot.Pokemon
         {
             min = ReadTargetIVs(hub.Config.StopConditions, true);
             max = ReadTargetIVs(hub.Config.StopConditions, false);
-            return;
         }
 
         private static int[] ReadTargetIVs(StopConditionSettings settings, bool min)
         {
             int[] targetIVs = new int[6];
+            char[] split = { '/' };
 
-            string[] splitIVs = min 
-                ? settings.TargetMinIVs.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
-                : settings.TargetMaxIVs.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] splitIVs = min
+                ? settings.TargetMinIVs.Split(split, StringSplitOptions.RemoveEmptyEntries)
+                : settings.TargetMaxIVs.Split(split, StringSplitOptions.RemoveEmptyEntries);
 
             // Only accept up to 6 values.  Fill it in with default values if they don't provide 6.
             // Anything that isn't an integer will be a wild card.

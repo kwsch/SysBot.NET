@@ -17,10 +17,10 @@ namespace SysBot.Pokemon
             var nickIndex = setstring.LastIndexOf(')');
             if (nickIndex > -1)
             {
-                restorenick = setstring.Substring(0, nickIndex + 1);
+                restorenick = setstring[..(nickIndex + 1)];
                 if (restorenick.TrimStart().StartsWith("("))
                     return null;
-                setstring = setstring.Substring(nickIndex + 1);
+                setstring = setstring[(nickIndex + 1)..];
             }
 
             foreach (string i in splittables)

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace SysBot.Pokemon
+namespace SysBot.Pokemon.Z3
 {
     public static class Z3Search
     {

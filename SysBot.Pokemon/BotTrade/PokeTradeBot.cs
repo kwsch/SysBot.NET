@@ -111,7 +111,7 @@ namespace SysBot.Pokemon
                     {
                         detail.IsRetry = true;
                         detail.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
-                        Hub.Queues.Enqueue(type, detail, Math.Min(priority, PokeTradeQueue<PK8>.Tier2));
+                        Hub.Queues.Enqueue(type, detail, Math.Min(priority, PokeTradePriorities.Tier2));
                     }
                     else
                     {

@@ -1,12 +1,12 @@
 ﻿using PKHeX.Core;
 
-namespace SysBot.Pokemon
+namespace SysBot.Pokemon.Z3
 {
     public class Z3SeedSearchHandler<T> : ISeedSearchHandler<T> where T : PKM, new()
     {
         private static int[] GetBlankIVTemplate() => new[] { -1, -1, -1, -1, -1, -1 };
 
-        public void CalculateAndNotify(T pkm, PokeTradeDetail<T> detail, SeedCheckSettings settings, PokeTradeBot bot)
+        public void CalculateAndNotify(T pkm, PokeTradeDetail<T> detail, SeedCheckSettings settings, PokeRoutineExecutor bot)
         {
             var ec = pkm.EncryptionConstant;
             var pid = pkm.PID;

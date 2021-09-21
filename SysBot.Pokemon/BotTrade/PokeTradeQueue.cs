@@ -4,14 +4,8 @@ using System.Linq;
 
 namespace SysBot.Pokemon
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "RCS1158:Static member in generic type should use a type parameter.", Justification = "<Pending>")]
     public class PokeTradeQueue<TPoke> where TPoke : PKM, new()
     {
-        public const uint Tier1 = 1;
-        public const uint Tier2 = 2;
-        public const uint Tier3 = 3;
-        public const uint Tier4 = 4;
-        public const uint TierFree = uint.MaxValue;
         internal readonly FavoredCPQ<uint, PokeTradeDetail<TPoke>> Queue = new(new FavoredPrioritySettings());
 
         public readonly PokeTradeType Type;
@@ -21,7 +15,7 @@ namespace SysBot.Pokemon
 
         public int Count => Queue.Count;
 
-        public void Enqueue(PokeTradeDetail<TPoke> detail, uint priority = TierFree) => Queue.Add(priority, detail);
+        public void Enqueue(PokeTradeDetail<TPoke> detail, uint priority = PokeTradePriorities.TierFree) => Queue.Add(priority, detail);
 
         public bool TryDequeue(out PokeTradeDetail<TPoke> detail, out uint priority)
         {

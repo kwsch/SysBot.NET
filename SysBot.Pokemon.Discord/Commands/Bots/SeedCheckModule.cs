@@ -68,7 +68,7 @@ namespace SysBot.Pokemon.Discord
 
             seedString = seedString.ToLower();
             if (seedString.StartsWith("0x"))
-                seedString = seedString.Substring(2);
+                seedString = seedString[2..];
 
             var seed = Util.GetHexValue64(seedString);
 

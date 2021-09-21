@@ -43,7 +43,7 @@ namespace SysBot.Tests
             sr.Should().Be(QueueResultAdd.Added);
 
             var dequeue = queue.TryDequeue(out var first, out uint priority);
-            priority.Should().Be(PokeTradeQueue<PK8>.Tier1); // sudo
+            priority.Should().Be(PokeTradePriorities.Tier1); // sudo
             dequeue.Should().BeTrue();
             ReferenceEquals(first, s.Trade).Should().BeTrue();
 
@@ -58,7 +58,7 @@ namespace SysBot.Tests
             queue.Count.Should().Be(3);
 
             dequeue = queue.TryDequeue(out var second, out priority);
-            priority.Should().Be(PokeTradeQueue<PK8>.TierFree); // sudo
+            priority.Should().Be(PokeTradePriorities.TierFree); // sudo
             dequeue.Should().BeTrue();
             ReferenceEquals(second, t1.Trade).Should().BeTrue();
 

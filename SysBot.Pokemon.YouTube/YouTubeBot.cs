@@ -92,7 +92,7 @@ namespace SysBot.Pokemon.YouTube
             };
         }
 
-        private void Logger_LogOccurred(object sender, Log e)
+        private static void Logger_LogOccurred(object sender, Log e)
         {
             LogUtil.LogError(e.Message, nameof(YouTubeBot));
         }
@@ -108,8 +108,8 @@ namespace SysBot.Pokemon.YouTube
                     if (space < 0)
                         return;
 
-                    var cmd = msg.Substring(0, space + 1);
-                    var args = msg.Substring(space + 1);
+                    var cmd = msg[..(space + 1)];
+                    var args = msg[(space + 1)..];
 
                     var response = HandleCommand(message, cmd, args);
                     if (response.Length == 0)
@@ -117,7 +117,10 @@ namespace SysBot.Pokemon.YouTube
                     client.SendMessage(response);
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
-                catch { }
+                catch
+                {
+                    // ignored
+                }
 #pragma warning restore CA1031 // Do not catch general exception types
             }
         }

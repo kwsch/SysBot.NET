@@ -93,20 +93,8 @@ namespace SysBot.Pokemon.Discord
 
         private static Task Log(LogMessage msg)
         {
-            Console.ForegroundColor = msg.Severity switch
-            {
-                LogSeverity.Critical => ConsoleColor.Red,
-                LogSeverity.Error => ConsoleColor.Red,
-
-                LogSeverity.Warning => ConsoleColor.Yellow,
-                LogSeverity.Info => ConsoleColor.White,
-
-                LogSeverity.Verbose => ConsoleColor.DarkGray,
-                LogSeverity.Debug => ConsoleColor.DarkGray,
-                _ => Console.ForegroundColor
-            };
-
             var text = $"[{msg.Severity,8}] {msg.Source}: {msg.Message} {msg.Exception}";
+            Console.ForegroundColor = GetTextColor(msg.Severity);
             Console.WriteLine($"{DateTime.Now,-19} {text}");
             Console.ResetColor();
 
@@ -114,6 +102,19 @@ namespace SysBot.Pokemon.Discord
 
             return Task.CompletedTask;
         }
+
+        private static ConsoleColor GetTextColor(LogSeverity sv) => sv switch
+        {
+            LogSeverity.Critical => ConsoleColor.Red,
+            LogSeverity.Error => ConsoleColor.Red,
+
+            LogSeverity.Warning => ConsoleColor.Yellow,
+            LogSeverity.Info => ConsoleColor.White,
+
+            LogSeverity.Verbose => ConsoleColor.DarkGray,
+            LogSeverity.Debug => ConsoleColor.DarkGray,
+            _ => Console.ForegroundColor
+        };
 
         public async Task MainAsync(string apiToken, CancellationToken token)
         {

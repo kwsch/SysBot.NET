@@ -32,7 +32,7 @@ namespace SysBot.Pokemon.Discord
             var hub = me.Hub;
             var pool = hub.Ledy.Pool;
             var count = pool.Count;
-            if (count > 0 && count < 20)
+            if (count is > 0 and < 20)
             {
                 var lines = pool.Files.Select((z, i) => $"{i + 1:00}: {z.Key} = {(Species)z.Value.RequestInfo.Species}");
                 var msg = string.Join("\n", lines);

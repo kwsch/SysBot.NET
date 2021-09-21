@@ -81,7 +81,7 @@ namespace SysBot.Base
                         continue;
 
                     ur.DeviceProperties.TryGetValue("Address", out object addr);
-                    if (Port.ToString() != addr.ToString())
+                    if (Port.ToString() != addr?.ToString())
                         continue;
 
                     return ur.Device;
@@ -94,14 +94,14 @@ namespace SysBot.Base
         {
             lock (_sync)
             {
-                if (SwDevice != null)
+                if (SwDevice is { } x)
                 {
                     Send(SwitchCommand.DetachController(false));
-                    if (SwDevice.IsOpen)
+                    if (x.IsOpen)
                     {
-                        if (SwDevice is IUsbDevice wholeUsbDevice)
+                        if (x is IUsbDevice wholeUsbDevice)
                             wholeUsbDevice.ReleaseInterface(0);
-                        SwDevice.Close();
+                        x.Close();
                     }
                 }
 
@@ -199,7 +199,7 @@ namespace SysBot.Base
             {
                 var slice = data.SliceSafe(i, MaximumTransferSize);
                 Write(slice, offset + (uint)i, method);
-                Thread.Sleep(MaximumTransferSize / DelayFactor + BaseDelay);
+                Thread.Sleep((MaximumTransferSize / DelayFactor) + BaseDelay);
             }
         }
 
@@ -209,7 +209,7 @@ namespace SysBot.Base
             for (int i = 0; i < length; i += MaximumTransferSize)
             {
                 Read(offset + (uint)i, Math.Min(MaximumTransferSize, length - i), method).CopyTo(result, i);
-                Thread.Sleep(MaximumTransferSize / DelayFactor + BaseDelay);
+                Thread.Sleep((MaximumTransferSize / DelayFactor) + BaseDelay);
             }
             return result;
         }

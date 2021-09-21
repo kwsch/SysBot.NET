@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using SysBot.Pokemon.Z3;
 
 namespace SysBot.Pokemon.WinForms
 {
