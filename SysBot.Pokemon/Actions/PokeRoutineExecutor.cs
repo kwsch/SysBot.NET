@@ -1,8 +1,6 @@
 ﻿using PKHeX.Core;
 using SysBot.Base;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,24 +28,6 @@ namespace SysBot.Pokemon
                 msWaited += waitInterval;
             }
             return null;
-        }
-
-        // Reads an offset until it changes to either match or differ from the comparison value.
-        // If "match" is set to true, then the function returns true when the offset matches the given value.
-        // Otherwise, it returns true when the offset no longer matches the given value.
-        public async Task<bool> ReadUntilChanged(uint offset, byte[] comparison, int waitms, int waitInterval, bool match, CancellationToken token)
-        {
-            var sw = new Stopwatch();
-            sw.Start();
-            do
-            {
-                var result = await Connection.ReadBytesAsync(offset, comparison.Length, token).ConfigureAwait(false);
-                if (match == result.SequenceEqual(comparison))
-                    return true;
-
-                await Task.Delay(waitInterval, token).ConfigureAwait(false);
-            } while (sw.ElapsedMilliseconds < waitms);
-            return false;
         }
 
         public static void DumpPokemon(string folder, string subfolder, T pk)

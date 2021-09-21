@@ -11,9 +11,9 @@ namespace SysBot.Pokemon
         {
         }
 
-        public LanguageID GameLang { get; protected set; }
-        public GameVersion Version { get; protected set; }
-        public string InGameName { get; protected set; } = "SysBot.NET";
+        public LanguageID GameLang { get; private set; }
+        public GameVersion Version { get; private set; }
+        public string InGameName { get; private set; } = "SysBot.NET";
 
         protected void InitSaveData(SaveFile sav)
         {

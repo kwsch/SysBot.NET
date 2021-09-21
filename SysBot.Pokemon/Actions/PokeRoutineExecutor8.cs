@@ -3,7 +3,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
-using SysBot.Base;
+using static SysBot.Base.SwitchButton;
+using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
@@ -14,9 +15,9 @@ namespace SysBot.Pokemon
     {
         protected PokeRoutineExecutor8(PokeBotState cfg) : base(cfg) { }
 
-        private static uint GetBoxSlotOffset(int box, int slot) => PokeDataOffsets.BoxStartOffset + (uint)(PokeDataOffsets.BoxFormatSlotSize * ((30 * box) + slot));
+        private static uint GetBoxSlotOffset(int box, int slot) => BoxStartOffset + (uint)(BoxFormatSlotSize * ((30 * box) + slot));
 
-        public override async Task<PK8> ReadPokemon(uint offset, CancellationToken token) => await ReadPokemon(offset, PokeDataOffsets.BoxFormatSlotSize, token).ConfigureAwait(false);
+        public override async Task<PK8> ReadPokemon(uint offset, CancellationToken token) => await ReadPokemon(offset, BoxFormatSlotSize, token).ConfigureAwait(false);
 
         public override async Task<PK8> ReadPokemon(uint offset, int size, CancellationToken token)
         {
@@ -26,7 +27,7 @@ namespace SysBot.Pokemon
 
         public async Task<PK8> ReadSurpriseTradePokemon(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(PokeDataOffsets.SurpriseTradePartnerPokemonOffset, PokeDataOffsets.BoxFormatSlotSize, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(SurpriseTradePartnerPokemonOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
             return new PK8(data);
         }
 
@@ -47,17 +48,17 @@ namespace SysBot.Pokemon
         public override async Task<PK8> ReadBoxPokemon(int box, int slot, CancellationToken token)
         {
             var ofs = GetBoxSlotOffset(box, slot);
-            return await ReadPokemon(ofs, PokeDataOffsets.BoxFormatSlotSize, token).ConfigureAwait(false);
+            return await ReadPokemon(ofs, BoxFormatSlotSize, token).ConfigureAwait(false);
         }
 
         public async Task SetCurrentBox(int box, CancellationToken token)
         {
-            await Connection.WriteBytesAsync(BitConverter.GetBytes(box), PokeDataOffsets.CurrentBoxOffset, token).ConfigureAwait(false);
+            await Connection.WriteBytesAsync(BitConverter.GetBytes(box), CurrentBoxOffset, token).ConfigureAwait(false);
         }
 
         public async Task<int> GetCurrentBox(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(PokeDataOffsets.CurrentBoxOffset, 1, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(CurrentBoxOffset, 1, token).ConfigureAwait(false);
             return data[0];
         }
 
@@ -69,7 +70,7 @@ namespace SysBot.Pokemon
 
         public async Task<bool> LinkTradePartnerFound(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(PokeDataOffsets.LinkTradeSearchingOffset, 1, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(LinkTradeSearchingOffset, 1, token).ConfigureAwait(false);
             return data[0] == 0;
         }
 
@@ -92,7 +93,7 @@ namespace SysBot.Pokemon
         {
             var sav = new SAV8SWSH();
             var info = sav.MyStatus;
-            var read = await Connection.ReadBytesAsync(PokeDataOffsets.TrainerDataOffset, PokeDataOffsets.TrainerDataLength, token).ConfigureAwait(false);
+            var read = await Connection.ReadBytesAsync(TrainerDataOffset, TrainerDataLength, token).ConfigureAwait(false);
             read.CopyTo(info.Data, 0);
             return sav;
         }
@@ -125,7 +126,7 @@ namespace SysBot.Pokemon
 
         public async Task<string> GetTradePartnerName(TradeMethod tradeMethod, CancellationToken token)
         {
-            var ofs = PokeDataOffsets.GetTrainerNameOffset(tradeMethod);
+            var ofs = GetTrainerNameOffset(tradeMethod);
             var data = await Connection.ReadBytesAsync(ofs, 26, token).ConfigureAwait(false);
             return StringConverter.GetString7(data, 0, 26);
         }
@@ -133,33 +134,33 @@ namespace SysBot.Pokemon
         public async Task<bool> IsGameConnectedToYComm(CancellationToken token)
         {
             // Reads the Y-Comm Flag is the Game is connected Online
-            var data = await Connection.ReadBytesAsync(PokeDataOffsets.IsConnectedOffset, 1, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(IsConnectedOffset, 1, token).ConfigureAwait(false);
             return data[0] == 1;
         }
 
         public async Task ReconnectToYComm(PokeTradeHubConfig config, CancellationToken token)
         {
             // Press B in case a Error Message is Present
-            await Click(SwitchButton.B, 2000, token).ConfigureAwait(false);
+            await Click(B, 2000, token).ConfigureAwait(false);
 
             // Return to Overworld
             if (!await IsOnOverworld(config, token).ConfigureAwait(false))
             {
                 for (int i = 0; i < 5; i++)
                 {
-                    await Click(SwitchButton.B, 500, token).ConfigureAwait(false);
+                    await Click(B, 500, token).ConfigureAwait(false);
                 }
             }
 
-            await Click(SwitchButton.Y, 1000, token).ConfigureAwait(false);
+            await Click(Y, 1000, token).ConfigureAwait(false);
 
             // Press it twice for safety -- sometimes misses it the first time.
-            await Click(SwitchButton.PLUS, 2_000, token).ConfigureAwait(false);
-            await Click(SwitchButton.PLUS, 5_000 + config.Timings.ExtraTimeReconnectYComm, token).ConfigureAwait(false);
+            await Click(PLUS, 2_000, token).ConfigureAwait(false);
+            await Click(PLUS, 5_000 + config.Timings.ExtraTimeReconnectYComm, token).ConfigureAwait(false);
 
             for (int i = 0; i < 5; i++)
             {
-                await Click(SwitchButton.B, 500, token).ConfigureAwait(false);
+                await Click(B, 500, token).ConfigureAwait(false);
             }
         }
 
@@ -173,7 +174,7 @@ namespace SysBot.Pokemon
             while (!await IsOnOverworld(config, token).ConfigureAwait(false))
             {
                 var screenID = await GetCurrentScreen(token).ConfigureAwait(false);
-                if (screenID == PokeDataOffsets.CurrentScreen_Softban)
+                if (screenID == CurrentScreen_Softban)
                 {
                     softBanAttempts++;
                     if (softBanAttempts > 10)
@@ -184,9 +185,9 @@ namespace SysBot.Pokemon
                 if (attempts >= 15)
                     break;
 
-                await Click(SwitchButton.B, 1_000, token).ConfigureAwait(false);
-                await Click(SwitchButton.B, 1_000, token).ConfigureAwait(false);
-                await Click(SwitchButton.A, 1_000, token).ConfigureAwait(false);
+                await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
             }
         }
 
@@ -200,8 +201,8 @@ namespace SysBot.Pokemon
                 if (attempts >= 15)
                     break;
 
-                await Click(SwitchButton.B, 1_000, token).ConfigureAwait(false);
-                await Click(SwitchButton.A, 1_000, token).ConfigureAwait(false);
+                await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
             }
 
             await Task.Delay(3_000, token).ConfigureAwait(false);
@@ -224,43 +225,43 @@ namespace SysBot.Pokemon
             // how long we are Soft-Banned and once the Soft-Ban is lifted
             // the Game sets the value back to 0 (1970/01/01 12:00 AM (UTC) )
             var data = BitConverter.GetBytes(0);
-            await Connection.WriteBytesAsync(data, PokeDataOffsets.SoftBanUnixTimespanOffset, token).ConfigureAwait(false);
+            await Connection.WriteBytesAsync(data, SoftBanUnixTimespanOffset, token).ConfigureAwait(false);
         }
 
         public async Task<bool> CheckIfSoftBanned(CancellationToken token)
         {
             // Check if the Unix Timestamp isn't Zero, if so we are Softbanned.
-            var data = await Connection.ReadBytesAsync(PokeDataOffsets.SoftBanUnixTimespanOffset, 1, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(SoftBanUnixTimespanOffset, 1, token).ConfigureAwait(false);
             return data[0] > 1;
         }
 
         public async Task CloseGame(PokeTradeHubConfig config, CancellationToken token)
         {
             // Close out of the game
-            await Click(SwitchButton.HOME, 2_000 + config.Timings.ExtraTimeReturnHome, token).ConfigureAwait(false);
-            await Click(SwitchButton.X, 1_000, token).ConfigureAwait(false);
-            await Click(SwitchButton.A, 5_000 + config.Timings.ExtraTimeCloseGame, token).ConfigureAwait(false);
+            await Click(HOME, 2_000 + config.Timings.ExtraTimeReturnHome, token).ConfigureAwait(false);
+            await Click(X, 1_000, token).ConfigureAwait(false);
+            await Click(A, 5_000 + config.Timings.ExtraTimeCloseGame, token).ConfigureAwait(false);
             Log("Closed out of the game!");
         }
 
         public async Task StartGame(PokeTradeHubConfig config, CancellationToken token)
         {
             // Open game.
-            await Click(SwitchButton.A, 1_000 + config.Timings.ExtraTimeLoadProfile, token).ConfigureAwait(false);
+            await Click(A, 1_000 + config.Timings.ExtraTimeLoadProfile, token).ConfigureAwait(false);
 
             // Menus here can go in the order: Update Prompt -> Profile -> DLC check -> Unable to use DLC.
             //  The user can optionally turn on the setting if they know of a breaking system update incoming.
             if (config.Timings.AvoidSystemUpdate)
             {
-                await Click(SwitchButton.DUP, 0_600, token).ConfigureAwait(false);
-                await Click(SwitchButton.A, 1_000 + config.Timings.ExtraTimeLoadProfile, token).ConfigureAwait(false);
+                await Click(DUP, 0_600, token).ConfigureAwait(false);
+                await Click(A, 1_000 + config.Timings.ExtraTimeLoadProfile, token).ConfigureAwait(false);
             }
 
-            await Click(SwitchButton.A, 1_000 + config.Timings.ExtraTimeCheckDLC, token).ConfigureAwait(false);
+            await Click(A, 1_000 + config.Timings.ExtraTimeCheckDLC, token).ConfigureAwait(false);
             // If they have DLC on the system and can't use it, requires an UP + A to start the game.
             // Should be harmless otherwise since they'll be in loading screen.
-            await Click(SwitchButton.DUP, 0_600, token).ConfigureAwait(false);
-            await Click(SwitchButton.A, 0_600, token).ConfigureAwait(false);
+            await Click(DUP, 0_600, token).ConfigureAwait(false);
+            await Click(A, 0_600, token).ConfigureAwait(false);
 
             Log("Restarting the game!");
 
@@ -268,7 +269,7 @@ namespace SysBot.Pokemon
             await Task.Delay(10_000 + config.Timings.ExtraTimeLoadGame, token).ConfigureAwait(false);
 
             for (int i = 0; i < 4; i++)
-                await Click(SwitchButton.A, 1_000, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
 
             var timer = 60_000;
             while (!await IsOnOverworld(config, token).ConfigureAwait(false))
@@ -281,7 +282,7 @@ namespace SysBot.Pokemon
                 {
                     Log("Still not in the game, initiating rescue protocol!");
                     while (!await IsOnOverworld(config, token).ConfigureAwait(false))
-                        await Click(SwitchButton.A, 6_000, token).ConfigureAwait(false);
+                        await Click(A, 6_000, token).ConfigureAwait(false);
                     break;
                 }
             }
@@ -291,14 +292,14 @@ namespace SysBot.Pokemon
 
         public async Task<bool> CheckIfSearchingForLinkTradePartner(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(PokeDataOffsets.LinkTradeSearchingOffset, 1, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(LinkTradeSearchingOffset, 1, token).ConfigureAwait(false);
             return data[0] == 1;
         }
 
         public async Task<bool> CheckIfSearchingForSurprisePartner(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(PokeDataOffsets.SurpriseTradeSearchOffset, 8, token).ConfigureAwait(false);
-            return BitConverter.ToUInt32(data, 0) == PokeDataOffsets.SurpriseTradeSearch_Searching;
+            var data = await Connection.ReadBytesAsync(SurpriseTradeSearchOffset, 8, token).ConfigureAwait(false);
+            return BitConverter.ToUInt32(data, 0) == SurpriseTradeSearch_Searching;
         }
 
         public async Task ResetTradePosition(PokeTradeHubConfig config, CancellationToken token)
@@ -313,19 +314,19 @@ namespace SysBot.Pokemon
             if (!await CheckIfSearchingForLinkTradePartner(token).ConfigureAwait(false))
                 return;
 
-            await Click(SwitchButton.Y, 2_000, token).ConfigureAwait(false);
+            await Click(Y, 2_000, token).ConfigureAwait(false);
             for (int i = 0; i < 5; i++)
-                await Click(SwitchButton.A, 1_500, token).ConfigureAwait(false);
+                await Click(A, 1_500, token).ConfigureAwait(false);
             // Extra A press for Japanese.
             if (GameLang == LanguageID.Japanese)
-                await Click(SwitchButton.A, 1_500, token).ConfigureAwait(false);
-            await Click(SwitchButton.B, 1_500, token).ConfigureAwait(false);
-            await Click(SwitchButton.B, 1_500, token).ConfigureAwait(false);
+                await Click(A, 1_500, token).ConfigureAwait(false);
+            await Click(B, 1_500, token).ConfigureAwait(false);
+            await Click(B, 1_500, token).ConfigureAwait(false);
         }
 
         public async Task<bool> IsEggReady(SwordShieldDaycare daycare, CancellationToken token)
         {
-            var ofs = PokeDataOffsets.GetDaycareEggIsReadyOffset(daycare);
+            var ofs = GetDaycareEggIsReadyOffset(daycare);
             // Read a single byte of the Daycare metadata to check the IsEggReady flag.
             var data = await Connection.ReadBytesAsync(ofs, 1, token).ConfigureAwait(false);
             return data[0] == 1;
@@ -337,33 +338,33 @@ namespace SysBot.Pokemon
             // When the game executes the subroutine, it will generate a new seed and set the IsEggReady flag.
             // Just setting the IsEggReady flag won't refresh the seed; we want a different egg every time.
             var data = new byte[] { 0xB4, 0, 0, 0 }; // 180
-            var ofs = PokeDataOffsets.GetDaycareStepCounterOffset(daycare);
+            var ofs = GetDaycareStepCounterOffset(daycare);
             await Connection.WriteBytesAsync(data, ofs, token).ConfigureAwait(false);
         }
 
         public async Task<bool> IsCorrectScreen(uint expectedScreen, CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(PokeDataOffsets.CurrentScreenOffset, 4, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
             return BitConverter.ToUInt32(data, 0) == expectedScreen;
         }
 
         public async Task<uint> GetCurrentScreen(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(PokeDataOffsets.CurrentScreenOffset, 4, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
             return BitConverter.ToUInt32(data, 0);
         }
 
         public async Task<bool> IsInBattle(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(Version == GameVersion.SH ? PokeDataOffsets.InBattleRaidOffsetSH : PokeDataOffsets.InBattleRaidOffsetSW, 1, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(Version == GameVersion.SH ? InBattleRaidOffsetSH : InBattleRaidOffsetSW, 1, token).ConfigureAwait(false);
             return data[0] == (Version == GameVersion.SH ? 0x40 : 0x41);
         }
 
         public async Task<bool> IsInBox(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(PokeDataOffsets.CurrentScreenOffset, 4, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
             var dataint = BitConverter.ToUInt32(data, 0);
-            return dataint == PokeDataOffsets.CurrentScreen_Box1 || dataint == PokeDataOffsets.CurrentScreen_Box2;
+            return dataint == CurrentScreen_Box1 || dataint == CurrentScreen_Box2;
         }
 
         public async Task<bool> IsOnOverworld(PokeTradeHubConfig config, CancellationToken token)
@@ -371,9 +372,9 @@ namespace SysBot.Pokemon
             // Uses CurrentScreenOffset and compares the value to CurrentScreen_Overworld.
             if (config.ScreenDetection == ScreenDetectionMode.Original)
             {
-                var data = await Connection.ReadBytesAsync(PokeDataOffsets.CurrentScreenOffset, 4, token).ConfigureAwait(false);
+                var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
                 var dataint = BitConverter.ToUInt32(data, 0);
-                return dataint == PokeDataOffsets.CurrentScreen_Overworld1 || dataint == PokeDataOffsets.CurrentScreen_Overworld2;
+                return dataint == CurrentScreen_Overworld1 || dataint == CurrentScreen_Overworld2;
             }
             // Uses an appropriate OverworldOffset for the console language.
             else if (config.ScreenDetection == ScreenDetectionMode.ConsoleLanguageSpecific)
@@ -386,31 +387,15 @@ namespace SysBot.Pokemon
 
         public async Task<TextSpeedOption> GetTextSpeed(CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(PokeDataOffsets.TextSpeedOffset, 1, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(TextSpeedOffset, 1, token).ConfigureAwait(false);
             return (TextSpeedOption)(data[0] & 3);
         }
 
         public async Task SetTextSpeed(TextSpeedOption speed, CancellationToken token)
         {
-            var textSpeedByte = await Connection.ReadBytesAsync(PokeDataOffsets.TextSpeedOffset, 1, token).ConfigureAwait(false);
+            var textSpeedByte = await Connection.ReadBytesAsync(TextSpeedOffset, 1, token).ConfigureAwait(false);
             var data = new[] { (byte)((textSpeedByte[0] & 0xFC) | (int)speed) };
-            await Connection.WriteBytesAsync(data, PokeDataOffsets.TextSpeedOffset, token).ConfigureAwait(false);
-        }
-
-        public static uint GetOverworldOffset(ConsoleLanguageParameter value)
-        {
-            return value switch
-            {
-                ConsoleLanguageParameter.French => PokeDataOffsets.OverworldOffsetFrench,
-                ConsoleLanguageParameter.German => PokeDataOffsets.OverworldOffsetGerman,
-                ConsoleLanguageParameter.Spanish => PokeDataOffsets.OverworldOffsetSpanish,
-                ConsoleLanguageParameter.Italian => PokeDataOffsets.OverworldOffsetItalian,
-                ConsoleLanguageParameter.Japanese => PokeDataOffsets.OverworldOffsetJapanese,
-                ConsoleLanguageParameter.ChineseTraditional => PokeDataOffsets.OverworldOffsetChineseT,
-                ConsoleLanguageParameter.ChineseSimplified => PokeDataOffsets.OverworldOffsetChineseS,
-                ConsoleLanguageParameter.Korean => PokeDataOffsets.OverworldOffsetKorean,
-                _ => PokeDataOffsets.OverworldOffset,
-            };
+            await Connection.WriteBytesAsync(data, TextSpeedOffset, token).ConfigureAwait(false);
         }
     }
 }

@@ -2,6 +2,9 @@
 
 namespace SysBot.Pokemon
 {
+    /// <summary>
+    /// Sword &amp; Shield RAM offsets
+    /// </summary>
     public static class PokeDataOffsets
     {
         public const uint BoxStartOffset = 0x45075880;
@@ -127,5 +130,18 @@ namespace SysBot.Pokemon
                 _ => throw new ArgumentException(nameof(daycare)),
             };
         }
+
+        public static uint GetOverworldOffset(ConsoleLanguageParameter value) => value switch
+        {
+            ConsoleLanguageParameter.French => OverworldOffsetFrench,
+            ConsoleLanguageParameter.German => OverworldOffsetGerman,
+            ConsoleLanguageParameter.Spanish => OverworldOffsetSpanish,
+            ConsoleLanguageParameter.Italian => OverworldOffsetItalian,
+            ConsoleLanguageParameter.Japanese => OverworldOffsetJapanese,
+            ConsoleLanguageParameter.ChineseTraditional => OverworldOffsetChineseT,
+            ConsoleLanguageParameter.ChineseSimplified => OverworldOffsetChineseS,
+            ConsoleLanguageParameter.Korean => OverworldOffsetKorean,
+            _ => OverworldOffset,
+        };
     }
 }
