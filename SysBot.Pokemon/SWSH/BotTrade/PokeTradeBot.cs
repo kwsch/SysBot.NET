@@ -9,10 +9,12 @@ using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
-    public class PokeTradeBot : PokeRoutineExecutor8
+    public class PokeTradeBot : PokeRoutineExecutor8, ICountBot
     {
         public static ISeedSearchHandler<PK8> SeedChecker = new NoSeedSearchHandler<PK8>();
         private readonly PokeTradeHub<PK8> Hub;
+        private readonly TradeSettings Settings;
+        public ICountSettings Counts => Settings;
 
         /// <summary>
         /// Folder to dump received trade data to.
@@ -33,6 +35,7 @@ namespace SysBot.Pokemon
         public PokeTradeBot(PokeTradeHub<PK8> hub, PokeBotState cfg) : base(cfg)
         {
             Hub = hub;
+            Settings = hub.Config.Trade;
             DumpSetting = hub.Config.Folder;
         }
 
@@ -380,13 +383,13 @@ namespace SysBot.Pokemon
                 poke.TradeFinished(this, traded);
 
                 // Only log if we completed the trade.
-                var counts = Hub.Counts;
+                var counts = Settings;
                 if (poke.Type == PokeTradeType.Random)
                     counts.AddCompletedDistribution();
                 else if (poke.Type == PokeTradeType.Clone)
                     counts.AddCompletedClones();
                 else
-                    Hub.Counts.AddCompletedTrade();
+                    counts.AddCompletedTrade();
 
                 if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
                 {
@@ -435,7 +438,7 @@ namespace SysBot.Pokemon
             if (ctr == 0)
                 return PokeTradeResult.TrainerTooSlow;
 
-            Hub.Counts.AddCompletedDumps();
+            Settings.AddCompletedDumps();
             detail.Notifier.SendNotification(this, detail, $"Dumped {ctr} Pokémon.");
             detail.Notifier.TradeFinished(this, detail, detail.TradeData); // blank pk8
             return PokeTradeResult.Success;
@@ -560,7 +563,7 @@ namespace SysBot.Pokemon
 
             if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
                 DumpPokemon(DumpSetting.DumpFolder, "surprise", SurprisePoke);
-            Hub.Counts.AddCompletedSurprise();
+            Settings.AddCompletedSurprise();
 
             return PokeTradeResult.Success;
         }
@@ -591,7 +594,7 @@ namespace SysBot.Pokemon
             }, token);
 #pragma warning restore 4014
 
-            Hub.Counts.AddCompletedSeedCheck();
+            Settings.AddCompletedSeedCheck();
 
             return PokeTradeResult.Success;
         }

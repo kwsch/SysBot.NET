@@ -57,16 +57,13 @@ namespace SysBot.Pokemon
             return pouch;
         }
 
-        public int PossibleRevives(FossilSpecies f)
+        public int PossibleRevives(FossilSpecies f) => f switch
         {
-            return f switch
-            {
-                Dracozolt => Math.Min(Bird, Drake),
-                Arctozolt => Math.Min(Bird, Dino),
-                Dracovish => Math.Min(Fish, Drake),
-                Arctovish => Math.Min(Fish, Dino),
-                _ => throw new ArgumentOutOfRangeException(nameof(FossilSpecies))
-            };
-        }
+            Dracozolt => Math.Min(Bird, Drake),
+            Arctozolt => Math.Min(Bird, Dino),
+            Dracovish => Math.Min(Fish, Drake),
+            Arctovish => Math.Min(Fish, Dino),
+            _ => throw new ArgumentOutOfRangeException(nameof(FossilSpecies)),
+        };
     }
 }

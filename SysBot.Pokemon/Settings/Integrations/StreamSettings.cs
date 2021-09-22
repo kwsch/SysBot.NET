@@ -118,7 +118,7 @@ namespace SysBot.Pokemon
 
         // Completed Trades
 
-        [Category(Operation), Description("Create a file indicating the count of completed trades.")]
+        [Category(Operation), Description("Create a file indicating the count of completed trades when a new trade starts.")]
         public bool CreateCompletedTrades { get; set; } = true;
 
         [Category(Operation), Description("Format to display the Completed Trades. {0} = Count")]
@@ -146,7 +146,7 @@ namespace SysBot.Pokemon
                 if (CreateUserList)
                     GenerateUserList(hub);
                 if (CreateCompletedTrades)
-                    GenerateCompletedTrades(hub.Config.Counts);
+                    GenerateCompletedTrades(hub);
                 if (CreateTradeStartSprite)
                     GenerateBotSprite(b, detail);
             }
@@ -317,9 +317,9 @@ namespace SysBot.Pokemon
             File.WriteAllText("users.txt", string.Join(UserListSeparator, users));
         }
 
-        private void GenerateCompletedTrades(CountSettings counts)
+        private void GenerateCompletedTrades(PokeTradeHub<PK8> hub)
         {
-            var msg = string.Format(CompletedTradesFormat, counts.CompletedTrades);
+            var msg = string.Format(CompletedTradesFormat, hub.Config.Trade.CompletedTrades);
             File.WriteAllText("completed.txt", msg);
         }
     }

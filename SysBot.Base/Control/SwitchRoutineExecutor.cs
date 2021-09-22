@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,9 +35,9 @@ namespace SysBot.Base
             await Connection.SendAsync(delaycgf, token).ConfigureAwait(false);
         }
 
-        public async Task DaisyChainCommands(int Delay, SwitchButton[] buttons, CancellationToken token)
+        public async Task DaisyChainCommands(int delay, IEnumerable<SwitchButton> buttons, CancellationToken token)
         {
-            SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, Delay, UseCRLF);
+            SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, delay, UseCRLF);
             var commands = buttons.Select(z => SwitchCommand.Click(z, UseCRLF)).ToArray();
             var chain = commands.SelectMany(x => x).ToArray();
             await Connection.SendAsync(chain, token).ConfigureAwait(false);

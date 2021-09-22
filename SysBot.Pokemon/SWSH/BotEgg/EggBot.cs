@@ -7,19 +7,20 @@ using static SysBot.Base.SwitchStick;
 
 namespace SysBot.Pokemon
 {
-    public class EggBot : PokeRoutineExecutor8
+    public class EggBot : PokeRoutineExecutor8, ICountBot
     {
         private readonly PokeTradeHub<PK8> Hub;
-        private readonly BotCompleteCounts Counts;
         private readonly IDumper DumpSetting;
         private readonly int[] DesiredMinIVs;
         private readonly int[] DesiredMaxIVs;
         private const SwordShieldDaycare Location = SwordShieldDaycare.Route5;
+        private readonly EggSettings Settings;
+        public ICountSettings Counts => Settings;
 
         public EggBot(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
             Hub = hub;
-            Counts = Hub.Counts;
+            Settings = Hub.Config.Egg;
             DumpSetting = Hub.Config.Folder;
             StopConditionSettings.InitializeTargetIVs(Hub, out DesiredMinIVs, out DesiredMaxIVs);
         }
@@ -79,7 +80,7 @@ namespace SysBot.Pokemon
 
                 encounterCount++;
                 Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownParsing.GetShowdownText(pk)}{Environment.NewLine}");
-                Counts.AddCompletedEggs();
+                Settings.AddCompletedEggs();
 
                 if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
                     DumpPokemon(DumpSetting.DumpFolder, "egg", pk);

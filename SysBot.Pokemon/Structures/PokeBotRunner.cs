@@ -65,7 +65,6 @@ namespace SysBot.Pokemon
 
         public override void InitializeStart()
         {
-            Hub.Counts.LoadCountsFromConfig(); // if user modified them prior to start
             if (RunOnce)
                 return;
 

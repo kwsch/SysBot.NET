@@ -5,6 +5,7 @@ namespace SysBot.Pokemon
 {
     public class LegalitySettings
     {
+        private string DefaultTrainerName = "SysBot";
         private const string Generate = nameof(Generate);
         private const string Misc = nameof(Misc);
         public override string ToString() => "Legality Generating Settings";
@@ -17,7 +18,15 @@ namespace SysBot.Pokemon
         public string GeneratePathTrainerInfo { get; set; } = string.Empty;
 
         [Category(Generate), Description("Default Original Trainer name for PKM files that don't match any of the provided PKM files.")]
-        public string GenerateOT { get; set; } = "SysBot";
+        public string GenerateOT
+        {
+            get => DefaultTrainerName;
+            set
+            {
+                if (!StringsUtil.IsSpammyString(value))
+                    DefaultTrainerName = value;
+            }
+        }
 
         [Category(Generate), Description("Default 16 Bit Trainer ID (TID) for PKM files that don't match any of the provided PKM files.")]
         public int GenerateTID16 { get; set; } = 12345;

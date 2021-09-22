@@ -8,17 +8,16 @@ using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
-    public class RaidBot : PokeRoutineExecutor8
+    public class RaidBot : PokeRoutineExecutor8, ICountBot
     {
         private readonly PokeTradeHub<PK8> Hub;
-        private readonly BotCompleteCounts Counts;
         private readonly RaidSettings Settings;
+        public ICountSettings Counts => Settings;
 
         public RaidBot(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
             Hub = hub;
             Settings = hub.Config.Raid;
-            Counts = hub.Counts;
         }
 
         private int encounterCount;
@@ -80,7 +79,7 @@ namespace SysBot.Pokemon
                 await HostRaidAsync(code, token).ConfigureAwait(false);
 
                 Log($"Raid host {encounterCount} finished.");
-                Counts.AddCompletedRaids();
+                Settings.AddCompletedRaids();
 
                 await ResetGameAsync(token).ConfigureAwait(false);
             }

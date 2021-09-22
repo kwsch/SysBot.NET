@@ -8,19 +8,20 @@ using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
-    public class EncounterBot : PokeRoutineExecutor8
+    public class EncounterBot : PokeRoutineExecutor8, ICountBot
     {
         private readonly PokeTradeHub<PK8> Hub;
-        private readonly BotCompleteCounts Counts;
         private readonly IDumper DumpSetting;
+        private readonly EncounterSettings Settings;
         private readonly int[] DesiredMinIVs;
         private readonly int[] DesiredMaxIVs;
         private readonly byte[] BattleMenuReady = { 0, 0, 0, 255 };
+        public ICountSettings Counts => Settings;
 
         public EncounterBot(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
             Hub = hub;
-            Counts = Hub.Counts;
+            Settings = Hub.Config.Encounter;
             DumpSetting = Hub.Config.Folder;
             StopConditionSettings.InitializeTargetIVs(Hub, out DesiredMinIVs, out DesiredMaxIVs);
         }
@@ -203,9 +204,9 @@ namespace SysBot.Pokemon
             encounterCount++;
             Log($"Encounter: {encounterCount}{Environment.NewLine}{ShowdownParsing.GetShowdownText(pk)}{Environment.NewLine}");
             if (legends)
-                Counts.AddCompletedLegends();
+                Settings.AddCompletedLegends();
             else
-                Counts.AddCompletedEncounters();
+                Settings.AddCompletedEncounters();
 
             if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
                 DumpPokemon(DumpSetting.DumpFolder, legends ? "legends" : "encounters", pk);

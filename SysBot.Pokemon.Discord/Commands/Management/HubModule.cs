@@ -33,7 +33,9 @@ namespace SysBot.Pokemon.Discord
 
             builder.AddField(x =>
             {
-                var msg = string.Join("\n", hub.Counts.Summary());
+                var bots = me.Bots.Select(z => z.Bot).OfType<ICountBot>();
+                var lines = bots.Select(z => z.Counts.GetNonZeroCounts()).Distinct();
+                var msg = string.Join("\n", lines);
                 if (string.IsNullOrWhiteSpace(msg))
                     msg = "Nothing counted yet!";
                 x.Name = "Counts";

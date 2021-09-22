@@ -20,10 +20,6 @@ namespace SysBot.Pokemon
 
         [Category(Operation)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
-        public CountSettings Counts { get; set; } = new();
-
-        [Category(Operation)]
-        [TypeConverter(typeof(ExpandableObjectConverter))]
         public QueueSettings Queues { get; set; } = new();
 
         [Category(Operation), Description("Stop conditions for EggBot, FossilBot, and EncounterBot.")]
