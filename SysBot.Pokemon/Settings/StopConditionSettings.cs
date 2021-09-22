@@ -36,7 +36,7 @@ namespace SysBot.Pokemon
         [Category(StopConditions), Description("If set to TRUE, matches both ShinyTarget and TargetIVs settings. Otherwise, looks for either ShinyTarget or TargetIVs match.")]
         public bool MatchShinyAndIV { get; set; } = true;
 
-        public static bool EncounterFound(PK8 pk, int[] targetminIVs, int[] targetmaxIVs, StopConditionSettings settings)
+        public static bool EncounterFound<T>(T pk, int[] targetminIVs, int[] targetmaxIVs, StopConditionSettings settings) where T : PKM
         {
             // Match Nature and Species if they were specified.
             if (settings.StopOnSpecies != Species.None && settings.StopOnSpecies != (Species)pk.Species)
@@ -45,7 +45,7 @@ namespace SysBot.Pokemon
             if (settings.TargetNature != Nature.Random && settings.TargetNature != (Nature)pk.Nature)
                 return false;
 
-            if (settings.MarkOnly && !HasMark(pk))
+            if (settings.MarkOnly && pk is IRibbonIndex m && !HasMark(m))
                 return false;
 
             if (settings.ShinyTarget != TargetShinyType.DisableOption)

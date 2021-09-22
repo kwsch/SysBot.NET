@@ -107,7 +107,7 @@ namespace SysBot.Pokemon
                 }
                 else
                 {
-                    LogUtil.LogInfo("Provided pk8 was not added due to duplicate name: " + dest.FileName, nameof(PokemonPool<T>));
+                    LogUtil.LogInfo("Provided file was not added due to duplicate name: " + dest.FileName, nameof(PokemonPool<T>));
                 }
                 loadedAny = true;
             }

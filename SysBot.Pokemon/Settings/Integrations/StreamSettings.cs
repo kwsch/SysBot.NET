@@ -124,7 +124,7 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Format to display the Completed Trades. {0} = Count")]
         public string CompletedTradesFormat { get; set; } = "Completed Trades: {0}";
 
-        public void StartTrade(PokeTradeBot b, PokeTradeDetail<PK8> detail, PokeTradeHub<PK8> hub)
+        public void StartTrade<T>(PokeRoutineExecutorBase b, PokeTradeDetail<T> detail, PokeTradeHub<T> hub) where T : PKM, new()
         {
             if (!CreateAssets)
                 return;
@@ -158,7 +158,7 @@ namespace SysBot.Pokemon
             }
         }
 
-        public void IdleAssets(PokeTradeBot b)
+        public void IdleAssets(PokeRoutineExecutorBase b)
         {
             if (!CreateAssets)
                 return;
@@ -210,7 +210,7 @@ namespace SysBot.Pokemon
             File.WriteAllText("waited.txt", value);
         }
 
-        private void GenerateEstimatedTime(PokeTradeHub<PK8> hub)
+        private void GenerateEstimatedTime<T>(PokeTradeHub<T> hub) where T : PKM, new()
         {
             var count = hub.Queues.Info.Count;
             var estimate = hub.Config.Queues.EstimateDelay(count, hub.Bots.Count);
@@ -226,7 +226,7 @@ namespace SysBot.Pokemon
             File.WriteAllText("estimatedTimestamp.txt", date);
         }
 
-        public void StartEnterCode(PokeTradeBot b)
+        public void StartEnterCode(PokeRoutineExecutorBase b)
         {
             if (!CreateAssets)
                 return;
@@ -259,7 +259,7 @@ namespace SysBot.Pokemon
             0x00, 0x00
         };
 
-        public void EndEnterCode(PokeTradeBot b)
+        public void EndEnterCode(PokeRoutineExecutorBase b)
         {
             try
             {
@@ -275,16 +275,16 @@ namespace SysBot.Pokemon
             }
         }
 
-        private string GetBlockFileName(PokeTradeBot b) => string.Format(TradeBlockFormat, b.Connection.Name);
+        private string GetBlockFileName(PokeRoutineExecutorBase b) => string.Format(TradeBlockFormat, b.Connection.Name);
 
-        private void GenerateBotConnection(PokeTradeBot b, PokeTradeDetail<PK8> detail)
+        private void GenerateBotConnection<T>(PokeRoutineExecutorBase b, PokeTradeDetail<T> detail) where T : PKM, new()
         {
             var file = b.Connection.Name;
             var name = string.Format(TrainerTradeStart, detail.ID, detail.Trainer.TrainerName, (Species)detail.TradeData.Species);
             File.WriteAllText($"{file}.txt", name);
         }
 
-        private static void GenerateBotSprite(PokeTradeBot b, PokeTradeDetail<PK8> detail)
+        private static void GenerateBotSprite<T>(PokeRoutineExecutorBase b, PokeTradeDetail<T> detail) where T : PKM, new()
         {
             var func = CreateSpriteFile;
             if (func == null)
@@ -294,21 +294,21 @@ namespace SysBot.Pokemon
             func.Invoke(pk, $"sprite_{file}.png");
         }
 
-        private void GenerateOnDeck(PokeTradeHub<PK8> hub)
+        private void GenerateOnDeck<T>(PokeTradeHub<T> hub) where T : PKM, new()
         {
             var ondeck = hub.Queues.Info.GetUserList(OnDeckFormat);
             ondeck = ondeck.Skip(OnDeckSkip).Take(OnDeckTake); // filter down
             File.WriteAllText("ondeck.txt", string.Join(OnDeckSeparator, ondeck));
         }
 
-        private void GenerateOnDeck2(PokeTradeHub<PK8> hub)
+        private void GenerateOnDeck2<T>(PokeTradeHub<T> hub) where T : PKM, new()
         {
             var ondeck = hub.Queues.Info.GetUserList(OnDeckFormat2);
             ondeck = ondeck.Skip(OnDeckSkip2).Take(OnDeckTake2); // filter down
             File.WriteAllText("ondeck2.txt", string.Join(OnDeckSeparator2, ondeck));
         }
 
-        private void GenerateUserList(PokeTradeHub<PK8> hub)
+        private void GenerateUserList<T>(PokeTradeHub<T> hub) where T : PKM, new()
         {
             var users = hub.Queues.Info.GetUserList(UserListFormat);
             users = users.Skip(UserListSkip);
@@ -317,7 +317,7 @@ namespace SysBot.Pokemon
             File.WriteAllText("users.txt", string.Join(UserListSeparator, users));
         }
 
-        private void GenerateCompletedTrades(PokeTradeHub<PK8> hub)
+        private void GenerateCompletedTrades<T>(PokeTradeHub<T> hub) where T : PKM, new()
         {
             var msg = string.Format(CompletedTradesFormat, hub.Config.Trade.CompletedTrades);
             File.WriteAllText("completed.txt", msg);

@@ -48,7 +48,7 @@ namespace SysBot.Pokemon.Discord
             var tradedToUser = Data.Species;
             var message = tradedToUser != 0 ? $"Trade finished. Enjoy your {(Species)tradedToUser}!" : "Trade finished!";
             Trader.SendMessageAsync(message).ConfigureAwait(false);
-            if (result.Species != 0 && Hub.Config.Discord.ReturnPK8s)
+            if (result.Species != 0 && Hub.Config.Discord.ReturnPKMs)
                 Trader.SendPKMAsync(result, "Here's what you traded me!").ConfigureAwait(false);
         }
 
@@ -73,7 +73,7 @@ namespace SysBot.Pokemon.Discord
 
         public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result, string message)
         {
-            if (result.Species != 0 && (Hub.Config.Discord.ReturnPK8s || info.Type == PokeTradeType.Dump))
+            if (result.Species != 0 && (Hub.Config.Discord.ReturnPKMs || info.Type == PokeTradeType.Dump))
                 Trader.SendPKMAsync(result, message).ConfigureAwait(false);
         }
 

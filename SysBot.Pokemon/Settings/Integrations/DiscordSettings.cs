@@ -77,7 +77,7 @@ namespace SysBot.Pokemon
         public string EchoChannels { get; set; } = string.Empty;
 
         [Category(Operation), Description("Returns PKMs of Pokémon shown in the trade to the user.")]
-        public bool ReturnPK8s { get; set; } = true;
+        public bool ReturnPKMs { get; set; } = true;
 
         [Category(Operation), Description("Replies to users if they are not allowed to use a given command in the channel. When false, the bot will silently ignore them instead.")]
         public bool ReplyCannotUseCommandInChannel { get; set; } = true;
