@@ -170,5 +170,18 @@ namespace SysBot.Base
                 await Task.Delay((MaximumTransferSize / DelayFactor) + BaseDelay, token).ConfigureAwait(false);
             }
         }
+
+        public async Task<byte[]> ReadRaw(byte[] command, int length, CancellationToken token)
+        {
+            await SendAsync(command, token).ConfigureAwait(false);
+            var buffer = new byte[length];
+            var _ = Read(buffer);
+            return buffer;
+        }
+
+        public async Task SendRaw(byte[] command, CancellationToken token)
+        {
+            await SendAsync(command, token).ConfigureAwait(false);
+        }
     }
 }
