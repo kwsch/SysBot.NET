@@ -2,7 +2,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using SysBot.Base;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Base.SwitchStick;
 
@@ -36,7 +35,7 @@ namespace SysBot.Pokemon
         {
             Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);
-            await InitializeHardware(Hub.Config.Egg, token);
+            await InitializeHardware(Hub.Config.Egg, token).ConfigureAwait(false);
 
             await SetCurrentBox(0, token).ConfigureAwait(false);
 
@@ -93,7 +92,6 @@ namespace SysBot.Pokemon
                         continue;
                     }
                     Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
-                    await DetachController(token).ConfigureAwait(false);
                     break;
                 }
             }

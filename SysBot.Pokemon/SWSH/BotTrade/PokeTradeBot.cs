@@ -43,9 +43,6 @@ namespace SysBot.Pokemon
         {
             Log("Identifying trainer data of the host console.");
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
-
-            Log("Detaching on startup.");
-            await DetachController(token).ConfigureAwait(false);
             await InitializeHardware(Hub.Config.Trade, token).ConfigureAwait(false);
 
             Log("Starting main TradeBot loop.");
