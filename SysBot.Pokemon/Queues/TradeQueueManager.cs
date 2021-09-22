@@ -42,11 +42,11 @@ namespace SysBot.Pokemon
                 q.Clear();
         }
 
-        public bool TryDequeueLedy(out PokeTradeDetail<T> detail)
+        public bool TryDequeueLedy(out PokeTradeDetail<T> detail, bool force = false)
         {
             detail = default!;
             var cfg = Hub.Config.Distribution;
-            if (!cfg.DistributeWhileIdle)
+            if (!cfg.DistributeWhileIdle && !force)
                 return false;
 
             if (Hub.Ledy.Pool.Count == 0)
