@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel;
+using SysBot.Base;
 
 namespace SysBot.Pokemon
 {
-    public class FossilSettings
+    public class FossilSettings : IBotStateSettings
     {
         private const string Fossil = nameof(Fossil);
         public override string ToString() => "Fossil Bot Settings";
@@ -21,5 +22,8 @@ namespace SysBot.Pokemon
         /// </summary>
         [Category(Fossil), Description("When enabled, the FossilBot will continue to get fossils and dump the Pokémon into the fossil dump folder.")]
         public bool ContinueAfterMatch { get; set; } = false;
+
+        [Category(Fossil), Description("When enabled, the screen will be turned off during normal bot loop operation to save power.")]
+        public bool ScreenOff { get; set; } = false;
     }
 }

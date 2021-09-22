@@ -34,7 +34,7 @@ namespace SysBot.Pokemon
         {
             Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);
-
+            await InitializeHardware(Hub.Config.Fossil, token).ConfigureAwait(false);
             await SetCurrentBox(0, token).ConfigureAwait(false);
 
             var existing = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
@@ -108,14 +108,15 @@ namespace SysBot.Pokemon
                     else
                     {
                         Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
-                        await DetachController(token).ConfigureAwait(false);
-                        return;
+                        break;
                     }
                 }
 
                 Log("Clearing destination slot.");
                 await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
             }
+
+            await CleanExit(Hub.Config.Fossil, token).ConfigureAwait(false);
         }
 
         private async Task ReviveFossil(FossilCount count, CancellationToken token)

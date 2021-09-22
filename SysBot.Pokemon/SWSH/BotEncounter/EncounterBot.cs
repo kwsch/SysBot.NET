@@ -29,8 +29,10 @@ namespace SysBot.Pokemon
 
         public override async Task MainLoop(CancellationToken token)
         {
+            var settings = Hub.Config.Encounter;
             Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);
+            await InitializeHardware(settings, token).ConfigureAwait(false);
 
             Log("Starting main EncounterBot loop.");
             Config.IterateNextRoutine();
@@ -38,7 +40,7 @@ namespace SysBot.Pokemon
             // Clear out any residual stick weirdness.
             await ResetStick(token).ConfigureAwait(false);
 
-            var task = Hub.Config.Encounter.EncounteringType switch
+            var task = settings.EncounteringType switch
             {
                 EncounterMode.VerticalLine => WalkInLine(token),
                 EncounterMode.HorizontalLine => WalkInLine(token),
@@ -49,7 +51,7 @@ namespace SysBot.Pokemon
             await task.ConfigureAwait(false);
 
             await ResetStick(token).ConfigureAwait(false);
-            await DetachController(token).ConfigureAwait(false);
+            await CleanExit(settings, token).ConfigureAwait(false);
         }
 
         private async Task WalkInLine(CancellationToken token)

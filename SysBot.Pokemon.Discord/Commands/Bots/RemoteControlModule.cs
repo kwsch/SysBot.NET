@@ -70,6 +70,45 @@ namespace SysBot.Pokemon.Discord
             await SetStickAsyncImpl(s, x, y, ms, bot).ConfigureAwait(false);
         }
 
+        [Command("setScreenOn")]
+        [Alias("screenOn", "scrOn")]
+        [Summary("Turns the screen on")]
+        [RequireSudo]
+        public async Task SetScreenOnAsync([Remainder] string ip)
+        {
+            await SetScreen(true, ip).ConfigureAwait(false);
+        }
+
+        [Command("setScreenOff")]
+        [Alias("screenOff", "scrOff")]
+        [Summary("Turns the screen off")]
+        [RequireSudo]
+        public async Task SetScreenOffAsync([Remainder] string ip)
+        {
+            await SetScreen(false, ip).ConfigureAwait(false);
+        }
+
+        private async Task SetScreen(bool on, string ip)
+        {
+            var bot = GetBot(ip);
+            if (bot == null)
+            {
+                await ReplyAsync($"No bot has that IP address ({ip}).").ConfigureAwait(false);
+                return;
+            }
+
+            var b = bot.Bot;
+            var crlf = b is SwitchRoutineExecutor<PokeBotState> { UseCRLF: true };
+            await b.Connection.SendAsync(SwitchCommand.SetScreen(ScreenState.On, crlf), CancellationToken.None).ConfigureAwait(false);
+            await ReplyAsync("Screen state set to: " + (on ? "On" : "Off")).ConfigureAwait(false);
+        }
+
+        private static BotSource<PokeBotState>? GetBot(string ip)
+        {
+            var r = SysCord<T>.Runner;
+            return r.GetBot(ip) ?? r.Bots.Find(x => x.IsRunning); // safe fallback for users who mistype IP address for single bot instances
+        }
+
         private async Task ClickAsyncImpl(SwitchButton button,BotSource<PokeBotState> bot)
         {
             if (!Enum.IsDefined(typeof(SwitchButton), button))

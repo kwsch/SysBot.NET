@@ -1,9 +1,10 @@
 ﻿using PKHeX.Core;
 using System.ComponentModel;
+using SysBot.Base;
 
 namespace SysBot.Pokemon
 {
-    public class TradeSettings
+    public class TradeSettings : IBotStateSettings
     {
         private const string TradeCode = nameof(TradeCode);
         private const string TradeConfig = nameof(TradeConfig);
@@ -24,6 +25,12 @@ namespace SysBot.Pokemon
 
         [Category(Dumping), Description("Link Trade: Dumping routine will stop after spending x seconds in trade.")]
         public int MaxDumpTradeTime { get; set; } = 180;
+
+        [Category(TradeConfig), Description("When enabled, the screen will be turned off during normal bot loop operation to save power.")]
+        public bool ScreenOff { get; set; } = false;
+
+        [Category(TradeConfig), Description("Max amount of A presses to wait for a trade to end before trying to exit to overworld.")]
+        public int TradeAnimationMaxDelaySeconds { get; set; } = 90; // 150 maybe
 
         /// <summary>
         /// Gets a random trade code based on the range settings.

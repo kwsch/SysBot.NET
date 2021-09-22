@@ -44,6 +44,10 @@ namespace SysBot.Pokemon
             Log("Identifying trainer data of the host console.");
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
 
+            Log("Detaching on startup.");
+            await DetachController(token).ConfigureAwait(false);
+            await InitializeHardware(Hub.Config.Trade, token).ConfigureAwait(false);
+
             Log("Starting main TradeBot loop.");
             while (!token.IsCancellationRequested)
             {
@@ -56,6 +60,8 @@ namespace SysBot.Pokemon
                 };
                 await task.ConfigureAwait(false);
             }
+
+            await CleanExit(Hub.Config.Trade, token).ConfigureAwait(false);
             Hub.Bots.Remove(this);
         }
 
@@ -346,9 +352,9 @@ namespace SysBot.Pokemon
             delay_count = 0;
             while (!await IsInBox(token).ConfigureAwait(false))
             {
-                await Click(A, 3_000, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
                 delay_count++;
-                if (delay_count >= 50)
+                if (delay_count >= Hub.Config.Trade.TradeAnimationMaxDelaySeconds)
                     break;
                 if (await IsOnOverworld(Hub.Config, token).ConfigureAwait(false)) // In case we are in a Trade Evolution/PokeDex Entry and the Trade Partner quits we land on the Overworld
                     break;
@@ -389,7 +395,7 @@ namespace SysBot.Pokemon
                 {
                     var subfolder = poke.Type.ToString().ToLower();
                     DumpPokemon(DumpSetting.DumpFolder, subfolder, traded); // received
-                    if (poke.Type == PokeTradeType.Specific || poke.Type == PokeTradeType.Clone)
+                    if (poke.Type is PokeTradeType.Specific or PokeTradeType.Clone)
                         DumpPokemon(DumpSetting.DumpFolder, "traded", pkm); // sent to partner
                 }
             }

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
+using SysBot.Base;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Pokemon.PokeDataOffsets;
 
@@ -84,6 +85,28 @@ namespace SysBot.Pokemon
                 Log("Text speed should be set to FAST. Stop the bot and fix this if you encounter problems.");
 
             return sav;
+        }
+
+        public async Task InitializeHardware(IBotStateSettings settings, CancellationToken token)
+        {
+            Log("Detaching on startup.");
+            await DetachController(token).ConfigureAwait(false);
+            if (settings.ScreenOff)
+            {
+                Log("Turning off screen.");
+                await SetScreen(ScreenState.Off, token).ConfigureAwait(false);
+            }
+        }
+
+        public async Task CleanExit(IBotStateSettings settings, CancellationToken token)
+        {
+            if (settings.ScreenOff)
+            {
+                Log("Turning on screen.");
+                await SetScreen(ScreenState.On, token).ConfigureAwait(false);
+            }
+            Log("Detaching controllers on routine exit.");
+            await DetachController(token).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -364,7 +387,7 @@ namespace SysBot.Pokemon
         {
             var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
             var dataint = BitConverter.ToUInt32(data, 0);
-            return dataint == CurrentScreen_Box1 || dataint == CurrentScreen_Box2;
+            return dataint is CurrentScreen_Box1 or CurrentScreen_Box2;
         }
 
         public async Task<bool> IsOnOverworld(PokeTradeHubConfig config, CancellationToken token)
@@ -374,7 +397,7 @@ namespace SysBot.Pokemon
             {
                 var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
                 var dataint = BitConverter.ToUInt32(data, 0);
-                return dataint == CurrentScreen_Overworld1 || dataint == CurrentScreen_Overworld2;
+                return dataint is CurrentScreen_Overworld1 or CurrentScreen_Overworld2;
             }
             // Uses an appropriate OverworldOffset for the console language.
             else if (config.ScreenDetection == ScreenDetectionMode.ConsoleLanguageSpecific)

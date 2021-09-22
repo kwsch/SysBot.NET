@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using SysBot.Base;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Base.SwitchStick;
 
@@ -35,6 +36,7 @@ namespace SysBot.Pokemon
         {
             Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);
+            await InitializeHardware(Hub.Config.Egg, token);
 
             await SetCurrentBox(0, token).ConfigureAwait(false);
 
@@ -92,12 +94,12 @@ namespace SysBot.Pokemon
                     }
                     Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
                     await DetachController(token).ConfigureAwait(false);
-                    return;
+                    break;
                 }
             }
-
             // If aborting the sequence, we might have the stick set at some position. Clear it just in case.
             await SetStick(LEFT, 0, 0, 0, CancellationToken.None).ConfigureAwait(false); // reset
+            await CleanExit(Hub.Config.Trade, token).ConfigureAwait(false);
         }
 
         private async Task<int> StepUntilEgg(CancellationToken token)

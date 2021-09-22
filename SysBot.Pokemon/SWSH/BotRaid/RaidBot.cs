@@ -29,17 +29,17 @@ namespace SysBot.Pokemon
 
         public override async Task MainLoop(CancellationToken token)
         {
-            Log("Identifying trainer data of the host console.");
-            _ = await IdentifyTrainer(token).ConfigureAwait(false);
-
-            Log("Starting main RaidBot loop.");
-
-            if (Hub.Config.Raid.MinTimeToWait < 0 || Hub.Config.Raid.MinTimeToWait > 180)
+            if (Settings.MinTimeToWait is < 0 or > 180)
             {
                 Log("Time to wait must be between 0 and 180 seconds.");
                 return;
             }
 
+            Log("Identifying trainer data of the host console.");
+            await IdentifyTrainer(token).ConfigureAwait(false);
+            await InitializeHardware(Settings, token).ConfigureAwait(false);
+
+            Log("Starting main RaidBot loop.");
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.RaidBot)
             {
                 Config.IterateNextRoutine();
@@ -49,9 +49,9 @@ namespace SysBot.Pokemon
                 // If they set this to 0, they want to add and remove friends before hosting any raids.
                 if (Settings.InitialRaidsToHost == 0 && encounterCount == 0)
                 {
-                    if (Hub.Config.Raid.NumberFriendsToAdd > 0)
+                    if (Settings.NumberFriendsToAdd > 0)
                         addFriends = true;
-                    if (Hub.Config.Raid.NumberFriendsToDelete > 0)
+                    if (Settings.NumberFriendsToDelete > 0)
                         deleteFriends = true;
 
                     if (addFriends || deleteFriends)
@@ -70,10 +70,10 @@ namespace SysBot.Pokemon
                 // If we're changing friends, we'll echo while waiting on the lobby to fill up.
                 if (Settings.InitialRaidsToHost <= encounterCount)
                 {
-                    if (Hub.Config.Raid.NumberFriendsToAdd > 0 && Hub.Config.Raid.RaidsBetweenAddFriends > 0)
-                        addFriends = (encounterCount - Settings.InitialRaidsToHost) % Hub.Config.Raid.RaidsBetweenAddFriends == 0;
-                    if (Hub.Config.Raid.NumberFriendsToDelete > 0 && Hub.Config.Raid.RaidsBetweenDeleteFriends > 0)
-                        deleteFriends = (encounterCount - Settings.InitialRaidsToHost) % Hub.Config.Raid.RaidsBetweenDeleteFriends == 0;
+                    if (Settings.NumberFriendsToAdd > 0 && Settings.RaidsBetweenAddFriends > 0)
+                        addFriends = (encounterCount - Settings.InitialRaidsToHost) % Settings.RaidsBetweenAddFriends == 0;
+                    if (Settings.NumberFriendsToDelete > 0 && Settings.RaidsBetweenDeleteFriends > 0)
+                        deleteFriends = (encounterCount - Settings.InitialRaidsToHost) % Settings.RaidsBetweenDeleteFriends == 0;
                 }
 
                 int code = Settings.GetRandomRaidCode();
@@ -84,6 +84,7 @@ namespace SysBot.Pokemon
 
                 await ResetGameAsync(token).ConfigureAwait(false);
             }
+            await CleanExit(Settings, token).ConfigureAwait(false);
         }
 
         private async Task HostRaidAsync(int code, CancellationToken token)
@@ -120,10 +121,10 @@ namespace SysBot.Pokemon
 
             var linkcodemsg = code < 0 ? "no Link Code" : $"code **{code:0000 0000}**";
 
-            string raiddescmsg = string.IsNullOrEmpty(Hub.Config.Raid.RaidDescription) ? ((Species)raidBossSpecies).ToString() : Hub.Config.Raid.RaidDescription;
+            string raiddescmsg = string.IsNullOrEmpty(Settings.RaidDescription) ? ((Species)raidBossSpecies).ToString() : Settings.RaidDescription;
             EchoUtil.Echo($"Raid lobby for {raiddescmsg} is open with {linkcodemsg}.");
 
-            var timetowait = Hub.Config.Raid.MinTimeToWait * 1_000;
+            var timetowait = Settings.MinTimeToWait * 1_000;
             var timetojoinraid = 175_000 - timetowait;
 
             Log("Waiting on raid party...");
@@ -179,7 +180,7 @@ namespace SysBot.Pokemon
             PlayerReady[player] = true;
 
             // If we get to here, they're locked in and should have a Pokémon selected.
-            if (Hub.Config.Raid.EchoPartyReady)
+            if (Settings.EchoPartyReady)
             {
                 data = await Connection.ReadBytesAsync(ofs, 2, token).ConfigureAwait(false);
                 var dexno = BitConverter.ToUInt16(data, 0);

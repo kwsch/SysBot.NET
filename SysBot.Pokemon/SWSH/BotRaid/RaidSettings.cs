@@ -1,9 +1,10 @@
 ﻿using PKHeX.Core;
 using System.ComponentModel;
+using SysBot.Base;
 
 namespace SysBot.Pokemon
 {
-    public class RaidSettings
+    public class RaidSettings : IBotStateSettings
     {
         private const string Hosting = nameof(Hosting);
         public override string ToString() => "Raid Bot Settings";
@@ -49,6 +50,9 @@ namespace SysBot.Pokemon
 
         [Category(Hosting), Description("The Nintendo Switch profile you are using to manage friends. For example, set this to 2 if you are using the second profile.")]
         public int ProfileNumber { get; set; } = 1;
+
+        [Category(Hosting), Description("When enabled, the screen will be turned off during normal bot loop operation to save power.")]
+        public bool ScreenOff { get; set; } = false;
 
         /// <summary>
         /// Gets a random trade code based on the range settings.
