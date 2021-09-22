@@ -61,10 +61,4 @@ namespace SysBot.Base
             _ => throw new ArgumentOutOfRangeException(nameof(SwitchProtocol)),
         };
     }
-
-    public enum SwitchProtocol
-    {
-        WiFi,
-        USB,
-    }
 }

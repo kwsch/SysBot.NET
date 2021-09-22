@@ -22,8 +22,8 @@ namespace SysBot.Pokemon.WinForms
         public Main()
         {
             InitializeComponent();
-            PokeTradeBot.SeedChecker = new Z3SeedSearchHandler<PK8>();
 
+            PokeTradeBot.SeedChecker = new Z3SeedSearchHandler<PK8>();
             if (File.Exists(ConfigPath))
             {
                 var lines = File.ReadAllText(ConfigPath);
@@ -66,14 +66,14 @@ namespace SysBot.Pokemon.WinForms
             CB_Routine.DisplayMember = nameof(ComboItem.Text);
             CB_Routine.ValueMember = nameof(ComboItem.Value);
             CB_Routine.DataSource = list;
-            CB_Routine.SelectedIndex = 2; // default option
+            CB_Routine.SelectedValue = (int)PokeRoutineType.FlexTrade; // default option
 
             var protocols = (SwitchProtocol[])Enum.GetValues(typeof(SwitchProtocol));
             var listP = protocols.Select(z => new ComboItem(z.ToString(), (int)z)).ToArray();
             CB_Protocol.DisplayMember = nameof(ComboItem.Text);
             CB_Protocol.ValueMember = nameof(ComboItem.Value);
             CB_Protocol.DataSource = listP;
-            CB_Protocol.SelectedIndex = 0; // default option
+            CB_Protocol.SelectedIndex = (int)SwitchProtocol.WiFi; // default option
 
             LogUtil.Forwarders.Add(AppendLog);
         }

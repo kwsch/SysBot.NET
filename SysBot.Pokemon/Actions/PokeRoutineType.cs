@@ -2,21 +2,23 @@
 {
     public enum PokeRoutineType
     {
-        Idle,
+        Idle = 0,
 
-        SurpriseTrade,
+        SurpriseTrade = 1,
 
-        FlexTrade,
-        LinkTrade,
-        SeedCheck,
-        Clone,
-        Dump,
+        FlexTrade = 2,
+        LinkTrade = 3,
+        SeedCheck = 4,
+        Clone = 5,
+        Dump = 6,
 
-        EggFetch,
-        FossilBot,
-        RaidBot,
-        EncounterBot,
+        EggFetch = 7,
+        FossilBot = 8,
+        RaidBot = 9,
+        EncounterBot = 10,
 
-        RemoteControl,
+        RemoteControl = 100,
+
+        // Add your own custom bots here so they don't clash for future main-branch bot releases.
     }
 }
