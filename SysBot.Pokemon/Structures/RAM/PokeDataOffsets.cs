@@ -45,6 +45,7 @@ namespace SysBot.Pokemon
 
         // Suprise Trade Offsets
         public const uint SurpriseTradePartnerPokemonOffset = 0x450675a0;
+        public const uint LinkTradePartnerIdentityOffset = LinkTradePartnerNameOffset - 0x8;
 
         public const uint SurpriseTradeLockSlot = 0x450676fc;
         public const uint SurpriseTradeLockBox = 0x450676f8;
@@ -54,6 +55,7 @@ namespace SysBot.Pokemon
         public const uint SurpriseTradeSearch_Searching = 0x01000000;
         public const uint SurpriseTradeSearch_Found = 0x0200012C;
         public const uint SurpriseTradePartnerNameOffset = 0x45067708;
+        public const uint SurpriseTradePartnerIdentityOffset = SurpriseTradePartnerNameOffset - 0x8;
 
         /* Wild Area Daycare */
         public const uint DayCare_Wildarea_Step_Counter = 0x4511FC54;
@@ -101,35 +103,33 @@ namespace SysBot.Pokemon
         public const uint CurrentScreen_RaidParty = 0xFF1461DB;
         #endregion
 
-        public static uint GetTrainerNameOffset(TradeMethod tradeMethod)
+        public static uint GetTrainerNameOffset(TradeMethod tradeMethod) => tradeMethod switch
         {
-            return tradeMethod switch
-            {
-                TradeMethod.LinkTrade => LinkTradePartnerNameOffset,
-                TradeMethod.SupriseTrade => SurpriseTradePartnerNameOffset,
-                _ => throw new ArgumentException(nameof(tradeMethod)),
-            };
-        }
+            TradeMethod.LinkTrade => LinkTradePartnerNameOffset,
+            TradeMethod.SupriseTrade => SurpriseTradePartnerNameOffset,
+            _ => throw new ArgumentException(nameof(tradeMethod)),
+        };
 
-        public static uint GetDaycareStepCounterOffset(SwordShieldDaycare daycare)
+        public static uint GetDaycareStepCounterOffset(SwordShieldDaycare daycare) => daycare switch
         {
-            return daycare switch
-            {
-                SwordShieldDaycare.WildArea => DayCare_Wildarea_Step_Counter,
-                SwordShieldDaycare.Route5 => DayCare_Route5_Step_Counter,
-                _ => throw new ArgumentException(nameof(daycare)),
-            };
-        }
+            SwordShieldDaycare.WildArea => DayCare_Wildarea_Step_Counter,
+            SwordShieldDaycare.Route5 => DayCare_Route5_Step_Counter,
+            _ => throw new ArgumentException(nameof(daycare)),
+        };
 
-        public static uint GetDaycareEggIsReadyOffset(SwordShieldDaycare daycare)
+        public static uint GetDaycareEggIsReadyOffset(SwordShieldDaycare daycare) => daycare switch
         {
-            return daycare switch
-            {
-                SwordShieldDaycare.WildArea => DayCare_Wildarea_Egg_Is_Ready,
-                SwordShieldDaycare.Route5 => DayCare_Route5_Egg_Is_Ready,
-                _ => throw new ArgumentException(nameof(daycare)),
-            };
-        }
+            SwordShieldDaycare.WildArea => DayCare_Wildarea_Egg_Is_Ready,
+            SwordShieldDaycare.Route5 => DayCare_Route5_Egg_Is_Ready,
+            _ => throw new ArgumentException(nameof(daycare)),
+        };
+
+        public static uint GetTrainerIdentityOffset(TradeMethod tradeMethod) => tradeMethod switch
+        {
+            TradeMethod.LinkTrade => LinkTradePartnerIdentityOffset,
+            TradeMethod.SupriseTrade => SurpriseTradePartnerIdentityOffset,
+            _ => throw new ArgumentException(nameof(tradeMethod)),
+        };
 
         public static uint GetOverworldOffset(ConsoleLanguageParameter value) => value switch
         {

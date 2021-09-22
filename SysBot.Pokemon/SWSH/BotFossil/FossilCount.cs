@@ -13,8 +13,8 @@ namespace SysBot.Pokemon
 
         // Top Half: Select Down for fish if species type == Dracovish || Arctovish
         // Bottom Half: Select Down for dino if species type == Arctozolt || Arctovish
-        public bool UseSecondOption1(FossilSpecies f) => Bird != 0 && (f == Arctovish || f == Dracovish);
-        public bool UseSecondOption2(FossilSpecies f) => Drake != 0 && (f == Arctozolt || f == Arctovish);
+        public bool UseSecondOption1(FossilSpecies f) => Bird != 0 && f is Arctovish or Dracovish;
+        public bool UseSecondOption2(FossilSpecies f) => Drake != 0 && f is Arctozolt or Arctovish;
 
         private void SetCount(int item, int count)
         {
