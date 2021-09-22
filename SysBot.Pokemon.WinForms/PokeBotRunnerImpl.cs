@@ -21,18 +21,15 @@ namespace SysBot.Pokemon
 
         protected override void AddIntegrations()
         {
-            if (!string.IsNullOrWhiteSpace(Hub.Config.Discord.Token))
-                AddDiscordBot(Hub.Config.Discord.Token);
-
-            if (!string.IsNullOrWhiteSpace(Hub.Config.Twitch.Token))
-                AddTwitchBot(Hub.Config.Twitch);
-
-            if (!string.IsNullOrWhiteSpace(Hub.Config.YouTube.ClientID))
-                AddYouTubeBot(Hub.Config.YouTube);
+            AddDiscordBot(Hub.Config.Discord.Token);
+            AddTwitchBot(Hub.Config.Twitch);
+            AddYouTubeBot(Hub.Config.YouTube);
         }
 
         private void AddTwitchBot(TwitchSettings config)
         {
+            if (string.IsNullOrWhiteSpace(config.Token))
+                return;
             if (Twitch != null)
                 return; // already created
 
@@ -50,6 +47,8 @@ namespace SysBot.Pokemon
 
         private void AddYouTubeBot(YouTubeSettings config)
         {
+            if (string.IsNullOrWhiteSpace(config.ClientID))
+                return;
             if (YouTube != null)
                 return; // already created
 
@@ -67,6 +66,8 @@ namespace SysBot.Pokemon
 
         private void AddDiscordBot(string apiToken)
         {
+            if (string.IsNullOrWhiteSpace(apiToken))
+                return;
             var bot = new SysCord<T>(this);
             Task.Run(() => bot.MainAsync(apiToken, CancellationToken.None));
         }

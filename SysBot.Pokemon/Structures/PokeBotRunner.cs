@@ -116,6 +116,6 @@ namespace SysBot.Pokemon
         public PokeRoutineExecutorBase CreateBotFromConfig(PokeBotState cfg) => Factory.CreateBot(Hub, cfg);
         public BotSource<PokeBotState>? GetBot(PokeBotState state) => base.GetBot(state);
         void IPokeBotRunner.Remove(IConsoleBotConfig state, bool callStop) => Remove(state, callStop);
-        public void Add(PokeRoutineExecutorBase newbot) => base.Add(newbot);
+        public void Add(PokeRoutineExecutorBase newbot) => Add((RoutineExecutor<PokeBotState>)newbot);
     }
 }

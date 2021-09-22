@@ -40,9 +40,6 @@ namespace SysBot.Pokemon.Discord
 
         public SysCord(PokeBotRunner<T> runner)
         {
-            if (Runner is null)
-                throw new ArgumentException("Cannot create multiple instances of this bot.");
-
             Runner = runner;
             Hub = runner.Hub;
             Manager = new DiscordManager(Hub.Config);

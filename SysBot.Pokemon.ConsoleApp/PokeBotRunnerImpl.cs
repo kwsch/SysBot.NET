@@ -18,15 +18,14 @@ namespace SysBot.Pokemon.ConsoleApp
 
         protected override void AddIntegrations()
         {
-            if (!string.IsNullOrWhiteSpace(Hub.Config.Discord.Token))
-                AddDiscordBot(Hub.Config.Discord.Token);
-
-            if (!string.IsNullOrWhiteSpace(Hub.Config.Twitch.Token))
-                AddTwitchBot(Hub.Config.Twitch);
+            AddDiscordBot(Hub.Config.Discord);
+            AddTwitchBot(Hub.Config.Twitch);
         }
 
         private void AddTwitchBot(TwitchSettings config)
         {
+            if (string.IsNullOrWhiteSpace(config.Token))
+                return;
             if (Twitch != null)
                 return; // already created
 
@@ -37,15 +36,19 @@ namespace SysBot.Pokemon.ConsoleApp
             if (string.IsNullOrWhiteSpace(config.Token))
                 return;
 
-            Twitch = new TwitchBot<T>(Hub.Config.Twitch, Hub);
-            if (Hub.Config.Twitch.DistributionCountDown)
+            Twitch = new TwitchBot<T>(config, Hub);
+            if (config.DistributionCountDown)
                 Hub.BotSync.BarrierReleasingActions.Add(() => Twitch.StartingDistribution(config.MessageStart));
         }
 
-        private void AddDiscordBot(string apiToken)
+        private void AddDiscordBot(DiscordSettings config)
         {
+            var token = config.Token;
+            if (string.IsNullOrWhiteSpace(token))
+                return;
+
             var bot = new SysCord<T>(this);
-            Task.Run(() => bot.MainAsync(apiToken, CancellationToken.None));
+            Task.Run(() => bot.MainAsync(token, CancellationToken.None), CancellationToken.None);
         }
     }
 }
