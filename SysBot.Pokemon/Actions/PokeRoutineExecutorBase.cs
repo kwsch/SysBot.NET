@@ -15,6 +15,8 @@ namespace SysBot.Pokemon
         public GameVersion Version { get; private set; }
         public string InGameName { get; private set; } = "SysBot.NET";
 
+        public string GetSummary() => $"- {Connection.Name} - {Config.CurrentRoutineType}";
+
         protected void InitSaveData(SaveFile sav)
         {
             GameLang = (LanguageID)sav.Language;

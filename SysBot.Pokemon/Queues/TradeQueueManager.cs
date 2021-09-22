@@ -25,16 +25,13 @@ namespace SysBot.Pokemon
                 q.Queue.Settings = hub.Config.Favoritism;
         }
 
-        public PokeTradeQueue<T> GetQueue(PokeRoutineType type)
+        public PokeTradeQueue<T> GetQueue(PokeRoutineType type) => type switch
         {
-            return type switch
-            {
-                PokeRoutineType.SeedCheck => Seed,
-                PokeRoutineType.Clone => Clone,
-                PokeRoutineType.Dump => Dump,
-                _ => Trade,
-            };
-        }
+            PokeRoutineType.SeedCheck => Seed,
+            PokeRoutineType.Clone => Clone,
+            PokeRoutineType.Dump => Dump,
+            _ => Trade,
+        };
 
         public void ClearAll()
         {
@@ -139,9 +136,9 @@ namespace SysBot.Pokemon
         }
 
         // hook in here if you want to forward the message elsewhere???
-        public readonly List<Action<PokeTradeBot, PokeTradeDetail<T>>> Forwarders = new();
+        public readonly List<Action<PokeRoutineExecutorBase, PokeTradeDetail<T>>> Forwarders = new();
 
-        public void StartTrade(PokeTradeBot b, PokeTradeDetail<T> detail)
+        public void StartTrade(PokeRoutineExecutorBase b, PokeTradeDetail<T> detail)
         {
             foreach (var f in Forwarders)
                 f.Invoke(b, detail);

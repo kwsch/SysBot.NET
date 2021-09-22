@@ -63,10 +63,7 @@ namespace SysBot.Base
 
         public Task SendRaw(byte[] command, CancellationToken token)
         {
-            return Task.Run(() =>
-            {
-                Send(command);
-            }, token);
+            return Task.Run(() => Send(command), token);
         }
     }
 }

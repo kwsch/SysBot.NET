@@ -10,9 +10,9 @@ namespace SysBot.Pokemon.Discord
 {
     public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
     {
-        private class TradeStartAction : ChannelAction<PokeTradeBot, PokeTradeDetail<T>>
+        private class TradeStartAction : ChannelAction<PokeRoutineExecutorBase, PokeTradeDetail<T>>
         {
-            public TradeStartAction(ulong id, Action<PokeTradeBot, PokeTradeDetail<T>> messager, string channel) : base(id, messager, channel)
+            public TradeStartAction(ulong id, Action<PokeRoutineExecutorBase, PokeTradeDetail<T>> messager, string channel) : base(id, messager, channel)
             {
             }
         }

@@ -25,7 +25,9 @@ namespace SysBot.Pokemon
 
         public readonly PokeTradeHubConfig Config;
         public readonly BotSynchronizer BotSync;
-        public readonly ConcurrentPool<PokeTradeBot> Bots = new();
+
+        /// <summary> Trade Bots only, used to delegate multi-player tasks </summary>
+        public readonly ConcurrentPool<PokeRoutineExecutorBase> Bots = new();
         public readonly TradeQueueManager<T> Queues;
 
         #region Distribution Queue

@@ -21,4 +21,9 @@
 
         // Add your own custom bots here so they don't clash for future main-branch bot releases.
     }
+
+    public static class PokeRoutineTypeExtensions
+    {
+        public static bool IsTradeBot(this PokeRoutineType type) => type is >=PokeRoutineType.FlexTrade and <=PokeRoutineType.Dump;
+    }
 }

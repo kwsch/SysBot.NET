@@ -43,14 +43,14 @@ namespace SysBot.Pokemon
         public override void Add(RoutineExecutor<PokeBotState> bot)
         {
             base.Add(bot);
-            if (bot is PokeTradeBot b)
+            if (bot is PokeRoutineExecutorBase b && b.Config.InitialRoutine.IsTradeBot())
                 Hub.Bots.Add(b);
         }
 
         public override bool Remove(IConsoleBotConfig cfg, bool callStop)
         {
             var bot = GetBot(cfg)?.Bot;
-            if (bot is PokeTradeBot b)
+            if (bot is PokeRoutineExecutorBase b && b.Config.InitialRoutine.IsTradeBot())
                 Hub.Bots.Remove(b);
             return base.Remove(cfg, callStop);
         }
