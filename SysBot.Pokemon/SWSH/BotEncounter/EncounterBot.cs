@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using SysBot.Base;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Base.SwitchStick;
 using static SysBot.Pokemon.PokeDataOffsets;
@@ -215,7 +216,7 @@ namespace SysBot.Pokemon
             {
                 var msg = "Result found! Stopping routine execution; restart the bot(s) to search again.";
                 if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundLogMention))
-                    msg = $"{Hub.Config.StopConditions.MatchFoundLogMention} {msg}";
+                    EchoUtil.Echo(msg = $"{Hub.Config.StopConditions.MatchFoundLogMention} {msg}");
                 Log(msg);
 
                 if (Hub.Config.StopConditions.CaptureVideoClip)
