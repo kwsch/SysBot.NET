@@ -113,7 +113,7 @@ namespace SysBot.Pokemon
                 var result = await PerformLinkCodeTrade(sav, detail, token).ConfigureAwait(false);
                 if (result != PokeTradeResult.Success) // requeue
                 {
-                    if (result.AttemptRetry() && detail.Type != PokeTradeType.Random && !detail.IsRetry)
+                    if (result.ShouldAttemptRetry() && detail.Type != PokeTradeType.Random && !detail.IsRetry)
                     {
                         detail.IsRetry = true;
                         detail.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
