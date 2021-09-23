@@ -104,11 +104,17 @@ namespace SysBot.Pokemon
 
                     if (Settings.ContinueAfterMatch)
                     {
-                        Log("Result found! Continuing to collect more fossils.");
+                        var msg = "Result found! Continuing to collect more fossils.";
+                        if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundLogMention))
+                            msg = $"{Hub.Config.StopConditions.MatchFoundLogMention} {msg}";
+                        Log(msg);
                     }
                     else
                     {
-                        Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
+                        var msg = "Result found! Stopping routine execution; restart the bot(s) to search again.";
+                        if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundLogMention))
+                            msg = $"{Hub.Config.StopConditions.MatchFoundLogMention} {msg}";
+                        Log(msg);
                         break;
                     }
                 }

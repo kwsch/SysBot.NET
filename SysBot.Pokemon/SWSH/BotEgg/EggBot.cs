@@ -89,11 +89,19 @@ namespace SysBot.Pokemon
                 {
                     if (Hub.Config.Egg.ContinueAfterMatch)
                     {
-                        Log("Result found! Continuing to collect more eggs.");
-                        continue;
+                        var msg = "Result found! Continuing to collect more eggs.";
+                        if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundLogMention))
+                            msg = $"{Hub.Config.StopConditions.MatchFoundLogMention} {msg}";
+                        Log(msg);
                     }
-                    Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
-                    break;
+                    else
+                    {
+                        var msg = "Result found! Stopping routine execution; restart the bot(s) to search again.";
+                        if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundLogMention))
+                            msg = $"{Hub.Config.StopConditions.MatchFoundLogMention} {msg}";
+                        Log(msg);
+                        break;
+                    }
                 }
             }
             // If aborting the sequence, we might have the stick set at some position. Clear it just in case.

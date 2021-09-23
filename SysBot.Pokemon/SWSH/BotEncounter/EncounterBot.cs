@@ -213,7 +213,11 @@ namespace SysBot.Pokemon
 
             if (StopConditionSettings.EncounterFound(pk, DesiredMinIVs, DesiredMaxIVs, Hub.Config.StopConditions))
             {
-                Log("Result found! Stopping routine execution; restart the bot(s) to search again.");
+                var msg = "Result found! Stopping routine execution; restart the bot(s) to search again.";
+                if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundLogMention))
+                    msg = $"{Hub.Config.StopConditions.MatchFoundLogMention} {msg}";
+                Log(msg);
+
                 if (Hub.Config.StopConditions.CaptureVideoClip)
                 {
                     await Task.Delay(Hub.Config.StopConditions.ExtraTimeWaitCaptureVideo, token).ConfigureAwait(false);
