@@ -214,9 +214,9 @@ namespace SysBot.Pokemon
 
             if (StopConditionSettings.EncounterFound(pk, DesiredMinIVs, DesiredMaxIVs, Hub.Config.StopConditions))
             {
-                var msg = "Result found! Stopping routine execution; restart the bot(s) to search again.";
-                if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundLogMention))
-                    EchoUtil.Echo(msg = $"{Hub.Config.StopConditions.MatchFoundLogMention} {msg}");
+                const string msg = "Result found! Stopping routine execution; restart the bot(s) to search again.";
+                if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundEchoMention))
+                    EchoUtil.Echo($"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}");
                 Log(msg);
 
                 if (Hub.Config.StopConditions.CaptureVideoClip)

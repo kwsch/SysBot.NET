@@ -90,16 +90,16 @@ namespace SysBot.Pokemon
                 {
                     if (Hub.Config.Egg.ContinueAfterMatch)
                     {
-                        var msg = "Result found! Continuing to collect more eggs.";
-                        if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundLogMention))
-                            EchoUtil.Echo(msg = $"{Hub.Config.StopConditions.MatchFoundLogMention} {msg}");
+                        const string msg = "Result found! Continuing to collect more eggs.";
+                        if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundEchoMention))
+                            EchoUtil.Echo($"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}");
                         Log(msg);
                     }
                     else
                     {
-                        var msg = "Result found! Stopping routine execution; restart the bot(s) to search again.";
-                        if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundLogMention))
-                            EchoUtil.Echo(msg = $"{Hub.Config.StopConditions.MatchFoundLogMention} {msg}");
+                        const string msg = "Result found! Stopping routine execution; restart the bot(s) to search again.";
+                        if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundEchoMention))
+                            EchoUtil.Echo($"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}");
                         Log(msg);
                         break;
                     }
