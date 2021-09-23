@@ -21,7 +21,7 @@ namespace SysBot.Pokemon
         public int Count => UsersInQueue.Count;
 
         public bool ToggleQueue() => Hub.Config.Queues.CanQueue ^= true;
-        public bool GetCanQueue() => Hub.Config.Queues.CanQueue && UsersInQueue.Count < Hub.Config.Queues.MaxQueueCount;
+        public bool GetCanQueue() => Hub.Config.Queues.CanQueue && UsersInQueue.Count < Hub.Config.Queues.MaxQueueCount && Hub.TradeBotsReady;
 
         public TradeEntry<T>? GetDetail(ulong uid) => UsersInQueue.Find(z => z.UserID == uid);
 

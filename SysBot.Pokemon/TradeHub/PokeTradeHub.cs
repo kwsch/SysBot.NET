@@ -28,6 +28,7 @@ namespace SysBot.Pokemon
 
         /// <summary> Trade Bots only, used to delegate multi-player tasks </summary>
         public readonly ConcurrentPool<PokeRoutineExecutorBase> Bots = new();
+        public bool TradeBotsReady => !Bots.All(z => z.Config.CurrentRoutineType == PokeRoutineType.Idle);
         public readonly TradeQueueManager<T> Queues;
 
         #region Distribution Queue

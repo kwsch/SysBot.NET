@@ -132,7 +132,7 @@ namespace SysBot.Pokemon
             return set;
         }
 
-        public string GetMarkName(IRibbonIndex pk)
+        public static string GetMarkName(IRibbonIndex pk)
         {
             for (var mark = RibbonIndex.MarkLunchtime; mark <= RibbonIndex.MarkSlump; mark++)
             {
