@@ -2,7 +2,11 @@
 
 namespace SysBot.Pokemon
 {
-    public class QueueCheckResult<T> where T : PKM, new()
+    /// <summary>
+    /// Stores data for indicating how a queue position/presence check resulted.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public sealed record QueueCheckResult<T> where T : PKM, new()
     {
         public readonly bool InQueue;
         public readonly TradeEntry<T>? Detail;

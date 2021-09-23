@@ -4,8 +4,12 @@ using System.Linq;
 
 namespace System.Collections.Concurrent
 {
+    /// <summary>
+    /// List of data that can be added or removed, not indexed.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [DebuggerDisplay("Count={" + nameof(Count) + "}")]
-    public class ConcurrentPool<T>
+    public class ConcurrentPool<T> where T : class
     {
         private readonly object _syncLock = new();
         private readonly List<T> _list = new();
@@ -37,7 +41,10 @@ namespace System.Collections.Concurrent
                 return _list.All(condition);
         }
 
-        public bool Tag(Predicate<T> condition, Action<T> action, out T result)
+        /// <summary>
+        /// Finds the first object which satisfies the <see cref="condition"/>, applies the <see cref="action"/>, and returns the <see cref="result"/>
+        /// </summary>
+        public bool Tag(Predicate<T> condition, Action<T> action, out T? result)
         {
             lock (_syncLock)
             {
@@ -50,6 +57,9 @@ namespace System.Collections.Concurrent
             }
         }
 
+        /// <summary>
+        /// Gets the real array of <see cref="T"/>; does not change the object's state.
+        /// </summary>
         public T[] ToArray()
         {
             lock (_syncLock)

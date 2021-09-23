@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SysBot.Pokemon
 {
-    public sealed class PokeTradeSummary
+    public sealed record PokeTradeSummary
     {
         public readonly string Summary;
         public readonly IList<PokeTradeSummaryDetail> Details;

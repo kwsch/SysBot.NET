@@ -6,7 +6,11 @@ using System.Linq;
 
 namespace SysBot.Pokemon
 {
-    public class TradeQueueInfo<T> where T : PKM, new()
+    /// <summary>
+    /// Contains a queue of users to be processed.
+    /// </summary>
+    /// <typeparam name="T">Type of data to be transmitted to the users</typeparam>
+    public sealed record TradeQueueInfo<T> where T : PKM, new()
     {
         private readonly object _sync = new();
         private readonly List<TradeEntry<T>> UsersInQueue = new();

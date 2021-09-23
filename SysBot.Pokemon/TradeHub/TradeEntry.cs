@@ -2,7 +2,11 @@
 
 namespace SysBot.Pokemon
 {
-    public sealed class TradeEntry<T> where T : PKM, new()
+    /// <summary>
+    /// Contains the details about an out-of-game player's data request to be traded in-game.
+    /// </summary>
+    /// <typeparam name="T">Format specific to the game it is received in</typeparam>
+    public sealed record TradeEntry<T> where T : PKM, new()
     {
         public readonly ulong UserID;
         public readonly string Username;
@@ -17,6 +21,12 @@ namespace SysBot.Pokemon
             Username = username;
         }
 
+        /// <summary>
+        /// Checks if the provided <see cref="uid"/> matches this object's data.
+        /// </summary>
+        /// <param name="uid"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public bool Equals(ulong uid, PokeRoutineType type = 0)
         {
             if (UserID != uid)

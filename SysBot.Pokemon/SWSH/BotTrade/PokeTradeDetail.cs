@@ -7,23 +7,42 @@ namespace SysBot.Pokemon
     public class PokeTradeDetail<TPoke> : IEquatable<PokeTradeDetail<TPoke>>, IFavoredEntry where TPoke : PKM, new()
     {
         // ReSharper disable once StaticMemberInGenericType
+        /// <summary> Global variable indicating the amount of trades created. </summary>
         private static int CreatedCount;
-
+        /// <summary> Indicates if this trade data should be given priority for queue insertion. </summary>
         public bool IsFavored { get; }
 
+        /// <summary>
+        /// Trade Code
+        /// </summary>
         public readonly int Code;
-        public TPoke TradeData;
-        public readonly PokeTradeTrainerInfo Trainer;
-        public readonly IPokeTradeNotifier<TPoke> Notifier;
-        public readonly PokeTradeType Type;
-        public readonly DateTime Time;
-        public readonly int ID; // unique incremented ID
 
+        /// <summary> Data to be traded </summary>
+        public TPoke TradeData;
+
+        /// <summary> Trainer details </summary>
+        public readonly PokeTradeTrainerInfo Trainer;
+
+        /// <summary> Destination to be notified for status updates </summary>
+        public readonly IPokeTradeNotifier<TPoke> Notifier;
+
+        /// <summary> Type of trade this object is for </summary>
+        public readonly PokeTradeType Type;
+
+        /// <summary> Time the object was created at </summary>
+        public readonly DateTime Time;
+        /// <summary> Unique incremented ID </summary>
+        public readonly int ID;
+
+        /// <summary> Indicates if the trade data should be synchronized with other bots. </summary>
         public bool IsSynchronized => Type == PokeTradeType.Random;
+
+        /// <summary> Indicates if the trade failed at least once and is being tried again. </summary>
         public bool IsRetry;
 
         public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code, bool favored = false)
         {
+            ID = Interlocked.Increment(ref CreatedCount) % 3000;
             Code = code;
             TradeData = pkm;
             Trainer = info;
@@ -31,8 +50,6 @@ namespace SysBot.Pokemon
             Type = type;
             Time = DateTime.Now;
             IsFavored = favored;
-
-            ID = Interlocked.Increment(ref CreatedCount) % 3000;
         }
 
         public void TradeInitialize(PokeRoutineExecutor<TPoke> routine) => Notifier.TradeInitialize(routine, this);
@@ -59,18 +76,18 @@ namespace SysBot.Pokemon
         {
             if (obj is null) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((PokeTradeDetail<TPoke>)obj);
         }
 
         public override int GetHashCode() => Trainer.GetHashCode();
         public override string ToString() => $"{Trainer.TrainerName} - {Code}";
 
-        public string Summary(int i)
+        public string Summary(int queuePosition)
         {
             if (TradeData.Species == 0)
-                return $"{i:00}: {Trainer.TrainerName}";
-            return $"{i:00}: {Trainer.TrainerName}, {(Species)TradeData.Species}";
+                return $"{queuePosition:00}: {Trainer.TrainerName}";
+            return $"{queuePosition:00}: {Trainer.TrainerName}, {(Species)TradeData.Species}";
         }
     }
 }

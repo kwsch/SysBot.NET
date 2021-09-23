@@ -20,6 +20,6 @@
 
     public static class PokeTradeResultExtensions
     {
-        public static bool AttemptRetry(this PokeTradeResult t) => t != PokeTradeResult.Success && t >= PokeTradeResult.Aborted;
+        public static bool ShouldAttemptRetry(this PokeTradeResult t) => t >= PokeTradeResult.Aborted;
     }
 }
