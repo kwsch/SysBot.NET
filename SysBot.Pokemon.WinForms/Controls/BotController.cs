@@ -170,7 +170,7 @@ namespace SysBot.Pokemon.WinForms
                     return;
             }
             if (echo)
-                EchoUtil.Echo($"{bot.Bot.Connection.Name} has been issued a command to {cmd}.");
+                EchoUtil.Echo($"{bot.Bot.Connection.Name} ({bot.Bot.Config.InitialRoutine}) has been issued a command to {cmd}.");
         }
 
         private BotSource<PokeBotState> GetBot()
