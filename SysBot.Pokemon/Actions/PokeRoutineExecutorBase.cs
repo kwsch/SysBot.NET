@@ -15,7 +15,14 @@ namespace SysBot.Pokemon
         public GameVersion Version { get; private set; }
         public string InGameName { get; private set; } = "SysBot.NET";
 
-        public string GetSummary() => $"- {Connection.Name} - {Config.CurrentRoutineType}";
+        public override string GetSummary()
+        {
+            var current = Config.CurrentRoutineType;
+            var initial = Config.InitialRoutine;
+            if (current == initial)
+                return $"{Connection.Name} - {initial}";
+            return $"{Connection.Name} - {initial} ({current})";
+        }
 
         protected void InitSaveData(SaveFile sav)
         {

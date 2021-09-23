@@ -23,6 +23,8 @@ namespace SysBot.Base
 
         public void ReportStatus() => LastTime = DateTime.Now;
 
+        public abstract string GetSummary();
+
         public void Log(string message)
         {
             Connection.Log(message);

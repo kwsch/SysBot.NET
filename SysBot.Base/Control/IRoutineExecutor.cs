@@ -10,6 +10,7 @@ namespace SysBot.Base
         DateTime LastTime { get; }
         void ReportStatus();
         void Log(string message);
+        string GetSummary();
 
         /// <summary>
         /// Connects to the console, then runs the bot.
