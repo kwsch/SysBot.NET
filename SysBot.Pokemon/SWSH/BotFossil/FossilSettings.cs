@@ -23,8 +23,8 @@ namespace SysBot.Pokemon
         /// <summary>
         /// Toggle for continuing to revive fossils after condition has been met.
         /// </summary>
-        [Category(Fossil), Description("When enabled, the FossilBot will continue to get fossils and dump the Pokémon into the fossil dump folder.")]
-        public bool ContinueAfterMatch { get; set; } = false;
+        [Category(Fossil), Description("When enabled, the bot will continue after finding a suitable match.")]
+        public ContinueAfterMatch ContinueAfterMatch { get; set; } = ContinueAfterMatch.StopExit;
 
         [Category(Fossil), Description("When enabled, the screen will be turned off during normal bot loop operation to save power.")]
         public bool ScreenOff { get; set; } = false;

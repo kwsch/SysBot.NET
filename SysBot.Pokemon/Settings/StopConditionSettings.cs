@@ -123,6 +123,24 @@ namespace SysBot.Pokemon
             }
             return false;
         }
+
+        public string GetPrintName(PKM pk)
+        {
+            var set = ShowdownParsing.GetShowdownText(pk);
+            if (pk is IRibbonIndex r)
+                set += GetMarkName(r);
+            return set;
+        }
+
+        public string GetMarkName(IRibbonIndex pk)
+        {
+            for (var mark = RibbonIndex.MarkLunchtime; mark <= RibbonIndex.MarkSlump; mark++)
+            {
+                if (pk.GetRibbon((int)mark))
+                    return $"\nPokémon found to have **{RibbonStrings.GetName($"Ribbon{mark}")}**!";
+            }
+            return "";
+        }
     }
 
     public enum TargetShinyType

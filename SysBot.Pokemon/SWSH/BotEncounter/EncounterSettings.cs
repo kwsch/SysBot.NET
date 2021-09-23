@@ -14,6 +14,9 @@ namespace SysBot.Pokemon
         [Category(Encounter), Description("The method by which the bot will encounter Pokémon.")]
         public EncounterMode EncounteringType { get; set; } = EncounterMode.VerticalLine;
 
+        [Category(Encounter), Description("When enabled, the bot will continue after finding a suitable match.")]
+        public ContinueAfterMatch ContinueAfterMatch { get; set; } = ContinueAfterMatch.StopExit;
+
         [Category(Encounter), Description("When enabled, the screen will be turned off during normal bot loop operation to save power.")]
         public bool ScreenOff { get; set; } = false;
 

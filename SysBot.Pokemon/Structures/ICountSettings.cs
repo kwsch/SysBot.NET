@@ -12,4 +12,9 @@ namespace SysBot.Pokemon
     {
         public ICountSettings Counts { get; }
     }
+
+    public interface IEncounterBot : ICountBot
+    {
+        public void Acknowledge();
+    }
 }

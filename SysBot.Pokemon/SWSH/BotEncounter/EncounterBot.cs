@@ -9,7 +9,7 @@ using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
-    public class EncounterBot : PokeRoutineExecutor8, ICountBot
+    public class EncounterBot : PokeRoutineExecutor8, IEncounterBot
     {
         private readonly PokeTradeHub<PK8> Hub;
         private readonly IDumper DumpSetting;
@@ -200,10 +200,12 @@ namespace SysBot.Pokemon
             return -1; // aborted
         }
 
+        // return true if breaking loop
         private async Task<bool> HandleEncounter(PK8 pk, bool legends, CancellationToken token)
         {
             encounterCount++;
-            Log($"Encounter: {encounterCount}{Environment.NewLine}{ShowdownParsing.GetShowdownText(pk)}{Environment.NewLine}");
+            var print = Hub.Config.StopConditions.GetPrintName(pk);
+            Log($"Encounter: {encounterCount}{Environment.NewLine}{print}{Environment.NewLine}");
             if (legends)
                 Settings.AddCompletedLegends();
             else
@@ -212,23 +214,41 @@ namespace SysBot.Pokemon
             if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
                 DumpPokemon(DumpSetting.DumpFolder, legends ? "legends" : "encounters", pk);
 
-            if (StopConditionSettings.EncounterFound(pk, DesiredMinIVs, DesiredMaxIVs, Hub.Config.StopConditions))
-            {
-                const string msg = "Result found! Stopping routine execution; restart the bot(s) to search again.";
-                if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundEchoMention))
-                    EchoUtil.Echo($"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}");
-                Log(msg);
+            if (!StopConditionSettings.EncounterFound(pk, DesiredMinIVs, DesiredMaxIVs, Hub.Config.StopConditions))
+                return false;
 
-                if (Hub.Config.StopConditions.CaptureVideoClip)
-                {
-                    await Task.Delay(Hub.Config.StopConditions.ExtraTimeWaitCaptureVideo, token).ConfigureAwait(false);
-                    await PressAndHold(CAPTURE, 2_000, 1_000, token).ConfigureAwait(false);
-                }
-                return true;
+            if (Hub.Config.StopConditions.CaptureVideoClip)
+            {
+                await Task.Delay(Hub.Config.StopConditions.ExtraTimeWaitCaptureVideo, token).ConfigureAwait(false);
+                await PressAndHold(CAPTURE, 2_000, 1_000, token).ConfigureAwait(false);
             }
 
+            var mode = Settings.ContinueAfterMatch;
+            var msg = mode switch
+            {
+                ContinueAfterMatch.Continue => $"Result found!\n{print}\nContinuing...",
+                ContinueAfterMatch.PauseWaitAcknowledge => $"Result found!\n{print}\nI'm waiting for you to acknowledge via command to continue.",
+                ContinueAfterMatch.StopExit => $"Result found!\n{print}\nStopping routine execution; restart the bot(s) to search again.",
+                _ => throw new ArgumentOutOfRangeException(),
+            };
+
+            if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundEchoMention))
+                EchoUtil.Echo($"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}");
+            Log(msg);
+
+            if (mode == ContinueAfterMatch.StopExit)
+                return true;
+            if (mode == ContinueAfterMatch.Continue)
+                return false;
+
+            IsWaiting = true;
+            while (IsWaiting)
+                await Task.Delay(1_000, token).ConfigureAwait(false);
             return false;
         }
+
+        private bool IsWaiting;
+        public void Acknowledge() => IsWaiting = false;
 
         private async Task ResetStick(CancellationToken token)
         {

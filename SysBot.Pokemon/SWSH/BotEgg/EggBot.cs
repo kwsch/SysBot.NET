@@ -8,7 +8,7 @@ using static SysBot.Base.SwitchStick;
 
 namespace SysBot.Pokemon
 {
-    public class EggBot : PokeRoutineExecutor8, ICountBot
+    public class EggBot : PokeRoutineExecutor8, IEncounterBot
     {
         private readonly PokeTradeHub<PK8> Hub;
         private readonly IDumper DumpSetting;
@@ -80,35 +80,46 @@ namespace SysBot.Pokemon
                 }
 
                 encounterCount++;
-                Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownParsing.GetShowdownText(pk)}{Environment.NewLine}");
+                var print = Hub.Config.StopConditions.GetPrintName(pk);
+                Log($"Encounter: {encounterCount}{Environment.NewLine}{print}{Environment.NewLine}");
                 Settings.AddCompletedEggs();
 
                 if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
                     DumpPokemon(DumpSetting.DumpFolder, "egg", pk);
 
-                if (StopConditionSettings.EncounterFound(pk, DesiredMinIVs, DesiredMaxIVs, Hub.Config.StopConditions))
+                if (!StopConditionSettings.EncounterFound(pk, DesiredMinIVs, DesiredMaxIVs, Hub.Config.StopConditions))
+                    continue;
+
+                // no need to take a video clip of us receiving an egg.
+                var mode = Settings.ContinueAfterMatch;
+                var msg = mode switch
                 {
-                    if (Hub.Config.Egg.ContinueAfterMatch)
-                    {
-                        const string msg = "Result found! Continuing to collect more eggs.";
-                        if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundEchoMention))
-                            EchoUtil.Echo($"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}");
-                        Log(msg);
-                    }
-                    else
-                    {
-                        const string msg = "Result found! Stopping routine execution; restart the bot(s) to search again.";
-                        if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundEchoMention))
-                            EchoUtil.Echo($"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}");
-                        Log(msg);
-                        break;
-                    }
-                }
+                    ContinueAfterMatch.Continue => $"Result found!\n{print}\nContinuing...",
+                    ContinueAfterMatch.PauseWaitAcknowledge => $"Result found!\n{print}\nI'm waiting for you to acknowledge via command to continue.",
+                    ContinueAfterMatch.StopExit => $"Result found!\n{print}\nStopping routine execution; restart the bot(s) to search again.",
+                    _ => throw new ArgumentOutOfRangeException(),
+                };
+
+                if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundEchoMention))
+                    EchoUtil.Echo($"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}");
+                Log(msg);
+
+                if (mode == ContinueAfterMatch.StopExit)
+                    break;
+                if (mode == ContinueAfterMatch.Continue)
+                    continue;
+
+                IsWaiting = true;
+                while (IsWaiting)
+                    await Task.Delay(1_000, token).ConfigureAwait(false);
             }
             // If aborting the sequence, we might have the stick set at some position. Clear it just in case.
             await SetStick(LEFT, 0, 0, 0, CancellationToken.None).ConfigureAwait(false); // reset
             await CleanExit(Hub.Config.Trade, token).ConfigureAwait(false);
         }
+
+        private bool IsWaiting;
+        public void Acknowledge() => IsWaiting = false;
 
         private async Task<int> StepUntilEgg(CancellationToken token)
         {

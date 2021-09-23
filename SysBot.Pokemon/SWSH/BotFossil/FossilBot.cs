@@ -8,7 +8,7 @@ using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
-    public class FossilBot : PokeRoutineExecutor8, ICountBot
+    public class FossilBot : PokeRoutineExecutor8, IEncounterBot
     {
         private readonly PokeTradeHub<PK8> Hub;
         private readonly FossilSettings Settings;
@@ -78,6 +78,8 @@ namespace SysBot.Pokemon
                     }
                 }
 
+                Log("Clearing destination slot.");
+                await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
                 await ReviveFossil(counts, token).ConfigureAwait(false);
                 Log("Fossil revived. Checking details...");
 
@@ -89,43 +91,50 @@ namespace SysBot.Pokemon
                 }
 
                 encounterCount++;
-                Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownParsing.GetShowdownText(pk)}{Environment.NewLine}{Environment.NewLine}");
+                var print = Hub.Config.StopConditions.GetPrintName(pk);
+                Log($"Encounter: {encounterCount}{Environment.NewLine}{print}{Environment.NewLine}");
                 if (DumpSetting.Dump)
                     DumpPokemon(DumpSetting.DumpFolder, "fossil", pk);
 
                 Settings.AddCompletedFossils();
 
-                if (StopConditionSettings.EncounterFound(pk, DesiredMinIVs, DesiredMaxIVs, Hub.Config.StopConditions))
-                {
-                    if (Hub.Config.StopConditions.CaptureVideoClip)
-                    {
-                        await Task.Delay(Hub.Config.StopConditions.ExtraTimeWaitCaptureVideo, token).ConfigureAwait(false);
-                        await PressAndHold(CAPTURE, 2_000, 1_000, token).ConfigureAwait(false);
-                    }
+                if (!StopConditionSettings.EncounterFound(pk, DesiredMinIVs, DesiredMaxIVs, Hub.Config.StopConditions))
+                    continue;
 
-                    if (Settings.ContinueAfterMatch)
-                    {
-                        const string msg = "Result found! Continuing to collect more fossils.";
-                        if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundEchoMention))
-                            EchoUtil.Echo($"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}");
-                        Log(msg);
-                    }
-                    else
-                    {
-                        const string msg = "Result found! Stopping routine execution; restart the bot(s) to search again.";
-                        if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundEchoMention))
-                            EchoUtil.Echo($"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}");
-                        Log(msg);
-                        break;
-                    }
+                if (Hub.Config.StopConditions.CaptureVideoClip)
+                {
+                    await Task.Delay(Hub.Config.StopConditions.ExtraTimeWaitCaptureVideo, token).ConfigureAwait(false);
+                    await PressAndHold(CAPTURE, 2_000, 1_000, token).ConfigureAwait(false);
                 }
 
-                Log("Clearing destination slot.");
-                await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
+                var mode = Settings.ContinueAfterMatch;
+                var msg = mode switch
+                {
+                    ContinueAfterMatch.Continue => $"Result found!\n{print}\nContinuing...",
+                    ContinueAfterMatch.PauseWaitAcknowledge => $"Result found!\n{print}\nI'm waiting for you to acknowledge via command to continue.",
+                    ContinueAfterMatch.StopExit => $"Result found!\n{print}\nStopping routine execution; restart the bot(s) to search again.",
+                    _ => throw new ArgumentOutOfRangeException(),
+                };
+
+                if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundEchoMention))
+                    EchoUtil.Echo($"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}");
+                Log(msg);
+
+                if (mode == ContinueAfterMatch.StopExit)
+                    break;
+                if (mode == ContinueAfterMatch.Continue)
+                    continue;
+
+                IsWaiting = true;
+                while (IsWaiting)
+                    await Task.Delay(1_000, token).ConfigureAwait(false);
             }
 
             await CleanExit(Settings, token).ConfigureAwait(false);
         }
+
+        private bool IsWaiting;
+        public void Acknowledge() => IsWaiting = false;
 
         private async Task ReviveFossil(FossilCount count, CancellationToken token)
         {

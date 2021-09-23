@@ -11,8 +11,8 @@ namespace SysBot.Pokemon
         private const string Counts = nameof(Counts);
         public override string ToString() => "Egg Bot Settings";
 
-        [Category(FeatureToggle), Description("When enabled, the EggBot will continue to get eggs and dump the Pokémon into the egg dump folder")]
-        public bool ContinueAfterMatch { get; set; } = false;
+        [Category(FeatureToggle), Description("When enabled, the bot will continue after finding a suitable match.")]
+        public ContinueAfterMatch ContinueAfterMatch { get; set; } = ContinueAfterMatch.StopExit;
 
         [Category(FeatureToggle), Description("When enabled, the screen will be turned off during normal bot loop operation to save power.")]
         public bool ScreenOff { get; set; } = false;
