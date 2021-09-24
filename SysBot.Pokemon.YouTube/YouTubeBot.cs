@@ -88,7 +88,7 @@ namespace SysBot.Pokemon.YouTube
 
                 "pc" => $"The pool count is: {Info.Hub.Ledy.Pool.Count}",
 
-                _ => string.Empty
+                _ => string.Empty,
             };
         }
 

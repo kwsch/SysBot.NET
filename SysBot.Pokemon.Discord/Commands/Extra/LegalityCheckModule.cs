@@ -39,7 +39,7 @@ namespace SysBot.Pokemon.Discord
             var builder = new EmbedBuilder
             {
                 Color = la.Valid ? Color.Green : Color.Red,
-                Description = $"Legality Report for {download.SanitizedFileName}:"
+                Description = $"Legality Report for {download.SanitizedFileName}:",
             };
 
             builder.AddField(x =>

@@ -86,7 +86,7 @@ namespace SysBot.Pokemon.Twitch
             {
                 QueueResultRemove.CurrentlyProcessing => "Looks like you're currently being processed! Removed from queue.",
                 QueueResultRemove.Removed => "Removed you from the queue.",
-                _ => "Sorry, you are not currently in the queue."
+                _ => "Sorry, you are not currently in the queue.",
             };
         }
 

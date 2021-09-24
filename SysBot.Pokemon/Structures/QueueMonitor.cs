@@ -43,7 +43,7 @@ namespace SysBot.Pokemon
             {
                 QueueOpening.Threshold => CheckThreshold(settings, queues),
                 QueueOpening.Interval => CheckInterval(settings, queues, secWaited),
-                _ => false
+                _ => false,
             };
         }
 

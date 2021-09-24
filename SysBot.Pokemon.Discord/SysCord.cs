@@ -118,7 +118,7 @@ namespace SysBot.Pokemon.Discord
 
             LogSeverity.Verbose => ConsoleColor.DarkGray,
             LogSeverity.Debug => ConsoleColor.DarkGray,
-            _ => Console.ForegroundColor
+            _ => Console.ForegroundColor,
         };
 
         public async Task MainAsync(string apiToken, CancellationToken token)
