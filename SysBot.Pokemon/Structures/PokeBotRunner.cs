@@ -8,15 +8,19 @@ namespace SysBot.Pokemon
 {
     public interface IPokeBotRunner
     {
-        BotSource<PokeBotState>? GetBot(PokeBotState state);
         PokeTradeHubConfig Config { get; }
         bool RunOnce { get; }
         bool IsRunning { get; }
+
+        void StartAll();
         void StopAll();
         void InitializeStart();
+
         void Add(PokeRoutineExecutorBase newbot);
-        PokeRoutineExecutorBase CreateBotFromConfig(PokeBotState cfg);
         void Remove(IConsoleBotConfig state, bool callStop);
+
+        BotSource<PokeBotState>? GetBot(PokeBotState state);
+        PokeRoutineExecutorBase CreateBotFromConfig(PokeBotState cfg);
     }
 
     public abstract class PokeBotRunner<T> : BotRunner<PokeBotState>, IPokeBotRunner where T : PKM, new()

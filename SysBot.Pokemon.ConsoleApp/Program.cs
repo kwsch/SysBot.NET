@@ -28,7 +28,7 @@ namespace SysBot.Pokemon.ConsoleApp
                 var lines = File.ReadAllText(ConfigPath);
                 var cfg = JsonConvert.DeserializeObject<ProgramConfig>(lines);
                 PokeTradeBot.SeedChecker = new Z3SeedSearchHandler<PK8>();
-                BotContainer<PK8>.RunBots(cfg);
+                BotContainer.RunBots(cfg);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
@@ -47,7 +47,7 @@ namespace SysBot.Pokemon.ConsoleApp
             {
                 Formatting = Formatting.Indented,
                 DefaultValueHandling = DefaultValueHandling.Include,
-                NullValueHandling = NullValueHandling.Ignore
+                NullValueHandling = NullValueHandling.Ignore,
             });
             File.WriteAllText(ConfigPath, created);
             Console.WriteLine("Created new config file since none was found in the program's path. Please configure it and restart the program.");
@@ -57,11 +57,11 @@ namespace SysBot.Pokemon.ConsoleApp
         }
     }
 
-    public static class BotContainer<T> where T : PKM, new()
+    public static class BotContainer
     {
         public static void RunBots(ProgramConfig prog)
         {
-            var env = new PokeBotRunnerImpl<T>(prog.Hub, GetFactory()!);
+            IPokeBotRunner env = GetRunner(prog);
             foreach (var bot in prog.Bots)
             {
                 bot.Initialize();
@@ -77,13 +77,11 @@ namespace SysBot.Pokemon.ConsoleApp
             env.StopAll();
         }
 
-        private static BotFactory<T>? GetFactory()
+        private static IPokeBotRunner GetRunner(ProgramConfig prog) => prog.Mode switch
         {
-            var type = typeof(T);
-            if (type == typeof(PK8))
-                return new BotFactory8() as BotFactory<T>;
-            return null;
-        }
+            ProgramMode.SWSH => new PokeBotRunnerImpl<PK8>(prog.Hub, new BotFactory8()),
+            _ => throw new IndexOutOfRangeException("Unsupported mode."),
+        };
 
         private static bool AddBot(IPokeBotRunner env, PokeBotState cfg)
         {

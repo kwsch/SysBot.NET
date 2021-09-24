@@ -18,6 +18,7 @@ namespace SysBot.Pokemon.WinForms
         private static readonly string ConfigPath = Path.Combine(WorkingDirectory, "config.json");
         private readonly List<PokeBotState> Bots = new();
         private readonly IPokeBotRunner RunningEnvironment;
+        private readonly ProgramConfig Config;
 
         public Main()
         {
@@ -27,9 +28,9 @@ namespace SysBot.Pokemon.WinForms
             if (File.Exists(ConfigPath))
             {
                 var lines = File.ReadAllText(ConfigPath);
-                var prog = JsonConvert.DeserializeObject<ProgramConfig>(lines);
-                RunningEnvironment = new PokeBotRunnerImpl<PK8>(prog.Hub, new BotFactory8());
-                foreach (var bot in prog.Bots)
+                Config = JsonConvert.DeserializeObject<ProgramConfig>(lines);
+                RunningEnvironment = GetRunner(Config);
+                foreach (var bot in Config.Bots)
                 {
                     bot.Initialize();
                     AddBot(bot);
@@ -37,14 +38,21 @@ namespace SysBot.Pokemon.WinForms
             }
             else
             {
-                var hub = new PokeTradeHubConfig();
-                RunningEnvironment = new PokeBotRunnerImpl<PK8>(hub, new BotFactory8());
-                hub.Folder.CreateDefaults(WorkingDirectory);
+                Config = new ProgramConfig();
+                RunningEnvironment = GetRunner(Config);
+                Config.Hub.Folder.CreateDefaults(WorkingDirectory);
             }
 
             LoadControls();
+            Text = $"{Text} ({Config.Mode})";
             Task.Run(BotMonitor);
         }
+
+        private static IPokeBotRunner GetRunner(ProgramConfig cfg) => cfg.Mode switch
+        {
+            ProgramMode.SWSH => new PokeBotRunnerImpl<PK8>(cfg.Hub, new BotFactory8()),
+            _ => throw new IndexOutOfRangeException("Unsupported mode."),
+        };
 
         private async Task BotMonitor()
         {
@@ -99,11 +107,8 @@ namespace SysBot.Pokemon.WinForms
 
         private ProgramConfig GetCurrentConfiguration()
         {
-            return new()
-            {
-                Bots = Bots.ToArray(),
-                Hub = RunningEnvironment.Config,
-            };
+            Config.Bots = Bots.ToArray();
+            return Config;
         }
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
@@ -125,7 +130,7 @@ namespace SysBot.Pokemon.WinForms
             {
                 Formatting = Formatting.Indented,
                 DefaultValueHandling = DefaultValueHandling.Include,
-                NullValueHandling = NullValueHandling.Ignore
+                NullValueHandling = NullValueHandling.Ignore,
             });
             File.WriteAllText(ConfigPath, lines);
         }
