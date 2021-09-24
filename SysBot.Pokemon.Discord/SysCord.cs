@@ -248,6 +248,14 @@ namespace SysBot.Pokemon.Discord
             {
                 var time = DateTime.Now;
                 var lastLogged = LogUtil.LastLogged;
+                if (Hub.Config.Discord.BotColorStatusTradeOnly)
+                {
+                    var recent = Hub.Bots.ToArray()
+                        .Where(z => z.Config.InitialRoutine.IsTradeBot())
+                        .OrderByDescending(z => z.LastTime)
+                        .FirstOrDefault();
+                    lastLogged = recent?.LastTime ?? time;
+                }
                 var delta = time - lastLogged;
                 var gap = TimeSpan.FromSeconds(Interval) - delta;
 
