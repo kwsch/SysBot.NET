@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -13,7 +14,10 @@ namespace SysBot.Pokemon.Discord
         // ReSharper disable once UnusedParameter.Global
         public async Task SudoUsers([Remainder] string _)
         {
-            await Process(Context.Message.MentionedUsers.Select(z => z.Id), (z, x) => z.Add(x), z => z.SudoDiscord).ConfigureAwait(false);
+            var users = Context.Message.MentionedUsers;
+            var objects = users.Select(GetReference);
+            SysCordSettings.Settings.GlobalSudoList.AddIfNew(objects);
+            await ReplyAsync("Done.").ConfigureAwait(false);
         }
 
         [Command("removeSudo")]
@@ -22,7 +26,10 @@ namespace SysBot.Pokemon.Discord
         // ReSharper disable once UnusedParameter.Global
         public async Task RemoveSudoUsers([Remainder] string _)
         {
-            await Process(Context.Message.MentionedUsers.Select(z => z.Id), (z, x) => z.Remove(x), z => z.SudoDiscord).ConfigureAwait(false);
+            var users = Context.Message.MentionedUsers;
+            var objects = users.Select(GetReference);
+            SysCordSettings.Settings.GlobalSudoList.RemoveAll(z => objects.Any(o => o.ID == z.ID));
+            await ReplyAsync("Done.").ConfigureAwait(false);
         }
 
         [Command("addChannel")]
@@ -31,7 +38,9 @@ namespace SysBot.Pokemon.Discord
         // ReSharper disable once UnusedParameter.Global
         public async Task AddChannel()
         {
-            await Process(new[] { Context.Message.Channel.Id }, (z, x) => z.Add(x), z => z.WhitelistedChannels).ConfigureAwait(false);
+            var obj = GetReference(Context.Message.Channel);
+            SysCordSettings.Settings.ChannelWhitelist.AddIfNew(new[] { obj });
+            await ReplyAsync("Done.").ConfigureAwait(false);
         }
 
         [Command("removeChannel")]
@@ -40,7 +49,9 @@ namespace SysBot.Pokemon.Discord
         // ReSharper disable once UnusedParameter.Global
         public async Task RemoveChannel()
         {
-            await Process(new[] { Context.Message.Channel.Id }, (z, x) => z.Remove(x), z => z.WhitelistedChannels).ConfigureAwait(false);
+            var obj = GetReference(Context.Message.Channel);
+            SysCordSettings.Settings.ChannelWhitelist.RemoveAll(z => z.ID == obj.ID);
+            await ReplyAsync("Done.").ConfigureAwait(false);
         }
 
         [Command("sudoku")]
@@ -53,5 +64,19 @@ namespace SysBot.Pokemon.Discord
             await Context.Channel.EchoAndReply("Shutting down... goodbye! **Bot services are going offline.**").ConfigureAwait(false);
             Environment.Exit(0);
         }
+
+        private RemoteControlAccess GetReference(IUser channel) => new()
+        {
+            ID = channel.Id,
+            Name = channel.Username,
+            Comment = $"Added by {Context.User.Username} on {DateTime.Now:yyyy.MM.dd-hh:mm:ss}",
+        };
+
+        private RemoteControlAccess GetReference(IChannel channel) => new()
+        {
+            ID = channel.Id,
+            Name = channel.Name,
+            Comment = $"Added by {Context.User.Username} on {DateTime.Now:yyyy.MM.dd-hh:mm:ss}",
+        };
     }
 }

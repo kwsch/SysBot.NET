@@ -5,6 +5,7 @@ using SysBot.Base;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Discord;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -29,16 +30,13 @@ namespace SysBot.Pokemon.Discord
         public static void RestoreTradeStarting(DiscordSocketClient discord)
         {
             var cfg = SysCordSettings.Settings;
-            var channels = ReusableActions.GetListFromString(cfg.TradeStartingChannels);
-            foreach (var ch in channels)
+            foreach (var ch in cfg.TradeStartingChannels)
             {
-                if (!ulong.TryParse(ch, out var cid))
-                    continue;
-                var c = (ISocketMessageChannel)discord.GetChannel(cid);
-                AddLogChannel(c, cid);
+                if (discord.GetChannel(ch.ID) is ISocketMessageChannel c)
+                    AddLogChannel(c, ch.ID);
             }
 
-            LogUtil.LogInfo("Added Start Notification to Discord channel(s) on Bot startup.", "Discord");
+            LogUtil.LogInfo("Added Trade Start Notification to Discord channel(s) on Bot startup.", "Discord");
         }
 
         public static bool IsStartChannel(ulong cid)
@@ -56,17 +54,14 @@ namespace SysBot.Pokemon.Discord
             var cid = c.Id;
             if (Channels.TryGetValue(cid, out _))
             {
-                await ReplyAsync("Already start notifying here.").ConfigureAwait(false);
+                await ReplyAsync("Already logging here.").ConfigureAwait(false);
                 return;
             }
 
             AddLogChannel(c, cid);
 
             // Add to discord global loggers (saves on program close)
-            var cfg = SysCordSettings.Settings;
-            var loggers = ReusableActions.GetListFromString(cfg.TradeStartingChannels);
-            loggers.Add(cid.ToString());
-            cfg.TradeStartingChannels = string.Join(", ", new HashSet<string>(loggers));
+            SysCordSettings.Settings.TradeStartingChannels.AddIfNew(new[] { GetReference(Context.Channel) });
             await ReplyAsync("Added Start Notification output to this channel!").ConfigureAwait(false);
         }
 
@@ -81,7 +76,7 @@ namespace SysBot.Pokemon.Discord
 
             Action<PokeRoutineExecutorBase, PokeTradeDetail<T>> l = Logger;
             SysCord<T>.Runner.Hub.Queues.Forwarders.Add(l);
-            static string GetMessage(PokeRoutineExecutorBase bot, PokeTradeDetail<T> detail) => $"> [{DateTime.Now:hh:mm:ss}] - {bot.Connection.Name} is now trading (ID {detail.ID}) {detail.Trainer.TrainerName}";
+            static string GetMessage(PokeRoutineExecutorBase bot, PokeTradeDetail<T> detail) => $"> [{DateTime.Now:hh:mm:ss}] - {bot.Connection.Label} is now trading (ID {detail.ID}) {detail.Trainer.TrainerName}";
 
             var entry = new TradeStartAction(cid, l, c.Name);
             Channels.Add(cid, entry);
@@ -102,18 +97,9 @@ namespace SysBot.Pokemon.Discord
         public async Task ClearLogsAsync()
         {
             var cfg = SysCordSettings.Settings;
-            var channels = cfg.TradeStartingChannels.Split(new[] { ",", ", ", " " }, StringSplitOptions.RemoveEmptyEntries);
-            var updatedch = new List<string>();
-            foreach (var ch in channels)
-            {
-                if (!ulong.TryParse(ch, out var cid))
-                    continue;
-                if (cid != Context.Channel.Id)
-                    updatedch.Add(cid.ToString());
-                else if (Channels.TryGetValue(cid, out var entry))
-                    Remove(entry);
-            }
-            cfg.TradeStartingChannels = string.Join(", ", updatedch);
+            if (Channels.TryGetValue(Context.Channel.Id, out var entry))
+                Remove(entry);
+            cfg.TradeStartingChannels.RemoveAll(z => z.ID == Context.Channel.Id);
             await ReplyAsync($"Start Notifications cleared from channel: {Context.Channel.Name}").ConfigureAwait(false);
         }
 
@@ -129,9 +115,15 @@ namespace SysBot.Pokemon.Discord
                 SysCord<T>.Runner.Hub.Queues.Forwarders.Remove(entry.Action);
             }
             Channels.Clear();
-            var cfg = SysCordSettings.Settings;
-            cfg.TradeStartingChannels = string.Empty;
+            SysCordSettings.Settings.TradeStartingChannels.Clear();
             await ReplyAsync("Start Notifications cleared from all channels!").ConfigureAwait(false);
         }
+
+        private RemoteControlAccess GetReference(IChannel channel) => new()
+        {
+            ID = channel.Id,
+            Name = channel.Name,
+            Comment = $"Added by {Context.User.Username} on {DateTime.Now:yyyy.MM.dd-hh:mm:ss}",
+        };
     }
 }

@@ -20,8 +20,8 @@ namespace SysBot.Pokemon
             var current = Config.CurrentRoutineType;
             var initial = Config.InitialRoutine;
             if (current == initial)
-                return $"{Connection.Name} - {initial}";
-            return $"{Connection.Name} - {initial} ({current})";
+                return $"{Connection.Label} - {initial}";
+            return $"{Connection.Label} - {initial} ({current})";
         }
 
         protected void InitSaveData(SaveFile sav)

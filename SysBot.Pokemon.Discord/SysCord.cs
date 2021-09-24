@@ -15,8 +15,8 @@ namespace SysBot.Pokemon.Discord
     public static class SysCordSettings
     {
         public static DiscordManager Manager { get; internal set; } = default!;
-        public static DiscordSettings Settings => Config.Discord;
-        public static PokeTradeHubConfig Config => Manager.Config;
+        public static DiscordSettings Settings => Manager.Config;
+        public static PokeTradeHubConfig HubConfig { get; internal set; } = default!;
     }
 
     public sealed class SysCord<T> where T : PKM, new()
@@ -42,9 +42,10 @@ namespace SysBot.Pokemon.Discord
         {
             Runner = runner;
             Hub = runner.Hub;
-            Manager = new DiscordManager(Hub.Config);
+            Manager = new DiscordManager(Hub.Config.Discord);
 
             SysCordSettings.Manager = Manager;
+            SysCordSettings.HubConfig = Hub.Config;
 
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
@@ -282,7 +283,7 @@ namespace SysBot.Pokemon.Discord
             EchoModule.RestoreChannels(_client, Hub.Config.Discord);
 
             // Restore Logging
-            LogModule.RestoreLogging(_client);
+            LogModule.RestoreLogging(_client, Hub.Config.Discord);
             TradeStartModule<T>.RestoreTradeStarting(_client);
 
             // Don't let it load more than once in case of Discord hiccups.

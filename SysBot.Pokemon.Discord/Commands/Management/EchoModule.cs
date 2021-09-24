@@ -3,7 +3,9 @@ using Discord.WebSocket;
 using SysBot.Base;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -25,21 +27,12 @@ namespace SysBot.Pokemon.Discord
 
         private static readonly Dictionary<ulong, EchoChannel> Channels = new();
 
-        private static void Remove(EchoChannel entry)
-        {
-            Channels.Remove(entry.ChannelID);
-            EchoUtil.Forwarders.Remove(entry.Action);
-        }
-
         public static void RestoreChannels(DiscordSocketClient discord, DiscordSettings cfg)
         {
-            var channels = ReusableActions.GetListFromString(cfg.EchoChannels);
-            foreach (var ch in channels)
+            foreach (var ch in cfg.EchoChannels)
             {
-                if (!ulong.TryParse(ch, out var cid))
-                    continue;
-                var c = (ISocketMessageChannel)discord.GetChannel(cid);
-                AddEchoChannel(c, cid);
+                if (discord.GetChannel(ch.ID) is ISocketMessageChannel c)
+                    AddEchoChannel(c, ch.ID);
             }
 
             EchoUtil.Echo("Added echo notification to Discord channel(s) on Bot startup.");
@@ -54,17 +47,14 @@ namespace SysBot.Pokemon.Discord
             var cid = c.Id;
             if (Channels.TryGetValue(cid, out _))
             {
-                await ReplyAsync("Already start notifying here.").ConfigureAwait(false);
+                await ReplyAsync("Already notifying here.").ConfigureAwait(false);
                 return;
             }
 
             AddEchoChannel(c, cid);
 
             // Add to discord global loggers (saves on program close)
-            var settings = SysCordSettings.Settings;
-            var loggers = ReusableActions.GetListFromString(settings.EchoChannels);
-            loggers.Add(cid.ToString());
-            settings.EchoChannels = string.Join(", ", new HashSet<string>(loggers));
+            SysCordSettings.Settings.EchoChannels.AddIfNew(new[] { GetReference(Context.Channel) });
             await ReplyAsync("Added Echo output to this channel!").ConfigureAwait(false);
         }
 
@@ -98,19 +88,15 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task ClearEchosAsync()
         {
-            var settings = SysCordSettings.Settings;
-            var channels = settings.EchoChannels.Split(new[] { ",", ", ", " " }, StringSplitOptions.RemoveEmptyEntries);
-            var updatedch = new List<string>();
-            foreach (var ch in channels)
+            var id = Context.Channel.Id;
+            if (!Channels.TryGetValue(id, out var echo))
             {
-                if (!ulong.TryParse(ch, out var cid))
-                    continue;
-                if (cid != Context.Channel.Id)
-                    updatedch.Add(cid.ToString());
-                else if (Channels.TryGetValue(cid, out var entry))
-                    Remove(entry);
+                await ReplyAsync("Not echoing in this channel.").ConfigureAwait(false);
+                return;
             }
-            settings.EchoChannels = string.Join(", ", updatedch);
+            EchoUtil.Forwarders.Remove(echo.Action);
+            Channels.Remove(Context.Channel.Id);
+            SysCordSettings.Settings.EchoChannels.RemoveAll(z => z.ID == id);
             await ReplyAsync($"Echoes cleared from channel: {Context.Channel.Name}").ConfigureAwait(false);
         }
 
@@ -125,10 +111,17 @@ namespace SysBot.Pokemon.Discord
                 await ReplyAsync($"Echoing cleared from {entry.ChannelName} ({entry.ChannelID}!").ConfigureAwait(false);
                 EchoUtil.Forwarders.Remove(entry.Action);
             }
+            EchoUtil.Forwarders.RemoveAll(y => Channels.Select(x => x.Value.Action).Contains(y));
             Channels.Clear();
-            var settings = SysCordSettings.Settings;
-            settings.EchoChannels = string.Empty;
+            SysCordSettings.Settings.EchoChannels.Clear();
             await ReplyAsync("Echoes cleared from all channels!").ConfigureAwait(false);
         }
+
+        private RemoteControlAccess GetReference(IChannel channel) => new()
+        {
+            ID = channel.Id,
+            Name = channel.Name,
+            Comment = $"Added by {Context.User.Username} on {DateTime.Now:yyyy.MM.dd-hh:mm:ss}",
+        };
     }
 }

@@ -3,7 +3,9 @@ using Discord.WebSocket;
 using SysBot.Base;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -18,22 +20,12 @@ namespace SysBot.Pokemon.Discord
 
         private static readonly Dictionary<ulong, LogAction> Channels = new();
 
-        private static void Remove(LogAction entry)
+        public static void RestoreLogging(DiscordSocketClient discord, DiscordSettings settings)
         {
-            Channels.Remove(entry.ChannelID);
-            LogUtil.Forwarders.Remove(entry.Action);
-        }
-
-        public static void RestoreLogging(DiscordSocketClient discord)
-        {
-            var settings = SysCordSettings.Settings;
-            var channels = ReusableActions.GetListFromString(settings.LoggingChannels);
-            foreach (var ch in channels)
+            foreach (var ch in settings.LoggingChannels)
             {
-                if (!ulong.TryParse(ch, out var cid))
-                    continue;
-                var c = (ISocketMessageChannel)discord.GetChannel(cid);
-                AddLogChannel(c, cid);
+                if (discord.GetChannel(ch.ID) is ISocketMessageChannel c)
+                    AddLogChannel(c, ch.ID);
             }
 
             LogUtil.LogInfo("Added logging to Discord channel(s) on Bot startup.", "Discord");
@@ -55,10 +47,7 @@ namespace SysBot.Pokemon.Discord
             AddLogChannel(c, cid);
 
             // Add to discord global loggers (saves on program close)
-            var settings = SysCordSettings.Settings;
-            var loggers = ReusableActions.GetListFromString(settings.LoggingChannels);
-            loggers.Add(cid.ToString());
-            settings.LoggingChannels = string.Join(", ", new HashSet<string>(loggers));
+            SysCordSettings.Settings.LoggingChannels.AddIfNew(new[] { GetReference(Context.Channel) });
             await ReplyAsync("Added logging output to this channel!").ConfigureAwait(false);
         }
 
@@ -100,19 +89,15 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task ClearLogsAsync()
         {
-            var settings = SysCordSettings.Settings;
-            var channels = settings.LoggingChannels.Split(new[] { ",", ", ", " " }, StringSplitOptions.RemoveEmptyEntries);
-            var updatedch = new List<string>();
-            foreach (var ch in channels)
+            var id = Context.Channel.Id;
+            if (!Channels.TryGetValue(id, out var log))
             {
-                if (!ulong.TryParse(ch, out var cid))
-                    continue;
-                if (cid != Context.Channel.Id)
-                    updatedch.Add(cid.ToString());
-                else if (Channels.TryGetValue(cid, out var entry))
-                    Remove(entry);
+                await ReplyAsync("Not echoing in this channel.").ConfigureAwait(false);
+                return;
             }
-            settings.LoggingChannels = string.Join(", ", updatedch);
+            LogUtil.Forwarders.Remove(log.Action);
+            Channels.Remove(Context.Channel.Id);
+            SysCordSettings.Settings.LoggingChannels.RemoveAll(z => z.ID == id);
             await ReplyAsync($"Logging cleared from channel: {Context.Channel.Name}").ConfigureAwait(false);
         }
 
@@ -127,10 +112,18 @@ namespace SysBot.Pokemon.Discord
                 await ReplyAsync($"Logging cleared from {entry.ChannelName} ({entry.ChannelID}!").ConfigureAwait(false);
                 LogUtil.Forwarders.Remove(entry.Action);
             }
+
+            LogUtil.Forwarders.RemoveAll(y => Channels.Select(x => x.Value.Action).Contains(y));
             Channels.Clear();
-            var settings = SysCordSettings.Settings;
-            settings.LoggingChannels = string.Empty;
+            SysCordSettings.Settings.LoggingChannels.Clear();
             await ReplyAsync("Logging cleared from all channels!").ConfigureAwait(false);
         }
+
+        private RemoteControlAccess GetReference(IChannel channel) => new()
+        {
+            ID = channel.Id,
+            Name = channel.Name,
+            Comment = $"Added by {Context.User.Username} on {DateTime.Now:yyyy.MM.dd-hh:mm:ss}",
+        };
     }
 }

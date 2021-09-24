@@ -7,7 +7,6 @@ namespace SysBot.Pokemon
         private const string Startup = nameof(Startup);
         private const string Operation = nameof(Operation);
         private const string Whitelists = nameof(Whitelists);
-        private const string DefaultDisable = "DISABLE";
         public override string ToString() => "Discord Integration Settings";
 
         // Startup
@@ -33,48 +32,48 @@ namespace SysBot.Pokemon
         // Whitelists
 
         [Category(Whitelists), Description("Users with this role are allowed to enter the Trade queue.")]
-        public string RoleCanTrade { get; set; } = DefaultDisable;
+        public RemoteControlAccessList RoleCanTrade { get; set; } = new() { AllowIfEmpty = false };
 
         [Category(Whitelists), Description("Users with this role are allowed to enter the Seed Check queue.")]
-        public string RoleCanSeedCheck { get; set; } = DefaultDisable;
+        public RemoteControlAccessList RoleCanSeedCheck { get; set; } = new() { AllowIfEmpty = false };
 
         [Category(Whitelists), Description("Users with this role are allowed to enter the Clone queue.")]
-        public string RoleCanClone { get; set; } = DefaultDisable;
+        public RemoteControlAccessList RoleCanClone { get; set; } = new() { AllowIfEmpty = false };
 
         [Category(Whitelists), Description("Users with this role are allowed to enter the Dump queue.")]
-        public string RoleCanDump { get; set; } = DefaultDisable;
+        public RemoteControlAccessList RoleCanDump { get; set; } = new() { AllowIfEmpty = false };
 
         [Category(Whitelists), Description("Users with this role are allowed to remotely control the console (if running as Remote Control Bot.")]
-        public string RoleRemoteControl { get; set; } = DefaultDisable;
+        public RemoteControlAccessList RoleRemoteControl { get; set; } = new() { AllowIfEmpty = false };
 
         [Category(Whitelists), Description("Users with this role are allowed to bypass command restrictions.")]
-        public string RoleSudo { get; set; } = DefaultDisable;
+        public RemoteControlAccessList RoleSudo { get; set; } = new() { AllowIfEmpty = false };
 
         // Operation
 
         [Category(Operation), Description("Users with this role are allowed to join the queue with a better position.")]
-        public string RoleFavored { get; set; } = DefaultDisable;
+        public RemoteControlAccessList RoleFavored { get; set; } = new() { AllowIfEmpty = false };
 
         [Category(Operation), Description("Users with these user IDs cannot use the bot.")]
-        public string UserBlacklist { get; set; } = string.Empty;
+        public RemoteControlAccessList UserBlacklist { get; set; } = new();
 
         [Category(Operation), Description("Channels with these IDs are the only channels where the bot acknowledges commands.")]
-        public string ChannelWhitelist { get; set; } = string.Empty;
+        public RemoteControlAccessList ChannelWhitelist { get; set; } = new();
 
         [Category(Operation), Description("Comma separated Discord user IDs that will have sudo access to the Bot Hub.")]
-        public string GlobalSudoList { get; set; } = string.Empty;
+        public RemoteControlAccessList GlobalSudoList { get; set; } = new();
 
         [Category(Operation), Description("Disabling this will remove global sudo support.")]
         public bool AllowGlobalSudo { get; set; } = true;
 
-        [Category(Operation), Description("Comma separated channel IDs that will echo the log bot data.")]
-        public string LoggingChannels { get; set; } = string.Empty;
+        [Category(Operation), Description("Channel IDs that will echo the log bot data.")]
+        public RemoteControlAccessList LoggingChannels { get; set; } = new();
 
-        [Category(Operation), Description("Comma separated Logger channel IDs that will log trade start messages.")]
-        public string TradeStartingChannels { get; set; } = string.Empty;
+        [Category(Operation), Description("Logger channels that will log trade start messages.")]
+        public RemoteControlAccessList TradeStartingChannels { get; set; } = new();
 
-        [Category(Operation), Description("Comma separated Echo channel IDs that will log special messages.")]
-        public string EchoChannels { get; set; } = string.Empty;
+        [Category(Operation), Description("Echo channels that will log special messages.")]
+        public RemoteControlAccessList EchoChannels { get; set; } = new();
 
         [Category(Operation), Description("Returns PKMs of Pokémon shown in the trade to the user.")]
         public bool ReturnPKMs { get; set; } = true;

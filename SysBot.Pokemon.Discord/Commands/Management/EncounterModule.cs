@@ -17,7 +17,7 @@ namespace SysBot.Pokemon.Discord
             {
                 if (b is not IEncounterBot x)
                     continue;
-                if (!b.Connection.Name.Contains(name))
+                if (!b.Connection.Name.Contains(name) && !b.Connection.Label.Contains(name))
                     continue;
                 x.Acknowledge();
             }
