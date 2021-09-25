@@ -11,15 +11,5 @@
         /// Bot will move back and forth in a straight horizontal path to encounter Pokémon
         /// </summary>
         HorizontalLine,
-
-        /// <summary>
-        /// Bot will soft reset Eternatus
-        /// </summary>
-        Eternatus,
-
-        /// <summary>
-        /// Bot will soft reset the Legendary Dogs
-        /// </summary>
-        LegendaryDogs,
     }
 }

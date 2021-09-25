@@ -11,7 +11,7 @@ namespace SysBot.Pokemon
         private const string Encounter = nameof(Encounter);
         public override string ToString() => "Encounter Bot Settings";
 
-        [Category(Encounter), Description("The method by which the bot will encounter Pokémon.")]
+        [Category(Encounter), Description("The method by which the Line bot will encounter Pokémon.")]
         public EncounterMode EncounteringType { get; set; } = EncounterMode.VerticalLine;
 
         [Category(Encounter), Description("When enabled, the bot will continue after finding a suitable match.")]
