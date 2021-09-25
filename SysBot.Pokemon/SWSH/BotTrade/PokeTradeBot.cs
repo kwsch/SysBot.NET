@@ -141,7 +141,7 @@ namespace SysBot.Pokemon
                 await Task.Delay(1_000, token).ConfigureAwait(false);
         }
 
-        private (PokeTradeDetail<PK8>? detail, uint priority) GetTradeData(PokeRoutineType type)
+        protected virtual (PokeTradeDetail<PK8>? detail, uint priority) GetTradeData(PokeRoutineType type)
         {
             if (Hub.Queues.TryDequeue(type, out var detail, out var priority))
                 return (detail, priority);
@@ -207,9 +207,9 @@ namespace SysBot.Pokemon
             if (await CheckIfSoftBanned(token).ConfigureAwait(false))
                 await Unban(token).ConfigureAwait(false);
 
-            var pkm = poke.TradeData;
-            if (pkm.Species != 0)
-                await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+            var toSend = poke.TradeData;
+            if (toSend.Species != 0)
+                await SetBoxPokemon(toSend, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
 
             if (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
             {
@@ -310,9 +310,9 @@ namespace SysBot.Pokemon
                 return await ProcessDumpTradeAsync(poke, token).ConfigureAwait(false);
 
             // Wait for User Input...
-            var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 25_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
+            var offered = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 25_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
             var oldEC = await Connection.ReadBytesAsync(LinkTradePartnerPokemonOffset, 4, token).ConfigureAwait(false);
-            if (pk == null)
+            if (offered is null)
             {
                 if (poke.Type == PokeTradeType.Seed)
                     await ExitSeedCheckTrade(Hub.Config, token).ConfigureAwait(false);
@@ -324,88 +324,63 @@ namespace SysBot.Pokemon
             if (poke.Type == PokeTradeType.Seed)
             {
                 // Immediately exit, we aren't trading anything.
-                return await EndSeedCheckTradeAsync(poke, pk, token).ConfigureAwait(false);
+                return await EndSeedCheckTradeAsync(poke, offered, token).ConfigureAwait(false);
             }
 
-            if (poke.Type == PokeTradeType.Random) // distribution
+            PokeTradeResult update;
+            (toSend, update) = await GetEntityToSend(sav, poke, offered, oldEC, toSend, token).ConfigureAwait(false);
+            if (update != PokeTradeResult.Success)
+                return update;
+
+            await ConfirmAndStartTrading(token).ConfigureAwait(false);
+
+            if (token.IsCancellationRequested)
+                return PokeTradeResult.Aborted;
+
+            // Trade was Successful!
+            var received = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
+            // Pokémon in b1s1 is same as the one they were supposed to receive (was never sent).
+            if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend))
             {
-                // Allow the trade partner to do a Ledy swap.
-                var trade = Hub.Ledy.GetLedyTrade(pk, Hub.Config.Distribution.LedySpecies);
-                if (trade != null)
-                {
-                    pkm = trade.Receive;
-                    poke.TradeData = pkm;
-
-                    poke.SendNotification(this, "Injecting the requested Pokémon.");
-                    await Click(A, 0_800, token).ConfigureAwait(false);
-                    await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
-                    await Task.Delay(2_500, token).ConfigureAwait(false);
-                }
-
-                for (int i = 0; i < 5; i++)
-                    await Click(A, 0_500, token).ConfigureAwait(false);
+                Log("User did not complete the trade.");
+                return PokeTradeResult.TrainerTooSlow;
             }
+
+            // As long as we got rid of our inject in b1s1, assume the trade went through.
+            Log("User completed the trade.");
+            poke.TradeFinished(this, received);
+
+            // Only log if we completed the trade.
+            UpdateCountsAndExport(poke, received, toSend);
+            return PokeTradeResult.Success;
+        }
+
+        private void UpdateCountsAndExport(PokeTradeDetail<PK8> poke, PK8 received, PK8 toSend)
+        {
+            var counts = Settings;
+            if (poke.Type == PokeTradeType.Random)
+                counts.AddCompletedDistribution();
             else if (poke.Type == PokeTradeType.Clone)
+                counts.AddCompletedClones();
+            else
+                counts.AddCompletedTrade();
+
+            if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
             {
-                // Inject the shown Pokémon.
-                var clone = (PK8)pk.Clone();
-
-                if (Hub.Config.Discord.ReturnPKMs)
-                    poke.SendNotification(this, clone, "Here's what you showed me!");
-
-                var la = new LegalityAnalysis(clone);
-                if (!la.Valid)
-                {
-                    Log($"Clone request (from {poke.Trainer.TrainerName}) has detected an invalid Pokémon: {(Species)clone.Species}.");
-                    if (DumpSetting.Dump)
-                        DumpPokemon(DumpSetting.DumpFolder, "hacked", pk);
-
-                    var report = la.Report();
-                    Log(report);
-                    poke.SendNotification(this, "This Pokémon is not legal per PKHeX's legality checks. I am forbidden from cloning this. Exiting trade.");
-                    poke.SendNotification(this, report);
-
-                    await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
-                    return PokeTradeResult.IllegalTrade;
-                }
-
-                if (Hub.Config.Legality.ResetHOMETracker)
-                    clone.Tracker = 0;
-
-                poke.SendNotification(this, $"**Cloned your {(Species)clone.Species}!**\nNow press B to cancel your offer and trade me a Pokémon you don't want.");
-                Log($"Cloned a {(Species)clone.Species}. Waiting for user to change their Pokémon...");
-
-                // Separate this out from WaitForPokemonChanged since we compare to old EC from original read.
-                partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, oldEC, 15_000, 0_200, false, token).ConfigureAwait(false);
-
-                if (!partnerFound)
-                {
-                    poke.SendNotification(this, "**HEY CHANGE IT NOW OR I AM LEAVING!!!**");
-                    // They get one more chance.
-                    partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, oldEC, 15_000, 0_200, false, token).ConfigureAwait(false);
-                }
-
-                var pk2 = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 3_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
-                if (!partnerFound || pk2 == null || SearchUtil.HashByDetails(pk2) == SearchUtil.HashByDetails(pk))
-                {
-                    Log("Trading partner did not change their Pokémon.");
-                    await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
-                    return PokeTradeResult.TrainerTooSlow;
-                }
-
-                await Click(A, 0_800, token).ConfigureAwait(false);
-                await SetBoxPokemon(clone, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
-                pkm = pk;
-
-                for (int i = 0; i < 5; i++)
-                    await Click(A, 0_500, token).ConfigureAwait(false);
+                var subfolder = poke.Type.ToString().ToLower();
+                DumpPokemon(DumpSetting.DumpFolder, subfolder, received); // received by bot
+                if (poke.Type is PokeTradeType.Specific or PokeTradeType.Clone)
+                    DumpPokemon(DumpSetting.DumpFolder, "traded", toSend); // sent to partner
             }
+        }
 
+        private async Task ConfirmAndStartTrading(CancellationToken token)
+        {
             await Click(A, 3_000, token).ConfigureAwait(false);
             for (int i = 0; i < 5; i++)
                 await Click(A, 1_500, token).ConfigureAwait(false);
 
-            delay_count = 0;
+            var delay_count = 0;
             while (!await IsInBox(token).ConfigureAwait(false))
             {
                 await Click(A, 1_000, token).ConfigureAwait(false);
@@ -420,43 +395,100 @@ namespace SysBot.Pokemon
 
             await ExitTrade(Hub.Config, false, token).ConfigureAwait(false);
             Log("Exited Trade!");
+        }
 
-            if (token.IsCancellationRequested)
-                return PokeTradeResult.Aborted;
-
-            // Trade was Successful!
-            var traded = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
-            // Pokémon in b1s1 is same as the one they were supposed to receive (was never sent).
-            if (SearchUtil.HashByDetails(traded) == SearchUtil.HashByDetails(pkm))
+        protected virtual async Task<(PK8 toSend, PokeTradeResult check)> GetEntityToSend(SAV8SWSH sav, PokeTradeDetail<PK8> poke, PK8 offered, byte[] oldEC, PK8 toSend, CancellationToken token)
+        {
+            if (poke.Type == PokeTradeType.Random) // distribution
             {
-                Log("User did not complete the trade.");
-                return PokeTradeResult.TrainerTooSlow;
+                toSend = await HandleRandomLedy(sav, poke, offered, toSend, token).ConfigureAwait(false);
             }
-            else
+            else if (poke.Type == PokeTradeType.Clone) // clone
             {
-                // As long as we got rid of our inject in b1s1, assume the trade went through.
-                Log("User completed the trade.");
-                poke.TradeFinished(this, traded);
+                return await HandleClone(sav, poke, offered, oldEC, token).ConfigureAwait(false);
+            }
 
-                // Only log if we completed the trade.
-                var counts = Settings;
-                if (poke.Type == PokeTradeType.Random)
-                    counts.AddCompletedDistribution();
-                else if (poke.Type == PokeTradeType.Clone)
-                    counts.AddCompletedClones();
-                else
-                    counts.AddCompletedTrade();
+            return (toSend, PokeTradeResult.Success);
+        }
 
-                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
+        private async Task<(PK8 toSend, PokeTradeResult check)> HandleClone(SAV8SWSH sav, PokeTradeDetail<PK8> poke, PK8 offered, byte[] oldEC, CancellationToken token)
+        {
+            if (Hub.Config.Discord.ReturnPKMs)
+                poke.SendNotification(this, offered, "Here's what you showed me!");
+
+            var la = new LegalityAnalysis(offered);
+            if (!la.Valid)
+            {
+                Log($"Clone request (from {poke.Trainer.TrainerName}) has detected an invalid Pokémon: {(Species)offered.Species}.");
+                if (DumpSetting.Dump)
+                    DumpPokemon(DumpSetting.DumpFolder, "hacked", offered);
+
+                var report = la.Report();
+                Log(report);
+                poke.SendNotification(this, "This Pokémon is not legal per PKHeX's legality checks. I am forbidden from cloning this. Exiting trade.");
+                poke.SendNotification(this, report);
+
+                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
                 {
-                    var subfolder = poke.Type.ToString().ToLower();
-                    DumpPokemon(DumpSetting.DumpFolder, subfolder, traded); // received
-                    if (poke.Type is PokeTradeType.Specific or PokeTradeType.Clone)
-                        DumpPokemon(DumpSetting.DumpFolder, "traded", pkm); // sent to partner
+                    return (offered, PokeTradeResult.IllegalTrade);
                 }
             }
 
-            return PokeTradeResult.Success;
+            // Inject the shown Pokémon.
+            var clone = (PK8)offered.Clone();
+            if (Hub.Config.Legality.ResetHOMETracker)
+                clone.Tracker = 0;
+
+            poke.SendNotification(this, $"**Cloned your {(Species)clone.Species}!**\nNow press B to cancel your offer and trade me a Pokémon you don't want.");
+            Log($"Cloned a {(Species)clone.Species}. Waiting for user to change their Pokémon...");
+
+            // Separate this out from WaitForPokemonChanged since we compare to old EC from original read.
+            var partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, oldEC, 15_000, 0_200, false, token)
+                .ConfigureAwait(false);
+
+            if (!partnerFound)
+            {
+                poke.SendNotification(this, "**HEY CHANGE IT NOW OR I AM LEAVING!!!**");
+                // They get one more chance.
+                partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, oldEC, 15_000, 0_200, false, token).ConfigureAwait(false);
+            }
+
+            var pk2 = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 3_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
+            if (!partnerFound || pk2 == null || SearchUtil.HashByDetails(pk2) == SearchUtil.HashByDetails(offered))
+            {
+                Log("Trading partner did not change their Pokémon.");
+                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
+                return (offered, PokeTradeResult.TrainerTooSlow);
+            }
+
+            await Click(A, 0_800, token).ConfigureAwait(false);
+            await SetBoxPokemon(clone, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+
+            for (int i = 0; i < 5; i++)
+                await Click(A, 0_500, token).ConfigureAwait(false);
+
+            return (clone, PokeTradeResult.Success);
+        }
+
+        private async Task<PK8> HandleRandomLedy(SAV8SWSH sav, PokeTradeDetail<PK8> poke, PK8 offered, PK8 toSend, CancellationToken token)
+        {
+            // Allow the trade partner to do a Ledy swap.
+            var trade = Hub.Ledy.GetLedyTrade(offered, Hub.Config.Distribution.LedySpecies);
+            if (trade != null)
+            {
+                toSend = trade.Receive;
+                poke.TradeData = toSend;
+
+                poke.SendNotification(this, "Injecting the requested Pokémon.");
+                await Click(A, 0_800, token).ConfigureAwait(false);
+                await SetBoxPokemon(toSend, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+                await Task.Delay(2_500, token).ConfigureAwait(false);
+            }
+
+            for (int i = 0; i < 5; i++)
+                await Click(A, 0_500, token).ConfigureAwait(false);
+
+            return toSend;
         }
 
         private async Task<PokeTradeResult> ProcessDumpTradeAsync(PokeTradeDetail<PK8> detail, CancellationToken token)
