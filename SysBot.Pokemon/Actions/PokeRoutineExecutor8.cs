@@ -69,12 +69,6 @@ namespace SysBot.Pokemon
             return !result.SequenceEqual(original);
         }
 
-        public async Task<bool> LinkTradePartnerFound(CancellationToken token)
-        {
-            var data = await Connection.ReadBytesAsync(LinkTradeSearchingOffset, 1, token).ConfigureAwait(false);
-            return data[0] == 0;
-        }
-
         public async Task<SAV8SWSH> IdentifyTrainer(CancellationToken token)
         {
             Log("Grabbing trainer data of host console...");
@@ -121,8 +115,9 @@ namespace SysBot.Pokemon
             return sav;
         }
 
-        protected async Task EnterTradeCode(int code, PokeTradeHubConfig config, CancellationToken token)
+        protected virtual async Task EnterLinkCode(int code, PokeTradeHubConfig config, CancellationToken token)
         {
+            // Default implementation to just press directional arrows. Can do via Hid keys, but users are slower than bots at even the default code entry.
             var keys = TradeUtil.GetPresses(code);
             foreach (var key in keys)
             {
@@ -139,19 +134,6 @@ namespace SysBot.Pokemon
                 Log("Reconnecting to Y-Comm...");
                 await ReconnectToYComm(config, token).ConfigureAwait(false);
             }
-        }
-
-        public async Task<bool> CheckTradePartnerName(TradeMethod tradeMethod, string Name, CancellationToken token)
-        {
-            var name = await GetTradePartnerName(tradeMethod, token).ConfigureAwait(false);
-            return name == Name;
-        }
-
-        public async Task<string> GetTradePartnerName(TradeMethod tradeMethod, CancellationToken token)
-        {
-            var ofs = GetTrainerNameOffset(tradeMethod);
-            var data = await Connection.ReadBytesAsync(ofs, 26, token).ConfigureAwait(false);
-            return StringConverter.GetString7(data, 0, 26);
         }
 
         public async Task<bool> IsGameConnectedToYComm(CancellationToken token)
@@ -185,50 +167,6 @@ namespace SysBot.Pokemon
             {
                 await Click(B, 500, token).ConfigureAwait(false);
             }
-        }
-
-        public async Task ExitTrade(PokeTradeHubConfig config, bool unexpected, CancellationToken token)
-        {
-            if (unexpected)
-                Log("Unexpected behavior, recover position");
-
-            int attempts = 0;
-            int softBanAttempts = 0;
-            while (!await IsOnOverworld(config, token).ConfigureAwait(false))
-            {
-                var screenID = await GetCurrentScreen(token).ConfigureAwait(false);
-                if (screenID == CurrentScreen_Softban)
-                {
-                    softBanAttempts++;
-                    if (softBanAttempts > 10)
-                        await ReOpenGame(config, token).ConfigureAwait(false);
-                }
-
-                attempts++;
-                if (attempts >= 15)
-                    break;
-
-                await Click(B, 1_000, token).ConfigureAwait(false);
-                await Click(B, 1_000, token).ConfigureAwait(false);
-                await Click(A, 1_000, token).ConfigureAwait(false);
-            }
-        }
-
-        public async Task ExitSeedCheckTrade(PokeTradeHubConfig config, CancellationToken token)
-        {
-            // Seed Check Bot doesn't show anything, so it can skip the first B press.
-            int attempts = 0;
-            while (!await IsOnOverworld(config, token).ConfigureAwait(false))
-            {
-                attempts++;
-                if (attempts >= 15)
-                    break;
-
-                await Click(B, 1_000, token).ConfigureAwait(false);
-                await Click(A, 1_000, token).ConfigureAwait(false);
-            }
-
-            await Task.Delay(3_000, token).ConfigureAwait(false);
         }
 
         public async Task ReOpenGame(PokeTradeHubConfig config, CancellationToken token)
@@ -313,58 +251,6 @@ namespace SysBot.Pokemon
             }
 
             Log("Back in the overworld!");
-        }
-
-        public async Task<bool> CheckIfSearchingForLinkTradePartner(CancellationToken token)
-        {
-            var data = await Connection.ReadBytesAsync(LinkTradeSearchingOffset, 1, token).ConfigureAwait(false);
-            return data[0] == 1;
-        }
-
-        public async Task<bool> CheckIfSearchingForSurprisePartner(CancellationToken token)
-        {
-            var data = await Connection.ReadBytesAsync(SurpriseTradeSearchOffset, 8, token).ConfigureAwait(false);
-            return BitConverter.ToUInt32(data, 0) == SurpriseTradeSearch_Searching;
-        }
-
-        public async Task ResetTradePosition(PokeTradeHubConfig config, CancellationToken token)
-        {
-            Log("Resetting bot position.");
-
-            // Shouldn't ever be used while not on overworld.
-            if (!await IsOnOverworld(config, token).ConfigureAwait(false))
-                await ExitTrade(config, true, token).ConfigureAwait(false);
-
-            // Ensure we're searching before we try to reset a search.
-            if (!await CheckIfSearchingForLinkTradePartner(token).ConfigureAwait(false))
-                return;
-
-            await Click(Y, 2_000, token).ConfigureAwait(false);
-            for (int i = 0; i < 5; i++)
-                await Click(A, 1_500, token).ConfigureAwait(false);
-            // Extra A press for Japanese.
-            if (GameLang == LanguageID.Japanese)
-                await Click(A, 1_500, token).ConfigureAwait(false);
-            await Click(B, 1_500, token).ConfigureAwait(false);
-            await Click(B, 1_500, token).ConfigureAwait(false);
-        }
-
-        public async Task<bool> IsEggReady(SwordShieldDaycare daycare, CancellationToken token)
-        {
-            var ofs = GetDaycareEggIsReadyOffset(daycare);
-            // Read a single byte of the Daycare metadata to check the IsEggReady flag.
-            var data = await Connection.ReadBytesAsync(ofs, 1, token).ConfigureAwait(false);
-            return data[0] == 1;
-        }
-
-        public async Task SetEggStepCounter(SwordShieldDaycare daycare, CancellationToken token)
-        {
-            // Set the step counter in the Daycare metadata to 180. This is the threshold that triggers the "Should I create a new egg" subroutine.
-            // When the game executes the subroutine, it will generate a new seed and set the IsEggReady flag.
-            // Just setting the IsEggReady flag won't refresh the seed; we want a different egg every time.
-            var data = new byte[] { 0xB4, 0, 0, 0 }; // 180
-            var ofs = GetDaycareStepCounterOffset(daycare);
-            await Connection.WriteBytesAsync(data, ofs, token).ConfigureAwait(false);
         }
 
         public async Task<bool> IsCorrectScreen(uint expectedScreen, CancellationToken token)

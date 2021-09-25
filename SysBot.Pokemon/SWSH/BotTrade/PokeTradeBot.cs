@@ -246,7 +246,7 @@ namespace SysBot.Pokemon
 
             var code = poke.Code;
             Log($"Entering Link Trade Code: {code:0000 0000}...");
-            await EnterTradeCode(code, Hub.Config, token).ConfigureAwait(false);
+            await EnterLinkCode(code, Hub.Config, token).ConfigureAwait(false);
 
             // Wait for Barrier to trigger all bots simultaneously.
             WaitAtBarrierIfApplicable(token);
@@ -273,8 +273,7 @@ namespace SysBot.Pokemon
             await Task.Delay(0_500, token).ConfigureAwait(false);
 
             // Wait for a Trainer...
-            Log("Waiting for trainer...");
-            bool partnerFound = await WaitForPokemonChanged(LinkTradePartnerPokemonOffset, Hub.Config.Trade.TradeWaitTime * 1_000, 0_200, token).ConfigureAwait(false);
+            var partnerFound = await WaitForTradePartnerOffer(token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
@@ -353,6 +352,12 @@ namespace SysBot.Pokemon
             // Only log if we completed the trade.
             UpdateCountsAndExport(poke, received, toSend);
             return PokeTradeResult.Success;
+        }
+
+        protected virtual async Task<bool> WaitForTradePartnerOffer(CancellationToken token)
+        {
+            Log("Waiting for trainer...");
+            return await WaitForPokemonChanged(LinkTradePartnerPokemonOffset, Hub.Config.Trade.TradeWaitTime * 1_000, 0_200, token).ConfigureAwait(false);
         }
 
         private void UpdateCountsAndExport(PokeTradeDetail<PK8> poke, PK8 received, PK8 toSend)
@@ -759,6 +764,103 @@ namespace SysBot.Pokemon
             // check EC and checksum; some pkm may have same EC if shown sequentially
             var oldEC = await Connection.ReadBytesAsync(offset, 8, token).ConfigureAwait(false);
             return await ReadUntilChanged(offset, oldEC, waitms, waitInterval, false, token).ConfigureAwait(false);
+        }
+
+        private async Task ExitTrade(PokeTradeHubConfig config, bool unexpected, CancellationToken token)
+        {
+            if (unexpected)
+                Log("Unexpected behavior, recover position");
+
+            int attempts = 0;
+            int softBanAttempts = 0;
+            while (!await IsOnOverworld(config, token).ConfigureAwait(false))
+            {
+                var screenID = await GetCurrentScreen(token).ConfigureAwait(false);
+                if (screenID == CurrentScreen_Softban)
+                {
+                    softBanAttempts++;
+                    if (softBanAttempts > 10)
+                        await ReOpenGame(config, token).ConfigureAwait(false);
+                }
+
+                attempts++;
+                if (attempts >= 15)
+                    break;
+
+                await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
+            }
+        }
+
+        private async Task ExitSeedCheckTrade(PokeTradeHubConfig config, CancellationToken token)
+        {
+            // Seed Check Bot doesn't show anything, so it can skip the first B press.
+            int attempts = 0;
+            while (!await IsOnOverworld(config, token).ConfigureAwait(false))
+            {
+                attempts++;
+                if (attempts >= 15)
+                    break;
+
+                await Click(B, 1_000, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
+            }
+
+            await Task.Delay(3_000, token).ConfigureAwait(false);
+        }
+
+        private async Task ResetTradePosition(PokeTradeHubConfig config, CancellationToken token)
+        {
+            Log("Resetting bot position.");
+
+            // Shouldn't ever be used while not on overworld.
+            if (!await IsOnOverworld(config, token).ConfigureAwait(false))
+                await ExitTrade(config, true, token).ConfigureAwait(false);
+
+            // Ensure we're searching before we try to reset a search.
+            if (!await CheckIfSearchingForLinkTradePartner(token).ConfigureAwait(false))
+                return;
+
+            await Click(Y, 2_000, token).ConfigureAwait(false);
+            for (int i = 0; i < 5; i++)
+                await Click(A, 1_500, token).ConfigureAwait(false);
+            // Extra A press for Japanese.
+            if (GameLang == LanguageID.Japanese)
+                await Click(A, 1_500, token).ConfigureAwait(false);
+            await Click(B, 1_500, token).ConfigureAwait(false);
+            await Click(B, 1_500, token).ConfigureAwait(false);
+        }
+
+        private async Task<bool> LinkTradePartnerFound(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(LinkTradeSearchingOffset, 1, token).ConfigureAwait(false);
+            return data[0] == 0;
+        }
+
+        private async Task<bool> CheckIfSearchingForLinkTradePartner(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(LinkTradeSearchingOffset, 1, token).ConfigureAwait(false);
+            return data[0] == 1;
+        }
+
+        private async Task<bool> CheckIfSearchingForSurprisePartner(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(SurpriseTradeSearchOffset, 8, token).ConfigureAwait(false);
+            return BitConverter.ToUInt32(data, 0) == SurpriseTradeSearch_Searching;
+        }
+
+        private async Task<bool> CheckTradePartnerName(TradeMethod tradeMethod, string Name, CancellationToken token)
+        {
+            var name = await GetTradePartnerName(tradeMethod, token).ConfigureAwait(false);
+            return name == Name;
+        }
+
+        private async Task<string> GetTradePartnerName(TradeMethod tradeMethod, CancellationToken token)
+        {
+            var ofs = GetTrainerNameOffset(tradeMethod);
+            var data = await Connection.ReadBytesAsync(ofs, 26, token).ConfigureAwait(false);
+            return StringConverter.GetString7(data, 0, 26);
         }
     }
 }

@@ -110,7 +110,7 @@ namespace SysBot.Pokemon
             {
                 // Set Link code
                 await Click(PLUS, 1_000, token).ConfigureAwait(false);
-                await EnterTradeCode(code, Hub.Config, token).ConfigureAwait(false);
+                await EnterLinkCode(code, Hub.Config, token).ConfigureAwait(false);
                 await Click(PLUS, 2_000, token).ConfigureAwait(false);
                 await Click(A, 2_000, token).ConfigureAwait(false);
             }
