@@ -117,7 +117,8 @@ namespace SysBot.Pokemon
                 };
 
                 if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundEchoMention))
-                    EchoUtil.Echo($"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}");
+                    msg = $"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}";
+                EchoUtil.Echo(msg);
                 Log(msg);
 
                 if (mode == ContinueAfterMatch.StopExit)
@@ -130,7 +131,12 @@ namespace SysBot.Pokemon
                     await Task.Delay(1_000, token).ConfigureAwait(false);
             }
 
-            await CleanExit(Settings, token).ConfigureAwait(false);
+            await HardStop().ConfigureAwait(false);
+        }
+
+        public override async Task HardStop()
+        {
+            await CleanExit(Settings, CancellationToken.None).ConfigureAwait(false);
         }
 
         private bool IsWaiting;

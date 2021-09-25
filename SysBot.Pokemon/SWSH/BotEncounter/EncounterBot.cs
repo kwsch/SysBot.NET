@@ -51,9 +51,13 @@ namespace SysBot.Pokemon
                 _ => WalkInLine(token),
             };
             await task.ConfigureAwait(false);
+            await HardStop().ConfigureAwait(false);
+        }
 
-            await ResetStick(token).ConfigureAwait(false);
-            await CleanExit(settings, token).ConfigureAwait(false);
+        public override async Task HardStop()
+        {
+            await ResetStick(CancellationToken.None).ConfigureAwait(false);
+            await CleanExit(Settings, CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task WalkInLine(CancellationToken token)
@@ -233,7 +237,8 @@ namespace SysBot.Pokemon
             };
 
             if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundEchoMention))
-                EchoUtil.Echo($"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}");
+                msg = $"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}";
+            EchoUtil.Echo(msg);
             Log(msg);
 
             if (mode == ContinueAfterMatch.StopExit)

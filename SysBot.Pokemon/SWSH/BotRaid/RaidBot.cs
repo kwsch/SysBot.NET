@@ -83,7 +83,12 @@ namespace SysBot.Pokemon
 
                 await ResetGameAsync(token).ConfigureAwait(false);
             }
-            await CleanExit(Settings, token).ConfigureAwait(false);
+            await HardStop().ConfigureAwait(false);
+        }
+
+        public override async Task HardStop()
+        {
+            await CleanExit(Settings, CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task HostRaidAsync(int code, CancellationToken token)

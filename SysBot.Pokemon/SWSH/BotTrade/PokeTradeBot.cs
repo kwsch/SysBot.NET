@@ -62,8 +62,13 @@ namespace SysBot.Pokemon
             }
 
             Log($"Ending {nameof(PokeTradeBot)} loop.");
+            await HardStop().ConfigureAwait(false);
+        }
+
+        public override async Task HardStop()
+        {
             UpdateBarrier(false);
-            await CleanExit(Hub.Config.Trade, CancellationToken.None).ConfigureAwait(false);
+            await CleanExit(Settings, CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task InnerLoop(SAV8SWSH sav, CancellationToken token)

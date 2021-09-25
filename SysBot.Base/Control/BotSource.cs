@@ -21,8 +21,7 @@ namespace SysBot.Base
             Source.Cancel();
             Source = new CancellationTokenSource();
 
-            // Detach Controllers
-            Task.Run(() => Bot.Connection.SendAsync(SwitchCommand.DetachController(), CancellationToken.None));
+            Task.Run(async () => await Bot.HardStop().ConfigureAwait(false));
             IsPaused = IsRunning = false;
         }
 

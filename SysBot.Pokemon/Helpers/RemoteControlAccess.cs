@@ -39,6 +39,11 @@ namespace SysBot.Pokemon
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         public IEnumerator<RemoteControlAccess> GetEnumerator() => List.GetEnumerator();
 
-        public override string ToString() => $"{List.Count} entries specified.";
+        public override string ToString()
+        {
+            return Count == 0
+                ? (AllowIfEmpty ? "Anyone allowed" : "None allowed (none specified).")
+                : $"{List.Count} entries specified.";
+        }
     }
 }

@@ -35,10 +35,101 @@ namespace SysBot.Pokemon
 
         public override async Task MainLoop(CancellationToken token)
         {
-            Log("Identifying trainer data of the host console.");
-            await IdentifyTrainer(token).ConfigureAwait(false);
             await InitializeHardware(Hub.Config.Egg, token).ConfigureAwait(false);
 
+            Log("Identifying trainer data of the host console.");
+            await IdentifyTrainer(token).ConfigureAwait(false);
+
+            await SetupBoxState(token).ConfigureAwait(false);
+
+            Log("Starting main EggBot loop.");
+            Config.IterateNextRoutine();
+            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EggFetch)
+            {
+                if (!await InnerLoop(token).ConfigureAwait(false))
+                    break;
+            }
+            await HardStop().ConfigureAwait(false);
+        }
+
+        public override async Task HardStop()
+        {
+            // If aborting the sequence, we might have the stick set at some position. Clear it just in case.
+            await SetStick(LEFT, 0, 0, 0, CancellationToken.None).ConfigureAwait(false); // reset
+            await CleanExit(Hub.Config.Trade, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Return true if we need to stop looping.
+        /// </summary>
+        private async Task<bool> InnerLoop(CancellationToken token)
+        {
+            // Walk a step left, then right => check if egg was generated on this attempt.
+            // Repeat until an egg is generated.
+
+            var attempts = await StepUntilEgg(token).ConfigureAwait(false);
+            if (attempts < 0) // aborted
+                return true;
+
+            Log($"Egg available after {attempts} attempts! Clearing destination slot.");
+            await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
+
+            for (int i = 0; i < 6; i++)
+                await Click(A, 0_400, token).ConfigureAwait(false);
+
+            // Safe to mash B from here until we get out of all menus.
+            while (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
+                await Click(B, 0_400, token).ConfigureAwait(false);
+
+            Log("Egg received. Checking details.");
+            var pk = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
+            if (pk.Species == 0)
+            {
+                Log("Invalid data detected in destination slot. Restarting loop.");
+                return true;
+            }
+
+            encounterCount++;
+            var print = Hub.Config.StopConditions.GetPrintName(pk);
+            Log($"Encounter: {encounterCount}{Environment.NewLine}{print}{Environment.NewLine}");
+            Settings.AddCompletedEggs();
+
+            if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                DumpPokemon(DumpSetting.DumpFolder, "egg", pk);
+
+            if (!StopConditionSettings.EncounterFound(pk, DesiredMinIVs, DesiredMaxIVs, Hub.Config.StopConditions))
+                return true;
+
+            // no need to take a video clip of us receiving an egg.
+            var mode = Settings.ContinueAfterMatch;
+            var msg = mode switch
+            {
+                ContinueAfterMatch.Continue => $"Result found!\n{print}\nContinuing...",
+                ContinueAfterMatch.PauseWaitAcknowledge =>
+                    $"Result found!\n{print}\nI'm waiting for you to acknowledge via command to continue.",
+                ContinueAfterMatch.StopExit =>
+                    $"Result found!\n{print}\nStopping routine execution; restart the bot(s) to search again.",
+                _ => throw new ArgumentOutOfRangeException(),
+            };
+
+            if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundEchoMention))
+                msg = $"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}";
+            EchoUtil.Echo(msg);
+            Log(msg);
+
+            if (mode == ContinueAfterMatch.StopExit)
+                return false;
+            if (mode == ContinueAfterMatch.Continue)
+                return true;
+
+            IsWaiting = true;
+            while (IsWaiting)
+                await Task.Delay(1_000, token).ConfigureAwait(false);
+            return false;
+        }
+
+        private async Task SetupBoxState(CancellationToken token)
+        {
             await SetCurrentBox(0, token).ConfigureAwait(false);
 
             var existing = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
@@ -47,75 +138,9 @@ namespace SysBot.Pokemon
                 Log("Destination slot is occupied! Dumping the Pokémon found there...");
                 DumpPokemon(DumpSetting.DumpFolder, "saved", existing);
             }
+
             Log("Clearing destination slot to start the bot.");
             await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
-
-            Log("Starting main EggBot loop.");
-            Config.IterateNextRoutine();
-            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EggFetch)
-            {
-                // Walk a step left, then right => check if egg was generated on this attempt.
-                // Repeat until an egg is generated.
-
-                var attempts = await StepUntilEgg(token).ConfigureAwait(false);
-                if (attempts < 0) // aborted
-                    continue;
-
-                Log($"Egg available after {attempts} attempts! Clearing destination slot.");
-                await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
-
-                for (int i = 0; i < 6; i++)
-                    await Click(A, 0_400, token).ConfigureAwait(false);
-
-                // Safe to mash B from here until we get out of all menus.
-                while (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
-                    await Click(B, 0_400, token).ConfigureAwait(false);
-
-                Log("Egg received. Checking details.");
-                var pk = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
-                if (pk.Species == 0)
-                {
-                    Log("Invalid data detected in destination slot. Restarting loop.");
-                    continue;
-                }
-
-                encounterCount++;
-                var print = Hub.Config.StopConditions.GetPrintName(pk);
-                Log($"Encounter: {encounterCount}{Environment.NewLine}{print}{Environment.NewLine}");
-                Settings.AddCompletedEggs();
-
-                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                    DumpPokemon(DumpSetting.DumpFolder, "egg", pk);
-
-                if (!StopConditionSettings.EncounterFound(pk, DesiredMinIVs, DesiredMaxIVs, Hub.Config.StopConditions))
-                    continue;
-
-                // no need to take a video clip of us receiving an egg.
-                var mode = Settings.ContinueAfterMatch;
-                var msg = mode switch
-                {
-                    ContinueAfterMatch.Continue => $"Result found!\n{print}\nContinuing...",
-                    ContinueAfterMatch.PauseWaitAcknowledge => $"Result found!\n{print}\nI'm waiting for you to acknowledge via command to continue.",
-                    ContinueAfterMatch.StopExit => $"Result found!\n{print}\nStopping routine execution; restart the bot(s) to search again.",
-                    _ => throw new ArgumentOutOfRangeException(),
-                };
-
-                if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundEchoMention))
-                    EchoUtil.Echo($"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}");
-                Log(msg);
-
-                if (mode == ContinueAfterMatch.StopExit)
-                    break;
-                if (mode == ContinueAfterMatch.Continue)
-                    continue;
-
-                IsWaiting = true;
-                while (IsWaiting)
-                    await Task.Delay(1_000, token).ConfigureAwait(false);
-            }
-            // If aborting the sequence, we might have the stick set at some position. Clear it just in case.
-            await SetStick(LEFT, 0, 0, 0, CancellationToken.None).ConfigureAwait(false); // reset
-            await CleanExit(Hub.Config.Trade, token).ConfigureAwait(false);
         }
 
         private bool IsWaiting;
