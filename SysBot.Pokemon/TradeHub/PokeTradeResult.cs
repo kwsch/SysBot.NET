@@ -8,6 +8,7 @@
         NoTrainerFound,
         TrainerTooSlow,
         IllegalTrade,
+        SuspiciousActivity,
 
         // Recovery -- General Bot Failures
         // Anything below here should be retried once if possible.

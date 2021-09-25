@@ -331,7 +331,9 @@ namespace SysBot.Pokemon
             if (update != PokeTradeResult.Success)
                 return update;
 
-            await ConfirmAndStartTrading(token).ConfigureAwait(false);
+            var tradeResult = await ConfirmAndStartTrading(token).ConfigureAwait(false);
+            if (tradeResult != PokeTradeResult.Success)
+                return tradeResult;
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
@@ -379,11 +381,15 @@ namespace SysBot.Pokemon
             }
         }
 
-        private async Task ConfirmAndStartTrading(CancellationToken token)
+        private async Task<PokeTradeResult> ConfirmAndStartTrading(CancellationToken token)
         {
             await Click(A, 3_000, token).ConfigureAwait(false);
             for (int i = 0; i < 5; i++)
+            {
+                if (await IsUserBeingShifty(token).ConfigureAwait(false))
+                    return PokeTradeResult.SuspiciousActivity;
                 await Click(A, 1_500, token).ConfigureAwait(false);
+            }
 
             var delay_count = 0;
             while (!await IsInBox(token).ConfigureAwait(false))
@@ -400,20 +406,17 @@ namespace SysBot.Pokemon
 
             await ExitTrade(Hub.Config, false, token).ConfigureAwait(false);
             Log("Exited Trade!");
+            return PokeTradeResult.Success;
         }
 
         protected virtual async Task<(PK8 toSend, PokeTradeResult check)> GetEntityToSend(SAV8SWSH sav, PokeTradeDetail<PK8> poke, PK8 offered, byte[] oldEC, PK8 toSend, CancellationToken token)
         {
-            if (poke.Type == PokeTradeType.Random) // distribution
+            return poke.Type switch
             {
-                toSend = await HandleRandomLedy(sav, poke, offered, toSend, token).ConfigureAwait(false);
-            }
-            else if (poke.Type == PokeTradeType.Clone) // clone
-            {
-                return await HandleClone(sav, poke, offered, oldEC, token).ConfigureAwait(false);
-            }
-
-            return (toSend, PokeTradeResult.Success);
+                PokeTradeType.Random => await HandleRandomLedy(sav, poke, offered, toSend, token).ConfigureAwait(false),
+                PokeTradeType.Clone => await HandleClone(sav, poke, offered, oldEC, token).ConfigureAwait(false),
+                _ => (toSend, PokeTradeResult.Success),
+            };
         }
 
         private async Task<(PK8 toSend, PokeTradeResult check)> HandleClone(SAV8SWSH sav, PokeTradeDetail<PK8> poke, PK8 offered, byte[] oldEC, CancellationToken token)
@@ -475,7 +478,7 @@ namespace SysBot.Pokemon
             return (clone, PokeTradeResult.Success);
         }
 
-        private async Task<PK8> HandleRandomLedy(SAV8SWSH sav, PokeTradeDetail<PK8> poke, PK8 offered, PK8 toSend, CancellationToken token)
+        private async Task<(PK8 toSend, PokeTradeResult check)> HandleRandomLedy(SAV8SWSH sav, PokeTradeDetail<PK8> poke, PK8 offered, PK8 toSend, CancellationToken token)
         {
             // Allow the trade partner to do a Ledy swap.
             var trade = Hub.Ledy.GetLedyTrade(offered, Hub.Config.Distribution.LedySpecies);
@@ -491,9 +494,19 @@ namespace SysBot.Pokemon
             }
 
             for (int i = 0; i < 5; i++)
+            {
+                if (await IsUserBeingShifty(token).ConfigureAwait(false))
+                    return (toSend, PokeTradeResult.SuspiciousActivity);
                 await Click(A, 0_500, token).ConfigureAwait(false);
+            }
 
-            return toSend;
+            return (toSend, PokeTradeResult.Success);
+        }
+
+        protected virtual async Task<bool> IsUserBeingShifty(CancellationToken token)
+        {
+            await Task.CompletedTask.ConfigureAwait(false);
+            return false;
         }
 
         private async Task<PokeTradeResult> ProcessDumpTradeAsync(PokeTradeDetail<PK8> detail, CancellationToken token)
