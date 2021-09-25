@@ -21,6 +21,24 @@ namespace SysBot.Pokemon.Discord
             await ReplyAsync("Done.").ConfigureAwait(false);
         }
 
+        [Command("blacklistComment")]
+        [Summary("Adds a comment for a blacklisted user ID.")]
+        [RequireSudo]
+        // ReSharper disable once UnusedParameter.Global
+        public async Task BlackListUsers(ulong id, [Remainder] string comment)
+        {
+            var obj = SysCordSettings.Settings.UserBlacklist.List.Find(z => z.ID == id);
+            if (obj is null)
+            {
+                await ReplyAsync($"Unable to find a user with that ID ({id}).").ConfigureAwait(false);
+                return;
+            }
+
+            var oldComment = obj.Comment;
+            obj.Comment = comment;
+            await ReplyAsync($"Done. Changed existing comment ({oldComment}) to ({comment}).").ConfigureAwait(false);
+        }
+
         [Command("unblacklist")]
         [Summary("Un-Blacklists mentioned user.")]
         [RequireSudo]
@@ -52,6 +70,17 @@ namespace SysBot.Pokemon.Discord
             var IDs = GetIDs(content);
             SysCordSettings.Settings.UserBlacklist.RemoveAll(z => IDs.Any(o => o == z.ID));
             await ReplyAsync("Done.").ConfigureAwait(false);
+        }
+
+        [Command("blacklistSummary")]
+        [Alias("printBlacklist", "blacklistPrint")]
+        [Summary("Prints the list of blacklisted users.")]
+        [RequireSudo]
+        public async Task PrintBlacklist()
+        {
+            var lines = SysCordSettings.Settings.UserBlacklist.Summarize();
+            var msg = string.Join("\n", lines);
+            await ReplyAsync(Format.Code(msg)).ConfigureAwait(false);
         }
 
         private RemoteControlAccess GetReference(IUser channel) => new()
