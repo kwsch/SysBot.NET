@@ -260,27 +260,29 @@ namespace SysBot.Pokemon
 
         public async Task CloseGame(PokeTradeHubConfig config, CancellationToken token)
         {
+            var timing = config.Timings;
             // Close out of the game
-            await Click(HOME, 2_000 + config.Timings.ExtraTimeReturnHome, token).ConfigureAwait(false);
+            await Click(HOME, 2_000 + timing.ExtraTimeReturnHome, token).ConfigureAwait(false);
             await Click(X, 1_000, token).ConfigureAwait(false);
-            await Click(A, 5_000 + config.Timings.ExtraTimeCloseGame, token).ConfigureAwait(false);
+            await Click(A, 5_000 + timing.ExtraTimeCloseGame, token).ConfigureAwait(false);
             Log("Closed out of the game!");
         }
 
         public async Task StartGame(PokeTradeHubConfig config, CancellationToken token)
         {
+            var timing = config.Timings;
             // Open game.
-            await Click(A, 1_000 + config.Timings.ExtraTimeLoadProfile, token).ConfigureAwait(false);
+            await Click(A, 1_000 + timing.ExtraTimeLoadProfile, token).ConfigureAwait(false);
 
             // Menus here can go in the order: Update Prompt -> Profile -> DLC check -> Unable to use DLC.
             //  The user can optionally turn on the setting if they know of a breaking system update incoming.
-            if (config.Timings.AvoidSystemUpdate)
+            if (timing.AvoidSystemUpdate)
             {
                 await Click(DUP, 0_600, token).ConfigureAwait(false);
-                await Click(A, 1_000 + config.Timings.ExtraTimeLoadProfile, token).ConfigureAwait(false);
+                await Click(A, 1_000 + timing.ExtraTimeLoadProfile, token).ConfigureAwait(false);
             }
 
-            await Click(A, 1_000 + config.Timings.ExtraTimeCheckDLC, token).ConfigureAwait(false);
+            await Click(A, 1_000 + timing.ExtraTimeCheckDLC, token).ConfigureAwait(false);
             // If they have DLC on the system and can't use it, requires an UP + A to start the game.
             // Should be harmless otherwise since they'll be in loading screen.
             await Click(DUP, 0_600, token).ConfigureAwait(false);
@@ -289,7 +291,7 @@ namespace SysBot.Pokemon
             Log("Restarting the game!");
 
             // Switch Logo lag, skip cutscene, game load screen
-            await Task.Delay(10_000 + config.Timings.ExtraTimeLoadGame, token).ConfigureAwait(false);
+            await Task.Delay(10_000 + timing.ExtraTimeLoadGame, token).ConfigureAwait(false);
 
             for (int i = 0; i < 4; i++)
                 await Click(A, 1_000, token).ConfigureAwait(false);
@@ -301,7 +303,7 @@ namespace SysBot.Pokemon
                 timer -= 0_250;
                 // We haven't made it back to overworld after a minute, so press A every 6 seconds hoping to restart the game.
                 // Don't risk it if hub is set to avoid updates.
-                if (timer <= 0 && !config.Timings.AvoidSystemUpdate)
+                if (timer <= 0 && !timing.AvoidSystemUpdate)
                 {
                     Log("Still not in the game, initiating rescue protocol!");
                     while (!await IsOnOverworld(config, token).ConfigureAwait(false))

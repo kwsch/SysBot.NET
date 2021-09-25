@@ -32,10 +32,16 @@
         RaidBot = 9,
 
         /// <summary> Triggers encounters until the criteria is satisfied. </summary>
-        EncounterBot = 10,
+        EncounterBotLine = 1000,
+
+        /// <summary> Triggers encounters until the criteria is satisfied. </summary>
+        EncounterBotEternatus = 1001,
+
+        /// <summary> Triggers encounters until the criteria is satisfied. </summary>
+        EncounterBotDog = 1002,
 
         /// <summary> Similar to idle, but identifies the bot as available for Remote input (Twitch Plays, etc). </summary>
-        RemoteControl = 100,
+        RemoteControl = 6000,
 
         // Add your own custom bots here so they don't clash for future main-branch bot releases.
     }

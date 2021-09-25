@@ -64,7 +64,7 @@ namespace SysBot.Pokemon
             {
                 var fallback = GetFallbackBlank(i);
                 var exist = TrainerSettings.GetSavedTrainerData(i, fallback);
-                if (exist == fallback)
+                if (ReferenceEquals(exist, fallback))
                     TrainerSettings.Register(fallback);
             }
 
