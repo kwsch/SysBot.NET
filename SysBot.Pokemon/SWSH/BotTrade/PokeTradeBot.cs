@@ -32,6 +32,9 @@ namespace SysBot.Pokemon
         /// </summary>
         public int FailedBarrier { get; private set; }
 
+        private const int InjectBox = 0;
+        private const int InjectSlot = 0;
+
         public PokeTradeBot(PokeTradeHub<PK8> hub, PokeBotState cfg) : base(cfg)
         {
             Hub = hub;
@@ -39,16 +42,32 @@ namespace SysBot.Pokemon
             DumpSetting = hub.Config.Folder;
         }
 
-        private const int InjectBox = 0;
-        private const int InjectSlot = 0;
-
         public override async Task MainLoop(CancellationToken token)
         {
-            Log("Identifying trainer data of the host console.");
-            var sav = await IdentifyTrainer(token).ConfigureAwait(false);
-            await InitializeHardware(Hub.Config.Trade, token).ConfigureAwait(false);
+            try
+            {
+                await InitializeHardware(Hub.Config.Trade, token).ConfigureAwait(false);
 
-            Log("Starting main TradeBot loop.");
+                Log("Identifying trainer data of the host console.");
+                var sav = await IdentifyTrainer(token).ConfigureAwait(false);
+
+                Log($"Starting main {nameof(PokeTradeBot)} loop.");
+                await InnerLoop(sav, token).ConfigureAwait(false);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Log(e.Message);
+            }
+
+            Log($"Ending {nameof(PokeTradeBot)} loop.");
+            UpdateBarrier(false);
+            await CleanExit(Hub.Config.Trade, token).ConfigureAwait(false);
+        }
+
+        private async Task InnerLoop(SAV8SWSH sav, CancellationToken token)
+        {
             while (!token.IsCancellationRequested)
             {
                 Config.IterateNextRoutine();
@@ -60,9 +79,6 @@ namespace SysBot.Pokemon
                 };
                 await task.ConfigureAwait(false);
             }
-
-            await CleanExit(Hub.Config.Trade, token).ConfigureAwait(false);
-            Hub.Bots.Remove(this);
         }
 
         private async Task DoNothing(CancellationToken token)
@@ -87,19 +103,10 @@ namespace SysBot.Pokemon
             await SetCurrentBox(0, token).ConfigureAwait(false);
             while (!token.IsCancellationRequested && Config.NextRoutineType == type)
             {
-                if (!Hub.Queues.TryDequeue(type, out var detail, out var priority) && !Hub.Queues.TryDequeueLedy(out detail))
+                var (detail, priority) = GetTradeData(type);
+                if (detail is null)
                 {
-                    if (waitCounter == 0)
-                    {
-                        // Updates the assets.
-                        Hub.Config.Stream.IdleAssets(this);
-                        Log("Nothing to check, waiting for new users...");
-                    }
-                    waitCounter++;
-                    if (waitCounter % 10 == 0 && Hub.Config.AntiIdle)
-                        await Click(B, 1_000, token).ConfigureAwait(false);
-                    else
-                        await Task.Delay(1_000, token).ConfigureAwait(false);
+                    await WaitForQueueStep(waitCounter++, token).ConfigureAwait(false);
                     continue;
                 }
                 waitCounter = 0;
@@ -109,25 +116,68 @@ namespace SysBot.Pokemon
                 Hub.Config.Stream.StartTrade(this, detail, Hub);
                 Hub.Queues.StartTrade(this, detail);
 
-                await EnsureConnectedToYComm(Hub.Config, token).ConfigureAwait(false);
-                var result = await PerformLinkCodeTrade(sav, detail, token).ConfigureAwait(false);
-                if (result != PokeTradeResult.Success) // requeue
-                {
-                    if (result.ShouldAttemptRetry() && detail.Type != PokeTradeType.Random && !detail.IsRetry)
-                    {
-                        detail.IsRetry = true;
-                        detail.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
-                        Hub.Queues.Enqueue(type, detail, Math.Min(priority, PokeTradePriorities.Tier2));
-                    }
-                    else
-                    {
-                        detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
-                        detail.TradeCanceled(this, result);
-                    }
-                }
+                await PerformTrade(sav, detail, type, priority, token).ConfigureAwait(false);
+            }
+        }
+
+        private async Task WaitForQueueStep(int waitCounter, CancellationToken token)
+        {
+            if (waitCounter == 0)
+            {
+                // Updates the assets.
+                Hub.Config.Stream.IdleAssets(this);
+                Log("Nothing to check, waiting for new users...");
             }
 
-            UpdateBarrier(false);
+            const int interval = 10;
+            if (waitCounter % interval == interval-1 && Hub.Config.AntiIdle)
+                await Click(B, 1_000, token).ConfigureAwait(false);
+            else
+                await Task.Delay(1_000, token).ConfigureAwait(false);
+        }
+
+        private (PokeTradeDetail<PK8>? detail, uint priority) GetTradeData(PokeRoutineType type)
+        {
+            if (Hub.Queues.TryDequeue(type, out var detail, out var priority))
+                return (detail, priority);
+            if (Hub.Queues.TryDequeueLedy(out detail))
+                return (detail, PokeTradePriorities.TierFree);
+            return (null, PokeTradePriorities.TierFree);
+        }
+
+        private async Task PerformTrade(SAV8SWSH sav, PokeTradeDetail<PK8> detail, PokeRoutineType type, uint priority, CancellationToken token)
+        {
+            PokeTradeResult result;
+            try
+            {
+                result = await PerformLinkCodeTrade(sav, detail, token).ConfigureAwait(false);
+                if (result == PokeTradeResult.Success)
+                    return;
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Log(e.Message);
+                result = PokeTradeResult.Aborted;
+            }
+
+            HandleAbortedTrade(detail, type, priority, result);
+        }
+
+        private void HandleAbortedTrade(PokeTradeDetail<PK8> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
+        {
+            if (result.ShouldAttemptRetry() && detail.Type != PokeTradeType.Random && !detail.IsRetry)
+            {
+                detail.IsRetry = true;
+                Hub.Queues.Enqueue(type, detail, Math.Min(priority, PokeTradePriorities.Tier2));
+                detail.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
+            }
+            else
+            {
+                detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
+                detail.TradeCanceled(this, result);
+            }
         }
 
         private async Task DoSurpriseTrades(SAV8SWSH sav, CancellationToken token)
@@ -146,6 +196,7 @@ namespace SysBot.Pokemon
             // Update Barrier Settings
             UpdateBarrier(poke.IsSynchronized);
             poke.TradeInitialize(this);
+            await EnsureConnectedToYComm(Hub.Config, token).ConfigureAwait(false);
             Hub.Config.Stream.EndEnterCode(this);
 
             if (await CheckIfSoftBanned(token).ConfigureAwait(false))
@@ -668,7 +719,8 @@ namespace SysBot.Pokemon
 
         private async Task<bool> WaitForPokemonChanged(uint offset, int waitms, int waitInterval, CancellationToken token)
         {
-            var oldEC = await Connection.ReadBytesAsync(offset, 4, token).ConfigureAwait(false);
+            // check EC and checksum; some pkm may have same EC if shown sequentially
+            var oldEC = await Connection.ReadBytesAsync(offset, 8, token).ConfigureAwait(false);
             return await ReadUntilChanged(offset, oldEC, waitms, waitInterval, false, token).ConfigureAwait(false);
         }
     }
