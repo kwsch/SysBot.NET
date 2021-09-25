@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SysBot.Pokemon
@@ -12,22 +14,29 @@ namespace SysBot.Pokemon
         public override string ToString() => $"{Name} = {ID}";
     }
 
-    public class RemoteControlAccessList : List<RemoteControlAccess>
+    public class RemoteControlAccessList : IEnumerable<RemoteControlAccess>
     {
         public bool AllowIfEmpty { get; set; } = true;
+        public List<RemoteControlAccess> List { get; set; } = new();
 
-        public bool Contains(ulong id) => this.Any(z => z.ID == id);
-        public bool Contains(string name) => this.Any(z => z.Name == name);
+        public bool Contains(ulong id) => List.Any(z => z.ID == id);
+        public bool Contains(string name) => List.Any(z => z.Name == name);
+        public int RemoveAll(Predicate<RemoteControlAccess> item) => List.RemoveAll(item);
+        public void Clear() => List.Clear();
+        public int Count => List.Count;
 
         public void AddIfNew(IEnumerable<RemoteControlAccess> list)
         {
             foreach (var item in list)
             {
                 if (!Contains(item.ID))
-                    Add(item);
+                    List.Add(item);
             }
         }
 
-        public override string ToString() => $"{Count} entries specified.";
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public IEnumerator<RemoteControlAccess> GetEnumerator() => List.GetEnumerator();
+
+        public override string ToString() => $"{List.Count} entries specified.";
     }
 }
