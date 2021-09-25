@@ -1,10 +1,14 @@
 using System;
+using System.IO;
 using System.Windows.Forms;
 
 namespace SysBot.Pokemon.WinForms
 {
     internal static class Program
     {
+        public static readonly string WorkingDirectory = Application.StartupPath;
+        public static string ConfigPath { get; private set; } = Path.Combine(WorkingDirectory, "config.json");
+
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>
@@ -18,6 +22,10 @@ namespace SysBot.Pokemon.WinForms
 #if NETFRAMEWORK
             InitUtil.InitializeStubs();
 #endif
+
+            var cmd = Environment.GetCommandLineArgs();
+            if (cmd.Length != 0)
+                ConfigPath = cmd[0];
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

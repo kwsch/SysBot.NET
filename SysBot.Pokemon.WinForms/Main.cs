@@ -16,8 +16,6 @@ namespace SysBot.Pokemon.WinForms
 {
     public sealed partial class Main : Form
     {
-        private static readonly string WorkingDirectory = Application.StartupPath;
-        private static readonly string ConfigPath = Path.Combine(WorkingDirectory, "config.json");
         private readonly List<PokeBotState> Bots = new();
         private readonly IPokeBotRunner RunningEnvironment;
         private readonly ProgramConfig Config;
@@ -27,9 +25,9 @@ namespace SysBot.Pokemon.WinForms
             InitializeComponent();
 
             PokeTradeBot.SeedChecker = new Z3SeedSearchHandler<PK8>();
-            if (File.Exists(ConfigPath))
+            if (File.Exists(Program.ConfigPath))
             {
-                var lines = File.ReadAllText(ConfigPath);
+                var lines = File.ReadAllText(Program.ConfigPath);
                 Config = JsonConvert.DeserializeObject<ProgramConfig>(lines, GetSettings()) ?? new();
                 RunningEnvironment = GetRunner(Config);
                 foreach (var bot in Config.Bots)
@@ -42,7 +40,7 @@ namespace SysBot.Pokemon.WinForms
             {
                 Config = new ProgramConfig();
                 RunningEnvironment = GetRunner(Config);
-                Config.Hub.Folder.CreateDefaults(WorkingDirectory);
+                Config.Hub.Folder.CreateDefaults(Program.WorkingDirectory);
             }
 
             LoadControls();
@@ -129,7 +127,7 @@ namespace SysBot.Pokemon.WinForms
         {
             var cfg = GetCurrentConfiguration();
             var lines = JsonConvert.SerializeObject(cfg, GetSettings());
-            File.WriteAllText(ConfigPath, lines);
+            File.WriteAllText(Program.ConfigPath, lines);
         }
 
         private static JsonSerializerSettings GetSettings() => new()
