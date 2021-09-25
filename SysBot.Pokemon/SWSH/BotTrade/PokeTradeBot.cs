@@ -331,7 +331,7 @@ namespace SysBot.Pokemon
             if (update != PokeTradeResult.Success)
                 return update;
 
-            var tradeResult = await ConfirmAndStartTrading(token).ConfigureAwait(false);
+            var tradeResult = await ConfirmAndStartTrading(poke, token).ConfigureAwait(false);
             if (tradeResult != PokeTradeResult.Success)
                 return tradeResult;
 
@@ -381,12 +381,12 @@ namespace SysBot.Pokemon
             }
         }
 
-        private async Task<PokeTradeResult> ConfirmAndStartTrading(CancellationToken token)
+        private async Task<PokeTradeResult> ConfirmAndStartTrading(PokeTradeDetail<PK8> detail, CancellationToken token)
         {
             await Click(A, 3_000, token).ConfigureAwait(false);
             for (int i = 0; i < 5; i++)
             {
-                if (await IsUserBeingShifty(token).ConfigureAwait(false))
+                if (await IsUserBeingShifty(detail, token).ConfigureAwait(false))
                     return PokeTradeResult.SuspiciousActivity;
                 await Click(A, 1_500, token).ConfigureAwait(false);
             }
@@ -495,7 +495,7 @@ namespace SysBot.Pokemon
 
             for (int i = 0; i < 5; i++)
             {
-                if (await IsUserBeingShifty(token).ConfigureAwait(false))
+                if (await IsUserBeingShifty(poke, token).ConfigureAwait(false))
                     return (toSend, PokeTradeResult.SuspiciousActivity);
                 await Click(A, 0_500, token).ConfigureAwait(false);
             }
@@ -503,7 +503,7 @@ namespace SysBot.Pokemon
             return (toSend, PokeTradeResult.Success);
         }
 
-        protected virtual async Task<bool> IsUserBeingShifty(CancellationToken token)
+        protected virtual async Task<bool> IsUserBeingShifty(PokeTradeDetail<PK8> detail, CancellationToken token)
         {
             await Task.CompletedTask.ConfigureAwait(false);
             return false;
