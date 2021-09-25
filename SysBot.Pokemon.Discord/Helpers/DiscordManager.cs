@@ -7,10 +7,10 @@ namespace SysBot.Pokemon.Discord
     public class DiscordManager
     {
         public readonly DiscordSettings Config;
-        public ulong Owner;
+        public ulong Owner { get; internal set; }
 
-        public readonly RemoteControlAccessList BlacklistedUsers = new();
-        public readonly RemoteControlAccessList WhitelistedChannels = new();
+        public RemoteControlAccessList BlacklistedUsers => Config.UserBlacklist;
+        public RemoteControlAccessList WhitelistedChannels => Config.ChannelWhitelist;
 
         public RemoteControlAccessList SudoDiscord => Config.GlobalSudoList;
         public RemoteControlAccessList SudoRoles => Config.RoleSudo;
@@ -25,7 +25,7 @@ namespace SysBot.Pokemon.Discord
         public bool CanUseSudo(ulong uid) => SudoDiscord.Contains(uid);
         public bool CanUseSudo(IEnumerable<string> roles) => roles.Any(SudoRoles.Contains);
 
-        public bool CanUseCommandChannel(ulong channel) => WhitelistedChannels.Count == 0 || WhitelistedChannels.Contains(channel);
+        public bool CanUseCommandChannel(ulong channel) => (WhitelistedChannels.List.Count == 0 && WhitelistedChannels.AllowIfEmpty) || WhitelistedChannels.Contains(channel);
         public bool CanUseCommandUser(ulong uid) => !BlacklistedUsers.Contains(uid);
 
         public RequestSignificance GetSignificance(IEnumerable<string> roles)
@@ -46,7 +46,7 @@ namespace SysBot.Pokemon.Discord
         public bool GetHasRoleQueue(string type, IEnumerable<string> roles)
         {
             var set = GetSet(type);
-            return (set.AllowIfEmpty && set.Count == 0) || roles.Any(set.Contains);
+            return (set.AllowIfEmpty && set.List.Count == 0) || roles.Any(set.Contains);
         }
 
         private RemoteControlAccessList GetSet(string type) => type switch

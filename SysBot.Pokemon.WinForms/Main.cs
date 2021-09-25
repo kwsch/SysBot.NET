@@ -3,11 +3,13 @@ using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Newtonsoft.Json.Serialization;
 using SysBot.Pokemon.Z3;
 
 namespace SysBot.Pokemon.WinForms
@@ -28,7 +30,7 @@ namespace SysBot.Pokemon.WinForms
             if (File.Exists(ConfigPath))
             {
                 var lines = File.ReadAllText(ConfigPath);
-                Config = JsonConvert.DeserializeObject<ProgramConfig>(lines);
+                Config = JsonConvert.DeserializeObject<ProgramConfig>(lines, GetSettings()) ?? new();
                 RunningEnvironment = GetRunner(Config);
                 foreach (var bot in Config.Bots)
                 {
@@ -126,13 +128,27 @@ namespace SysBot.Pokemon.WinForms
         private void SaveCurrentConfig()
         {
             var cfg = GetCurrentConfiguration();
-            var lines = JsonConvert.SerializeObject(cfg, new JsonSerializerSettings
-            {
-                Formatting = Formatting.Indented,
-                DefaultValueHandling = DefaultValueHandling.Include,
-                NullValueHandling = NullValueHandling.Ignore,
-            });
+            var lines = JsonConvert.SerializeObject(cfg, GetSettings());
             File.WriteAllText(ConfigPath, lines);
+        }
+
+        private static JsonSerializerSettings GetSettings() => new()
+        {
+            Formatting = Formatting.Indented,
+            DefaultValueHandling = DefaultValueHandling.Include,
+            NullValueHandling = NullValueHandling.Ignore,
+            ContractResolver = new SerializableExpandableContractResolver(),
+        };
+
+        // https://stackoverflow.com/a/36643545
+        private sealed class SerializableExpandableContractResolver : DefaultContractResolver
+        {
+            protected override JsonContract CreateContract(Type objectType)
+            {
+                if (TypeDescriptor.GetAttributes(objectType).Contains(new TypeConverterAttribute(typeof(ExpandableObjectConverter))))
+                    return CreateObjectContract(objectType);
+                return base.CreateContract(objectType);
+            }
         }
 
         private void B_Start_Click(object sender, EventArgs e)
