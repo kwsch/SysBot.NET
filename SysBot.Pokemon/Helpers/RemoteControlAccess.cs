@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace SysBot.Pokemon
@@ -14,6 +15,7 @@ namespace SysBot.Pokemon
         public override string ToString() => $"{Name} = {ID}";
     }
 
+    [TypeConverter(typeof(ExpandableObjectConverter))]
     public class RemoteControlAccessList : IEnumerable<RemoteControlAccess>
     {
         public bool AllowIfEmpty { get; set; } = true;
