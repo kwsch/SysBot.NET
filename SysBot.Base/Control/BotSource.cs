@@ -13,20 +13,29 @@ namespace SysBot.Base
         public bool IsRunning { get; private set; }
         public bool IsPaused { get; private set; }
 
+        private bool IsStopping { get; set; }
+
         public void Stop()
         {
-            if (!IsRunning)
+            if (!IsRunning || IsStopping)
                 return;
 
+            IsStopping = true;
             Source.Cancel();
             Source = new CancellationTokenSource();
 
-            Task.Run(async () => await Bot.HardStop().ConfigureAwait(false));
-            IsPaused = IsRunning = false;
+            Task.Run(function: async () =>
+            {
+                await Bot.HardStop().ConfigureAwait(false);
+                IsPaused = IsRunning = IsStopping = false;
+            });
         }
 
         public void Pause()
         {
+            if (!IsRunning || IsStopping)
+                return;
+
             IsPaused = true;
             Bot.SoftStop();
         }
@@ -36,7 +45,7 @@ namespace SysBot.Base
             if (IsPaused)
                 Stop(); // can't soft-resume; just re-launch
 
-            if (IsRunning)
+            if (IsRunning || IsStopping)
                 return;
 
             Task.Run(() => Bot.RunAsync(Source.Token)

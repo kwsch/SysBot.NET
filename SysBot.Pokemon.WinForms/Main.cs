@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json.Serialization;
@@ -113,14 +112,22 @@ namespace SysBot.Pokemon.WinForms
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
         {
+            SaveCurrentConfig();
             var bots = RunningEnvironment;
-            if (bots.IsRunning)
+            if (!bots.IsRunning)
+                return;
+
+            async Task WaitUntilNotRunning()
             {
-                bots.StopAll();
-                Thread.Sleep(100); // wait for things to abort?
+                while (bots.IsRunning)
+                    await Task.Delay(10).ConfigureAwait(false);
             }
 
-            SaveCurrentConfig();
+            // Try to let all bots hard-stop before ending execution of the entire program.
+            WindowState = FormWindowState.Minimized;
+            ShowInTaskbar = false;
+            bots.StopAll();
+            Task.WhenAny(WaitUntilNotRunning(), Task.Delay(5_000)).ConfigureAwait(true).GetAwaiter().GetResult();
         }
 
         private void SaveCurrentConfig()
