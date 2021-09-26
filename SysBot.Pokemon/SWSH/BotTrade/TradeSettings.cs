@@ -96,6 +96,9 @@ namespace SysBot.Pokemon
         [Category(Monitoring), Description("When a person using multiple accounts is detected, can early exit trade if desired.")]
         public TradeAbuseAction TradeAbuseAction { get; set; } = TradeAbuseAction.Quit;
 
+        [Category(Monitoring), Description("When a person appears with a different account in less than this setting's value (minutes), a notification will be sent.")]
+        public double TradeAbuseExpiration { get; set; } = 120;
+
         [Category(Monitoring), Description("Banned online IDs to exit a trade.")]
         public RemoteControlAccessList BannedIDs { get; set; } = new();
 

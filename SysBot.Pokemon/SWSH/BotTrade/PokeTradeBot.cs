@@ -296,7 +296,10 @@ namespace SysBot.Pokemon
 
             var partnerCheck = await CheckPartnerReputation(poke, TrainerNID, TrainerName, token).ConfigureAwait(false);
             if (partnerCheck != PokeTradeResult.Success)
+            {
+                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
                 return partnerCheck;
+            }
 
             if (!await IsInBox(token).ConfigureAwait(false))
             {
@@ -397,7 +400,7 @@ namespace SysBot.Pokemon
                 if (Settings.EchoNintendoOnlineIDMulti)
                     EchoUtil.Echo($"ID: {TrainerNID}");
 
-                if (delta > TimeSpan.FromHours(2) && Settings.TradeAbuseAction != TradeAbuseAction.Ignore)
+                if (delta > TimeSpan.FromMinutes(Settings.TradeAbuseExpiration) && Settings.TradeAbuseAction != TradeAbuseAction.Ignore)
                 {
                     if (Settings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
                         await BlockUser(token).ConfigureAwait(false);
