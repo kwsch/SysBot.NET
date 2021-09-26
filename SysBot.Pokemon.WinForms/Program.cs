@@ -24,7 +24,8 @@ namespace SysBot.Pokemon.WinForms
 #endif
 
             var cmd = Environment.GetCommandLineArgs();
-            if (cmd.Length != 0)
+            var cfg = Array.Find(cmd, z => z.EndsWith(".json"));
+            if (cfg != null)
                 ConfigPath = cmd[0];
 
             Application.EnableVisualStyles();
