@@ -41,6 +41,7 @@ namespace SysBot.Pokemon
         // Link Trade Offsets
         public const uint LinkTradePartnerPokemonOffset = 0xAF286078;
         public const uint LinkTradePartnerNameOffset = 0xAF28384C;
+        public const uint LinkTradePartnerNIDOffset = 0xAF2846B0;
         public const uint LinkTradeSearchingOffset = 0x2F76C3C8;
 
         // Suprise Trade Offsets

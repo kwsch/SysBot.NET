@@ -288,7 +288,8 @@ namespace SysBot.Pokemon
             await Task.Delay(5_500, token).ConfigureAwait(false); // necessary delay to get to the box properly
 
             var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
-            Log($"Found Trading Partner: {TrainerName}...");
+            var TrainerNID = await GetTradePartnerNID(token).ConfigureAwait(false);
+            Log($"Found Trading Partner: {TrainerName} ({TrainerNID})");
 
             if (!await IsInBox(token).ConfigureAwait(false))
             {
@@ -845,6 +846,19 @@ namespace SysBot.Pokemon
             await Click(B, 1_500, token).ConfigureAwait(false);
         }
 
+        // Blocks a user from the box during in-game trades.
+        protected async Task BlockUser(CancellationToken token)
+        {
+            Log("Blocking user...");
+            await PressAndHold(RSTICK, 0_750, 0_500, token).ConfigureAwait(false);
+            await Click(DUP, 0_300, token).ConfigureAwait(false);
+            await Click(A, 1_300, token).ConfigureAwait(false);
+            await Click(A, 1_300, token).ConfigureAwait(false);
+            await Click(DUP, 0_300, token).ConfigureAwait(false);
+            await Click(A, 1_100, token).ConfigureAwait(false);
+            await Click(A, 1_100, token).ConfigureAwait(false);
+        }
+
         private async Task<bool> LinkTradePartnerFound(CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(LinkTradeSearchingOffset, 1, token).ConfigureAwait(false);
@@ -874,6 +888,12 @@ namespace SysBot.Pokemon
             var ofs = GetTrainerNameOffset(tradeMethod);
             var data = await Connection.ReadBytesAsync(ofs, 26, token).ConfigureAwait(false);
             return StringConverter.GetString7(data, 0, 26);
+        }
+
+        public async Task<ulong> GetTradePartnerNID(CancellationToken token)
+        {
+            var data = await Connection.ReadBytesAsync(LinkTradePartnerNIDOffset, 8, token).ConfigureAwait(false);
+            return BitConverter.ToUInt64(data, 0);
         }
     }
 }
