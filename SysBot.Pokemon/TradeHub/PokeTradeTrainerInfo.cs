@@ -3,6 +3,12 @@
     public record PokeTradeTrainerInfo
     {
         public readonly string TrainerName;
-        public PokeTradeTrainerInfo(string name) => TrainerName = name;
+        public readonly ulong ID;
+
+        public PokeTradeTrainerInfo(string name, ulong id = 0)
+        {
+            TrainerName = name;
+            ID = id;
+        }
     }
 }

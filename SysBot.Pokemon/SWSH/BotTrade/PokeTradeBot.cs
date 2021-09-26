@@ -16,6 +16,8 @@ namespace SysBot.Pokemon
         private readonly TradeSettings Settings;
         public ICountSettings Counts => Settings;
 
+        private static readonly TrackedUserLog PreviousUsers = new();
+
         /// <summary>
         /// Folder to dump received trade data to.
         /// </summary>
@@ -289,7 +291,12 @@ namespace SysBot.Pokemon
 
             var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
             var TrainerNID = await GetTradePartnerNID(token).ConfigureAwait(false);
+            RecordUtil<PokeTradeBot>.Record($"Initiating\t{TrainerNID:X16}\t{TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
             Log($"Found Trading Partner: {TrainerName} ({TrainerNID})");
+
+            var prev = PreviousUsers.TryRegister(TrainerNID, TrainerName, poke.Trainer.ID);
+            if (prev != null)
+                EchoUtil.Echo($"{poke.Trainer.TrainerName} ({poke.Trainer.ID}) was encountered {(DateTime.Now - prev.Time).TotalMinutes:D1} minutes ago using account {prev.Name} ({prev.RemoteID}).");
 
             if (!await IsInBox(token).ConfigureAwait(false))
             {
@@ -345,12 +352,15 @@ namespace SysBot.Pokemon
             if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend))
             {
                 Log("User did not complete the trade.");
+                RecordUtil<PokeTradeBot>.Record($"Cancelled\t{TrainerNID:X16}\t{TrainerName}\t{poke.Trainer.TrainerName}\\t{poke.ID}\t{toSend.EncryptionConstant:X8}\t{offered.EncryptionConstant:X8}");
                 return PokeTradeResult.TrainerTooSlow;
             }
 
             // As long as we got rid of our inject in b1s1, assume the trade went through.
             Log("User completed the trade.");
             poke.TradeFinished(this, received);
+
+            RecordUtil<PokeTradeBot>.Record($"Finished\t{TrainerNID:X16}\t{toSend.EncryptionConstant:X8}\t{received.EncryptionConstant:X8}");
 
             // Only log if we completed the trade.
             UpdateCountsAndExport(poke, received, toSend);

@@ -5,7 +5,7 @@ namespace SysBot.Pokemon.Twitch
     public static class TwitchCommandsHelper<T> where T : PKM, new()
     {
         // Helper functions for commands
-        public static bool AddToWaitingList(string setstring, string display, string username, bool sub, out string msg)
+        public static bool AddToWaitingList(string setstring, string display, string username, ulong mUserId, bool sub, out string msg)
         {
             if (!TwitchBot<T>.Info.GetCanQueue())
             {
@@ -48,7 +48,7 @@ namespace SysBot.Pokemon.Twitch
                     var valid = new LegalityAnalysis(pkm).Valid;
                     if (valid)
                     {
-                        var tq = new TwitchQueue<T>(pk, new PokeTradeTrainerInfo(display), username, sub);
+                        var tq = new TwitchQueue<T>(pk, new PokeTradeTrainerInfo(display, mUserId), username, sub);
                         TwitchBot<T>.QueuePool.RemoveAll(z => z.UserName == username); // remove old requests if any
                         TwitchBot<T>.QueuePool.Add(tq);
                         msg = $"@{username} - added to the waiting list. Please whisper your trade code to me! Your request from the waiting list will be removed if you are too slow!";

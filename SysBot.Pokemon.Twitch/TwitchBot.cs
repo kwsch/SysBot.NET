@@ -106,7 +106,7 @@ namespace SysBot.Pokemon.Twitch
             var userID = ulong.Parse(e.WhisperMessage.UserId);
             var name = e.WhisperMessage.DisplayName;
 
-            var trainer = new PokeTradeTrainerInfo(name);
+            var trainer = new PokeTradeTrainerInfo(name, ulong.Parse(e.WhisperMessage.UserId));
             var notifier = new TwitchTradeNotifier<T>(pk, trainer, code, e.WhisperMessage.Username, client, Channel, Hub.Config.Twitch);
             var tt = type == PokeRoutineType.SeedCheck ? PokeTradeType.Seed : PokeTradeType.Specific;
             var detail = new PokeTradeDetail<T>(pk, trainer, notifier, tt, code, sig == RequestSignificance.Favored);
@@ -208,7 +208,7 @@ namespace SysBot.Pokemon.Twitch
             {
                 // User Usable Commands
                 case "trade":
-                    var _ = TwitchCommandsHelper<T>.AddToWaitingList(args, m.DisplayName, m.Username, subscriber(), out string msg);
+                    var _ = TwitchCommandsHelper<T>.AddToWaitingList(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg);
                     return msg;
                 case "ts":
                     return $"@{m.Username}: {Info.GetPositionString(ulong.Parse(m.UserId))}";
