@@ -394,30 +394,35 @@ namespace SysBot.Pokemon
             if (evade != null)
             {
                 var delta = DateTime.Now - evade.Time;
+                bool quit = false;
+                if (delta > TimeSpan.FromMinutes(Settings.TradeAbuseExpiration) && Settings.TradeAbuseAction != TradeAbuseAction.Ignore)
+                {
+                    if (Settings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
+                        await BlockUser(token).ConfigureAwait(false);
+                    quit = true;
+                }
+
                 var user = poke.Trainer;
                 var msg = $"{user.TrainerName} ({user.ID}) was encountered {delta.TotalMinutes:D1} minutes ago using account {evade.Name} ({evade.RemoteID}).";
                 EchoUtil.Echo(msg);
                 if (Settings.EchoNintendoOnlineIDMulti)
                     EchoUtil.Echo($"ID: {TrainerNID}");
 
-                if (delta > TimeSpan.FromMinutes(Settings.TradeAbuseExpiration) && Settings.TradeAbuseAction != TradeAbuseAction.Ignore)
-                {
-                    if (Settings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
-                        await BlockUser(token).ConfigureAwait(false);
+                if (quit)
                     return PokeTradeResult.SuspiciousActivity;
-                }
             }
 
             var entry = Settings.BannedIDs.List.Find(z => z.ID == TrainerNID);
             if (entry != null)
             {
+                if (Settings.BlockDetectedBannedUser)
+                    await BlockUser(token).ConfigureAwait(false);
+
                 var user = poke.Trainer;
                 var msg = $"{user.TrainerName} ({user.ID}) is banned, and was encountered in-game using {TrainerName}.";
                 if (!string.IsNullOrWhiteSpace(entry.Comment))
                     msg += $" Was banned for {entry.Comment}";
                 EchoUtil.Echo(msg);
-                if (Settings.BlockDetectedBannedUser)
-                    await BlockUser(token).ConfigureAwait(false);
                 return PokeTradeResult.SuspiciousActivity;
             }
 
