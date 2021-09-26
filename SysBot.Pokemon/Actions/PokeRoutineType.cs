@@ -32,13 +32,13 @@
         RaidBot = 9,
 
         /// <summary> Triggers encounters until the criteria is satisfied. </summary>
-        EncounterBotLine = 1000,
+        EncounterLine = 1000,
 
-        /// <summary> Triggers encounters until the criteria is satisfied. </summary>
-        EncounterBotEternatus = 1001,
+        /// <summary> Triggers encounters with Eternatus until the criteria is satisfied. </summary>
+        Eternatus = 1001,
 
-        /// <summary> Triggers encounters until the criteria is satisfied. </summary>
-        EncounterBotDog = 1002,
+        /// <summary> Triggers encounters with Sword &amp; Shield box legend until the criteria is satisfied. </summary>
+        Dogbot = 1002,
 
         /// <summary> Similar to idle, but identifies the bot as available for Remote input (Twitch Plays, etc). </summary>
         RemoteControl = 6000,

@@ -18,9 +18,9 @@ namespace SysBot.Pokemon
             PokeRoutineType.EggFetch => new EggBot(cfg, Hub),
             PokeRoutineType.FossilBot => new FossilBot(cfg, Hub),
             PokeRoutineType.RaidBot => new RaidBot(cfg, Hub),
-            PokeRoutineType.EncounterBotLine => new EncounterBotLine(cfg, Hub),
-            PokeRoutineType.EncounterBotEternatus => new EncounterBotEternatus(cfg, Hub),
-            PokeRoutineType.EncounterBotDog => new EncounterBotDog(cfg, Hub),
+            PokeRoutineType.EncounterLine => new EncounterBotLine(cfg, Hub),
+            PokeRoutineType.Eternatus => new EncounterBotEternatus(cfg, Hub),
+            PokeRoutineType.Dogbot => new EncounterBotDog(cfg, Hub),
 
             PokeRoutineType.RemoteControl => new RemoteControlBot(cfg),
             _ => throw new ArgumentException(nameof(cfg.NextRoutineType)),

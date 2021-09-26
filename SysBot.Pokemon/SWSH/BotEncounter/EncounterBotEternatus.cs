@@ -13,7 +13,7 @@ namespace SysBot.Pokemon
 
         protected override async Task EncounterLoop(SAV8SWSH sav, CancellationToken token)
         {
-            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EncounterBotEternatus)
+            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.Eternatus)
             {
                 await SetStick(SwitchStick.LEFT, 0, 20_000, 1_000, token).ConfigureAwait(false);
                 await ResetStick(token).ConfigureAwait(false);

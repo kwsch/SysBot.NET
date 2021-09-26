@@ -50,7 +50,7 @@ namespace SysBot.Pokemon
         {
             Log("Walking around until an encounter...");
             int attempts = 0;
-            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EncounterBotLine)
+            while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EncounterLine)
             {
                 if (!await IsInBattle(token).ConfigureAwait(false))
                 {
