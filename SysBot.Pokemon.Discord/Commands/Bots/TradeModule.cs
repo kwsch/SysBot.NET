@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using PKHeX.Core;
@@ -103,6 +104,22 @@ namespace SysBot.Pokemon.Discord
             var code = Info.GetRandomTradeCode();
             await TradeAsyncAttach(code).ConfigureAwait(false);
         }
+
+        [Command("banTrade")]
+        [Alias("bt")]
+        [RequireSudo]
+        public async Task BanTradeAsync([Summary("Online ID")] ulong nnid, string comment)
+        {
+            SysCordSettings.HubConfig.Trade.BannedIDs.AddIfNew(new[] { GetReference(nnid, comment) });
+            await ReplyAsync("Done.");
+        }
+
+        private RemoteControlAccess GetReference(ulong id, string comment) => new()
+        {
+            ID = id,
+            Name = id.ToString(),
+            Comment = $"Added by {Context.User.Username} on {DateTime.Now:yyyy.MM.dd-hh:mm:ss} {comment}",
+        };
 
         [Command("tradeUser")]
         [Alias("tu", "tradeOther")]

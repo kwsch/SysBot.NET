@@ -294,9 +294,9 @@ namespace SysBot.Pokemon
             RecordUtil<PokeTradeBot>.Record($"Initiating\t{TrainerNID:X16}\t{TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
             Log($"Found Trading Partner: {TrainerName} ({TrainerNID})");
 
-            var prev = PreviousUsers.TryRegister(TrainerNID, TrainerName, poke.Trainer.ID);
-            if (prev != null)
-                EchoUtil.Echo($"{poke.Trainer.TrainerName} ({poke.Trainer.ID}) was encountered {(DateTime.Now - prev.Time).TotalMinutes:D1} minutes ago using account {prev.Name} ({prev.RemoteID}).");
+            var partnerCheck = await CheckPartnerReputation(poke, TrainerNID, TrainerName, token).ConfigureAwait(false);
+            if (partnerCheck != PokeTradeResult.Success)
+                return partnerCheck;
 
             if (!await IsInBox(token).ConfigureAwait(false))
             {
@@ -364,6 +364,37 @@ namespace SysBot.Pokemon
 
             // Only log if we completed the trade.
             UpdateCountsAndExport(poke, received, toSend);
+            return PokeTradeResult.Success;
+        }
+
+        private async Task<PokeTradeResult> CheckPartnerReputation(PokeTradeDetail<PK8> poke, ulong TrainerNID, string TrainerName, CancellationToken token)
+        {
+            var prev = PreviousUsers.TryRegister(TrainerNID, TrainerName, poke.Trainer.ID);
+            if (prev != null)
+            {
+                var delta = DateTime.Now - prev.Time;
+                var user = poke.Trainer;
+                var msg = $"{user.TrainerName} ({user.ID}) was encountered {delta.TotalMinutes:D1} minutes ago using account {prev.Name} ({prev.RemoteID}).";
+                EchoUtil.Echo(msg);
+                if (delta > TimeSpan.FromHours(2) && Settings.TradeAbuseAction != TradeAbuseAction.Ignore)
+                {
+                    if (Settings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
+                        await BlockUser(token).ConfigureAwait(false);
+                    return PokeTradeResult.SuspiciousActivity;
+                }
+            }
+
+            var entry = Settings.BannedIDs.List.Find(z => z.ID == TrainerNID);
+            if (entry != null)
+            {
+                var user = poke.Trainer;
+                var msg = $"{user.TrainerName} ({user.ID}) is banned, and was encountered in-game using {TrainerName}.";
+                if (!string.IsNullOrWhiteSpace(entry.Comment))
+                    msg += $" Was banned for {entry.Comment}";
+                EchoUtil.Echo(msg);
+                return PokeTradeResult.SuspiciousActivity;
+            }
+
             return PokeTradeResult.Success;
         }
 

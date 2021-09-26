@@ -92,6 +92,9 @@ namespace SysBot.Pokemon
         [Category(Counts), Description("When enabled, the counts will be emitted when a status check is requested.")]
         public bool EmitCountsOnStatusCheck { get; set; }
 
+        public TradeAbuseAction TradeAbuseAction { get; set; } = TradeAbuseAction.Quit;
+        public RemoteControlAccessList BannedIDs { get; set; } = new();
+
         public void AddCompletedTrade() => Interlocked.Increment(ref _completedTrades);
         public void AddCompletedSeedCheck() => Interlocked.Increment(ref _completedSeedChecks);
         public void AddCompletedSurprise() =>Interlocked.Increment(ref _completedSurprise);
@@ -116,5 +119,12 @@ namespace SysBot.Pokemon
             if (CompletedSurprise != 0)
                 yield return $"Surprise Trades: {CompletedSurprise}";
         }
+    }
+
+    public enum TradeAbuseAction
+    {
+        Ignore,
+        Quit,
+        BlockAndQuit,
     }
 }
