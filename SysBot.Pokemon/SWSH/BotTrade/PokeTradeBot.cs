@@ -369,13 +369,34 @@ namespace SysBot.Pokemon
 
         private async Task<PokeTradeResult> CheckPartnerReputation(PokeTradeDetail<PK8> poke, ulong TrainerNID, string TrainerName, CancellationToken token)
         {
-            var prev = PreviousUsers.TryRegister(TrainerNID, TrainerName, poke.Trainer.ID);
-            if (prev != null)
+            var cooldown = PreviousUsers.TryGePrevious(TrainerNID);
+            if (cooldown != null)
             {
-                var delta = DateTime.Now - prev.Time;
+                var delta = DateTime.Now - cooldown.Time;
                 var user = poke.Trainer;
-                var msg = $"{user.TrainerName} ({user.ID}) was encountered {delta.TotalMinutes:D1} minutes ago using account {prev.Name} ({prev.RemoteID}).";
+                Log($"Last saw {user.TrainerName} {delta.TotalMinutes:D1} minutes ago.");
+
+                var cd = Settings.TradeCooldown;
+                if (cd != 0 && TimeSpan.FromMinutes(cd) > delta)
+                {
+                    poke.Notifier.SendNotification(this, poke, "You have ignored the trade cooldown set by the bot owner. The owner has been notified.");
+                    var msg = $"{user.TrainerName} ({user.ID}) was encountered {delta.TotalMinutes:D1} minutes ago ignoring the trade cooldown of {cd} minutes.";
+                    if (Settings.EchoNintendoOnlineIDCooldown)
+                        EchoUtil.Echo($"ID: {TrainerNID}");
+                    EchoUtil.Echo(msg);
+                }
+            }
+
+            var evade = PreviousUsers.TryRegister(TrainerNID, TrainerName, poke.Trainer.ID);
+            if (evade != null)
+            {
+                var delta = DateTime.Now - evade.Time;
+                var user = poke.Trainer;
+                var msg = $"{user.TrainerName} ({user.ID}) was encountered {delta.TotalMinutes:D1} minutes ago using account {evade.Name} ({evade.RemoteID}).";
                 EchoUtil.Echo(msg);
+                if (Settings.EchoNintendoOnlineIDMulti)
+                    EchoUtil.Echo($"ID: {TrainerNID}");
+
                 if (delta > TimeSpan.FromHours(2) && Settings.TradeAbuseAction != TradeAbuseAction.Ignore)
                 {
                     if (Settings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)

@@ -50,6 +50,12 @@ namespace SysBot.Pokemon
             Users[ReplaceIndex] = user;
             ReplaceIndex = (ReplaceIndex + 1) % Capacity;
         }
+
+        public TrackedUser? TryGePrevious(ulong trainerNid)
+        {
+            lock (_sync)
+                return Users.Find(z => z.ID == trainerNid);
+        }
     }
 
     public sealed record TrackedUser

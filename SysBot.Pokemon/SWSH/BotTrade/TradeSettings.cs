@@ -12,6 +12,7 @@ namespace SysBot.Pokemon
         private const string TradeConfig = nameof(TradeConfig);
         private const string Dumping = nameof(Dumping);
         private const string Counts = nameof(Counts);
+        private const string Monitoring = nameof(Monitoring);
         public override string ToString() => "Trade Bot Settings";
 
         [Category(TradeConfig), Description("Time to wait for a trade partner in seconds.")]
@@ -92,8 +93,20 @@ namespace SysBot.Pokemon
         [Category(Counts), Description("When enabled, the counts will be emitted when a status check is requested.")]
         public bool EmitCountsOnStatusCheck { get; set; }
 
+        [Category(Monitoring), Description("When a person using multiple accounts is detected, can early exit trade if desired.")]
         public TradeAbuseAction TradeAbuseAction { get; set; } = TradeAbuseAction.Quit;
+
+        [Category(Monitoring), Description("Banned online IDs to exit a trade.")]
         public RemoteControlAccessList BannedIDs { get; set; } = new();
+
+        [Category(Monitoring), Description("When a person using multiple accounts is detected, the echo message will include their Nintendo Account ID.")]
+        public bool EchoNintendoOnlineIDMulti { get; set; } = true;
+
+        [Category(Monitoring), Description("When a person appears again in less than this setting's value (minutes), a notification will be sent.")]
+        public double TradeCooldown { get; set; }
+
+        [Category(Monitoring), Description("When a person ignores a trade cooldown, the echo message will include their Nintendo Account ID.")]
+        public bool EchoNintendoOnlineIDCooldown { get; set; } = true;
 
         public void AddCompletedTrade() => Interlocked.Increment(ref _completedTrades);
         public void AddCompletedSeedCheck() => Interlocked.Increment(ref _completedSeedChecks);
@@ -119,12 +132,5 @@ namespace SysBot.Pokemon
             if (CompletedSurprise != 0)
                 yield return $"Surprise Trades: {CompletedSurprise}";
         }
-    }
-
-    public enum TradeAbuseAction
-    {
-        Ignore,
-        Quit,
-        BlockAndQuit,
     }
 }
