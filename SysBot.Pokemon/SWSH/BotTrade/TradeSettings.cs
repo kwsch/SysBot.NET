@@ -105,6 +105,9 @@ namespace SysBot.Pokemon
         [Category(Monitoring), Description("When a person using multiple accounts is detected, the echo message will include their Nintendo Account ID.")]
         public bool EchoNintendoOnlineIDMulti { get; set; } = true;
 
+        [Category(Monitoring), Description("When a person is encountered with a banned ID, block them before quitting the trade.")]
+        public bool BlockDetectedBannedUser { get; set; } = true;
+
         [Category(Monitoring), Description("When a person appears again in less than this setting's value (minutes), a notification will be sent.")]
         public double TradeCooldown { get; set; }
 

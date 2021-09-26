@@ -416,6 +416,8 @@ namespace SysBot.Pokemon
                 if (!string.IsNullOrWhiteSpace(entry.Comment))
                     msg += $" Was banned for {entry.Comment}";
                 EchoUtil.Echo(msg);
+                if (Settings.BlockDetectedBannedUser)
+                    await BlockUser(token).ConfigureAwait(false);
                 return PokeTradeResult.SuspiciousActivity;
             }
 
