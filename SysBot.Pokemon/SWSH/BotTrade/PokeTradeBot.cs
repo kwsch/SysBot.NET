@@ -377,13 +377,13 @@ namespace SysBot.Pokemon
             {
                 var delta = DateTime.Now - cooldown.Time;
                 var user = poke.Trainer;
-                Log($"Last saw {user.TrainerName} {delta.TotalMinutes:D1} minutes ago.");
+                Log($"Last saw {user.TrainerName} {delta.TotalMinutes:F1} minutes ago (OT: {TrainerName}).");
 
                 var cd = Settings.TradeCooldown;
                 if (cd != 0 && TimeSpan.FromMinutes(cd) > delta)
                 {
                     poke.Notifier.SendNotification(this, poke, "You have ignored the trade cooldown set by the bot owner. The owner has been notified.");
-                    var msg = $"{user.TrainerName} ({user.ID}) was encountered {delta.TotalMinutes:D1} minutes ago ignoring the trade cooldown of {cd} minutes.";
+                    var msg = $"{user.TrainerName} ({user.ID}) was encountered {delta.TotalMinutes:F1} minutes ago ignoring the trade cooldown of {cd} minutes.";
                     if (Settings.EchoNintendoOnlineIDCooldown)
                         EchoUtil.Echo($"ID: {TrainerNID}");
                     EchoUtil.Echo(msg);
@@ -403,7 +403,7 @@ namespace SysBot.Pokemon
                 }
 
                 var user = poke.Trainer;
-                var msg = $"{user.TrainerName} ({user.ID}) was encountered {delta.TotalMinutes:D1} minutes ago using account {evade.Name} ({evade.RemoteID}).";
+                var msg = $"{user.TrainerName} ({user.ID}) was encountered {delta.TotalMinutes:F1} minutes ago (OT: {TrainerName}) using account {evade.Name} ({evade.RemoteID}).";
                 EchoUtil.Echo(msg);
                 if (Settings.EchoNintendoOnlineIDMulti)
                     EchoUtil.Echo($"ID: {TrainerNID}");
@@ -419,7 +419,7 @@ namespace SysBot.Pokemon
                     await BlockUser(token).ConfigureAwait(false);
 
                 var user = poke.Trainer;
-                var msg = $"{user.TrainerName} ({user.ID}) is banned, and was encountered in-game using {TrainerName}.";
+                var msg = $"{user.TrainerName} ({user.ID}) is banned, and was encountered in-game using OT: {TrainerName}.";
                 if (!string.IsNullOrWhiteSpace(entry.Comment))
                     msg += $" Was banned for {entry.Comment}";
                 EchoUtil.Echo(msg);
