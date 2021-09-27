@@ -13,6 +13,6 @@
         /// <summary>
         /// Trades between randomly matched players
         /// </summary>
-        SupriseTrade,
+        SurpriseTrade,
     }
 }

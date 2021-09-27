@@ -721,8 +721,8 @@ namespace SysBot.Pokemon
             // Let the game flush the results and de-register from the online surprise trade queue.
             await Task.Delay(7_000, token).ConfigureAwait(false);
 
-            var TrainerName = await GetTradePartnerName(TradeMethod.SupriseTrade, token).ConfigureAwait(false);
-            var TrainerTID = await GetTradePartnerTID7(TradeMethod.SupriseTrade, token).ConfigureAwait(false);
+            var TrainerName = await GetTradePartnerName(TradeMethod.SurpriseTrade, token).ConfigureAwait(false);
+            var TrainerTID = await GetTradePartnerTID7(TradeMethod.SurpriseTrade, token).ConfigureAwait(false);
             var SurprisePoke = await ReadSurpriseTradePokemon(token).ConfigureAwait(false);
 
             Log($"Found Surprise Trade Partner: {TrainerName}-{TrainerTID}, Pokémon: {(Species)SurprisePoke.Species}");
