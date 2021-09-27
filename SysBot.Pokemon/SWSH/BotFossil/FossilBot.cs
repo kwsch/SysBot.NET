@@ -36,7 +36,6 @@ namespace SysBot.Pokemon
         {
             Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);
-            await InitializeHardware(Settings, token).ConfigureAwait(false);
             await SetCurrentBox(0, token).ConfigureAwait(false);
 
             var existing = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
@@ -52,14 +51,32 @@ namespace SysBot.Pokemon
             var pouchData = await Connection.ReadBytesAsync(ItemTreasureAddress, 80, token).ConfigureAwait(false);
             var counts = FossilCount.GetFossilCounts(pouchData);
             int reviveCount = counts.PossibleRevives(Settings.Species);
-            if (reviveCount == 0)
+            if (reviveCount != 0)
             {
                 Log("Insufficient fossil pieces. Please obtain at least one of each required fossil piece first.");
                 return;
             }
 
-            Log("Starting main FossilBot loop.");
-            Config.IterateNextRoutine();
+            try
+            {
+                await InitializeHardware(Settings, token).ConfigureAwait(false);
+                Log($"Starting main {nameof(FossilBot)} loop.");
+                Config.IterateNextRoutine();
+                await InnerLoop(reviveCount, pouchData, counts, token).ConfigureAwait(false);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Log(e.Message);
+            }
+
+            Log($"Ending {nameof(FossilBot)} loop.");
+            await HardStop().ConfigureAwait(false);
+        }
+
+        private async Task InnerLoop(int reviveCount, byte[] pouchData, FossilCount counts, CancellationToken token)
+        {
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.FossilBot)
             {
                 if (encounterCount != 0 && encounterCount % reviveCount == 0)
@@ -130,8 +147,6 @@ namespace SysBot.Pokemon
                 while (IsWaiting)
                     await Task.Delay(1_000, token).ConfigureAwait(false);
             }
-
-            await HardStop().ConfigureAwait(false);
         }
 
         public override async Task HardStop()

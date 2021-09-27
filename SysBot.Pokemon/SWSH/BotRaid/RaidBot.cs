@@ -34,11 +34,28 @@ namespace SysBot.Pokemon
                 return;
             }
 
-            Log("Identifying trainer data of the host console.");
-            await IdentifyTrainer(token).ConfigureAwait(false);
-            await InitializeHardware(Settings, token).ConfigureAwait(false);
+            try
+            {
+                Log("Identifying trainer data of the host console.");
+                await IdentifyTrainer(token).ConfigureAwait(false);
+                await InitializeHardware(Settings, token).ConfigureAwait(false);
 
-            Log("Starting main RaidBot loop.");
+                Log("Starting main RaidBot loop.");
+                await InnerLoop(token).ConfigureAwait(false);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Log(e.Message);
+            }
+
+            Log($"Ending {nameof(RaidBot)} loop.");
+            await HardStop().ConfigureAwait(false);
+        }
+
+        private async Task InnerLoop(CancellationToken token)
+        {
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.RaidBot)
             {
                 Config.IterateNextRoutine();
@@ -72,7 +89,8 @@ namespace SysBot.Pokemon
                     if (Settings.NumberFriendsToAdd > 0 && Settings.RaidsBetweenAddFriends > 0)
                         addFriends = (encounterCount - Settings.InitialRaidsToHost) % Settings.RaidsBetweenAddFriends == 0;
                     if (Settings.NumberFriendsToDelete > 0 && Settings.RaidsBetweenDeleteFriends > 0)
-                        deleteFriends = (encounterCount - Settings.InitialRaidsToHost) % Settings.RaidsBetweenDeleteFriends == 0;
+                        deleteFriends = (encounterCount - Settings.InitialRaidsToHost) % Settings.RaidsBetweenDeleteFriends ==
+                                        0;
                 }
 
                 int code = Settings.GetRandomRaidCode();
@@ -83,7 +101,6 @@ namespace SysBot.Pokemon
 
                 await ResetGameAsync(token).ConfigureAwait(false);
             }
-            await HardStop().ConfigureAwait(false);
         }
 
         public override async Task HardStop()

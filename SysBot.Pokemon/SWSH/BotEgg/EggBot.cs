@@ -46,9 +46,20 @@ namespace SysBot.Pokemon
             Config.IterateNextRoutine();
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EggFetch)
             {
-                if (!await InnerLoop(token).ConfigureAwait(false))
-                    break;
+                try
+                {
+                    if (!await InnerLoop(token).ConfigureAwait(false))
+                        break;
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+                {
+                    Log(e.Message);
+                }
             }
+
+            Log($"Ending {nameof(EggBot)} loop.");
             await HardStop().ConfigureAwait(false);
         }
 

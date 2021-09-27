@@ -35,12 +35,23 @@ namespace SysBot.Pokemon
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
             await InitializeHardware(settings, token).ConfigureAwait(false);
 
-            Log("Starting main EncounterBot loop.");
-            Config.IterateNextRoutine();
+            try
+            {
+                Log($"Starting main {GetType().Name} loop.");
+                Config.IterateNextRoutine();
 
-            // Clear out any residual stick weirdness.
-            await ResetStick(token).ConfigureAwait(false);
-            await EncounterLoop(sav, token).ConfigureAwait(false);
+                // Clear out any residual stick weirdness.
+                await ResetStick(token).ConfigureAwait(false);
+                await EncounterLoop(sav, token).ConfigureAwait(false);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Log(e.Message);
+            }
+
+            Log($"Ending {GetType().Name} loop.");
             await HardStop().ConfigureAwait(false);
         }
 

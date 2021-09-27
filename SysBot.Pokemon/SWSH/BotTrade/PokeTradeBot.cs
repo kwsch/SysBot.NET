@@ -2,6 +2,7 @@
 using PKHeX.Core.Searching;
 using SysBot.Base;
 using System;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;
@@ -84,7 +85,15 @@ namespace SysBot.Pokemon
                     PokeRoutineType.SurpriseTrade => DoSurpriseTrades(sav, token),
                     _ => DoTrades(sav, token),
                 };
-                await task.ConfigureAwait(false);
+                try
+                {
+                    await task.ConfigureAwait(false);
+                }
+                catch (SocketException e)
+                {
+                    Log(e.Message);
+                    Connection.Reset();
+                }
             }
         }
 
