@@ -260,15 +260,15 @@ namespace SysBot.Pokemon
             var delay_count = 0;
             while (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
             {
-                if (delay_count >= 5)
+                if (delay_count++ >= 5)
                 {
+                    // Too many attempts, recover out of the trade.
                     await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
                     return PokeTradeResult.RecoverPostLinkCode;
                 }
 
                 for (int i = 0; i < 5; i++)
                     await Click(A, 0_800, token).ConfigureAwait(false);
-                delay_count++;
             }
 
             poke.TradeSearching(this);
@@ -510,9 +510,7 @@ namespace SysBot.Pokemon
                 poke.SendNotification(this, report);
 
                 await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
-                {
-                    return (offered, PokeTradeResult.IllegalTrade);
-                }
+                return (offered, PokeTradeResult.IllegalTrade);
             }
 
             // Inject the shown Pokémon.
@@ -931,28 +929,16 @@ namespace SysBot.Pokemon
             await Click(A, 1_100, token).ConfigureAwait(false);
         }
 
-        private async Task<bool> LinkTradePartnerFound(CancellationToken token)
-        {
-            var data = await Connection.ReadBytesAsync(LinkTradeSearchingOffset, 1, token).ConfigureAwait(false);
-            return data[0] == 0;
-        }
-
         private async Task<bool> CheckIfSearchingForLinkTradePartner(CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(LinkTradeSearchingOffset, 1, token).ConfigureAwait(false);
-            return data[0] == 1;
+            return data[0] == 1; // changes to 0 when found
         }
 
         private async Task<bool> CheckIfSearchingForSurprisePartner(CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(SurpriseTradeSearchOffset, 8, token).ConfigureAwait(false);
             return BitConverter.ToUInt32(data, 0) == SurpriseTradeSearch_Searching;
-        }
-
-        private async Task<bool> CheckTradePartnerName(TradeMethod tradeMethod, string Name, CancellationToken token)
-        {
-            var name = await GetTradePartnerName(tradeMethod, token).ConfigureAwait(false);
-            return name == Name;
         }
 
         private async Task<string> GetTradePartnerName(TradeMethod tradeMethod, CancellationToken token)

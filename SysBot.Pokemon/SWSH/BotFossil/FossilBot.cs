@@ -108,11 +108,11 @@ namespace SysBot.Pokemon
                 }
 
                 var mode = Settings.ContinueAfterMatch;
-                var msg = mode switch
+                var msg = $"Result found!\n{print}\n" + mode switch
                 {
-                    ContinueAfterMatch.Continue => $"Result found!\n{print}\nContinuing...",
-                    ContinueAfterMatch.PauseWaitAcknowledge => $"Result found!\n{print}\nI'm waiting for you to acknowledge via command to continue.",
-                    ContinueAfterMatch.StopExit => $"Result found!\n{print}\nStopping routine execution; restart the bot(s) to search again.",
+                    ContinueAfterMatch.Continue             => "Continuing...",
+                    ContinueAfterMatch.PauseWaitAcknowledge => "Waiting for instructions to continue.",
+                    ContinueAfterMatch.StopExit             => "Stopping routine execution; restart the bot to search again.",
                     _ => throw new ArgumentOutOfRangeException(),
                 };
 

@@ -111,7 +111,7 @@ namespace SysBot.Pokemon.Discord
         public async Task BanTradeAsync([Summary("Online ID")] ulong nnid, string comment)
         {
             SysCordSettings.HubConfig.Trade.BannedIDs.AddIfNew(new[] { GetReference(nnid, comment) });
-            await ReplyAsync("Done.");
+            await ReplyAsync("Done.").ConfigureAwait(false);
         }
 
         private RemoteControlAccess GetReference(ulong id, string comment) => new()

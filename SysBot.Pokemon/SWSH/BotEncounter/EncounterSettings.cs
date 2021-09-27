@@ -24,10 +24,18 @@ namespace SysBot.Pokemon
         private int _completedLegend;
 
         [Category(Counts), Description("Encountered Wild Pokémon")]
-        public int CompletedEncounters { get; set; }
+        public int CompletedEncounters
+        {
+            get => _completedWild;
+            set => _completedWild = value;
+        }
 
         [Category(Counts), Description("Encountered Legendary Pokémon")]
-        public int CompletedLegends { get; set; }
+        public int CompletedLegends
+        {
+            get => _completedLegend;
+            set => _completedLegend = value;
+        }
 
         [Category(Counts), Description("When enabled, the counts will be emitted when a status check is requested.")]
         public bool EmitCountsOnStatusCheck { get; set; }
