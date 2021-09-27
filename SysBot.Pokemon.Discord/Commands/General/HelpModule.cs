@@ -52,9 +52,14 @@ namespace SysBot.Pokemon.Discord
                 if (string.IsNullOrWhiteSpace(description))
                     continue;
 
+                var moduleName = module.Name;
+                var gen = moduleName.IndexOf('`');
+                if (gen != -1)
+                    moduleName = moduleName[..gen];
+
                 builder.AddField(x =>
                 {
-                    x.Name = module.Name;
+                    x.Name = moduleName;
                     x.Value = description;
                     x.IsInline = false;
                 });
