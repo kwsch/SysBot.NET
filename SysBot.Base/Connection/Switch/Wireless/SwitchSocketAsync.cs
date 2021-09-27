@@ -38,7 +38,7 @@ namespace SysBot.Base
             if (Connected)
                 Disconnect();
 
-            Connection = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            InitializeSocket();
             Log("Connecting to device...");
             var address = Dns.GetHostAddresses(ip);
             foreach (IPAddress adr in address)
@@ -56,7 +56,8 @@ namespace SysBot.Base
             Connection.Shutdown(SocketShutdown.Both);
             Connection.BeginDisconnect(true, DisconnectCallback, Connection);
             Connected = false;
-            Log("Disconnected!");
+            Log("Disconnected! Resetting Socket.");
+            InitializeSocket();
         }
 
         private readonly AutoResetEvent connectionDone = new(false);

@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System;
+using System.Net.Sockets;
 
 namespace SysBot.Base
 {
@@ -7,8 +8,10 @@ namespace SysBot.Base
     /// </summary>
     public abstract class SwitchSocket : IConsoleConnection
     {
-        protected Socket Connection;
+        protected Socket Connection { get; private set; }
         protected readonly IWirelessConnectionConfig Info;
+        private readonly ProtocolType Protocol;
+        private readonly SocketType Type;
 
         public string Name { get; }
         public string Label { get; set; }
@@ -18,9 +21,11 @@ namespace SysBot.Base
         public int BaseDelay { get; set; } = 64;
         public int DelayFactor { get; set; } = 256;
 
-        protected SwitchSocket(IWirelessConnectionConfig wi, SocketType type = SocketType.Stream, ProtocolType proto = ProtocolType.Tcp)
+        protected SwitchSocket(IWirelessConnectionConfig wi, SocketType type = SocketType.Stream, ProtocolType protocol = ProtocolType.Tcp)
         {
-            Connection = new Socket(type, proto);
+            Type = type;
+            Protocol = protocol;
+            Connection = new Socket(type, protocol);
             Info = wi;
             Name = Label = wi.IP;
         }
@@ -32,5 +37,6 @@ namespace SysBot.Base
         public abstract void Connect();
         public abstract void Reset();
         public abstract void Disconnect();
+        public void InitializeSocket() => Connection = new Socket(Type, Protocol);
     }
 }
