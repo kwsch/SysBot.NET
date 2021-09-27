@@ -299,9 +299,10 @@ namespace SysBot.Pokemon
             await Task.Delay(5_500, token).ConfigureAwait(false); // necessary delay to get to the box properly
 
             var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
+            var TrainerTID = await GetTradePartnerTID7(TradeMethod.LinkTrade, token).ConfigureAwait(false);
             var TrainerNID = await GetTradePartnerNID(token).ConfigureAwait(false);
             RecordUtil<PokeTradeBot>.Record($"Initiating\t{TrainerNID:X16}\t{TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
-            Log($"Found Trading Partner: {TrainerName} ({TrainerNID})");
+            Log($"Found Trading Partner: {TrainerName}-{TrainerTID} (ID: {TrainerNID})");
 
             var partnerCheck = await CheckPartnerReputation(poke, TrainerNID, TrainerName, token).ConfigureAwait(false);
             if (partnerCheck != PokeTradeResult.Success)
@@ -392,9 +393,9 @@ namespace SysBot.Pokemon
                 if (cd != 0 && TimeSpan.FromMinutes(cd) > delta)
                 {
                     poke.Notifier.SendNotification(this, poke, "You have ignored the trade cooldown set by the bot owner. The owner has been notified.");
-                    var msg = $"{user.TrainerName} ({user.ID}) was encountered {delta.TotalMinutes:F1} minutes ago ignoring the trade cooldown of {cd} minutes.";
+                    var msg = $"Found {user.TrainerName} ({user.ID}) ignoring the {cd} minute trade cooldown. Last encountered {delta.TotalMinutes:F1} minutes ago.";
                     if (Settings.EchoNintendoOnlineIDCooldown)
-                        EchoUtil.Echo($"ID: {TrainerNID}");
+                        msg += $"\nID: {TrainerNID}";
                     EchoUtil.Echo(msg);
                 }
             }
@@ -412,10 +413,10 @@ namespace SysBot.Pokemon
                 }
 
                 var user = poke.Trainer;
-                var msg = $"{user.TrainerName} ({user.ID}) was encountered {delta.TotalMinutes:F1} minutes ago (OT: {TrainerName}) using account {evade.Name} ({evade.RemoteID}).";
-                EchoUtil.Echo(msg);
+                var msg = $"Found {user.TrainerName} ({user.ID}) using multiple accounts.\nPreviously encountered {evade.Name} ({evade.RemoteID}) {delta.TotalMinutes:F1} minutes ago on OT: {TrainerName}.";
                 if (Settings.EchoNintendoOnlineIDMulti)
-                    EchoUtil.Echo($"ID: {TrainerNID}");
+                    msg += $"\nID: {TrainerNID}";
+                EchoUtil.Echo(msg);
 
                 if (quit)
                     return PokeTradeResult.SuspiciousActivity;
@@ -428,9 +429,9 @@ namespace SysBot.Pokemon
                     await BlockUser(token).ConfigureAwait(false);
 
                 var user = poke.Trainer;
-                var msg = $"{user.TrainerName} ({user.ID}) is banned, and was encountered in-game using OT: {TrainerName}.";
+                var msg = $"{user.TrainerName} ({user.ID}) is a banned user, and was encountered in-game using OT: {TrainerName}.";
                 if (!string.IsNullOrWhiteSpace(entry.Comment))
-                    msg += $" Was banned for {entry.Comment}";
+                    msg += $"\nUser was banned for: {entry.Comment}";
                 EchoUtil.Echo(msg);
                 return PokeTradeResult.SuspiciousActivity;
             }
@@ -721,9 +722,10 @@ namespace SysBot.Pokemon
             await Task.Delay(7_000, token).ConfigureAwait(false);
 
             var TrainerName = await GetTradePartnerName(TradeMethod.SupriseTrade, token).ConfigureAwait(false);
+            var TrainerTID = await GetTradePartnerTID7(TradeMethod.SupriseTrade, token).ConfigureAwait(false);
             var SurprisePoke = await ReadSurpriseTradePokemon(token).ConfigureAwait(false);
 
-            Log($"Found Surprise Trade Partner: {TrainerName}, Pokémon: {(Species)SurprisePoke.Species}");
+            Log($"Found Surprise Trade Partner: {TrainerName}-{TrainerTID}, Pokémon: {(Species)SurprisePoke.Species}");
 
             // Clear out the received trade data; we want to skip the trade animation.
             // The box slot locks have been removed prior to searching.
@@ -955,6 +957,16 @@ namespace SysBot.Pokemon
             var ofs = GetTrainerNameOffset(tradeMethod);
             var data = await Connection.ReadBytesAsync(ofs, 26, token).ConfigureAwait(false);
             return StringConverter.GetString7(data, 0, 26);
+        }
+
+        private async Task<string> GetTradePartnerTID7(TradeMethod tradeMethod, CancellationToken token)
+        {
+            var ofs = GetTrainerTIDSIDOffset(tradeMethod);
+            var data = await Connection.ReadBytesAsync(ofs, 8, token).ConfigureAwait(false);
+            var tidsid = BitConverter.ToUInt32(data, 0);
+            var sid = tidsid >> 16;
+            var tid = tidsid & 0xFFFF;
+            return ((int)((tid | (sid << 16)) % 1000000)).ToString("D6");
         }
 
         public async Task<ulong> GetTradePartnerNID(CancellationToken token)

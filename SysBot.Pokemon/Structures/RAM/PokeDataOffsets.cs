@@ -46,7 +46,7 @@ namespace SysBot.Pokemon
 
         // Suprise Trade Offsets
         public const uint SurpriseTradePartnerPokemonOffset = 0x450675a0;
-        public const uint LinkTradePartnerIdentityOffset = LinkTradePartnerNameOffset - 0x8;
+        public const uint LinkTradePartnerTIDSIDOffset = LinkTradePartnerNameOffset - 0x8;
 
         public const uint SurpriseTradeLockSlot = 0x450676fc;
         public const uint SurpriseTradeLockBox = 0x450676f8;
@@ -56,7 +56,7 @@ namespace SysBot.Pokemon
         public const uint SurpriseTradeSearch_Searching = 0x01000000;
         public const uint SurpriseTradeSearch_Found = 0x0200012C;
         public const uint SurpriseTradePartnerNameOffset = 0x45067708;
-        public const uint SurpriseTradePartnerIdentityOffset = SurpriseTradePartnerNameOffset - 0x8;
+        public const uint SurpriseTradePartnerTIDSIDOffset = SurpriseTradePartnerNameOffset - 0x8;
 
         /* Wild Area Daycare */
         public const uint DayCare_Wildarea_Step_Counter = 0x4511FC54;
@@ -125,10 +125,10 @@ namespace SysBot.Pokemon
             _ => throw new ArgumentException(nameof(daycare)),
         };
 
-        public static uint GetTrainerIdentityOffset(TradeMethod tradeMethod) => tradeMethod switch
+        public static uint GetTrainerTIDSIDOffset(TradeMethod tradeMethod) => tradeMethod switch
         {
-            TradeMethod.LinkTrade => LinkTradePartnerIdentityOffset,
-            TradeMethod.SupriseTrade => SurpriseTradePartnerIdentityOffset,
+            TradeMethod.LinkTrade => LinkTradePartnerTIDSIDOffset,
+            TradeMethod.SupriseTrade => SurpriseTradePartnerTIDSIDOffset,
             _ => throw new ArgumentException(nameof(tradeMethod)),
         };
 

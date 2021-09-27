@@ -21,7 +21,7 @@ namespace SysBot.Pokemon.Discord
         }
 
         [Command("removeSudo")]
-        [Summary("Removes mentioned user to global sudo")]
+        [Summary("Removes mentioned user from global sudo")]
         [RequireOwner]
         // ReSharper disable once UnusedParameter.Global
         public async Task RemoveSudoUsers([Remainder] string _)
