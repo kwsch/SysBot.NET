@@ -5,7 +5,7 @@ namespace SysBot.Pokemon
 {
     public class TrackedUserLog
     {
-        private const int Capacity = 100;
+        private const int Capacity = 1000;
         private readonly List<TrackedUser> Users = new(Capacity);
         private readonly object _sync = new();
         private int ReplaceIndex;
