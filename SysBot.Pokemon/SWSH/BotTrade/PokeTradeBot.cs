@@ -230,17 +230,17 @@ namespace SysBot.Pokemon
 
             while (await CheckIfSearchingForLinkTradePartner(token).ConfigureAwait(false))
             {
-                Log("Still searching, reset bot position.");
+                Log("Still searching, resetting bot position.");
                 await ResetTradePosition(Hub.Config, token).ConfigureAwait(false);
             }
 
-            Log("Opening Y-Comm Menu");
+            Log("Opening Y-Comm menu.");
             await Click(Y, 2_000, token).ConfigureAwait(false);
 
-            Log("Selecting Link Trade");
+            Log("Selecting Link Trade.");
             await Click(A, 1_500, token).ConfigureAwait(false);
 
-            Log("Selecting Link Trade Code");
+            Log("Selecting Link Trade code.");
             await Click(DDOWN, 500, token).ConfigureAwait(false);
 
             for (int i = 0; i < 2; i++)
@@ -256,7 +256,7 @@ namespace SysBot.Pokemon
             await Task.Delay(Hub.Config.Timings.ExtraTimeOpenCodeEntry, token).ConfigureAwait(false);
 
             var code = poke.Code;
-            Log($"Entering Link Trade Code: {code:0000 0000}...");
+            Log($"Entering Link Trade code: {code:0000 0000}...");
             await EnterLinkCode(code, Hub.Config, token).ConfigureAwait(false);
 
             // Wait for Barrier to trigger all bots simultaneously.
@@ -302,12 +302,12 @@ namespace SysBot.Pokemon
             var TrainerTID = await GetTradePartnerTID7(TradeMethod.LinkTrade, token).ConfigureAwait(false);
             var TrainerNID = await GetTradePartnerNID(token).ConfigureAwait(false);
             RecordUtil<PokeTradeBot>.Record($"Initiating\t{TrainerNID:X16}\t{TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
-            Log($"Found Trading Partner: {TrainerName}-{TrainerTID} (ID: {TrainerNID})");
+            Log($"Found Link Trade partner: {TrainerName}-{TrainerTID} (ID: {TrainerNID})");
 
             var partnerCheck = await CheckPartnerReputation(poke, TrainerNID, TrainerName, token).ConfigureAwait(false);
             if (partnerCheck != PokeTradeResult.Success)
             {
-                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
+                await ExitSeedCheckTrade(Hub.Config, token).ConfigureAwait(false);
                 return partnerCheck;
             }
 
@@ -324,7 +324,7 @@ namespace SysBot.Pokemon
                     await Click(A, 0_500, token).ConfigureAwait(false);
             }
 
-            poke.SendNotification(this, $"Found Trading Partner: {TrainerName}. Waiting for a Pokémon...");
+            poke.SendNotification(this, $"Found Link Trade partner: {TrainerName}. Waiting for a Pokémon...");
 
             if (poke.Type == PokeTradeType.Dump)
                 return await ProcessDumpTradeAsync(poke, token).ConfigureAwait(false);
@@ -488,7 +488,7 @@ namespace SysBot.Pokemon
             await Task.Delay(1_000 + Util.Rand.Next(0_700, 1_000), token).ConfigureAwait(false);
 
             await ExitTrade(Hub.Config, false, token).ConfigureAwait(false);
-            Log("Exited Trade!");
+            Log("Exited trade!");
             return PokeTradeResult.Success;
         }
 
@@ -545,7 +545,7 @@ namespace SysBot.Pokemon
             var pk2 = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 3_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
             if (!partnerFound || pk2 == null || SearchUtil.HashByDetails(pk2) == SearchUtil.HashByDetails(offered))
             {
-                Log("Trading partner did not change their Pokémon.");
+                Log("Trade partner did not change their Pokémon.");
                 await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
                 return (offered, PokeTradeResult.TrainerTooSlow);
             }
@@ -614,13 +614,13 @@ namespace SysBot.Pokemon
 
                 var la = new LegalityAnalysis(pk);
                 var verbose = la.Report(true);
-                Log($"Shown Pokémon is {(la.Valid ? "Valid" : "Invalid")}.");
+                Log($"Shown Pokémon is: {(la.Valid ? "Valid" : "Invalid")}.");
 
                 detail.SendNotification(this, pk, verbose);
                 ctr++;
             }
 
-            Log($"Ended Dump loop after processing {ctr} Pokémon");
+            Log($"Ended Dump loop after processing {ctr} Pokémon.");
             await ExitSeedCheckTrade(Hub.Config, token).ConfigureAwait(false);
             if (ctr == 0)
                 return PokeTradeResult.TrainerTooSlow;
@@ -654,17 +654,17 @@ namespace SysBot.Pokemon
 
             if (await CheckIfSearchingForSurprisePartner(token).ConfigureAwait(false))
             {
-                Log("Still searching, reset.");
+                Log("Still searching, resetting bot position.");
                 await ResetTradePosition(Hub.Config, token).ConfigureAwait(false);
             }
 
-            Log("Opening Y-Comm Menu");
+            Log("Opening Y-Comm menu.");
             await Click(Y, 1_500, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
                 return PokeTradeResult.Aborted;
 
-            Log("Selecting Surprise Trade");
+            Log("Selecting Surprise Trade.");
             await Click(DDOWN, 0_500, token).ConfigureAwait(false);
             await Click(A, 2_000, token).ConfigureAwait(false);
 
@@ -679,7 +679,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.RecoverPostLinkCode;
             }
 
-            Log("Selecting Pokémon");
+            Log("Selecting Pokémon.");
             // Box 1 Slot 1; no movement required.
             await Click(A, 0_700, token).ConfigureAwait(false);
 
@@ -703,7 +703,7 @@ namespace SysBot.Pokemon
             }
 
             // Wait 30 Seconds for Trainer...
-            Log("Waiting for Surprise Trade Partner...");
+            Log("Waiting for Surprise Trade partner...");
 
             // Wait for an offer...
             var oldEC = await Connection.ReadBytesAsync(SurpriseTradeSearchOffset, 4, token).ConfigureAwait(false);
@@ -725,7 +725,7 @@ namespace SysBot.Pokemon
             var TrainerTID = await GetTradePartnerTID7(TradeMethod.SurpriseTrade, token).ConfigureAwait(false);
             var SurprisePoke = await ReadSurpriseTradePokemon(token).ConfigureAwait(false);
 
-            Log($"Found Surprise Trade Partner: {TrainerName}-{TrainerTID}, Pokémon: {(Species)SurprisePoke.Species}");
+            Log($"Found Surprise Trade partner: {TrainerName}-{TrainerTID}, Pokémon: {(Species)SurprisePoke.Species}");
 
             // Clear out the received trade data; we want to skip the trade animation.
             // The box slot locks have been removed prior to searching.
@@ -864,7 +864,7 @@ namespace SysBot.Pokemon
         private async Task ExitTrade(PokeTradeHubConfig config, bool unexpected, CancellationToken token)
         {
             if (unexpected)
-                Log("Unexpected behavior, recover position");
+                Log("Unexpected behavior, recovering position.");
 
             int attempts = 0;
             int softBanAttempts = 0;
@@ -930,7 +930,7 @@ namespace SysBot.Pokemon
         // Blocks a user from the box during in-game trades.
         protected async Task BlockUser(CancellationToken token)
         {
-            Log("Blocking user...");
+            Log("Blocking user in-game...");
             await PressAndHold(RSTICK, 0_750, 0_500, token).ConfigureAwait(false);
             await Click(DUP, 0_300, token).ConfigureAwait(false);
             await Click(A, 1_300, token).ConfigureAwait(false);

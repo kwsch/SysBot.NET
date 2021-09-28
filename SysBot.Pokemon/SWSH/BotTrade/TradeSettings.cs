@@ -33,8 +33,29 @@ namespace SysBot.Pokemon
         [Category(TradeConfig), Description("When enabled, the screen will be turned off during normal bot loop operation to save power.")]
         public bool ScreenOff { get; set; } = false;
 
-        [Category(TradeConfig), Description("Max amount of A presses to wait for a trade to end before trying to exit to overworld.")]
+        [Category(TradeConfig), Description("Max amount of time pressing A to wait for a trade to end before trying to exit to overworld.")]
         public int TradeAnimationMaxDelaySeconds { get; set; } = 90; // 150 maybe
+
+        [Category(Monitoring), Description("When a person appears again in less than this setting's value (minutes), a notification will be sent.")]
+        public double TradeCooldown { get; set; }
+
+        [Category(Monitoring), Description("When a person ignores a trade cooldown, the echo message will include their Nintendo Account ID.")]
+        public bool EchoNintendoOnlineIDCooldown { get; set; } = true;
+
+        [Category(Monitoring), Description("When a person appears with a different Discord/Twitch account in less than this setting's value (minutes), a notification will be sent.")]
+        public double TradeAbuseExpiration { get; set; } = 120;
+
+        [Category(Monitoring), Description("When a person using multiple Discord/Twitch accounts is detected, the echo message will include their Nintendo Account ID.")]
+        public bool EchoNintendoOnlineIDMulti { get; set; } = true;
+
+        [Category(Monitoring), Description("When a person using multiple Discord/Twitch accounts is detected, this action is taken.")]
+        public TradeAbuseAction TradeAbuseAction { get; set; } = TradeAbuseAction.Quit;
+
+        [Category(Monitoring), Description("Banned online IDs that will trigger trade exit or in-game block.")]
+        public RemoteControlAccessList BannedIDs { get; set; } = new();
+
+        [Category(Monitoring), Description("When a person is encountered with a banned ID, block them in-game before quitting the trade.")]
+        public bool BlockDetectedBannedUser { get; set; } = true;
 
         /// <summary>
         /// Gets a random trade code based on the range settings.
@@ -92,27 +113,6 @@ namespace SysBot.Pokemon
 
         [Category(Counts), Description("When enabled, the counts will be emitted when a status check is requested.")]
         public bool EmitCountsOnStatusCheck { get; set; }
-
-        [Category(Monitoring), Description("When a person using multiple accounts is detected, can early exit trade if desired.")]
-        public TradeAbuseAction TradeAbuseAction { get; set; } = TradeAbuseAction.Quit;
-
-        [Category(Monitoring), Description("When a person appears with a different account in less than this setting's value (minutes), a notification will be sent.")]
-        public double TradeAbuseExpiration { get; set; } = 120;
-
-        [Category(Monitoring), Description("Banned online IDs to exit a trade.")]
-        public RemoteControlAccessList BannedIDs { get; set; } = new();
-
-        [Category(Monitoring), Description("When a person using multiple accounts is detected, the echo message will include their Nintendo Account ID.")]
-        public bool EchoNintendoOnlineIDMulti { get; set; } = true;
-
-        [Category(Monitoring), Description("When a person is encountered with a banned ID, block them before quitting the trade.")]
-        public bool BlockDetectedBannedUser { get; set; } = true;
-
-        [Category(Monitoring), Description("When a person appears again in less than this setting's value (minutes), a notification will be sent.")]
-        public double TradeCooldown { get; set; }
-
-        [Category(Monitoring), Description("When a person ignores a trade cooldown, the echo message will include their Nintendo Account ID.")]
-        public bool EchoNintendoOnlineIDCooldown { get; set; } = true;
 
         public void AddCompletedTrade() => Interlocked.Increment(ref _completedTrades);
         public void AddCompletedSeedCheck() => Interlocked.Increment(ref _completedSeedChecks);
