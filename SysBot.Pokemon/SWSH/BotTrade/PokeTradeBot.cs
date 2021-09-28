@@ -350,7 +350,10 @@ namespace SysBot.Pokemon
             PokeTradeResult update;
             (toSend, update) = await GetEntityToSend(sav, poke, offered, oldEC, toSend, token).ConfigureAwait(false);
             if (update != PokeTradeResult.Success)
+            {
+                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
                 return update;
+            }
 
             var tradeResult = await ConfirmAndStartTrading(poke, token).ConfigureAwait(false);
             if (tradeResult != PokeTradeResult.Success)
@@ -519,7 +522,6 @@ namespace SysBot.Pokemon
                 poke.SendNotification(this, "This Pokémon is not legal per PKHeX's legality checks. I am forbidden from cloning this. Exiting trade.");
                 poke.SendNotification(this, report);
 
-                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
                 return (offered, PokeTradeResult.IllegalTrade);
             }
 
@@ -546,7 +548,6 @@ namespace SysBot.Pokemon
             if (!partnerFound || pk2 == null || SearchUtil.HashByDetails(pk2) == SearchUtil.HashByDetails(offered))
             {
                 Log("Trade partner did not change their Pokémon.");
-                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
                 return (offered, PokeTradeResult.TrainerTooSlow);
             }
 
