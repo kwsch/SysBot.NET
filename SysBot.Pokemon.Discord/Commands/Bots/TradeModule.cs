@@ -118,7 +118,7 @@ namespace SysBot.Pokemon.Discord
         {
             ID = id,
             Name = id.ToString(),
-            Comment = $"Added by {Context.User.Username} on {DateTime.Now:yyyy.MM.dd-hh:mm:ss} {comment}",
+            Comment = $"Added by {Context.User.Username} on {DateTime.Now:yyyy.MM.dd-hh:mm:ss} ({comment})",
         };
 
         [Command("tradeUser")]
