@@ -73,7 +73,7 @@ namespace SysBot.Pokemon.Discord
 
             var hub = SysCord<T>.Runner.Hub;
             var Info = hub.Queues.Info;
-            var added = Info.AddToTradeQueue(trade, userID, sig == RequestSignificance.Sudo);
+            var added = Info.AddToTradeQueue(trade, userID, sig == RequestSignificance.Owner);
 
             if (added == QueueResultAdd.AlreadyInQueue)
             {

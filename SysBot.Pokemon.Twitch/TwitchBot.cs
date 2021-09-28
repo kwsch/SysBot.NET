@@ -112,7 +112,7 @@ namespace SysBot.Pokemon.Twitch
             var detail = new PokeTradeDetail<T>(pk, trainer, notifier, tt, code, sig == RequestSignificance.Favored);
             var trade = new TradeEntry<T>(detail, userID, type, name);
 
-            var added = Info.AddToTradeQueue(trade, userID, sig == RequestSignificance.Sudo);
+            var added = Info.AddToTradeQueue(trade, userID, sig == RequestSignificance.Owner);
 
             if (added == QueueResultAdd.AlreadyInQueue)
             {
@@ -280,8 +280,11 @@ namespace SysBot.Pokemon.Twitch
 
         private RequestSignificance GetUserSignificance(TwitchQueue<T> user)
         {
+            var name = user.UserName;
+            if (name == Channel)
+                return RequestSignificance.Owner;
             if (Settings.IsSudo(user.UserName))
-                return RequestSignificance.Sudo;
+                return RequestSignificance.Favored;
             return user.IsSubscriber ? RequestSignificance.Favored : RequestSignificance.None;
         }
     }

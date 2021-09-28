@@ -18,6 +18,6 @@
         /// <summary>
         /// Highest significance (testing purposes)
         /// </summary>
-        Sudo,
+        Owner,
     }
 }

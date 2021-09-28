@@ -43,8 +43,10 @@ namespace SysBot.Pokemon.Discord
         public static RequestSignificance GetFavor(this IUser user)
         {
             var mgr = SysCordSettings.Manager;
+            if (user.Id == mgr.Owner)
+                return RequestSignificance.Owner;
             if (mgr.CanUseSudo(user.Id))
-                return RequestSignificance.Sudo;
+                return RequestSignificance.Favored;
             if (user is SocketGuildUser g)
                 return mgr.GetSignificance(g.Roles.Select(z => z.Name));
             return RequestSignificance.None;

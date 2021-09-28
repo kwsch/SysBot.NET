@@ -34,7 +34,7 @@ namespace SysBot.Pokemon.Discord
             foreach (var r in roles)
             {
                 if (SudoRoles.Contains(r))
-                    return RequestSignificance.Sudo;
+                    result = RequestSignificance.Favored;
                 if (FavoredRoles.Contains(r))
                     result = RequestSignificance.Favored;
             }
