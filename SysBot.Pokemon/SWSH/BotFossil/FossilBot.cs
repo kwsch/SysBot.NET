@@ -51,7 +51,7 @@ namespace SysBot.Pokemon
             var pouchData = await Connection.ReadBytesAsync(ItemTreasureAddress, 80, token).ConfigureAwait(false);
             var counts = FossilCount.GetFossilCounts(pouchData);
             int reviveCount = counts.PossibleRevives(Settings.Species);
-            if (reviveCount != 0)
+            if (reviveCount == 0)
             {
                 Log("Insufficient fossil pieces. Please obtain at least one of each required fossil piece first.");
                 return;
