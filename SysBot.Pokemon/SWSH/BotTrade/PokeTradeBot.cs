@@ -337,7 +337,7 @@ namespace SysBot.Pokemon
                 if (poke.Type == PokeTradeType.Seed)
                     await ExitSeedCheckTrade(Hub.Config, token).ConfigureAwait(false);
                 else
-                    await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
+                    await ExitTrade(Hub.Config, false, token).ConfigureAwait(false);
                 return PokeTradeResult.TrainerTooSlow;
             }
 
@@ -351,7 +351,7 @@ namespace SysBot.Pokemon
             (toSend, update) = await GetEntityToSend(sav, poke, offered, oldEC, toSend, token).ConfigureAwait(false);
             if (update != PokeTradeResult.Success)
             {
-                await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
+                await ExitTrade(Hub.Config, false, token).ConfigureAwait(false);
                 return update;
             }
 
