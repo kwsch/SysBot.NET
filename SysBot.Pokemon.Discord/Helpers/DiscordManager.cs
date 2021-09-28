@@ -43,7 +43,7 @@ namespace SysBot.Pokemon.Discord
 
         public DiscordManager(DiscordSettings cfg) => Config = cfg;
 
-        public bool GetHasRoleQueue(string type, IEnumerable<string> roles)
+        public bool GetHasRoleAccess(string type, IEnumerable<string> roles)
         {
             var set = GetSet(type);
             return (set.AllowIfEmpty && set.List.Count == 0) || roles.Any(set.Contains);

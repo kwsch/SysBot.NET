@@ -12,7 +12,7 @@ namespace SysBot.Pokemon.Discord
     {
         [Command("click")]
         [Summary("Clicks the specified button.")]
-        [RequireQueueRole(nameof(DiscordManager.RolesRemoteControl))]
+        [RequireRoleAccess(nameof(DiscordManager.RolesRemoteControl))]
         public async Task ClickAsync(SwitchButton b)
         {
             var bot = SysCord<T>.Runner.Bots.Find(z => z.Bot is RemoteControlBot);
@@ -42,7 +42,7 @@ namespace SysBot.Pokemon.Discord
 
         [Command("setStick")]
         [Summary("Sets the stick to the specified position.")]
-        [RequireQueueRole(nameof(DiscordManager.RolesRemoteControl))]
+        [RequireRoleAccess(nameof(DiscordManager.RolesRemoteControl))]
         public async Task SetStickAsync(SwitchStick s, short x, short y, ushort ms = 1_000)
         {
             var bot = SysCord<T>.Runner.Bots.Find(z => z.Bot is RemoteControlBot);
