@@ -1,7 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
-using SysBot.Base;
+using static SysBot.Base.SwitchStick;
+using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
@@ -15,20 +16,19 @@ namespace SysBot.Pokemon
         {
             while (!token.IsCancellationRequested)
             {
-                await SetStick(SwitchStick.LEFT, 0, 20_000, 1_000, token).ConfigureAwait(false);
+                await SetStick(LEFT, 0, 20_000, 1_000, token).ConfigureAwait(false);
                 await ResetStick(token).ConfigureAwait(false);
 
-                var pk = await ReadUntilPresent(PokeDataOffsets.RaidPokemonOffset, 2_000, 0_200, PokeDataOffsets.BoxFormatSlotSize, token).ConfigureAwait(false);
+                var pk = await ReadUntilPresent(RaidPokemonOffset, 2_000, 0_200, BoxFormatSlotSize, token).ConfigureAwait(false);
                 if (pk != null)
                 {
-                    if (await HandleEncounter(pk, true, token).ConfigureAwait(false))
+                    if (await HandleEncounter(pk, token).ConfigureAwait(false))
                         return;
                 }
 
                 Log("No match, resetting the game...");
                 await CloseGame(Hub.Config, token).ConfigureAwait(false);
                 await StartGame(Hub.Config, token).ConfigureAwait(false);
-                Log("Back in the game!");
             }
         }
     }

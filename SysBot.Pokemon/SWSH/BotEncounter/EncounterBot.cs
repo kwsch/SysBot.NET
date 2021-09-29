@@ -64,18 +64,20 @@ namespace SysBot.Pokemon
         protected abstract Task EncounterLoop(SAV8SWSH sav, CancellationToken token);
 
         // return true if breaking loop
-        protected async Task<bool> HandleEncounter(PK8 pk, bool legends, CancellationToken token)
+        protected async Task<bool> HandleEncounter(PK8 pk, CancellationToken token)
         {
             encounterCount++;
             var print = Hub.Config.StopConditions.GetPrintName(pk);
             Log($"Encounter: {encounterCount}{Environment.NewLine}{print}{Environment.NewLine}");
-            if (legends)
+
+            var legendary = Legal.Legends.Contains(pk.Species) || Legal.SubLegends.Contains(pk.Species);
+            if (legendary)
                 Settings.AddCompletedLegends();
             else
                 Settings.AddCompletedEncounters();
 
             if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                DumpPokemon(DumpSetting.DumpFolder, legends ? "legends" : "encounters", pk);
+                DumpPokemon(DumpSetting.DumpFolder, legendary ? "legends" : "encounters", pk);
 
             if (!StopConditionSettings.EncounterFound(pk, DesiredMinIVs, DesiredMaxIVs, Hub.Config.StopConditions))
                 return false;

@@ -1,7 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
-using SysBot.Base;
+using static SysBot.Base.SwitchStick;
+using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
@@ -24,7 +25,7 @@ namespace SysBot.Pokemon
                 // Reset stick while we wait for the encounter to load.
                 await ResetStick(token).ConfigureAwait(false);
 
-                var pk = await ReadUntilPresent(PokeDataOffsets.WildPokemonOffset, 2_000, 0_200, PokeDataOffsets.BoxFormatSlotSize, token).ConfigureAwait(false);
+                var pk = await ReadUntilPresent(WildPokemonOffset, 2_000, 0_200, BoxFormatSlotSize, token).ConfigureAwait(false);
                 if (pk == null)
                 {
                     Log("Invalid data detected. Restarting loop.");
@@ -36,9 +37,9 @@ namespace SysBot.Pokemon
 
                 // Offsets are flickery so make sure we see it 3 times.
                 for (int i = 0; i < 3; i++)
-                    await ReadUntilChanged(PokeDataOffsets.BattleMenuOffset, BattleMenuReady, 5_000, 0_100, true, token).ConfigureAwait(false);
+                    await ReadUntilChanged(BattleMenuOffset, BattleMenuReady, 5_000, 0_100, true, token).ConfigureAwait(false);
 
-                if (await HandleEncounter(pk, false, token).ConfigureAwait(false))
+                if (await HandleEncounter(pk, token).ConfigureAwait(false))
                     return;
 
                 Log("Running away...");
@@ -57,26 +58,26 @@ namespace SysBot.Pokemon
                     switch (Hub.Config.Encounter.EncounteringType)
                     {
                         case EncounterMode.VerticalLine:
-                            await SetStick(SwitchStick.LEFT, 0, -30000, 2_400, token).ConfigureAwait(false);
-                            await SetStick(SwitchStick.LEFT, 0, 0, 0_100, token).ConfigureAwait(false); // reset
+                            await SetStick(LEFT, 0, -30000, 2_400, token).ConfigureAwait(false);
+                            await SetStick(LEFT, 0, 0, 0_100, token).ConfigureAwait(false); // reset
 
                             // Quit early if we found an encounter on first sweep.
                             if (await IsInBattle(token).ConfigureAwait(false))
                                 break;
 
-                            await SetStick(SwitchStick.LEFT, 0, 30000, 2_400, token).ConfigureAwait(false);
-                            await SetStick(SwitchStick.LEFT, 0, 0, 0_100, token).ConfigureAwait(false); // reset
+                            await SetStick(LEFT, 0, 30000, 2_400, token).ConfigureAwait(false);
+                            await SetStick(LEFT, 0, 0, 0_100, token).ConfigureAwait(false); // reset
                             break;
                         case EncounterMode.HorizontalLine:
-                            await SetStick(SwitchStick.LEFT, -30000, 0, 2_400, token).ConfigureAwait(false);
-                            await SetStick(SwitchStick.LEFT, 0, 0, 0_100, token).ConfigureAwait(false); // reset
+                            await SetStick(LEFT, -30000, 0, 2_400, token).ConfigureAwait(false);
+                            await SetStick(LEFT, 0, 0, 0_100, token).ConfigureAwait(false); // reset
 
                             // Quit early if we found an encounter on first sweep.
                             if (await IsInBattle(token).ConfigureAwait(false))
                                 break;
 
-                            await SetStick(SwitchStick.LEFT, 30000, 0, 2_400, token).ConfigureAwait(false);
-                            await SetStick(SwitchStick.LEFT, 0, 0, 0_100, token).ConfigureAwait(false); // reset
+                            await SetStick(LEFT, 30000, 0, 2_400, token).ConfigureAwait(false);
+                            await SetStick(LEFT, 0, 0, 0_100, token).ConfigureAwait(false); // reset
                             break;
                     }
 
