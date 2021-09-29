@@ -51,6 +51,9 @@ namespace SysBot.Pokemon
         [Category(Monitoring), Description("When a person using multiple Discord/Twitch accounts is detected, this action is taken.")]
         public TradeAbuseAction TradeAbuseAction { get; set; } = TradeAbuseAction.Quit;
 
+        [Category(Monitoring), Description("When a person is blocked in-game for multiple accounts, their online ID is added to BannedIDs.")]
+        public bool BanIDWhenBlockingUser { get; set; } = true;
+
         [Category(Monitoring), Description("Banned online IDs that will trigger trade exit or in-game block.")]
         public RemoteControlAccessList BannedIDs { get; set; } = new();
 

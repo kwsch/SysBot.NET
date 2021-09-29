@@ -411,7 +411,14 @@ namespace SysBot.Pokemon
                 if (delta > TimeSpan.FromMinutes(Settings.TradeAbuseExpiration) && Settings.TradeAbuseAction != TradeAbuseAction.Ignore)
                 {
                     if (Settings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
+                    {
                         await BlockUser(token).ConfigureAwait(false);
+                        if (Settings.BanIDWhenBlockingUser)
+                        {
+                            Hub.Config.Trade.BannedIDs.AddIfNew(new[] { GetReference(TrainerNID, "in-game block for multiple accounts") });
+                            Log($"Added {TrainerNID} to the BannedIDs list.");
+                        }
+                    }
                     quit = true;
                 }
 
@@ -441,6 +448,13 @@ namespace SysBot.Pokemon
 
             return PokeTradeResult.Success;
         }
+
+        private RemoteControlAccess GetReference(ulong id, string comment) => new()
+        {
+            ID = id,
+            Name = id.ToString(),
+            Comment = $"Added automatically on {DateTime.Now:yyyy.MM.dd-hh:mm:ss} ({comment})",
+        };
 
         protected virtual async Task<bool> WaitForTradePartnerOffer(CancellationToken token)
         {
