@@ -12,7 +12,6 @@ namespace SysBot.Pokemon
         private const string TradeConfig = nameof(TradeConfig);
         private const string Dumping = nameof(Dumping);
         private const string Counts = nameof(Counts);
-        private const string Monitoring = nameof(Monitoring);
         public override string ToString() => "Trade Bot Settings";
 
         [Category(TradeConfig), Description("Time to wait for a trade partner in seconds.")]
@@ -35,30 +34,6 @@ namespace SysBot.Pokemon
 
         [Category(TradeConfig), Description("Max amount of time pressing A to wait for a trade to end before trying to exit to overworld.")]
         public int TradeAnimationMaxDelaySeconds { get; set; } = 90; // 150 maybe
-
-        [Category(Monitoring), Description("When a person appears again in less than this setting's value (minutes), a notification will be sent.")]
-        public double TradeCooldown { get; set; }
-
-        [Category(Monitoring), Description("When a person ignores a trade cooldown, the echo message will include their Nintendo Account ID.")]
-        public bool EchoNintendoOnlineIDCooldown { get; set; } = true;
-
-        [Category(Monitoring), Description("When a person appears with a different Discord/Twitch account in less than this setting's value (minutes), a notification will be sent.")]
-        public double TradeAbuseExpiration { get; set; } = 120;
-
-        [Category(Monitoring), Description("When a person using multiple Discord/Twitch accounts is detected, the echo message will include their Nintendo Account ID.")]
-        public bool EchoNintendoOnlineIDMulti { get; set; } = true;
-
-        [Category(Monitoring), Description("When a person using multiple Discord/Twitch accounts is detected, this action is taken.")]
-        public TradeAbuseAction TradeAbuseAction { get; set; } = TradeAbuseAction.Quit;
-
-        [Category(Monitoring), Description("When a person is blocked in-game for multiple accounts, their online ID is added to BannedIDs.")]
-        public bool BanIDWhenBlockingUser { get; set; } = true;
-
-        [Category(Monitoring), Description("Banned online IDs that will trigger trade exit or in-game block.")]
-        public RemoteControlAccessList BannedIDs { get; set; } = new();
-
-        [Category(Monitoring), Description("When a person is encountered with a banned ID, block them in-game before quitting the trade.")]
-        public bool BlockDetectedBannedUser { get; set; } = true;
 
         /// <summary>
         /// Gets a random trade code based on the range settings.

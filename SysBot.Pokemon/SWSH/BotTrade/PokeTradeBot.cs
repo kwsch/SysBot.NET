@@ -14,8 +14,9 @@ namespace SysBot.Pokemon
     {
         public static ISeedSearchHandler<PK8> SeedChecker = new NoSeedSearchHandler<PK8>();
         private readonly PokeTradeHub<PK8> Hub;
-        private readonly TradeSettings Settings;
-        public ICountSettings Counts => Settings;
+        private readonly TradeSettings TradeSettings;
+        private readonly TradeAbuseSettings AbuseSettings;
+        public ICountSettings Counts => TradeSettings;
 
         private static readonly TrackedUserLog PreviousUsers = new();
 
@@ -41,7 +42,8 @@ namespace SysBot.Pokemon
         public PokeTradeBot(PokeTradeHub<PK8> hub, PokeBotState cfg) : base(cfg)
         {
             Hub = hub;
-            Settings = hub.Config.Trade;
+            TradeSettings = hub.Config.Trade;
+            AbuseSettings = hub.Config.TradeAbuse;
             DumpSetting = hub.Config.Folder;
         }
 
@@ -71,7 +73,7 @@ namespace SysBot.Pokemon
         public override async Task HardStop()
         {
             UpdateBarrier(false);
-            await CleanExit(Settings, CancellationToken.None).ConfigureAwait(false);
+            await CleanExit(TradeSettings, CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task InnerLoop(SAV8SWSH sav, CancellationToken token)
@@ -334,10 +336,7 @@ namespace SysBot.Pokemon
             var oldEC = await Connection.ReadBytesAsync(LinkTradePartnerPokemonOffset, 4, token).ConfigureAwait(false);
             if (offered is null)
             {
-                if (poke.Type == PokeTradeType.Seed)
-                    await ExitSeedCheckTrade(Hub.Config, token).ConfigureAwait(false);
-                else
-                    await ExitTrade(Hub.Config, false, token).ConfigureAwait(false);
+                await ExitSeedCheckTrade(Hub.Config, token).ConfigureAwait(false);
                 return PokeTradeResult.TrainerTooSlow;
             }
 
@@ -385,21 +384,27 @@ namespace SysBot.Pokemon
 
         private async Task<PokeTradeResult> CheckPartnerReputation(PokeTradeDetail<PK8> poke, ulong TrainerNID, string TrainerName, CancellationToken token)
         {
-            var cooldown = PreviousUsers.TryGePrevious(TrainerNID);
+            bool quit = false;
+            var user = poke.Trainer;
+            var useridmsg = user.TrainerName == "Random Distribution" ? "" : $" ({user.ID})";
+
+            var cooldown = PreviousUsers.TryGetPrevious(TrainerNID);
             if (cooldown != null)
             {
                 var delta = DateTime.Now - cooldown.Time;
-                var user = poke.Trainer;
                 Log($"Last saw {user.TrainerName} {delta.TotalMinutes:F1} minutes ago (OT: {TrainerName}).");
 
-                var cd = Settings.TradeCooldown;
+                var cd = AbuseSettings.TradeCooldown;
                 if (cd != 0 && TimeSpan.FromMinutes(cd) > delta)
                 {
                     poke.Notifier.SendNotification(this, poke, "You have ignored the trade cooldown set by the bot owner. The owner has been notified.");
-                    var msg = $"Found {user.TrainerName} ({user.ID}) ignoring the {cd} minute trade cooldown. Last encountered {delta.TotalMinutes:F1} minutes ago.";
-                    if (Settings.EchoNintendoOnlineIDCooldown)
+                    var msg = $"Found {user.TrainerName}{useridmsg} ignoring the {cd} minute trade cooldown. Last encountered {delta.TotalMinutes:F1} minutes ago.";
+                    if (AbuseSettings.EchoNintendoOnlineIDCooldown)
                         msg += $"\nID: {TrainerNID}";
+                    if (!string.IsNullOrWhiteSpace(AbuseSettings.CooldownAbuseEchoMention))
+                        msg = $"{AbuseSettings.CooldownAbuseEchoMention} {msg}";
                     EchoUtil.Echo(msg);
+                    quit = true;
                 }
             }
 
@@ -407,41 +412,42 @@ namespace SysBot.Pokemon
             if (evade != null)
             {
                 var delta = DateTime.Now - evade.Time;
-                bool quit = false;
-                if (delta > TimeSpan.FromMinutes(Settings.TradeAbuseExpiration) && Settings.TradeAbuseAction != TradeAbuseAction.Ignore)
+                if (delta > TimeSpan.FromMinutes(AbuseSettings.TradeAbuseExpiration) && AbuseSettings.TradeAbuseAction != TradeAbuseAction.Ignore)
                 {
-                    if (Settings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
+                    if (AbuseSettings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
                     {
                         await BlockUser(token).ConfigureAwait(false);
-                        if (Settings.BanIDWhenBlockingUser)
+                        if (AbuseSettings.BanIDWhenBlockingUser)
                         {
-                            Hub.Config.Trade.BannedIDs.AddIfNew(new[] { GetReference(TrainerName, TrainerNID, "in-game block for multiple accounts") });
+                            AbuseSettings.BannedIDs.AddIfNew(new[] { GetReference(TrainerName, TrainerNID, "in-game block for multiple accounts") });
                             Log($"Added {TrainerNID} to the BannedIDs list.");
                         }
                     }
                     quit = true;
                 }
 
-                var user = poke.Trainer;
-                var msg = $"Found {user.TrainerName} ({user.ID}) using multiple accounts.\nPreviously encountered {evade.Name} ({evade.RemoteID}) {delta.TotalMinutes:F1} minutes ago on OT: {TrainerName}.";
-                if (Settings.EchoNintendoOnlineIDMulti)
+                var msg = $"Found {user.TrainerName}{useridmsg} using multiple accounts.\nPreviously encountered {evade.Name} ({evade.RemoteID}) {delta.TotalMinutes:F1} minutes ago on OT: {TrainerName}.";
+                if (AbuseSettings.EchoNintendoOnlineIDMulti)
                     msg += $"\nID: {TrainerNID}";
+                if (!string.IsNullOrWhiteSpace(AbuseSettings.MultiAbuseEchoMention))
+                    msg = $"{AbuseSettings.MultiAbuseEchoMention} {msg}";
                 EchoUtil.Echo(msg);
-
-                if (quit)
-                    return PokeTradeResult.SuspiciousActivity;
             }
 
-            var entry = Settings.BannedIDs.List.Find(z => z.ID == TrainerNID);
+            if (quit)
+                return PokeTradeResult.SuspiciousActivity;
+
+            var entry = AbuseSettings.BannedIDs.List.Find(z => z.ID == TrainerNID);
             if (entry != null)
             {
-                if (Settings.BlockDetectedBannedUser)
+                if (AbuseSettings.BlockDetectedBannedUser)
                     await BlockUser(token).ConfigureAwait(false);
 
-                var user = poke.Trainer;
-                var msg = $"{user.TrainerName} ({user.ID}) is a banned user, and was encountered in-game using OT: {TrainerName}.";
+                var msg = $"{user.TrainerName}{useridmsg} is a banned user, and was encountered in-game using OT: {TrainerName}.";
                 if (!string.IsNullOrWhiteSpace(entry.Comment))
                     msg += $"\nUser was banned for: {entry.Comment}";
+                if (!string.IsNullOrWhiteSpace(AbuseSettings.BannedIDMatchEchoMention))
+                    msg = $"{AbuseSettings.BannedIDMatchEchoMention} {msg}";
                 EchoUtil.Echo(msg);
                 return PokeTradeResult.SuspiciousActivity;
             }
@@ -464,7 +470,7 @@ namespace SysBot.Pokemon
 
         private void UpdateCountsAndExport(PokeTradeDetail<PK8> poke, PK8 received, PK8 toSend)
         {
-            var counts = Settings;
+            var counts = TradeSettings;
             if (poke.Type == PokeTradeType.Random)
                 counts.AddCompletedDistribution();
             else if (poke.Type == PokeTradeType.Clone)
@@ -640,7 +646,7 @@ namespace SysBot.Pokemon
             if (ctr == 0)
                 return PokeTradeResult.TrainerTooSlow;
 
-            Settings.AddCompletedDumps();
+            TradeSettings.AddCompletedDumps();
             detail.Notifier.SendNotification(this, detail, $"Dumped {ctr} Pokémon.");
             detail.Notifier.TradeFinished(this, detail, detail.TradeData); // blank pk8
             return PokeTradeResult.Success;
@@ -766,7 +772,7 @@ namespace SysBot.Pokemon
 
             if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
                 DumpPokemon(DumpSetting.DumpFolder, "surprise", SurprisePoke);
-            Settings.AddCompletedSurprise();
+            TradeSettings.AddCompletedSurprise();
 
             return PokeTradeResult.Success;
         }
@@ -797,7 +803,7 @@ namespace SysBot.Pokemon
             }, token);
 #pragma warning restore 4014
 
-            Settings.AddCompletedSeedCheck();
+            TradeSettings.AddCompletedSeedCheck();
 
             return PokeTradeResult.Success;
         }

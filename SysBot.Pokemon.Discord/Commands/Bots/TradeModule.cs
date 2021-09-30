@@ -110,7 +110,7 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task BanTradeAsync([Summary("Online ID")] ulong nnid, string comment)
         {
-            SysCordSettings.HubConfig.Trade.BannedIDs.AddIfNew(new[] { GetReference(nnid, comment) });
+            SysCordSettings.HubConfig.TradeAbuse.BannedIDs.AddIfNew(new[] { GetReference(nnid, comment) });
             await ReplyAsync("Done.").ConfigureAwait(false);
         }
 
