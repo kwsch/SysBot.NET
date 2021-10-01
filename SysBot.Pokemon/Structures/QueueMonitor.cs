@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 namespace SysBot.Pokemon
 {
-    public class QueueMonitor
+    public class QueueMonitor<T> where T : PKM, new()
     {
-        private readonly PokeTradeHub<PK8> Hub;
-        public QueueMonitor(PokeTradeHub<PK8> hub) => Hub = hub;
+        private readonly PokeTradeHub<T> Hub;
+        public QueueMonitor(PokeTradeHub<T> hub) => Hub = hub;
 
         public async Task MonitorOpenQueue(CancellationToken token)
         {
@@ -37,17 +37,17 @@ namespace SysBot.Pokemon
             }
         }
 
-        private static bool UpdateCanQueue(QueueOpening mode, QueueSettings settings, TradeQueueInfo<PK8> queues, float secWaited)
+        private static bool UpdateCanQueue(QueueOpening mode, QueueSettings settings, TradeQueueInfo<T> queues, float secWaited)
         {
             return mode switch
             {
                 QueueOpening.Threshold => CheckThreshold(settings, queues),
                 QueueOpening.Interval => CheckInterval(settings, queues, secWaited),
-                _ => false
+                _ => false,
             };
         }
 
-        private static bool CheckInterval(QueueSettings settings, TradeQueueInfo<PK8> queues, float secWaited)
+        private static bool CheckInterval(QueueSettings settings, TradeQueueInfo<T> queues, float secWaited)
         {
             if (settings.CanQueue)
             {
@@ -67,7 +67,7 @@ namespace SysBot.Pokemon
             return true;
         }
 
-        private static bool CheckThreshold(QueueSettings settings, TradeQueueInfo<PK8> queues)
+        private static bool CheckThreshold(QueueSettings settings, TradeQueueInfo<T> queues)
         {
             if (settings.CanQueue)
             {

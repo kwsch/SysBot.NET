@@ -6,7 +6,7 @@ namespace SysBot.Pokemon.Z3
     {
         private static int[] GetBlankIVTemplate() => new[] { -1, -1, -1, -1, -1, -1 };
 
-        public void CalculateAndNotify(T pkm, PokeTradeDetail<T> detail, SeedCheckSettings settings, PokeRoutineExecutor bot)
+        public void CalculateAndNotify(T pkm, PokeTradeDetail<T> detail, SeedCheckSettings settings, PokeRoutineExecutor<T> bot)
         {
             var ec = pkm.EncryptionConstant;
             var pid = pkm.PID;

@@ -12,17 +12,17 @@ using TwitchLib.Communication.Models;
 
 namespace SysBot.Pokemon.Twitch
 {
-    public class TwitchBot
+    public class TwitchBot<T> where T : PKM, new()
     {
-        private static PokeTradeHub<PK8> Hub = default!;
-        internal static TradeQueueInfo<PK8> Info => Hub.Queues.Info;
+        private static PokeTradeHub<T> Hub = default!;
+        internal static TradeQueueInfo<T> Info => Hub.Queues.Info;
 
-        internal static readonly List<TwitchQueue> QueuePool = new();
+        internal static readonly List<TwitchQueue<T>> QueuePool = new();
         private readonly TwitchClient client;
         private readonly string Channel;
         private readonly TwitchSettings Settings;
 
-        public TwitchBot(TwitchSettings settings, PokeTradeHub<PK8> hub)
+        public TwitchBot(TwitchSettings settings, PokeTradeHub<T> hub)
         {
             Hub = hub;
             Settings = settings;
@@ -100,19 +100,19 @@ namespace SysBot.Pokemon.Twitch
             });
         }
 
-        private bool AddToTradeQueue(PK8 pk8, int code, OnWhisperReceivedArgs e, RequestSignificance sig, PokeRoutineType type, out string msg)
+        private bool AddToTradeQueue(T pk, int code, OnWhisperReceivedArgs e, RequestSignificance sig, PokeRoutineType type, out string msg)
         {
             // var user = e.WhisperMessage.UserId;
             var userID = ulong.Parse(e.WhisperMessage.UserId);
             var name = e.WhisperMessage.DisplayName;
 
-            var trainer = new PokeTradeTrainerInfo(name);
-            var notifier = new TwitchTradeNotifier<PK8>(pk8, trainer, code, e.WhisperMessage.Username, client, Channel, Hub.Config.Twitch);
+            var trainer = new PokeTradeTrainerInfo(name, ulong.Parse(e.WhisperMessage.UserId));
+            var notifier = new TwitchTradeNotifier<T>(pk, trainer, code, e.WhisperMessage.Username, client, Channel, Hub.Config.Twitch);
             var tt = type == PokeRoutineType.SeedCheck ? PokeTradeType.Seed : PokeTradeType.Specific;
-            var detail = new PokeTradeDetail<PK8>(pk8, trainer, notifier, tt, code, sig == RequestSignificance.Favored);
-            var trade = new TradeEntry<PK8>(detail, userID, type, name);
+            var detail = new PokeTradeDetail<T>(pk, trainer, notifier, tt, code, sig == RequestSignificance.Favored);
+            var trade = new TradeEntry<T>(detail, userID, type, name);
 
-            var added = Info.AddToTradeQueue(trade, userID, sig == RequestSignificance.Sudo);
+            var added = Info.AddToTradeQueue(trade, userID, sig == RequestSignificance.Owner);
 
             if (added == QueueResultAdd.AlreadyInQueue)
             {
@@ -208,15 +208,15 @@ namespace SysBot.Pokemon.Twitch
             {
                 // User Usable Commands
                 case "trade":
-                    var _ = TwitchCommandsHelper.AddToWaitingList(args, m.DisplayName, m.Username, subscriber(), out string msg);
+                    var _ = TwitchCommandsHelper<T>.AddToWaitingList(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg);
                     return msg;
                 case "ts":
                     return $"@{m.Username}: {Info.GetPositionString(ulong.Parse(m.UserId))}";
                 case "tc":
-                    return $"@{m.Username}: {TwitchCommandsHelper.ClearTrade(ulong.Parse(m.UserId))}";
+                    return $"@{m.Username}: {TwitchCommandsHelper<T>.ClearTrade(ulong.Parse(m.UserId))}";
 
                 case "code" when whisper:
-                    return TwitchCommandsHelper.GetCode(ulong.Parse(m.UserId));
+                    return TwitchCommandsHelper<T>.GetCode(ulong.Parse(m.UserId));
 
                 // Sudo Only Commands
                 case "tca" when !sudo():
@@ -242,7 +242,7 @@ namespace SysBot.Pokemon.Twitch
                         : "Changed queue settings: **Users CANNOT join the queue until it is turned back on.**";
 
                 case "tcu":
-                    return TwitchCommandsHelper.ClearTrade(args);
+                    return TwitchCommandsHelper<T>.ClearTrade(args);
 
                 default: return string.Empty;
             }
@@ -274,14 +274,17 @@ namespace SysBot.Pokemon.Twitch
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                LogUtil.LogError($"{ex.Message}", nameof(TwitchBot));
+                LogUtil.LogError($"{ex.Message}", nameof(TwitchBot<T>));
             }
         }
 
-        private RequestSignificance GetUserSignificance(TwitchQueue user)
+        private RequestSignificance GetUserSignificance(TwitchQueue<T> user)
         {
+            var name = user.UserName;
+            if (name == Channel)
+                return RequestSignificance.Owner;
             if (Settings.IsSudo(user.UserName))
-                return RequestSignificance.Sudo;
+                return RequestSignificance.Favored;
             return user.IsSubscriber ? RequestSignificance.Favored : RequestSignificance.None;
         }
     }

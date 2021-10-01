@@ -38,7 +38,7 @@ namespace SysBot.Base
             if (Connected)
                 Disconnect();
 
-            Connection = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            InitializeSocket();
             Log("Connecting to device...");
             var address = Dns.GetHostAddresses(ip);
             foreach (IPAddress adr in address)
@@ -56,7 +56,8 @@ namespace SysBot.Base
             Connection.Shutdown(SocketShutdown.Both);
             Connection.BeginDisconnect(true, DisconnectCallback, Connection);
             Connected = false;
-            Log("Disconnected!");
+            Log("Disconnected! Resetting Socket.");
+            InitializeSocket();
         }
 
         private readonly AutoResetEvent connectionDone = new(false);
@@ -169,6 +170,19 @@ namespace SysBot.Base
                 await SendAsync(cmd, token).ConfigureAwait(false);
                 await Task.Delay((MaximumTransferSize / DelayFactor) + BaseDelay, token).ConfigureAwait(false);
             }
+        }
+
+        public async Task<byte[]> ReadRaw(byte[] command, int length, CancellationToken token)
+        {
+            await SendAsync(command, token).ConfigureAwait(false);
+            var buffer = new byte[length];
+            var _ = Read(buffer);
+            return buffer;
+        }
+
+        public async Task SendRaw(byte[] command, CancellationToken token)
+        {
+            await SendAsync(command, token).ConfigureAwait(false);
         }
     }
 }

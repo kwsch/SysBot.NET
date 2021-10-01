@@ -2,12 +2,12 @@ using PKHeX.Core;
 
 namespace SysBot.Pokemon.Twitch
 {
-    public static class TwitchCommandsHelper
+    public static class TwitchCommandsHelper<T> where T : PKM, new()
     {
         // Helper functions for commands
-        public static bool AddToWaitingList(string setstring, string display, string username, bool sub, out string msg)
+        public static bool AddToWaitingList(string setstring, string display, string username, ulong mUserId, bool sub, out string msg)
         {
-            if (!TwitchBot.Info.GetCanQueue())
+            if (!TwitchBot<T>.Info.GetCanQueue())
             {
                 msg = "Sorry, I am not currently accepting queue requests!";
                 return false;
@@ -43,20 +43,25 @@ namespace SysBot.Pokemon.Twitch
                     return false;
                 }
 
-                var valid = new LegalityAnalysis(pkm).Valid;
-                if (valid && pkm is PK8 pk8)
+                if (pkm is T pk)
                 {
-                    var tq = new TwitchQueue(pk8, new PokeTradeTrainerInfo(display), username, sub);
-                    TwitchBot.QueuePool.RemoveAll(z => z.UserName == username); // remove old requests if any
-                    TwitchBot.QueuePool.Add(tq);
-                    msg = $"@{username} - added to the waiting list. Please whisper your trade code to me! Your request from the waiting list will be removed if you are too slow!";
-                    return true;
+                    var valid = new LegalityAnalysis(pkm).Valid;
+                    if (valid)
+                    {
+                        var tq = new TwitchQueue<T>(pk, new PokeTradeTrainerInfo(display, mUserId), username, sub);
+                        TwitchBot<T>.QueuePool.RemoveAll(z => z.UserName == username); // remove old requests if any
+                        TwitchBot<T>.QueuePool.Add(tq);
+                        msg = $"@{username} - added to the waiting list. Please whisper your trade code to me! Your request from the waiting list will be removed if you are too slow!";
+                        return true;
+                    }
                 }
 
                 var reason = result == "Timeout" ? "Set took too long to generate." : "Unable to legalize the Pokémon.";
                 msg = $"Skipping trade, @{username}: {reason}";
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 msg = $"Skipping trade, @{username}: An unexpected problem occurred.";
             }
@@ -65,13 +70,13 @@ namespace SysBot.Pokemon.Twitch
 
         public static string ClearTrade(string user)
         {
-            var result = TwitchBot.Info.ClearTrade(user);
+            var result = TwitchBot<T>.Info.ClearTrade(user);
             return GetClearTradeMessage(result);
         }
 
         public static string ClearTrade(ulong userID)
         {
-            var result = TwitchBot.Info.ClearTrade(userID);
+            var result = TwitchBot<T>.Info.ClearTrade(userID);
             return GetClearTradeMessage(result);
         }
 
@@ -81,13 +86,13 @@ namespace SysBot.Pokemon.Twitch
             {
                 QueueResultRemove.CurrentlyProcessing => "Looks like you're currently being processed! Removed from queue.",
                 QueueResultRemove.Removed => "Removed you from the queue.",
-                _ => "Sorry, you are not currently in the queue."
+                _ => "Sorry, you are not currently in the queue.",
             };
         }
 
         public static string GetCode(ulong parse)
         {
-            var detail = TwitchBot.Info.GetDetail(parse);
+            var detail = TwitchBot<T>.Info.GetDetail(parse);
             return detail == null
                 ? "Sorry, you are not currently in the queue."
                 : $"Your trade code is {detail.Trade.Code:0000 0000}";

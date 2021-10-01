@@ -22,10 +22,10 @@ namespace SysBot.Pokemon.Discord
             var builder = new EmbedBuilder
             {
                 Color = new Color(114, 137, 218),
-                Description = "These are the commands you can use:"
+                Description = "These are the commands you can use:",
             };
 
-            var mgr = SysCordInstance.Manager;
+            var mgr = SysCordSettings.Manager;
             var app = await Context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
             var owner = app.Owner.Id;
             var uid = Context.User.Id;
@@ -52,9 +52,14 @@ namespace SysBot.Pokemon.Discord
                 if (string.IsNullOrWhiteSpace(description))
                     continue;
 
+                var moduleName = module.Name;
+                var gen = moduleName.IndexOf('`');
+                if (gen != -1)
+                    moduleName = moduleName[..gen];
+
                 builder.AddField(x =>
                 {
-                    x.Name = module.Name;
+                    x.Name = moduleName;
                     x.Value = description;
                     x.IsInline = false;
                 });
@@ -78,7 +83,7 @@ namespace SysBot.Pokemon.Discord
             var builder = new EmbedBuilder
             {
                 Color = new Color(114, 137, 218),
-                Description = $"Here are some commands like **{command}**:"
+                Description = $"Here are some commands like **{command}**:",
             };
 
             foreach (var match in result.Commands)

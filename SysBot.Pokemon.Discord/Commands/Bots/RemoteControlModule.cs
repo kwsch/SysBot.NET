@@ -3,18 +3,19 @@ using SysBot.Base;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord
 {
     [Summary("Remotely controls a bot.")]
-    public class RemoteControlModule : ModuleBase<SocketCommandContext>
+    public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
     {
         [Command("click")]
         [Summary("Clicks the specified button.")]
-        [RequireQueueRole(nameof(DiscordManager.RolesRemoteControl))]
+        [RequireRoleAccess(nameof(DiscordManager.RolesRemoteControl))]
         public async Task ClickAsync(SwitchButton b)
         {
-            var bot = SysCordInstance.Runner.Bots.Find(z => z.Bot is RemoteControlBot);
+            var bot = SysCord<T>.Runner.Bots.Find(z => z.Bot is RemoteControlBot);
             if (bot == null)
             {
                 await ReplyAsync($"No bot is available to execute your command: {b}").ConfigureAwait(false);
@@ -29,7 +30,7 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task ClickAsync(string ip, SwitchButton b)
         {
-            var bot = SysCordInstance.Runner.GetBot(ip);
+            var bot = SysCord<T>.Runner.GetBot(ip);
             if (bot == null)
             {
                 await ReplyAsync($"No bot is available to execute your command: {b}").ConfigureAwait(false);
@@ -41,10 +42,10 @@ namespace SysBot.Pokemon.Discord
 
         [Command("setStick")]
         [Summary("Sets the stick to the specified position.")]
-        [RequireQueueRole(nameof(DiscordManager.RolesRemoteControl))]
+        [RequireRoleAccess(nameof(DiscordManager.RolesRemoteControl))]
         public async Task SetStickAsync(SwitchStick s, short x, short y, ushort ms = 1_000)
         {
-            var bot = SysCordInstance.Runner.Bots.Find(z => z.Bot is RemoteControlBot);
+            var bot = SysCord<T>.Runner.Bots.Find(z => z.Bot is RemoteControlBot);
             if (bot == null)
             {
                 await ReplyAsync($"No bot is available to execute your command: {s}").ConfigureAwait(false);
@@ -59,7 +60,7 @@ namespace SysBot.Pokemon.Discord
         [RequireSudo]
         public async Task SetStickAsync(string ip, SwitchStick s, short x, short y, ushort ms = 1_000)
         {
-            var bot = SysCordInstance.Runner.GetBot(ip);
+            var bot = SysCord<T>.Runner.GetBot(ip);
             if (bot == null)
             {
                 await ReplyAsync($"No bot has that IP address ({ip}).").ConfigureAwait(false);
@@ -67,6 +68,45 @@ namespace SysBot.Pokemon.Discord
             }
 
             await SetStickAsyncImpl(s, x, y, ms, bot).ConfigureAwait(false);
+        }
+
+        [Command("setScreenOn")]
+        [Alias("screenOn", "scrOn")]
+        [Summary("Turns the screen on")]
+        [RequireSudo]
+        public async Task SetScreenOnAsync([Remainder] string ip)
+        {
+            await SetScreen(true, ip).ConfigureAwait(false);
+        }
+
+        [Command("setScreenOff")]
+        [Alias("screenOff", "scrOff")]
+        [Summary("Turns the screen off")]
+        [RequireSudo]
+        public async Task SetScreenOffAsync([Remainder] string ip)
+        {
+            await SetScreen(false, ip).ConfigureAwait(false);
+        }
+
+        private async Task SetScreen(bool on, string ip)
+        {
+            var bot = GetBot(ip);
+            if (bot == null)
+            {
+                await ReplyAsync($"No bot has that IP address ({ip}).").ConfigureAwait(false);
+                return;
+            }
+
+            var b = bot.Bot;
+            var crlf = b is SwitchRoutineExecutor<PokeBotState> { UseCRLF: true };
+            await b.Connection.SendAsync(SwitchCommand.SetScreen(ScreenState.On, crlf), CancellationToken.None).ConfigureAwait(false);
+            await ReplyAsync("Screen state set to: " + (on ? "On" : "Off")).ConfigureAwait(false);
+        }
+
+        private static BotSource<PokeBotState>? GetBot(string ip)
+        {
+            var r = SysCord<T>.Runner;
+            return r.GetBot(ip) ?? r.Bots.Find(x => x.IsRunning); // safe fallback for users who mistype IP address for single bot instances
         }
 
         private async Task ClickAsyncImpl(SwitchButton button,BotSource<PokeBotState> bot)

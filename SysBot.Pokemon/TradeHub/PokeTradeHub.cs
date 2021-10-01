@@ -17,7 +17,6 @@ namespace SysBot.Pokemon
             Ledy = new LedyDistributor<T>(pool);
             BotSync = new BotSynchronizer(config.Distribution);
             BotSync.BarrierReleasingActions.Add(() => LogUtil.LogInfo($"{BotSync.Barrier.ParticipantCount} bots released.", "Barrier"));
-            Counts = new BotCompleteCounts(config.Counts);
 
             Queues = new TradeQueueManager<T>(this);
         }
@@ -26,8 +25,10 @@ namespace SysBot.Pokemon
 
         public readonly PokeTradeHubConfig Config;
         public readonly BotSynchronizer BotSync;
-        public readonly BotCompleteCounts Counts;
-        public readonly ConcurrentPool<PokeTradeBot> Bots = new();
+
+        /// <summary> Trade Bots only, used to delegate multi-player tasks </summary>
+        public readonly ConcurrentPool<PokeRoutineExecutorBase> Bots = new();
+        public bool TradeBotsReady => !Bots.All(z => z.Config.CurrentRoutineType == PokeRoutineType.Idle);
         public readonly TradeQueueManager<T> Queues;
 
         #region Distribution Queue

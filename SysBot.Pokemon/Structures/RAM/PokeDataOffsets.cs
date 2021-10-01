@@ -2,6 +2,9 @@
 
 namespace SysBot.Pokemon
 {
+    /// <summary>
+    /// Sword &amp; Shield RAM offsets
+    /// </summary>
     public static class PokeDataOffsets
     {
         public const uint BoxStartOffset = 0x45075880;
@@ -38,19 +41,22 @@ namespace SysBot.Pokemon
         // Link Trade Offsets
         public const uint LinkTradePartnerPokemonOffset = 0xAF286078;
         public const uint LinkTradePartnerNameOffset = 0xAF28384C;
+        public const uint LinkTradePartnerTIDSIDOffset = LinkTradePartnerNameOffset - 0x8;
+        public const uint LinkTradePartnerNIDOffset = 0xAF2846B0;
         public const uint LinkTradeSearchingOffset = 0x2F76C3C8;
 
-        // Suprise Trade Offsets
+        // Surprise Trade Offsets
         public const uint SurpriseTradePartnerPokemonOffset = 0x450675a0;
-
-        public const uint SurpriseTradeLockSlot = 0x450676fc;
-        public const uint SurpriseTradeLockBox = 0x450676f8;
+        public const uint SurpriseTradePartnerNameOffset = 0x45067708;
+        public const uint SurpriseTradePartnerTIDSIDOffset = SurpriseTradePartnerNameOffset - 0x8;
 
         public const uint SurpriseTradeSearchOffset = 0x45067704;
         public const uint SurpriseTradeSearch_Empty = 0x00000000;
         public const uint SurpriseTradeSearch_Searching = 0x01000000;
         public const uint SurpriseTradeSearch_Found = 0x0200012C;
-        public const uint SurpriseTradePartnerNameOffset = 0x45067708;
+
+        public const uint SurpriseTradeLockSlot = 0x450676fc;
+        public const uint SurpriseTradeLockBox = 0x450676f8;
 
         /* Wild Area Daycare */
         public const uint DayCare_Wildarea_Step_Counter = 0x4511FC54;
@@ -98,34 +104,45 @@ namespace SysBot.Pokemon
         public const uint CurrentScreen_RaidParty = 0xFF1461DB;
         #endregion
 
-        public static uint GetTrainerNameOffset(TradeMethod tradeMethod)
+        public static uint GetTrainerNameOffset(TradeMethod tradeMethod) => tradeMethod switch
         {
-            return tradeMethod switch
-            {
-                TradeMethod.LinkTrade => LinkTradePartnerNameOffset,
-                TradeMethod.SupriseTrade => SurpriseTradePartnerNameOffset,
-                _ => throw new ArgumentException(nameof(tradeMethod)),
-            };
-        }
+            TradeMethod.LinkTrade => LinkTradePartnerNameOffset,
+            TradeMethod.SurpriseTrade => SurpriseTradePartnerNameOffset,
+            _ => throw new ArgumentException(nameof(tradeMethod)),
+        };
 
-        public static uint GetDaycareStepCounterOffset(SwordShieldDaycare daycare)
+        public static uint GetDaycareStepCounterOffset(SwordShieldDaycare daycare) => daycare switch
         {
-            return daycare switch
-            {
-                SwordShieldDaycare.WildArea => DayCare_Wildarea_Step_Counter,
-                SwordShieldDaycare.Route5 => DayCare_Route5_Step_Counter,
-                _ => throw new ArgumentException(nameof(daycare)),
-            };
-        }
+            SwordShieldDaycare.WildArea => DayCare_Wildarea_Step_Counter,
+            SwordShieldDaycare.Route5 => DayCare_Route5_Step_Counter,
+            _ => throw new ArgumentException(nameof(daycare)),
+        };
 
-        public static uint GetDaycareEggIsReadyOffset(SwordShieldDaycare daycare)
+        public static uint GetDaycareEggIsReadyOffset(SwordShieldDaycare daycare) => daycare switch
         {
-            return daycare switch
-            {
-                SwordShieldDaycare.WildArea => DayCare_Wildarea_Egg_Is_Ready,
-                SwordShieldDaycare.Route5 => DayCare_Route5_Egg_Is_Ready,
-                _ => throw new ArgumentException(nameof(daycare)),
-            };
-        }
+            SwordShieldDaycare.WildArea => DayCare_Wildarea_Egg_Is_Ready,
+            SwordShieldDaycare.Route5 => DayCare_Route5_Egg_Is_Ready,
+            _ => throw new ArgumentException(nameof(daycare)),
+        };
+
+        public static uint GetTrainerTIDSIDOffset(TradeMethod tradeMethod) => tradeMethod switch
+        {
+            TradeMethod.LinkTrade => LinkTradePartnerTIDSIDOffset,
+            TradeMethod.SurpriseTrade => SurpriseTradePartnerTIDSIDOffset,
+            _ => throw new ArgumentException(nameof(tradeMethod)),
+        };
+
+        public static uint GetOverworldOffset(ConsoleLanguageParameter value) => value switch
+        {
+            ConsoleLanguageParameter.French => OverworldOffsetFrench,
+            ConsoleLanguageParameter.German => OverworldOffsetGerman,
+            ConsoleLanguageParameter.Spanish => OverworldOffsetSpanish,
+            ConsoleLanguageParameter.Italian => OverworldOffsetItalian,
+            ConsoleLanguageParameter.Japanese => OverworldOffsetJapanese,
+            ConsoleLanguageParameter.ChineseTraditional => OverworldOffsetChineseT,
+            ConsoleLanguageParameter.ChineseSimplified => OverworldOffsetChineseS,
+            ConsoleLanguageParameter.Korean => OverworldOffsetKorean,
+            _ => OverworldOffset,
+        };
     }
 }

@@ -8,13 +8,15 @@ namespace SysBot.Tests
     public class PokeHubTests
     {
         [Fact]
-        public void TestHub()
+        public void TestHub() => Test<PK8>();
+
+        private static void Test<T>() where T : PKM, new()
         {
             var cfg = new PokeTradeHubConfig { Distribution = { DistributeWhileIdle = true } };
-            var hub = new PokeTradeHub<PK8>(cfg);
+            var hub = new PokeTradeHub<T>(cfg);
 
             var pool = hub.Ledy.Pool;
-            var a = new PK8 { Species = 5 };
+            var a = new T { Species = 5 };
             pool.Add(a);
 
             var trade = hub.Queues.TryDequeue(PokeRoutineType.FlexTrade, out _, out _);

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 namespace SysBot.Pokemon.Discord
 {
     [Summary("Queues new Dump trades")]
-    public class DumpModule : ModuleBase<SocketCommandContext>
+    public class DumpModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
     {
-        private static TradeQueueInfo<PK8> Info => SysCordInstance.Self.Hub.Queues.Info;
+        private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
 
         [Command("dump")]
         [Alias("d")]
@@ -17,7 +17,7 @@ namespace SysBot.Pokemon.Discord
         public async Task DumpAsync(int code)
         {
             var sig = Context.User.GetFavor();
-            await Context.AddToQueueAsync(code, Context.User.Username, sig, new PK8(), PokeRoutineType.Dump, PokeTradeType.Dump).ConfigureAwait(false);
+            await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.Dump, PokeTradeType.Dump).ConfigureAwait(false);
         }
 
         [Command("dump")]
@@ -28,7 +28,7 @@ namespace SysBot.Pokemon.Discord
         {
             int tradeCode = Util.ToInt32(code);
             var sig = Context.User.GetFavor();
-            await Context.AddToQueueAsync(tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new PK8(), PokeRoutineType.Dump, PokeTradeType.Dump).ConfigureAwait(false);
+            await QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.Dump, PokeTradeType.Dump).ConfigureAwait(false);
         }
 
         [Command("dump")]

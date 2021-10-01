@@ -11,8 +11,8 @@ namespace SysBot.Pokemon.Discord
         // Override the CheckPermissions method
         public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
-            var mgr = SysCordInstance.Manager;
-            if (mgr.Config.Discord.AllowGlobalSudo && mgr.CanUseSudo(context.User.Id))
+            var mgr = SysCordSettings.Manager;
+            if (mgr.Config.AllowGlobalSudo && mgr.CanUseSudo(context.User.Id))
                 return Task.FromResult(PreconditionResult.FromSuccess());
 
             // Check if this user is a Guild User, which is the only context where roles exist

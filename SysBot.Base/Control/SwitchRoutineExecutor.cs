@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -33,9 +35,9 @@ namespace SysBot.Base
             await Connection.SendAsync(delaycgf, token).ConfigureAwait(false);
         }
 
-        public async Task DaisyChainCommands(int Delay, SwitchButton[] buttons, CancellationToken token)
+        public async Task DaisyChainCommands(int delay, IEnumerable<SwitchButton> buttons, CancellationToken token)
         {
-            SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, Delay, UseCRLF);
+            SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, delay, UseCRLF);
             var commands = buttons.Select(z => SwitchCommand.Click(z, UseCRLF)).ToArray();
             var chain = commands.SelectMany(x => x).ToArray();
             await Connection.SendAsync(chain, token).ConfigureAwait(false);
@@ -54,10 +56,34 @@ namespace SysBot.Base
             await Connection.SendAsync(SwitchCommand.DetachController(UseCRLF), token).ConfigureAwait(false);
         }
 
+        public async Task SetScreen(ScreenState state, CancellationToken token)
+        {
+            await Connection.SendAsync(SwitchCommand.SetScreen(state, UseCRLF), token).ConfigureAwait(false);
+        }
+
         public async Task EchoCommands(bool value, CancellationToken token)
         {
             var cmd = SwitchCommand.Configure(SwitchConfigureParameter.echoCommands, value ? 1 : 0, UseCRLF);
             await Connection.SendAsync(cmd, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Reads an offset until it changes to either match or differ from the comparison value.
+        /// </summary>
+        /// <returns>If <see cref="match"/> is set to true, then the function returns true when the offset matches the given value.<br>Otherwise, it returns true when the offset no longer matches the given value.</br></returns>
+        public async Task<bool> ReadUntilChanged(uint offset, byte[] comparison, int waitms, int waitInterval, bool match, CancellationToken token)
+        {
+            var sw = new Stopwatch();
+            sw.Start();
+            do
+            {
+                var result = await Connection.ReadBytesAsync(offset, comparison.Length, token).ConfigureAwait(false);
+                if (match == result.SequenceEqual(comparison))
+                    return true;
+
+                await Task.Delay(waitInterval, token).ConfigureAwait(false);
+            } while (sw.ElapsedMilliseconds < waitms);
+            return false;
         }
     }
 }

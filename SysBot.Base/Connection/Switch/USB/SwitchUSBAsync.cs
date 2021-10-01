@@ -51,5 +51,19 @@ namespace SysBot.Base
                 return BitConverter.ToUInt64(baseBytes, 0);
             }, token);
         }
+
+        public Task<byte[]> ReadRaw(byte[] command, int length, CancellationToken token)
+        {
+            return Task.Run(() =>
+            {
+                Send(command);
+                return ReadResponse(length);
+            }, token);
+        }
+
+        public Task SendRaw(byte[] command, CancellationToken token)
+        {
+            return Task.Run(() => Send(command), token);
+        }
     }
 }

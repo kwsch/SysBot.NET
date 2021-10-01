@@ -26,7 +26,7 @@ namespace SysBot.Pokemon
             {
                 Z3SearchResult.SeedMismatch => $"Seed found, but not an exact match {Seed:X16}",
                 Z3SearchResult.Success => string.Join(Environment.NewLine, GetLines()),
-                _ => "The Pokémon is not a raid Pokémon!"
+                _ => "The Pokémon is not a raid Pokémon!",
             };
         }
 

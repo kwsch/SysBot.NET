@@ -1,6 +1,6 @@
 ﻿namespace SysBot.Pokemon
 {
-    public sealed class PokeTradeSummaryDetail
+    public sealed record PokeTradeSummaryDetail
     {
         public readonly string Heading;
         public readonly string Detail;

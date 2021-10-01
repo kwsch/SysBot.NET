@@ -1,32 +1,60 @@
 ﻿using PKHeX.Core;
 using SysBot.Base;
-using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace SysBot.Pokemon
 {
-    public abstract class PokeBotRunner : BotRunner<PokeBotState>
+    public interface IPokeBotRunner
     {
-        public readonly PokeTradeHub<PK8> Hub;
+        PokeTradeHubConfig Config { get; }
+        bool RunOnce { get; }
+        bool IsRunning { get; }
 
-        protected PokeBotRunner(PokeTradeHub<PK8> hub) => Hub = hub;
-        protected PokeBotRunner(PokeTradeHubConfig config) => Hub = new PokeTradeHub<PK8>(config);
+        void StartAll();
+        void StopAll();
+        void InitializeStart();
+
+        void Add(PokeRoutineExecutorBase newbot);
+        void Remove(IConsoleBotConfig state, bool callStop);
+
+        BotSource<PokeBotState>? GetBot(PokeBotState state);
+        PokeRoutineExecutorBase CreateBotFromConfig(PokeBotState cfg);
+    }
+
+    public abstract class PokeBotRunner<T> : BotRunner<PokeBotState>, IPokeBotRunner where T : PKM, new()
+    {
+        public readonly PokeTradeHub<T> Hub;
+        private readonly BotFactory<T> Factory;
+
+        public PokeTradeHubConfig Config => Hub.Config;
+
+        protected PokeBotRunner(PokeTradeHub<T> hub, BotFactory<T> factory)
+        {
+            Hub = hub;
+            Factory = factory;
+        }
+
+        protected PokeBotRunner(PokeTradeHubConfig config, BotFactory<T> factory)
+        {
+            Factory = factory;
+            Hub = new PokeTradeHub<T>(config);
+        }
 
         protected virtual void AddIntegrations() { }
 
         public override void Add(RoutineExecutor<PokeBotState> bot)
         {
             base.Add(bot);
-            if (bot is PokeTradeBot b)
+            if (bot is PokeRoutineExecutorBase b && b.Config.InitialRoutine.IsTradeBot())
                 Hub.Bots.Add(b);
         }
 
         public override bool Remove(IConsoleBotConfig cfg, bool callStop)
         {
             var bot = GetBot(cfg)?.Bot;
-            if (bot is PokeTradeBot b)
+            if (bot is PokeRoutineExecutorBase b && b.Config.InitialRoutine.IsTradeBot())
                 Hub.Bots.Remove(b);
             return base.Remove(cfg, callStop);
         }
@@ -41,7 +69,6 @@ namespace SysBot.Pokemon
 
         public override void InitializeStart()
         {
-            Hub.Counts.LoadCountsFromConfig(); // if user modified them prior to start
             if (RunOnce)
                 return;
 
@@ -78,7 +105,7 @@ namespace SysBot.Pokemon
 
         private void AddTradeBotMonitors()
         {
-            Task.Run(async () => await new QueueMonitor(Hub).MonitorOpenQueue(CancellationToken.None).ConfigureAwait(false));
+            Task.Run(async () => await new QueueMonitor<T>(Hub).MonitorOpenQueue(CancellationToken.None).ConfigureAwait(false));
 
             var path = Hub.Config.Folder.DistributeFolder;
             if (!Directory.Exists(path))
@@ -89,22 +116,9 @@ namespace SysBot.Pokemon
                 LogUtil.LogError("Nothing to distribute for Empty Trade Queues!", "Hub");
         }
 
-        public PokeRoutineExecutor CreateBotFromConfig(PokeBotState cfg) => cfg.NextRoutineType switch
-        {
-            PokeRoutineType.FlexTrade or PokeRoutineType.Idle
-                or PokeRoutineType.SurpriseTrade
-                or PokeRoutineType.LinkTrade
-                or PokeRoutineType.Clone
-                or PokeRoutineType.Dump
-                or PokeRoutineType.SeedCheck
-                => new PokeTradeBot(Hub, cfg),
-
-            PokeRoutineType.EggFetch => new EggBot(cfg, Hub),
-            PokeRoutineType.FossilBot => new FossilBot(cfg, Hub),
-            PokeRoutineType.RaidBot => new RaidBot(cfg, Hub),
-            PokeRoutineType.EncounterBot => new EncounterBot(cfg, Hub),
-            PokeRoutineType.RemoteControl => new RemoteControlBot(cfg),
-            _ => throw new ArgumentException(nameof(cfg.NextRoutineType)),
-        };
+        public PokeRoutineExecutorBase CreateBotFromConfig(PokeBotState cfg) => Factory.CreateBot(Hub, cfg);
+        public BotSource<PokeBotState>? GetBot(PokeBotState state) => base.GetBot(state);
+        void IPokeBotRunner.Remove(IConsoleBotConfig state, bool callStop) => Remove(state, callStop);
+        public void Add(PokeRoutineExecutorBase newbot) => Add((RoutineExecutor<PokeBotState>)newbot);
     }
 }

@@ -36,7 +36,10 @@ namespace SysBot.Pokemon
         [Category(StopConditions), Description("If set to TRUE, matches both ShinyTarget and TargetIVs settings. Otherwise, looks for either ShinyTarget or TargetIVs match.")]
         public bool MatchShinyAndIV { get; set; } = true;
 
-        public static bool EncounterFound(PK8 pk, int[] targetminIVs, int[] targetmaxIVs, StopConditionSettings settings)
+        [Category(StopConditions), Description("If not empty, the provided string will be prepended to the result found log message to Echo alerts for whomever you specify. For Discord, use <@userIDnumber> to mention.")]
+        public string MatchFoundEchoMention { get; set; } = string.Empty;
+
+        public static bool EncounterFound<T>(T pk, int[] targetminIVs, int[] targetmaxIVs, StopConditionSettings settings) where T : PKM
         {
             // Match Nature and Species if they were specified.
             if (settings.StopOnSpecies != Species.None && settings.StopOnSpecies != (Species)pk.Species)
@@ -45,7 +48,7 @@ namespace SysBot.Pokemon
             if (settings.TargetNature != Nature.Random && settings.TargetNature != (Nature)pk.Nature)
                 return false;
 
-            if (settings.MarkOnly && !HasMark(pk))
+            if (settings.MarkOnly && pk is IRibbonIndex m && !HasMark(m))
                 return false;
 
             if (settings.ShinyTarget != TargetShinyType.DisableOption)
@@ -119,6 +122,24 @@ namespace SysBot.Pokemon
                     return true;
             }
             return false;
+        }
+
+        public string GetPrintName(PKM pk)
+        {
+            var set = ShowdownParsing.GetShowdownText(pk);
+            if (pk is IRibbonIndex r)
+                set += GetMarkName(r);
+            return set;
+        }
+
+        public static string GetMarkName(IRibbonIndex pk)
+        {
+            for (var mark = RibbonIndex.MarkLunchtime; mark <= RibbonIndex.MarkSlump; mark++)
+            {
+                if (pk.GetRibbon((int)mark))
+                    return $"\nPokémon found to have **{RibbonStrings.GetName($"Ribbon{mark}")}**!";
+            }
+            return "";
         }
     }
 

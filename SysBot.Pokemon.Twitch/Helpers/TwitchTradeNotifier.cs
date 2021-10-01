@@ -29,15 +29,15 @@ namespace SysBot.Pokemon.Twitch
             LogUtil.LogText($"Created trade details for {Username} - {Code}");
         }
 
-        public Action<PokeRoutineExecutor>? OnFinish { private get; set; }
+        public Action<PokeRoutineExecutor<T>>? OnFinish { private get; set; }
 
-        public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, string message)
+        public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, string message)
         {
             LogUtil.LogText(message);
             SendMessage($"@{info.Trainer.TrainerName}: {message}", Settings.NotifyDestination);
         }
 
-        public void TradeCanceled(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeResult msg)
+        public void TradeCanceled(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeResult msg)
         {
             OnFinish?.Invoke(routine);
             var line = $"@{info.Trainer.TrainerName}: Trade canceled, {msg}";
@@ -45,7 +45,7 @@ namespace SysBot.Pokemon.Twitch
             SendMessage(line, Settings.TradeCanceledDestination);
         }
 
-        public void TradeFinished(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result)
+        public void TradeFinished(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result)
         {
             OnFinish?.Invoke(routine);
             var tradedToUser = Data.Species;
@@ -54,7 +54,7 @@ namespace SysBot.Pokemon.Twitch
             SendMessage(message, Settings.TradeFinishDestination);
         }
 
-        public void TradeInitialize(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
+        public void TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
         {
             var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";
             var msg = $"@{info.Trainer.TrainerName} (ID: {info.ID}): Initializing trade{receive} with you. Please be ready. Use the code you whispered me to search!";
@@ -65,7 +65,7 @@ namespace SysBot.Pokemon.Twitch
             SendMessage(msg, dest);
         }
 
-        public void TradeSearching(PokeRoutineExecutor routine, PokeTradeDetail<T> info)
+        public void TradeSearching(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
         {
             var name = Info.TrainerName;
             var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", @{name}";
@@ -79,7 +79,7 @@ namespace SysBot.Pokemon.Twitch
             SendMessage($"@{info.Trainer.TrainerName} {message}", dest);
         }
 
-        public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, PokeTradeSummary message)
+        public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeSummary message)
         {
             var msg = message.Summary;
             if (message.Details.Count > 0)
@@ -88,7 +88,7 @@ namespace SysBot.Pokemon.Twitch
             SendMessage(msg, Settings.NotifyDestination);
         }
 
-        public void SendNotification(PokeRoutineExecutor routine, PokeTradeDetail<T> info, T result, string message)
+        public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result, string message)
         {
             var msg = $"Details for {result.FileName}: " + message;
             LogUtil.LogText(msg);
