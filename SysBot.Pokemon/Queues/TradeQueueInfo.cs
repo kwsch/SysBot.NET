@@ -95,13 +95,17 @@ namespace SysBot.Pokemon
             if (removedCount == details.Count)
                 return QueueResultRemove.Removed;
 
+            bool canRemoveWhileProcessing = Hub.Config.Queues.CanDequeueIfProcessing;
             foreach (var detail in details)
             {
-                if (detail.Trade.IsProcessing && !Hub.Config.Queues.CanDequeueIfProcessing)
+                if (detail.Trade.IsProcessing && !canRemoveWhileProcessing)
                     continue;
                 Remove(detail);
             }
-            return QueueResultRemove.CurrentlyProcessing;
+
+            return canRemoveWhileProcessing
+                ? QueueResultRemove.CurrentlyProcessingRemoved
+                : QueueResultRemove.CurrentlyProcessing;
         }
 
         public int ClearTrade(IEnumerable<TradeEntry<T>> details, PokeTradeHub<T> hub)
