@@ -19,6 +19,7 @@ namespace SysBot.Pokemon
         public ICountSettings Counts => TradeSettings;
 
         private static readonly TrackedUserLog PreviousUsers = new();
+        private static readonly TrackedUserLog PreviousUsersDistribution = new();
 
         /// <summary>
         /// Folder to dump received trade data to.
@@ -386,9 +387,11 @@ namespace SysBot.Pokemon
         {
             bool quit = false;
             var user = poke.Trainer;
-            var useridmsg = user.TrainerName == "Random Distribution" ? "" : $" ({user.ID})";
+            var isDistribution = poke.Type == PokeTradeType.Random;
+            var useridmsg = isDistribution ? "" : $" ({user.ID})";
+            var list = isDistribution ? PreviousUsersDistribution : PreviousUsers;
 
-            var cooldown = PreviousUsers.TryGetPrevious(TrainerNID);
+            var cooldown = list.TryGetPrevious(TrainerNID);
             if (cooldown != null)
             {
                 var delta = DateTime.Now - cooldown.Time;
@@ -408,7 +411,9 @@ namespace SysBot.Pokemon
                 }
             }
 
-            var evade = PreviousUsers.TryRegister(TrainerNID, TrainerName, poke.Trainer.ID);
+            var evade = isDistribution
+                ? list.TryRegister(TrainerNID, TrainerName)
+                : list.TryRegister(TrainerNID, TrainerName, poke.Trainer.ID);
             if (evade != null)
             {
                 var delta = DateTime.Now - evade.Time;

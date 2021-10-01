@@ -19,6 +19,26 @@ namespace SysBot.Pokemon
                 return InsertReplace(networkID, name, remoteID);
         }
 
+        public TrackedUser? TryRegister(ulong networkID, string name)
+        {
+            lock (_sync)
+                return InsertReplace(networkID, name);
+        }
+
+        private TrackedUser? InsertReplace(ulong networkID, string name)
+        {
+            var index = Users.FindIndex(z => z.ID == networkID);
+            if (index < 0)
+            {
+                Insert(networkID, name, 0);
+                return null;
+            }
+
+            var match = Users[index];
+            Users[index] = new TrackedUser(networkID, name, 0);
+            return match;
+        }
+
         private TrackedUser? InsertReplace(ulong networkID, string name, ulong remoteID)
         {
             var index = Users.FindIndex(z => z.ID == networkID);
