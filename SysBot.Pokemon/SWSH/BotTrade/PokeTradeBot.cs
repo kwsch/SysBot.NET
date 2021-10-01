@@ -414,7 +414,7 @@ namespace SysBot.Pokemon
             var evade = isDistribution
                 ? list.TryRegister(TrainerNID, TrainerName)
                 : list.TryRegister(TrainerNID, TrainerName, poke.Trainer.ID);
-            if (evade != null)
+            if (evade != null && !isDistribution)
             {
                 var delta = DateTime.Now - evade.Time;
                 if (delta > TimeSpan.FromMinutes(AbuseSettings.TradeAbuseExpiration) && AbuseSettings.TradeAbuseAction != TradeAbuseAction.Ignore)
