@@ -235,7 +235,7 @@ namespace SysBot.Pokemon
                 await Click(A, 1_000, token).ConfigureAwait(false);
 
             var timer = 60_000;
-            while (!await IsOnOverworld(config, token).ConfigureAwait(false))
+            while (!await IsOnOverworld(config, token).ConfigureAwait(false) && !await IsInBattle(token).ConfigureAwait(false))
             {
                 await Task.Delay(0_200, token).ConfigureAwait(false);
                 timer -= 0_250;
@@ -244,7 +244,7 @@ namespace SysBot.Pokemon
                 if (timer <= 0 && !timing.AvoidSystemUpdate)
                 {
                     Log("Still not in the game, initiating rescue protocol!");
-                    while (!await IsOnOverworld(config, token).ConfigureAwait(false))
+                    while (!await IsOnOverworld(config, token).ConfigureAwait(false) && !await IsInBattle(token).ConfigureAwait(false))
                         await Click(A, 6_000, token).ConfigureAwait(false);
                     break;
                 }

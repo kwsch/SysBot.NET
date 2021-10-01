@@ -35,7 +35,7 @@
         EncounterLine = 1000,
 
         /// <summary> Triggers encounters with Eternatus until the criteria is satisfied. </summary>
-        Eternatus = 1001,
+        Reset = 1001,
 
         /// <summary> Triggers encounters with Sword &amp; Shield box legend until the criteria is satisfied. </summary>
         Dogbot = 1002,

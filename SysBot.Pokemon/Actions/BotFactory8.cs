@@ -19,7 +19,7 @@ namespace SysBot.Pokemon
             PokeRoutineType.FossilBot => new FossilBot(cfg, Hub),
             PokeRoutineType.RaidBot => new RaidBot(cfg, Hub),
             PokeRoutineType.EncounterLine => new EncounterBotLine(cfg, Hub),
-            PokeRoutineType.Eternatus => new EncounterBotEternatus(cfg, Hub),
+            PokeRoutineType.Reset => new EncounterBotReset(cfg, Hub),
             PokeRoutineType.Dogbot => new EncounterBotDog(cfg, Hub),
 
             PokeRoutineType.RemoteControl => new RemoteControlBot(cfg),
