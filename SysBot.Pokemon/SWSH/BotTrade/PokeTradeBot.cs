@@ -130,6 +130,7 @@ namespace SysBot.Pokemon
                 }
                 waitCounter = 0;
 
+                detail.IsProcessing = true;
                 string tradetype = $" ({detail.Type})";
                 Log($"Starting next {type}{tradetype} Bot Trade. Getting data...");
                 Hub.Config.Stream.StartTrade(this, detail, Hub);
@@ -186,6 +187,7 @@ namespace SysBot.Pokemon
 
         private void HandleAbortedTrade(PokeTradeDetail<PK8> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
         {
+            detail.IsProcessing = false;
             if (result.ShouldAttemptRetry() && detail.Type != PokeTradeType.Random && !detail.IsRetry)
             {
                 detail.IsRetry = true;

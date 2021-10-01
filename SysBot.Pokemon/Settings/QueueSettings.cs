@@ -20,6 +20,9 @@ namespace SysBot.Pokemon
         [Category(FeatureToggle), Description("Prevents adding users if there are this many users in the queue already.")]
         public int MaxQueueCount { get; set; } = 999;
 
+        [Category(FeatureToggle), Description("Allows users to dequeue while being traded.")]
+        public bool CanDequeueIfProcessing { get; set; }
+
         [Category(FeatureToggle), Description("Determines how Flex Mode will process the queues.")]
         public FlexYieldMode FlexMode { get; set; } = FlexYieldMode.Weighted;
 

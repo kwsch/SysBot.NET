@@ -96,7 +96,11 @@ namespace SysBot.Pokemon
                 return QueueResultRemove.Removed;
 
             foreach (var detail in details)
+            {
+                if (detail.Trade.IsProcessing && !Hub.Config.Queues.CanDequeueIfProcessing)
+                    continue;
                 Remove(detail);
+            }
             return QueueResultRemove.CurrentlyProcessing;
         }
 
@@ -108,6 +112,8 @@ namespace SysBot.Pokemon
                 var queues = hub.Queues.AllQueues;
                 foreach (var detail in details)
                 {
+                    if (detail.Trade.IsProcessing && !Hub.Config.Queues.CanDequeueIfProcessing)
+                        continue;
                     foreach (var queue in queues)
                     {
                         int removed = queue.Remove(detail.Trade);
