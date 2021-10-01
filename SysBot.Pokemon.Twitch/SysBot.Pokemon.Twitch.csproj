@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="PKHeX.Core" Version="21.8.6" />
-    <PackageReference Include="TwitchLib.Client" Version="3.2.0" />
+    <PackageReference Include="PKHeX.Core" Version="21.10.2" />
+    <PackageReference Include="TwitchLib.Client" Version="3.2.3" />
   </ItemGroup>
 
   <ItemGroup>

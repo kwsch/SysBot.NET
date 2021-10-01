@@ -8,12 +8,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Google.Apis" Version="1.45.0" />
-		<PackageReference Include="Google.Apis.Auth" Version="1.45.0" />
-		<PackageReference Include="Google.Apis.Core" Version="1.45.0" />
-		<PackageReference Include="Google.Apis.YouTube.v3" Version="1.45.0.1929" />
+		<PackageReference Include="Google.Apis" Version="1.55.0" />
+		<PackageReference Include="Google.Apis.Auth" Version="1.55.0" />
+		<PackageReference Include="Google.Apis.Core" Version="1.55.0" />
+		<PackageReference Include="Google.Apis.YouTube.v3" Version="1.55.0.2449" />
 		<PackageReference Include="Google.Apis.YouTubePartner.v1" Version="1.35.1.1334" />
-		<PackageReference Include="PKHeX.Core" Version="21.8.6" />
+		<PackageReference Include="PKHeX.Core" Version="21.10.2" />
 	</ItemGroup>
 
 	<ItemGroup>
