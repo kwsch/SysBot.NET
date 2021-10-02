@@ -25,21 +25,7 @@ namespace SysBot.Pokemon
                 return InsertReplace(networkID, name);
         }
 
-        private TrackedUser? InsertReplace(ulong networkID, string name)
-        {
-            var index = Users.FindIndex(z => z.ID == networkID);
-            if (index < 0)
-            {
-                Insert(networkID, name, 0);
-                return null;
-            }
-
-            var match = Users[index];
-            Users[index] = new TrackedUser(networkID, name, 0);
-            return match;
-        }
-
-        private TrackedUser? InsertReplace(ulong networkID, string name, ulong remoteID)
+        private TrackedUser? InsertReplace(ulong networkID, string name, ulong remoteID = 0)
         {
             var index = Users.FindIndex(z => z.ID == networkID);
             if (index < 0)
@@ -49,13 +35,8 @@ namespace SysBot.Pokemon
             }
 
             var match = Users[index];
-            if (match.RemoteID != remoteID) // different user triggered this
-            {
-                Users[index] = new TrackedUser(networkID, name, remoteID);
-                return match;
-            }
-
-            return null;
+            Users[index] = new TrackedUser(networkID, name, remoteID);
+            return match;
         }
 
         private void Insert(ulong id, string name, ulong remoteID)

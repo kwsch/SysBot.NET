@@ -413,12 +413,14 @@ namespace SysBot.Pokemon
                 }
             }
 
-            var evade = isDistribution
+            // Try registering the partner in our list of recently seen.
+            // Get back the details of their previous interaction.
+            var previous = isDistribution
                 ? list.TryRegister(TrainerNID, TrainerName)
                 : list.TryRegister(TrainerNID, TrainerName, poke.Trainer.ID);
-            if (evade != null && !isDistribution)
+            if (previous != null && previous.RemoteID != TrainerNID && !isDistribution)
             {
-                var delta = DateTime.Now - evade.Time;
+                var delta = DateTime.Now - previous.Time;
                 if (delta > TimeSpan.FromMinutes(AbuseSettings.TradeAbuseExpiration) && AbuseSettings.TradeAbuseAction != TradeAbuseAction.Ignore)
                 {
                     if (AbuseSettings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
@@ -433,7 +435,7 @@ namespace SysBot.Pokemon
                     quit = true;
                 }
 
-                var msg = $"Found {user.TrainerName}{useridmsg} using multiple accounts.\nPreviously encountered {evade.Name} ({evade.RemoteID}) {delta.TotalMinutes:F1} minutes ago on OT: {TrainerName}.";
+                var msg = $"Found {user.TrainerName}{useridmsg} using multiple accounts.\nPreviously encountered {previous.Name} ({previous.RemoteID}) {delta.TotalMinutes:F1} minutes ago on OT: {TrainerName}.";
                 if (AbuseSettings.EchoNintendoOnlineIDMulti)
                     msg += $"\nID: {TrainerNID}";
                 if (!string.IsNullOrWhiteSpace(AbuseSettings.MultiAbuseEchoMention))
