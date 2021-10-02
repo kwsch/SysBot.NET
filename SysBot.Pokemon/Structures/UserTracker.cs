@@ -27,7 +27,7 @@ namespace SysBot.Pokemon
 
         private TrackedUser? InsertReplace(ulong networkID, string name, ulong remoteID = 0)
         {
-            var index = Users.FindIndex(z => z.ID == networkID);
+            var index = Users.FindIndex(z => z.NetworkID == networkID);
             if (index < 0)
             {
                 Insert(networkID, name, remoteID);
@@ -55,7 +55,7 @@ namespace SysBot.Pokemon
         public TrackedUser? TryGetPrevious(ulong trainerNid)
         {
             lock (_sync)
-                return Users.Find(z => z.ID == trainerNid);
+                return Users.Find(z => z.NetworkID == trainerNid);
         }
     }
 
@@ -63,12 +63,12 @@ namespace SysBot.Pokemon
     {
         public readonly string Name;
         public readonly ulong RemoteID;
-        public readonly ulong ID;
+        public readonly ulong NetworkID;
         public readonly DateTime Time;
 
-        public TrackedUser(ulong id, string name, ulong remoteID)
+        public TrackedUser(ulong NetworkID, string name, ulong remoteID)
         {
-            ID = id;
+            this.NetworkID = NetworkID;
             Name = name;
             RemoteID = remoteID;
             Time = DateTime.Now;

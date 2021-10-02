@@ -419,7 +419,7 @@ namespace SysBot.Pokemon
             var previous = isDistribution
                 ? list.TryRegister(TrainerNID, TrainerName)
                 : list.TryRegister(TrainerNID, TrainerName, poke.Trainer.ID);
-            if (previous != null && previous.RemoteID != TrainerNID && !isDistribution)
+            if (previous != null && previous.NetworkID != TrainerNID && !isDistribution)
             {
                 var delta = DateTime.Now - previous.Time;
                 if (delta > TimeSpan.FromMinutes(AbuseSettings.TradeAbuseExpiration) && AbuseSettings.TradeAbuseAction != TradeAbuseAction.Ignore)
