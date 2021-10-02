@@ -83,6 +83,8 @@ namespace SysBot.Pokemon
 
         public static bool CanBeTraded(this PKM pkm)
         {
+            if (StringsUtil.IsSpammyString(pkm.Nickname) || StringsUtil.IsSpammyString(pkm.OT_Name))
+                return false;
             return !FormInfo.IsFusedForm(pkm.Species, pkm.Form, pkm.Format);
         }
 
