@@ -5,5 +5,6 @@
         Random,
         MatchPool,
         MatchRequest,
+        AbuseDetected,
     }
 }

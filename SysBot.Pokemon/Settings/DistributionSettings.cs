@@ -21,6 +21,9 @@ namespace SysBot.Pokemon
         [Category(Distribute), Description("When set to something other than None, the Random Trades will require this species in addition to the nickname match.")]
         public Species LedySpecies { get; set; } = Species.Wooloo;
 
+        [Category(Distribute), Description("When set to true, Random Ledy nickname-swap trades will quit rather than trade a random entity from the pool.")]
+        public bool LedyQuitIfNoMatch { get; set; }
+
         [Category(Distribute), Description("Distribution Trade Link Code.")]
         public int TradeCode { get; set; } = 7196;
 

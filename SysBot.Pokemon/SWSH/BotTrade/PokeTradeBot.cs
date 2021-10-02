@@ -350,7 +350,8 @@ namespace SysBot.Pokemon
             }
 
             PokeTradeResult update;
-            (toSend, update) = await GetEntityToSend(sav, poke, offered, oldEC, toSend, token).ConfigureAwait(false);
+            var trainer = new PartnerDataHolder(TrainerNID, TrainerName, TrainerTID);
+            (toSend, update) = await GetEntityToSend(sav, poke, offered, oldEC, toSend, trainer, token).ConfigureAwait(false);
             if (update != PokeTradeResult.Success)
             {
                 await ExitTrade(Hub.Config, false, token).ConfigureAwait(false);
@@ -524,11 +525,13 @@ namespace SysBot.Pokemon
             return PokeTradeResult.Success;
         }
 
-        protected virtual async Task<(PK8 toSend, PokeTradeResult check)> GetEntityToSend(SAV8SWSH sav, PokeTradeDetail<PK8> poke, PK8 offered, byte[] oldEC, PK8 toSend, CancellationToken token)
+        protected virtual async Task<(PK8 toSend, PokeTradeResult check)> GetEntityToSend(SAV8SWSH sav,
+            PokeTradeDetail<PK8> poke, PK8 offered, byte[] oldEC, PK8 toSend, PartnerDataHolder partnerID,
+            CancellationToken token)
         {
             return poke.Type switch
             {
-                PokeTradeType.Random => await HandleRandomLedy(sav, poke, offered, toSend, token).ConfigureAwait(false),
+                PokeTradeType.Random => await HandleRandomLedy(sav, poke, offered, toSend, partnerID, token).ConfigureAwait(false),
                 PokeTradeType.Clone => await HandleClone(sav, poke, offered, oldEC, token).ConfigureAwait(false),
                 _ => (toSend, PokeTradeResult.Success),
             };
@@ -589,12 +592,25 @@ namespace SysBot.Pokemon
             return (clone, PokeTradeResult.Success);
         }
 
-        private async Task<(PK8 toSend, PokeTradeResult check)> HandleRandomLedy(SAV8SWSH sav, PokeTradeDetail<PK8> poke, PK8 offered, PK8 toSend, CancellationToken token)
+        private async Task<(PK8 toSend, PokeTradeResult check)> HandleRandomLedy(SAV8SWSH sav, PokeTradeDetail<PK8> poke, PK8 offered, PK8 toSend, PartnerDataHolder partner, CancellationToken token)
         {
             // Allow the trade partner to do a Ledy swap.
-            var trade = Hub.Ledy.GetLedyTrade(offered, Hub.Config.Distribution.LedySpecies);
+            var config = Hub.Config.Distribution;
+            var trade = Hub.Ledy.GetLedyTrade(offered, partner.TrainerOnlineID, config.LedySpecies);
             if (trade != null)
             {
+                if (trade.Type == LedyResponseType.AbuseDetected)
+                {
+                    var msg = $"Found {partner.TrainerName} has been detected for abusing Ledy trades.";
+                    if (AbuseSettings.EchoNintendoOnlineIDLedy)
+                        msg += $"\nID: {partner.TrainerOnlineID}";
+                    if (!string.IsNullOrWhiteSpace(AbuseSettings.LedyAbuseEchoMention))
+                        msg = $"{AbuseSettings.LedyAbuseEchoMention} {msg}";
+                    EchoUtil.Echo(msg);
+
+                    return (toSend, PokeTradeResult.SuspiciousActivity);
+                }
+
                 toSend = trade.Receive;
                 poke.TradeData = toSend;
 
@@ -602,6 +618,10 @@ namespace SysBot.Pokemon
                 await Click(A, 0_800, token).ConfigureAwait(false);
                 await SetBoxPokemon(toSend, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
                 await Task.Delay(2_500, token).ConfigureAwait(false);
+            }
+            else if (config.LedyQuitIfNoMatch)
+            {
+                return (toSend, PokeTradeResult.TrainerRequestBad);
             }
 
             for (int i = 0; i < 5; i++)
@@ -1003,6 +1023,20 @@ namespace SysBot.Pokemon
         {
             var data = await Connection.ReadBytesAsync(LinkTradePartnerNIDOffset, 8, token).ConfigureAwait(false);
             return BitConverter.ToUInt64(data, 0);
+        }
+    }
+
+    public class PartnerDataHolder
+    {
+        public readonly ulong  TrainerOnlineID;
+        public readonly string TrainerName;
+        public readonly string TrainerTID;
+
+        public PartnerDataHolder(ulong trainerNid, string trainerName, string trainerTid)
+        {
+            TrainerOnlineID = trainerNid;
+            TrainerName = trainerName;
+            TrainerTID = trainerTid;
         }
     }
 }

@@ -39,5 +39,11 @@ namespace SysBot.Pokemon
 
         [Category(Monitoring), Description("If not empty, the provided string will be appended to Echo alerts to notify whomever you specify when a user matches a banned ID. For Discord, use <@userIDnumber> to mention.")]
         public string BannedIDMatchEchoMention { get; set; } = string.Empty;
+
+        [Category(Monitoring), Description("When a person using Ledy nickname swaps is detected of abuse, the echo message will include their Nintendo Account ID.")]
+        public bool EchoNintendoOnlineIDLedy { get; set; } = true;
+
+        [Category(Monitoring), Description("If not empty, the provided string will be appended to Echo alerts to notify whomever you specify when a user violates Ledy trade rules. For Discord, use <@userIDnumber> to mention.")]
+        public string LedyAbuseEchoMention { get; set; } = string.Empty;
     }
 }
