@@ -99,7 +99,7 @@ namespace SysBot.Pokemon.Discord
 
             var b = bot.Bot;
             var crlf = b is SwitchRoutineExecutor<PokeBotState> { UseCRLF: true };
-            await b.Connection.SendAsync(SwitchCommand.SetScreen(ScreenState.On, crlf), CancellationToken.None).ConfigureAwait(false);
+            await b.Connection.SendAsync(SwitchCommand.SetScreen(on ? ScreenState.On : ScreenState.Off, crlf), CancellationToken.None).ConfigureAwait(false);
             await ReplyAsync("Screen state set to: " + (on ? "On" : "Off")).ConfigureAwait(false);
         }
 
