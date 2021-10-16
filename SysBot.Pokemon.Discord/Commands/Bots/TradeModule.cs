@@ -46,7 +46,6 @@ namespace SysBot.Pokemon.Discord
         [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
         public async Task TradeAsync([Summary("Trade Code")] int code, [Summary("Showdown Set")][Remainder] string content)
         {
-            const int gen = 8;
             content = ReusableActions.StripCodeBlock(content);
             var set = new ShowdownSet(content);
             var template = AutoLegalityWrapper.GetTemplate(set);
@@ -59,7 +58,7 @@ namespace SysBot.Pokemon.Discord
 
             try
             {
-                var sav = AutoLegalityWrapper.GetTrainerInfo(gen);
+                var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
                 var pkm = sav.GetLegal(template, out var result);
                 var la = new LegalityAnalysis(pkm);
                 var spec = GameInfo.Strings.Species[template.Species];

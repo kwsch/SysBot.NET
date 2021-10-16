@@ -1,4 +1,5 @@
-﻿using PKHeX.Core;
+﻿using System;
+using PKHeX.Core;
 using PKHeX.Core.AutoMod;
 using System.IO;
 using System.Threading;
@@ -86,6 +87,14 @@ namespace SysBot.Pokemon
             if ((pkm.IsNicknamed && StringsUtil.IsSpammyString(pkm.Nickname)) || StringsUtil.IsSpammyString(pkm.OT_Name))
                 return false;
             return !FormInfo.IsFusedForm(pkm.Species, pkm.Form, pkm.Format);
+        }
+
+        public static ITrainerInfo GetTrainerInfo<T>() where T : PKM, new()
+        {
+            if (typeof(T) == typeof(PK8))
+                return TrainerSettings.GetSavedTrainerData(GameVersion.SWSH, 8);
+
+            throw new ArgumentException("Type does not have a recognized trainer fetch.", typeof(T).Name);
         }
 
         public static ITrainerInfo GetTrainerInfo(int gen) => TrainerSettings.GetSavedTrainerData(gen);

@@ -39,7 +39,7 @@ namespace SysBot.Pokemon.Discord
         {
             content = ReusableActions.StripCodeBlock(content);
             var set = new ShowdownSet(content);
-            var sav = AutoLegalityWrapper.GetTrainerInfo(gen);
+            var sav = AutoLegalityWrapper.GetTrainerInfo<PK8>();
             await channel.ReplyWithLegalizedSetAsync(sav, set).ConfigureAwait(false);
         }
 

@@ -34,7 +34,7 @@ namespace SysBot.Pokemon.Twitch
 
             try
             {
-                var sav = AutoLegalityWrapper.GetTrainerInfo(PKX.Generation);
+                var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
                 PKM pkm = sav.GetLegal(template, out var result);
 
                 if (!pkm.CanBeTraded())
