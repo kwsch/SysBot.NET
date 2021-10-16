@@ -15,7 +15,7 @@ namespace SysBot.Tests
         [InlineData(Drednaw)]
         public void CanGenerate(string set)
         {
-            var sav = AutoLegalityWrapper.GetTrainerInfo(8);
+            var sav = AutoLegalityWrapper.GetTrainerInfo<PK8>();
             var s = new ShowdownSet(set);
             var template = AutoLegalityWrapper.GetTemplate(s);
             var pk = sav.GetLegal(template, out _);
@@ -26,7 +26,7 @@ namespace SysBot.Tests
         [InlineData(InavlidSpec)]
         public void ShouldNotGenerate(string set)
         {
-            _ = AutoLegalityWrapper.GetTrainerInfo(8);
+            _ = AutoLegalityWrapper.GetTrainerInfo<PK8>();
             var s = ShowdownUtil.ConvertToShowdown(set);
             s.Should().BeNull();
         }
@@ -36,7 +36,7 @@ namespace SysBot.Tests
         [InlineData(Charizard4, 4)]
         public void TestAbility(string set, int abilNumber)
         {
-            var sav = AutoLegalityWrapper.GetTrainerInfo(8);
+            var sav = AutoLegalityWrapper.GetTrainerInfo<PK8>();
             for (int i = 0; i < 10; i++)
             {
                 var s = new ShowdownSet(set);
@@ -51,7 +51,7 @@ namespace SysBot.Tests
         [InlineData(Charizard4, 4)]
         public void TestAbilityTwitch(string set, int abilNumber)
         {
-            var sav = AutoLegalityWrapper.GetTrainerInfo(8);
+            var sav = AutoLegalityWrapper.GetTrainerInfo<PK8>();
             for (int i = 0; i < 10; i++)
             {
                 var twitch = set.Replace("\r\n", " ").Replace("\n", " ");

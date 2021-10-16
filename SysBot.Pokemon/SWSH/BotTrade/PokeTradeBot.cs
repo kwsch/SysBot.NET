@@ -174,12 +174,19 @@ namespace SysBot.Pokemon
                 if (result == PokeTradeResult.Success)
                     return;
             }
+            catch (SocketException socket)
+            {
+                Log(socket.Message);
+                result = PokeTradeResult.ExceptionConnection;
+                HandleAbortedTrade(detail, type, priority, result);
+                throw; // let this interrupt the trade loop. re-entering the trade loop will recheck the connection.
+            }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
                 Log(e.Message);
-                result = PokeTradeResult.Aborted;
+                result = PokeTradeResult.ExceptionInternal;
             }
 
             HandleAbortedTrade(detail, type, priority, result);
@@ -292,7 +299,7 @@ namespace SysBot.Pokemon
             var partnerFound = await WaitForTradePartnerOffer(token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
-                return PokeTradeResult.Aborted;
+                return PokeTradeResult.RoutineCancel;
             if (!partnerFound)
             {
                 await ResetTradePosition(Hub.Config, token).ConfigureAwait(false);
@@ -363,7 +370,7 @@ namespace SysBot.Pokemon
                 return tradeResult;
 
             if (token.IsCancellationRequested)
-                return PokeTradeResult.Aborted;
+                return PokeTradeResult.RoutineCancel;
 
             // Trade was Successful!
             var received = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
@@ -710,14 +717,14 @@ namespace SysBot.Pokemon
             await Click(Y, 1_500, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
-                return PokeTradeResult.Aborted;
+                return PokeTradeResult.RoutineCancel;
 
             Log("Selecting Surprise Trade.");
             await Click(DDOWN, 0_500, token).ConfigureAwait(false);
             await Click(A, 2_000, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
-                return PokeTradeResult.Aborted;
+                return PokeTradeResult.RoutineCancel;
 
             await Task.Delay(0_750, token).ConfigureAwait(false);
 
@@ -732,14 +739,14 @@ namespace SysBot.Pokemon
             await Click(A, 0_700, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
-                return PokeTradeResult.Aborted;
+                return PokeTradeResult.RoutineCancel;
 
             Log("Confirming...");
             while (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
                 await Click(A, 0_800, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
-                return PokeTradeResult.Aborted;
+                return PokeTradeResult.RoutineCancel;
 
             // Let Surprise Trade be sent out before checking if we're back to the Overworld.
             await Task.Delay(3_000, token).ConfigureAwait(false);
@@ -758,7 +765,7 @@ namespace SysBot.Pokemon
             var partnerFound = await ReadUntilChanged(SurpriseTradeSearchOffset, oldEC, Hub.Config.Trade.TradeWaitTime * 1_000, 0_200, false, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
-                return PokeTradeResult.Aborted;
+                return PokeTradeResult.RoutineCancel;
 
             if (!partnerFound)
             {
@@ -790,7 +797,7 @@ namespace SysBot.Pokemon
             await Connection.WriteBytesAsync(BitConverter.GetBytes(ulong.MaxValue), SurpriseTradeLockBox, token).ConfigureAwait(false);
 
             if (token.IsCancellationRequested)
-                return PokeTradeResult.Aborted;
+                return PokeTradeResult.RoutineCancel;
 
             if (await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
                 Log("Trade complete!");
