@@ -21,7 +21,7 @@ namespace SysBot.Pokemon
             return string.Concat(sanitized.Select(char.ToLower));
         }
 
-        private static readonly char[] Blacklist = { '.', '\\', '/', ',', '*', ';' };
+        private static readonly char[] Blacklist = { '.', '\\', '/', ',', '*', ';', '．', '・', '。' };
         private static readonly string[] TLD = { "tv", "gg", "yt" };
         private static readonly string[] TLD2 = { "com", "org", "net" };
 

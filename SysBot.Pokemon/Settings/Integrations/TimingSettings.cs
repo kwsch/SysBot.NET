@@ -43,8 +43,7 @@ namespace SysBot.Pokemon
         [Category(Raid), Description("[RaidBot] Extra time in milliseconds to wait after deleting a friend.")]
         public int ExtraTimeDeleteFriend { get; set; } = 0;
 
-        // Miscellaneus settings.
-
+        // Miscellaneous settings.
         [Category(Misc), Description("Extra time in milliseconds to wait after clicking + to reconnect to Y-Comm.")]
         public int ExtraTimeReconnectYComm { get; set; } = 0;
 

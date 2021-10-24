@@ -28,7 +28,7 @@ namespace SysBot.Pokemon.ConsoleApp
             try
             {
                 var lines = File.ReadAllText(ConfigPath);
-                var cfg = JsonConvert.DeserializeObject<ProgramConfig>(lines, GetSettings()) ?? new();
+                var cfg = JsonConvert.DeserializeObject<ProgramConfig>(lines, GetSettings()) ?? new ProgramConfig();
                 PokeTradeBot.SeedChecker = new Z3SeedSearchHandler<PK8>();
                 BotContainer.RunBots(cfg);
             }

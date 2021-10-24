@@ -27,7 +27,7 @@ namespace SysBot.Pokemon.WinForms
             if (File.Exists(Program.ConfigPath))
             {
                 var lines = File.ReadAllText(Program.ConfigPath);
-                Config = JsonConvert.DeserializeObject<ProgramConfig>(lines, GetSettings()) ?? new();
+                Config = JsonConvert.DeserializeObject<ProgramConfig>(lines, GetSettings()) ?? new ProgramConfig();
                 RunningEnvironment = GetRunner(Config);
                 foreach (var bot in Config.Bots)
                 {

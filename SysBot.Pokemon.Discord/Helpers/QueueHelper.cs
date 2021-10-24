@@ -68,7 +68,7 @@ namespace SysBot.Pokemon.Discord
 
             var trainer = new PokeTradeTrainerInfo(trainerName, userID);
             var notifier = new DiscordTradeNotifier<T>(pk, trainer, code, user);
-            var detail = new PokeTradeDetail<T>(pk, trainer, notifier, t, code: code, sig == RequestSignificance.Favored);
+            var detail = new PokeTradeDetail<T>(pk, trainer, notifier, t, code, sig == RequestSignificance.Favored);
             var trade = new TradeEntry<T>(detail, userID, type, name);
 
             var hub = SysCord<T>.Runner.Hub;

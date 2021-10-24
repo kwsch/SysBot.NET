@@ -24,7 +24,7 @@ namespace SysBot.Base
             Source.Cancel();
             Source = new CancellationTokenSource();
 
-            Task.Run(function: async () =>
+            Task.Run(async () =>
             {
                 await Bot.HardStop().ConfigureAwait(false);
                 IsPaused = IsRunning = IsStopping = false;

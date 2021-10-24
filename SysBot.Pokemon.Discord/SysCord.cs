@@ -93,7 +93,7 @@ namespace SysBot.Pokemon.Discord
             return map.BuildServiceProvider();
         }
 
-        // Example of a logging handler. This can be re-used by addons
+        // Example of a logging handler. This can be reused by add-ons
         // that ask for a Func<LogMessage, Task>.
 
         private static Task Log(LogMessage msg)

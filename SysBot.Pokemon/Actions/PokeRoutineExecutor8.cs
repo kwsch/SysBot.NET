@@ -171,12 +171,12 @@ namespace SysBot.Pokemon
 
         public async Task ReOpenGame(PokeTradeHubConfig config, CancellationToken token)
         {
-            // Reopen the game if we get softbanned
-            Log("Potential softban detected, reopening game just in case!");
+            // Reopen the game if we get soft-banned
+            Log("Potential soft-ban detected, reopening game just in case!");
             await CloseGame(config, token).ConfigureAwait(false);
             await StartGame(config, token).ConfigureAwait(false);
 
-            // In case we are softbanned, reset the timestamp
+            // In case we are soft-banned, reset the timestamp
             await Unban(token).ConfigureAwait(false);
         }
 
@@ -191,7 +191,7 @@ namespace SysBot.Pokemon
 
         public async Task<bool> CheckIfSoftBanned(CancellationToken token)
         {
-            // Check if the Unix Timestamp isn't Zero, if so we are Softbanned.
+            // Check if the Unix Timestamp isn't Zero, if so we are soft-banned.
             var data = await Connection.ReadBytesAsync(SoftBanUnixTimespanOffset, 1, token).ConfigureAwait(false);
             return data[0] > 1;
         }
@@ -288,7 +288,7 @@ namespace SysBot.Pokemon
                 return dataint is CurrentScreen_Overworld1 or CurrentScreen_Overworld2;
             }
             // Uses an appropriate OverworldOffset for the console language.
-            else if (config.ScreenDetection == ScreenDetectionMode.ConsoleLanguageSpecific)
+            if (config.ScreenDetection == ScreenDetectionMode.ConsoleLanguageSpecific)
             {
                 var data = await Connection.ReadBytesAsync(GetOverworldOffset(config.ConsoleLanguage), 1, token).ConfigureAwait(false);
                 return data[0] == 1;

@@ -3,22 +3,22 @@
     public enum FossilSpecies
     {
         /// <summary>
-        /// Bot will revive Dracozolts
+        /// Bot will revive Dracozolt
         /// </summary>
         Dracozolt,
 
         /// <summary>
-        /// Bot will revive Arctozolts
+        /// Bot will revive Arctozolt
         /// </summary>
         Arctozolt,
 
         /// <summary>
-        /// Bot will revive Dracovishs
+        /// Bot will revive Dracovish
         /// </summary>
         Dracovish,
 
         /// <summary>
-        /// Bot will revive Arctovishs
+        /// Bot will revive Arctovish
         /// </summary>
         Arctovish,
     }
