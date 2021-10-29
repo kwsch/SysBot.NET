@@ -375,7 +375,7 @@ namespace SysBot.Pokemon
             // Trade was Successful!
             var received = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
             // Pokémon in b1s1 is same as the one they were supposed to receive (was never sent).
-            if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend))
+            if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend) && received.Checksum == toSend.Checksum)
             {
                 Log("User did not complete the trade.");
                 RecordUtil<PokeTradeBot>.Record($"Cancelled\t{TrainerNID:X16}\t{TrainerName}\t{poke.Trainer.TrainerName}\\t{poke.ID}\t{toSend.EncryptionConstant:X8}\t{offered.EncryptionConstant:X8}");
