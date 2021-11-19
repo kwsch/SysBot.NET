@@ -12,6 +12,9 @@ namespace SysBot.Pokemon
         [Category(StopConditions), Description("Stops only on Pokémon of this species. No restrictions if set to \"None\".")]
         public Species StopOnSpecies { get; set; }
 
+        [Category(StopConditions), Description("Stops only on Pokémon with this FormID. No restrictions if left blank.")]
+        public int? StopOnForm { get; set; }
+
         [Category(StopConditions), Description("Stop only on Pokémon of the specified nature.")]
         public Nature TargetNature { get; set; } = Nature.Random;
 
@@ -43,6 +46,9 @@ namespace SysBot.Pokemon
         {
             // Match Nature and Species if they were specified.
             if (settings.StopOnSpecies != Species.None && settings.StopOnSpecies != (Species)pk.Species)
+                return false;
+
+            if (settings.StopOnForm.HasValue && settings.StopOnForm != pk.Form)
                 return false;
 
             if (settings.TargetNature != Nature.Random && settings.TargetNature != (Nature)pk.Nature)
