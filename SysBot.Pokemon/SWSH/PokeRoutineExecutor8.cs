@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,12 +19,20 @@ namespace SysBot.Pokemon
 
         private static uint GetBoxSlotOffset(int box, int slot) => BoxStartOffset + (uint)(BoxFormatSlotSize * ((30 * box) + slot));
 
-        public override async Task<PK8> ReadPokemon(uint offset, CancellationToken token) => await ReadPokemon(offset, BoxFormatSlotSize, token).ConfigureAwait(false);
+        public override async Task<PK8> ReadPokemon(ulong offset, CancellationToken token) => await ReadPokemon(offset, BoxFormatSlotSize, token).ConfigureAwait(false);
 
-        public override async Task<PK8> ReadPokemon(uint offset, int size, CancellationToken token)
+        public override async Task<PK8> ReadPokemon(ulong offset, int size, CancellationToken token)
         {
-            var data = await Connection.ReadBytesAsync(offset, size, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync((uint)offset, size, token).ConfigureAwait(false);
             return new PK8(data);
+        }
+
+        public override async Task<PK8> ReadPokemonPointer(IEnumerable<long> jumps, int size, CancellationToken token)
+        {
+            var (valid, offset) = await ValidatePointerAll(jumps, token).ConfigureAwait(false);
+            if (!valid)
+                return new PK8();
+            return await ReadPokemon(offset, token).ConfigureAwait(false);
         }
 
         public async Task<PK8> ReadSurpriseTradePokemon(CancellationToken token)
@@ -172,26 +181,27 @@ namespace SysBot.Pokemon
         public async Task ReOpenGame(PokeTradeHubConfig config, CancellationToken token)
         {
             // Reopen the game if we get soft-banned
-            Log("Potential soft-ban detected, reopening game just in case!");
+            Log("Potential soft ban detected, reopening game just in case!");
             await CloseGame(config, token).ConfigureAwait(false);
             await StartGame(config, token).ConfigureAwait(false);
 
-            // In case we are soft-banned, reset the timestamp
+            // In case we are soft banned, reset the timestamp
             await Unban(token).ConfigureAwait(false);
         }
 
         public async Task Unban(CancellationToken token)
         {
-            // Like previous Generations the Game uses a Unix Timestamp for 
-            // how long we are Soft-Banned and once the Soft-Ban is lifted
-            // the Game sets the value back to 0 (1970/01/01 12:00 AM (UTC) )
+            // Like previous generations, the game uses a Unix timestamp for 
+            // how long we are soft banned and once the soft ban is lifted
+            // the game sets the value back to 0 (1970/01/01 12:00 AM (UTC))
+            Log("Soft ban detected, unbanning.");
             var data = BitConverter.GetBytes(0);
             await Connection.WriteBytesAsync(data, SoftBanUnixTimespanOffset, token).ConfigureAwait(false);
         }
 
         public async Task<bool> CheckIfSoftBanned(CancellationToken token)
         {
-            // Check if the Unix Timestamp isn't Zero, if so we are soft-banned.
+            // Check if the Unix Timestamp isn't zero, if so we are soft banned.
             var data = await Connection.ReadBytesAsync(SoftBanUnixTimespanOffset, 1, token).ConfigureAwait(false);
             return data[0] > 1;
         }

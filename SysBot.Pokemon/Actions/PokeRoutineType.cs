@@ -32,22 +32,22 @@
         RaidBot = 9,
 
         /// <summary> Triggers encounters until the criteria is satisfied. </summary>
-        EncounterLine = 1000,
+        EncounterLine = 1_000,
 
         /// <summary> Triggers encounters with Eternatus until the criteria is satisfied. </summary>
-        Reset = 1001,
+        Reset = 1_001,
 
         /// <summary> Triggers encounters with Sword &amp; Shield box legend until the criteria is satisfied. </summary>
-        Dogbot = 1002,
+        Dogbot = 1_002,
 
         /// <summary> Similar to idle, but identifies the bot as available for Remote input (Twitch Plays, etc). </summary>
-        RemoteControl = 6000,
+        RemoteControl = 6_000,
 
         // Add your own custom bots here so they don't clash for future main-branch bot releases.
     }
 
     public static class PokeRoutineTypeExtensions
     {
-        public static bool IsTradeBot(this PokeRoutineType type) => type is >=PokeRoutineType.FlexTrade and <=PokeRoutineType.Dump;
+        public static bool IsTradeBot(this PokeRoutineType type) => type is >=PokeRoutineType.FlexTrade and <= PokeRoutineType.Dump;
     }
 }

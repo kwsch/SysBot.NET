@@ -15,13 +15,13 @@
     <LangVersion>9</LangVersion>
     <Version>01.00.00</Version>
     <Nullable>enable</Nullable>
-    <Platforms>x64;x86</Platforms>
+    <Platforms>x64</Platforms>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="PKHeX.Core" Version="21.10.2" />
+    <PackageReference Include="PKHeX.Core" Version="21.11.27" />
     <PackageReference Include="System.Resources.Extensions" Version="5.0.0" />
   </ItemGroup>
 
@@ -45,6 +45,9 @@
   <ItemGroup Condition="$(TargetFramework.StartsWith('net4'))">
     <Reference Include="PKHeX.Drawing">
       <HintPath>deps\PKHeX.Drawing.dll</HintPath>
+    </Reference>
+    <Reference Include="PKHeX.Drawing.PokeSprite">
+      <HintPath>deps\PKHeX.Drawing.PokeSprite.dll</HintPath>
     </Reference>
   </ItemGroup>
 

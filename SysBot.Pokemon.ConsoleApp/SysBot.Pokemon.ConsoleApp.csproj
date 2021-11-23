@@ -5,7 +5,7 @@
     <TargetFrameworks>net5.0;net47</TargetFrameworks>
     <LangVersion>9</LangVersion>
     <Nullable>enable</Nullable>
-    <Platforms>x64;x86</Platforms>
+    <Platforms>x64</Platforms>
     <StartupObject>SysBot.Pokemon.ConsoleApp.Program</StartupObject>
   </PropertyGroup>
 

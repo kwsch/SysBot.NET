@@ -310,13 +310,13 @@ namespace SysBot.Pokemon
             // pkm already injected to b1s1
             await Task.Delay(5_500, token).ConfigureAwait(false); // necessary delay to get to the box properly
 
-            var TrainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
-            var TrainerTID = await GetTradePartnerTID7(TradeMethod.LinkTrade, token).ConfigureAwait(false);
-            var TrainerNID = await GetTradePartnerNID(token).ConfigureAwait(false);
-            RecordUtil<PokeTradeBot>.Record($"Initiating\t{TrainerNID:X16}\t{TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
-            Log($"Found Link Trade partner: {TrainerName}-{TrainerTID} (ID: {TrainerNID})");
+            var trainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
+            var trainerTID = await GetTradePartnerTID7(TradeMethod.LinkTrade, token).ConfigureAwait(false);
+            var trainerNID = await GetTradePartnerNID(token).ConfigureAwait(false);
+            RecordUtil<PokeTradeBot>.Record($"Initiating\t{trainerNID:X16}\t{trainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
+            Log($"Found Link Trade partner: {trainerName}-{trainerTID} (ID: {trainerNID})");
 
-            var partnerCheck = await CheckPartnerReputation(poke, TrainerNID, TrainerName, token).ConfigureAwait(false);
+            var partnerCheck = await CheckPartnerReputation(poke, trainerNID, trainerName, token).ConfigureAwait(false);
             if (partnerCheck != PokeTradeResult.Success)
             {
                 await ExitSeedCheckTrade(Hub.Config, token).ConfigureAwait(false);
@@ -336,7 +336,7 @@ namespace SysBot.Pokemon
                     await Click(A, 0_500, token).ConfigureAwait(false);
             }
 
-            poke.SendNotification(this, $"Found Link Trade partner: {TrainerName}. Waiting for a Pokémon...");
+            poke.SendNotification(this, $"Found Link Trade partner: {trainerName}. Waiting for a Pokémon...");
 
             if (poke.Type == PokeTradeType.Dump)
                 return await ProcessDumpTradeAsync(poke, token).ConfigureAwait(false);
@@ -357,7 +357,7 @@ namespace SysBot.Pokemon
             }
 
             PokeTradeResult update;
-            var trainer = new PartnerDataHolder(TrainerNID, TrainerName, TrainerTID);
+            var trainer = new PartnerDataHolder(trainerNID, trainerName, trainerTID);
             (toSend, update) = await GetEntityToSend(sav, poke, offered, oldEC, toSend, trainer, token).ConfigureAwait(false);
             if (update != PokeTradeResult.Success)
             {
@@ -378,7 +378,7 @@ namespace SysBot.Pokemon
             if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend) && received.Checksum == toSend.Checksum)
             {
                 Log("User did not complete the trade.");
-                RecordUtil<PokeTradeBot>.Record($"Cancelled\t{TrainerNID:X16}\t{TrainerName}\t{poke.Trainer.TrainerName}\\t{poke.ID}\t{toSend.EncryptionConstant:X8}\t{offered.EncryptionConstant:X8}");
+                RecordUtil<PokeTradeBot>.Record($"Cancelled\t{trainerNID:X16}\t{trainerName}\t{poke.Trainer.TrainerName}\\t{poke.ID}\t{toSend.EncryptionConstant:X8}\t{offered.EncryptionConstant:X8}");
                 return PokeTradeResult.TrainerTooSlow;
             }
 
@@ -386,7 +386,7 @@ namespace SysBot.Pokemon
             Log("User completed the trade.");
             poke.TradeFinished(this, received);
 
-            RecordUtil<PokeTradeBot>.Record($"Finished\t{TrainerNID:X16}\t{toSend.EncryptionConstant:X8}\t{received.EncryptionConstant:X8}");
+            RecordUtil<PokeTradeBot>.Record($"Finished\t{trainerNID:X16}\t{toSend.EncryptionConstant:X8}\t{received.EncryptionConstant:X8}");
 
             // Only log if we completed the trade.
             UpdateCountsAndExport(poke, received, toSend);
@@ -1018,30 +1018,16 @@ namespace SysBot.Pokemon
         {
             var ofs = GetTrainerTIDSIDOffset(tradeMethod);
             var data = await Connection.ReadBytesAsync(ofs, 8, token).ConfigureAwait(false);
+
             var tidsid = BitConverter.ToUInt32(data, 0);
-            var sid = tidsid >> 16;
-            var tid = tidsid & 0xFFFF;
-            return ((int)((tid | (sid << 16)) % 1000000)).ToString("D6");
+            var tid7 = $"{tidsid % 1_000_000:000000}";
+            return tid7;
         }
 
         public async Task<ulong> GetTradePartnerNID(CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(LinkTradePartnerNIDOffset, 8, token).ConfigureAwait(false);
             return BitConverter.ToUInt64(data, 0);
-        }
-    }
-
-    public class PartnerDataHolder
-    {
-        public readonly ulong  TrainerOnlineID;
-        public readonly string TrainerName;
-        public readonly string TrainerTID;
-
-        public PartnerDataHolder(ulong trainerNid, string trainerName, string trainerTid)
-        {
-            TrainerOnlineID = trainerNid;
-            TrainerName = trainerName;
-            TrainerTID = trainerTid;
         }
     }
 }

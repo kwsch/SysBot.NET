@@ -81,7 +81,7 @@ namespace SysBot.Pokemon.ConsoleApp
             foreach (var bot in prog.Bots)
             {
                 bot.Initialize();
-                if (!AddBot(env, bot))
+                if (!AddBot(env, bot, prog.Mode))
                     Console.WriteLine($"Failed to add bot: {bot}");
             }
 
@@ -96,10 +96,11 @@ namespace SysBot.Pokemon.ConsoleApp
         private static IPokeBotRunner GetRunner(ProgramConfig prog) => prog.Mode switch
         {
             ProgramMode.SWSH => new PokeBotRunnerImpl<PK8>(prog.Hub, new BotFactory8()),
+            ProgramMode.BDSP => new PokeBotRunnerImpl<PB8>(prog.Hub, new BotFactory8BS()),
             _ => throw new IndexOutOfRangeException("Unsupported mode."),
         };
 
-        private static bool AddBot(IPokeBotRunner env, PokeBotState cfg)
+        private static bool AddBot(IPokeBotRunner env, PokeBotState cfg, ProgramMode mode)
         {
             if (!cfg.IsValid())
             {
@@ -107,10 +108,19 @@ namespace SysBot.Pokemon.ConsoleApp
                 return false;
             }
 
-            var newbot = env.CreateBotFromConfig(cfg);
+            PokeRoutineExecutorBase newBot;
             try
             {
-                env.Add(newbot);
+                newBot = env.CreateBotFromConfig(cfg);
+            }
+            catch
+            {
+                Console.WriteLine($"Current Mode ({mode}) does not support this type of bot ({cfg.CurrentRoutineType}).");
+                return false;
+            }
+            try
+            {
+                env.Add(newBot);
             }
             catch (ArgumentException ex)
             {

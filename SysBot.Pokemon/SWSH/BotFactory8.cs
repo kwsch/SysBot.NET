@@ -25,5 +25,27 @@ namespace SysBot.Pokemon
             PokeRoutineType.RemoteControl => new RemoteControlBot(cfg),
             _ => throw new ArgumentException(nameof(cfg.NextRoutineType)),
         };
+
+        public override bool SupportsRoutine(PokeRoutineType type) => type switch
+        {
+            PokeRoutineType.FlexTrade or PokeRoutineType.Idle
+                or PokeRoutineType.SurpriseTrade
+                or PokeRoutineType.LinkTrade
+                or PokeRoutineType.Clone
+                or PokeRoutineType.Dump
+                or PokeRoutineType.SeedCheck
+                => true,
+
+            PokeRoutineType.EggFetch => true,
+            PokeRoutineType.FossilBot => true,
+            PokeRoutineType.RaidBot => true,
+            PokeRoutineType.EncounterLine => true,
+            PokeRoutineType.Reset => true,
+            PokeRoutineType.Dogbot => true,
+
+            PokeRoutineType.RemoteControl => true,
+
+            _ => false,
+        };
     }
 }

@@ -21,6 +21,7 @@ namespace SysBot.Pokemon
 
         BotSource<PokeBotState>? GetBot(PokeBotState state);
         PokeRoutineExecutorBase CreateBotFromConfig(PokeBotState cfg);
+        bool SupportsRoutine(PokeRoutineType pokeRoutineType);
     }
 
     public abstract class PokeBotRunner<T> : BotRunner<PokeBotState>, IPokeBotRunner where T : PKM, new()
@@ -120,5 +121,6 @@ namespace SysBot.Pokemon
         public BotSource<PokeBotState>? GetBot(PokeBotState state) => base.GetBot(state);
         void IPokeBotRunner.Remove(IConsoleBotConfig state, bool callStop) => Remove(state, callStop);
         public void Add(PokeRoutineExecutorBase newbot) => Add((RoutineExecutor<PokeBotState>)newbot);
+        public bool SupportsRoutine(PokeRoutineType t) => Factory.SupportsRoutine(t);
     }
 }

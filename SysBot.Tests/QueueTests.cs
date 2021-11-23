@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using PKHeX.Core;
 using SysBot.Pokemon;
@@ -85,9 +86,9 @@ namespace SysBot.Tests
             public override void SoftStop() { }
             public override Task HardStop() => Task.CompletedTask;
 
-            public override Task<T> ReadPokemon(uint offset, CancellationToken token) => Task.Run(() => new T(), token);
-
-            public override Task<T> ReadPokemon(uint offset, int size, CancellationToken token) => Task.Run(() => new T(), token);
+            public override Task<T> ReadPokemon(ulong offset, CancellationToken token) => Task.Run(() => new T(), token);
+            public override Task<T> ReadPokemon(ulong offset, int size, CancellationToken token) => Task.Run(() => new T(), token);
+            public override Task<T> ReadPokemonPointer(IEnumerable<long> jumps, int size, CancellationToken token) => Task.Run(() => new T(), token);
             public override Task<T> ReadBoxPokemon(int box, int slot, CancellationToken token) => Task.Run(() => new T(), token);
         }
 

@@ -12,5 +12,6 @@ namespace SysBot.Pokemon
     {
         None, // invalid
         SWSH,
+        BDSP,
     }
 }

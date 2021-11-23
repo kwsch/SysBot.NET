@@ -50,6 +50,7 @@ namespace SysBot.Pokemon.WinForms
         private static IPokeBotRunner GetRunner(ProgramConfig cfg) => cfg.Mode switch
         {
             ProgramMode.SWSH => new PokeBotRunnerImpl<PK8>(cfg.Hub, new BotFactory8()),
+            ProgramMode.BDSP => new PokeBotRunnerImpl<PB8>(cfg.Hub, new BotFactory8BS()),
             _ => throw new IndexOutOfRangeException("Unsupported mode."),
         };
 
@@ -79,7 +80,7 @@ namespace SysBot.Pokemon.WinForms
             MinimumSize = Size;
             PG_Hub.SelectedObject = RunningEnvironment.Config;
 
-            var routines = (PokeRoutineType[])Enum.GetValues(typeof(PokeRoutineType));
+            var routines = ((PokeRoutineType[])Enum.GetValues(typeof(PokeRoutineType))).Where(z => RunningEnvironment.SupportsRoutine(z));
             var list = routines.Select(z => new ComboItem(z.ToString(), (int)z)).ToArray();
             CB_Routine.DisplayMember = nameof(ComboItem.Text);
             CB_Routine.ValueMember = nameof(ComboItem.Value);
@@ -234,10 +235,20 @@ namespace SysBot.Pokemon.WinForms
             if (Bots.Any(z => z.Connection.Equals(cfg.Connection)))
                 return false;
 
-            var newbot = RunningEnvironment.CreateBotFromConfig(cfg);
+            PokeRoutineExecutorBase newBot;
             try
             {
-                RunningEnvironment.Add(newbot);
+                Console.WriteLine($"Current Mode ({Config.Mode}) does not support this type of bot ({cfg.CurrentRoutineType}).");
+                newBot = RunningEnvironment.CreateBotFromConfig(cfg);
+            }
+            catch
+            {
+                return false;
+            }
+
+            try
+            {
+                RunningEnvironment.Add(newBot);
             }
             catch (ArgumentException ex)
             {

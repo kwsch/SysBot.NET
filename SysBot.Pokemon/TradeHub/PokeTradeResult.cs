@@ -20,6 +20,7 @@
         RecoverPostLinkCode,
         RecoverOpenBox,
         RecoverReturnOverworld,
+        RecoverEnterUnionRoom,
     }
 
     public static class PokeTradeResultExtensions

@@ -1,10 +1,10 @@
-﻿using System;
-using PKHeX.Core;
+﻿using PKHeX.Core;
 
 namespace SysBot.Pokemon
 {
     public abstract class BotFactory<T> where T : PKM, new()
     {
-        public virtual PokeRoutineExecutorBase CreateBot(PokeTradeHub<T> hub, PokeBotState cfg) => throw new Exception();
+        public abstract PokeRoutineExecutorBase CreateBot(PokeTradeHub<T> hub, PokeBotState cfg);
+        public abstract bool SupportsRoutine(PokeRoutineType type);
     }
 }
