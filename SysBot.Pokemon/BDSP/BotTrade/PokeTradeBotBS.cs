@@ -424,7 +424,8 @@ namespace SysBot.Pokemon
             {
                 await Click(A, 0_050, token).ConfigureAwait(false);
                 await PressAndHold(A, 0_750, 0_750, token).ConfigureAwait(false);
-        }
+            }
+
             await Click(A, 0_050, token).ConfigureAwait(false);
             await PressAndHold(A, 1_000, 1_000, token).ConfigureAwait(false);
             await Click(A, 0_050, token).ConfigureAwait(false);

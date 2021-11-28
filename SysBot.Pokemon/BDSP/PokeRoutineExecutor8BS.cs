@@ -228,7 +228,7 @@ namespace SysBot.Pokemon
                 }
             }
 
-            await Task.Delay(5_000, token).ConfigureAwait(false);
+            await Task.Delay(7_000, token).ConfigureAwait(false);
             Log("Back in the overworld!");
         }
 
