@@ -466,8 +466,8 @@ namespace SysBot.Pokemon
             // Y-button trades always put us in a place where we can open the call menu without having to move.
             Log("Attempting to open the Y menu.");
             await Click(Y, 1_000, token).ConfigureAwait(false);
-            await Click(A, 0_200, token).ConfigureAwait(false);
-            await Click(DDOWN, 0_200, token).ConfigureAwait(false);
+            await Click(A, 0_400, token).ConfigureAwait(false);
+            await Click(DDOWN, 0_400, token).ConfigureAwait(false);
             await Click(A, 0_100, token).ConfigureAwait(false);
 
             return true; // we are now searching
