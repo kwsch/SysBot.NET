@@ -236,7 +236,6 @@ namespace SysBot.Pokemon
 
             // Enter Union Room and set ourselves up as Trading.
             if (poke.Type != PokeTradeType.Random)
-                Hub.Config.Stream.StartEnterCode(this);
             if (!await EnterUnionRoomWithCode(poke.Code, token).ConfigureAwait(false))
             {
                 // We don't know how far we made it in, so restart the game to be safe.
@@ -244,7 +243,6 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.RecoverEnterUnionRoom;
             }
 
-            Hub.Config.Stream.EndEnterCode(this);
             poke.TradeSearching(this);
             var waitPartner = Hub.Config.Trade.TradeWaitTime;
 
@@ -443,12 +441,14 @@ namespace SysBot.Pokemon
             await Click(A, 0_050, token).ConfigureAwait(false);
             await PressAndHold(A, 6_500, 6_500, token).ConfigureAwait(false);
 
+            Hub.Config.Stream.StartEnterCode(this);
             Log($"Entering Link Trade code: {tradeCode:0000 0000}...");
             await EnterLinkCode(tradeCode, Hub.Config, token).ConfigureAwait(false);
 
             // Wait for Barrier to trigger all bots simultaneously.
             WaitAtBarrierIfApplicable(token);
             await Click(PLUS, 0_600, token).ConfigureAwait(false);
+            Hub.Config.Stream.EndEnterCode(this);
             Log("Entering the Union Room.");
 
             // Wait until we're past the communication message.
