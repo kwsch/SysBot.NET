@@ -125,9 +125,6 @@ namespace SysBot.Pokemon
             int waitCounter = 0;
             while (!token.IsCancellationRequested && Config.NextRoutineType == type)
             {
-                var (valid, offset) = await ValidatePointerAll(Offsets.LinkTradePartnerPokemonPointer, token).ConfigureAwait(false);
-                if (valid)
-                    await SwitchConnection.WriteBytesAbsoluteAsync(new byte[344], offset, token).ConfigureAwait(false);
                 var (detail, priority) = GetTradeData(type);
                 if (detail is null)
                 {
@@ -235,8 +232,7 @@ namespace SysBot.Pokemon
                 await SetBoxPokemon(toSend, token, sav).ConfigureAwait(false);
 
             // Enter Union Room and set ourselves up as Trading.
-            if (poke.Type != PokeTradeType.Random)
-            if (!await EnterUnionRoomWithCode(poke.Code, token).ConfigureAwait(false))
+            if (!await EnterUnionRoomWithCode(poke.Type, poke.Code, token).ConfigureAwait(false))
             {
                 // We don't know how far we made it in, so restart the game to be safe.
                 await RestartGameBDSP(token).ConfigureAwait(false);
@@ -397,7 +393,7 @@ namespace SysBot.Pokemon
             return PokeTradeResult.TrainerTooSlow;
         }
 
-        private async Task<bool> EnterUnionRoomWithCode(int tradeCode, CancellationToken token)
+        private async Task<bool> EnterUnionRoomWithCode(PokeTradeType tradeType, int tradeCode, CancellationToken token)
         {
             // Open y-comm and select global room
             await Click(Y, 1_000, token).ConfigureAwait(false);
@@ -442,7 +438,8 @@ namespace SysBot.Pokemon
             await Click(A, 0_050, token).ConfigureAwait(false);
             await PressAndHold(A, 6_500, 6_500, token).ConfigureAwait(false);
 
-            Hub.Config.Stream.StartEnterCode(this);
+            if (tradeType != PokeTradeType.Random)
+                Hub.Config.Stream.StartEnterCode(this);
             Log($"Entering Link Trade code: {tradeCode:0000 0000}...");
             await EnterLinkCode(tradeCode, Hub.Config, token).ConfigureAwait(false);
 
@@ -453,16 +450,16 @@ namespace SysBot.Pokemon
             Log("Entering the Union Room.");
 
             // Wait until we're past the communication message.
-            int tries = 30;
+            int tries = 100;
             while (!await IsUnionWork(UnionGamingOffset, token).ConfigureAwait(false))
             {
-                await Click(A, 1_000, token).ConfigureAwait(false);
+                await Click(A, 0_300, token).ConfigureAwait(false);
 
                 if (--tries < 1)
                     return false;
             }
 
-            await Task.Delay(1_000, token).ConfigureAwait(false);
+            await Task.Delay(1_300, token).ConfigureAwait(false);
 
             // Y-button trades always put us in a place where we can open the call menu without having to move.
             Log("Attempting to open the Y menu.");
