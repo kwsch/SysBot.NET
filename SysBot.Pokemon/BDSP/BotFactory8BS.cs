@@ -13,6 +13,8 @@ namespace SysBot.Pokemon
                 or PokeRoutineType.Dump
                 => new PokeTradeBotBS(Hub, cfg),
 
+            PokeRoutineType.RemoteControl => new RemoteControlBot(cfg),
+
             _ => throw new ArgumentException(nameof(cfg.NextRoutineType)),
         };
 
@@ -23,6 +25,8 @@ namespace SysBot.Pokemon
                 or PokeRoutineType.Clone
                 or PokeRoutineType.Dump
                 => true,
+
+            PokeRoutineType.RemoteControl => true,
 
             _ => false,
         };
