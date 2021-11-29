@@ -20,6 +20,9 @@ namespace SysBot.Pokemon
         [Category(OpenGame), Description("Extra time in milliseconds to wait before clicking A in title screen.")]
         public int ExtraTimeLoadGame { get; set; } = 5000;
 
+        [Category(OpenGame), Description("[BDSP] Extra time in milliseconds to wait for the overworld to load after the title screen.")]
+        public int ExtraTimeLoadOverworld { get; set; } = 3000;
+
         // Closing the game.
         [Category(CloseGame), Description("Extra time in milliseconds to wait after pressing HOME to minimize the game.")]
         public int ExtraTimeReturnHome { get; set; } = 0;
@@ -44,8 +47,11 @@ namespace SysBot.Pokemon
         public int ExtraTimeDeleteFriend { get; set; } = 0;
 
         // Miscellaneous settings.
-        [Category(Misc), Description("Extra time in milliseconds to wait after clicking + to reconnect to Y-Comm.")]
+        [Category(Misc), Description("[SWSH] Extra time in milliseconds to wait after clicking + to reconnect to Y-Comm.")]
         public int ExtraTimeReconnectYComm { get; set; } = 0;
+
+        [Category(OpenGame), Description("[BDSP] Extra time in milliseconds to wait for the overworld to load after leaving the Union Room.")]
+        public int ExtraTimeLeaveUnionRoom { get; set; } = 1000;
 
         [Category(Misc), Description("Time to wait after opening the keyboard for code entry during trades.")]
         public int ExtraTimeOpenCodeEntry { get; set; } = 1000;

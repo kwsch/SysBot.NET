@@ -399,15 +399,15 @@ namespace SysBot.Pokemon
             await Click(Y, 1_000, token).ConfigureAwait(false);
             await Click(DRIGHT, 0_400, token).ConfigureAwait(false);
 
-            await Click(A, 0_050, token).ConfigureAwait(false);
-            await PressAndHold(A, 1_000, 1_000, token).ConfigureAwait(false);
-
             // French has one less menu
             if (GameLang is not LanguageID.French)
             {
                 await Click(A, 0_050, token).ConfigureAwait(false);
-                await PressAndHold(A, 1_500, 1_500, token).ConfigureAwait(false);
+                await PressAndHold(A, 1_000, 1_000, token).ConfigureAwait(false);
             }
+
+            await Click(A, 0_050, token).ConfigureAwait(false);
+            await PressAndHold(A, 1_500, 1_500, token).ConfigureAwait(false);
 
             await Click(A, 1_000, token).ConfigureAwait(false); // Would you like to enter? Screen
 
@@ -567,7 +567,7 @@ namespace SysBot.Pokemon
                     if (tries < 0)
                         return false;
                 }
-                await Task.Delay(3_000, token).ConfigureAwait(false);
+                await Task.Delay(3_000 + Hub.Config.Timings.ExtraTimeLeaveUnionRoom, token).ConfigureAwait(false);
             }
             return true;
         }
