@@ -20,6 +20,7 @@ namespace SysBot.Pokemon
         public abstract IReadOnlyList<long> UnionWorkIsTalkingPointer { get; }
         public abstract IReadOnlyList<long> UnionWorkPenaltyPointer { get; }
         public abstract IReadOnlyList<long> MainSavePointer { get; }
+        public abstract IReadOnlyList<long> ConfigPointer { get; }
 
         // SceneID enums
         public const byte SceneID_Field = 0;

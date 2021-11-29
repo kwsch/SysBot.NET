@@ -112,6 +112,9 @@ namespace SysBot.Pokemon
             var sav = new SAV8BS(bytes);
             InitSaveData(sav);
 
+            if (await GetTextSpeed(token).ConfigureAwait(false) != TextSpeedOption.Fast)
+                Log("Text speed should be set to FAST. Stop the bot and fix this if you encounter problems.");
+
             return sav;
         }
 
@@ -260,5 +263,11 @@ namespace SysBot.Pokemon
         }
 
         public async Task<ulong> GetTradePartnerNID(CancellationToken token) => BitConverter.ToUInt64(await PointerPeek(sizeof(ulong), Offsets.LinkTradePartnerNIDPointer, token).ConfigureAwait(false), 0);
+
+        public async Task<TextSpeedOption> GetTextSpeed(CancellationToken token)
+        {
+            var data = await PointerPeek(1, Offsets.ConfigPointer, token).ConfigureAwait(false);
+            return (TextSpeedOption)data[0];
+        }
     }
 }
