@@ -20,5 +20,6 @@ namespace SysBot.Pokemon
         public override IReadOnlyList<long> UnionWorkPenaltyPointer { get; } = new long[] { 0x4E29D80, 0xB8, 0x8C }; // 0 when no penalty, float value otherwise.
 
         public override IReadOnlyList<long> MainSavePointer { get; } = new long[] { 0x4C964E8, 0x20 };
+        public override IReadOnlyList<long> ConfigPointer { get; } = new long[] { 0x4E34DD0, 0xB8, 0x10, 0xA8 };
     }
 }
