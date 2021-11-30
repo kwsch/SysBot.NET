@@ -51,31 +51,23 @@ namespace SysBot.Pokemon
             if (!string.IsNullOrWhiteSpace(externalSource) && Directory.Exists(externalSource))
                 TrainerSettings.LoadTrainerDatabaseFromPath(externalSource);
 
-            SaveFile GetFallbackBlank(int generation)
-            {
-                var blankSav = SaveUtil.GetBlankSAV(generation, OT);
-                blankSav.Language = lang;
-                blankSav.TID = TID;
-                blankSav.SID = SID;
-                blankSav.OT = OT;
-                return blankSav;
-            }
-
             for (int i = 1; i < PKX.Generation + 1; i++)
             {
-                var fallback = GetFallbackBlank(i);
-                var exist = TrainerSettings.GetSavedTrainerData(i, fallback);
-                if (ReferenceEquals(exist, fallback))
-                    TrainerSettings.Register(fallback);
+                var versions = GameUtil.GetVersionsInGeneration(i, PKX.Generation);
+                foreach (var v in versions)
+                {
+                    var fallback = new SimpleTrainerInfo(v)
+                    {
+                        Language = lang,
+                        TID = TID,
+                        SID = SID,
+                        OT = OT,
+                    };
+                    var exist = TrainerSettings.GetSavedTrainerData(v, i, fallback);
+                    if (exist is SimpleTrainerInfo) // not anything from files; this assumes ALM returns SimpleTrainerInfo for non-user-provided fake templates.
+                        TrainerSettings.Register(fallback);
+                }
             }
-
-            // Handle BDSP fallback separately since they are in the same generation (8).
-            var blankBDSP = SaveUtil.GetBlankSAV(GameVersion.BD, OT, cfg.GenerateLanguage);
-            blankBDSP.TID = TID;
-            blankBDSP.SID = SID;
-            var b = TrainerSettings.GetSavedTrainerData(GameVersion.BDSP, 8);
-            if (b.OT == "PKHeX" && b.TID == 12345 && b.SID == 54321) // ALM returned a SimpleTrainerInfo
-                TrainerSettings.Register(blankBDSP);
 
             var trainer = TrainerSettings.GetSavedTrainerData(PKX.Generation);
             PKMConverter.SetPrimaryTrainer(trainer);
