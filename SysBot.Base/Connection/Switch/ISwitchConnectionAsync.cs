@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace SysBot.Base
 {
@@ -10,6 +11,7 @@ namespace SysBot.Base
     {
         Task<ulong> GetMainNsoBaseAsync(CancellationToken token);
         Task<ulong> GetHeapBaseAsync(CancellationToken token);
+        Task<string> GetTitleID(CancellationToken token);
 
         Task<byte[]> ReadBytesMainAsync(ulong offset, int length, CancellationToken token);
         Task<byte[]> ReadBytesAbsoluteAsync(ulong offset, int length, CancellationToken token);
@@ -19,5 +21,9 @@ namespace SysBot.Base
 
         Task<byte[]> ReadRaw(byte[] command, int length, CancellationToken token);
         Task SendRaw(byte[] command, CancellationToken token);
+
+        Task<byte[]> PointerPeek(int size, IEnumerable<long> jumps, CancellationToken token);
+        Task<ulong> PointerAll(IEnumerable<long> jumps, CancellationToken token);
+        Task<ulong> PointerRelative(IEnumerable<long> jumps, CancellationToken token);
     }
 }

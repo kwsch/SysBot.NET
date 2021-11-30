@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Linq;
+using System.Text;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using static SysBot.Base.SwitchOffsetType;
 
 namespace SysBot.Base
@@ -37,7 +40,7 @@ namespace SysBot.Base
             return Task.Run(() =>
             {
                 Send(SwitchCommand.GetMainNsoBase(false));
-                byte[] baseBytes = ReadResponse(8);
+                byte[] baseBytes = ReadBulkUSB();
                 return BitConverter.ToUInt64(baseBytes, 0);
             }, token);
         }
@@ -47,8 +50,19 @@ namespace SysBot.Base
             return Task.Run(() =>
             {
                 Send(SwitchCommand.GetHeapBase(false));
-                byte[] baseBytes = ReadResponse(8);
+                byte[] baseBytes = ReadBulkUSB();
                 return BitConverter.ToUInt64(baseBytes, 0);
+            }, token);
+        }
+
+        public Task<string> GetTitleID(CancellationToken token)
+        {
+            return Task.Run(() =>
+            {
+                Send(SwitchCommand.GetTitleID(false));
+                byte[] baseBytes = ReadBulkUSB();
+                return BitConverter.ToUInt64(baseBytes, 0).ToString("X16").Trim();
+
             }, token);
         }
 
@@ -57,13 +71,33 @@ namespace SysBot.Base
             return Task.Run(() =>
             {
                 Send(command);
-                return ReadResponse(length);
+                return ReadBulkUSB();
             }, token);
         }
 
         public Task SendRaw(byte[] command, CancellationToken token)
         {
             return Task.Run(() => Send(command), token);
+        }
+
+        public async Task<byte[]> PointerPeek(int size, IEnumerable<long> jumps, CancellationToken token)
+        {
+            byte[] command = Encoding.UTF8.GetBytes($"pointerPeek {size}{string.Concat(jumps.Select(z => $" {z}"))}\r\n");
+            return await ReadRaw(command, (size * 2) + 1, token).ConfigureAwait(false);
+        }
+
+        public async Task<ulong> PointerAll(IEnumerable<long> jumps, CancellationToken token)
+        {
+            byte[] command = Encoding.UTF8.GetBytes($"pointerAll{string.Concat(jumps.Select(z => $" {z}"))}\r\n");
+            byte[] bytes = await ReadRaw(command, (sizeof(ulong) * 2) + 1, token).ConfigureAwait(false);
+            return BitConverter.ToUInt64(bytes, 0);
+        }
+
+        public async Task<ulong> PointerRelative(IEnumerable<long> jumps, CancellationToken token)
+        {
+            byte[] command = Encoding.UTF8.GetBytes($"pointerRelative{string.Concat(jumps.Select(z => $" {z}"))}\r\n");
+            byte[] bytes = await ReadRaw(command, (sizeof(ulong) * 2) + 1, token).ConfigureAwait(false);
+            return BitConverter.ToUInt64(bytes, 0);
         }
     }
 }

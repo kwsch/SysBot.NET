@@ -292,7 +292,7 @@ namespace SysBot.Pokemon
 
             var offered = await ReadUntilPresentPointer(Offsets.LinkTradePartnerPokemonPointer, 25_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
 
-            var offset = await PointerAll(Offsets.LinkTradePartnerPokemonPointer, token).ConfigureAwait(false);
+            var offset = await SwitchConnection.PointerAll(Offsets.LinkTradePartnerPokemonPointer, token).ConfigureAwait(false);
             var oldEC = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 4, token).ConfigureAwait(false);
             if (offered is null)
                 return PokeTradeResult.TrainerTooSlow;
@@ -480,13 +480,13 @@ namespace SysBot.Pokemon
         private async Task InitializeSessionOffsets(CancellationToken token)
         {
             Log("Caching session offsets...");
-            BoxStartOffset = await PointerAll(Offsets.BoxStartPokemonPointer, token).ConfigureAwait(false);
+            BoxStartOffset = await SwitchConnection.PointerAll(Offsets.BoxStartPokemonPointer, token).ConfigureAwait(false);
             await Task.Delay(1_000).ConfigureAwait(false);
-            UnionGamingOffset = await PointerAll(Offsets.UnionWorkIsGamingPointer, token).ConfigureAwait(false);
+            UnionGamingOffset = await SwitchConnection.PointerAll(Offsets.UnionWorkIsGamingPointer, token).ConfigureAwait(false);
             await Task.Delay(1_000).ConfigureAwait(false);
-            UnionTalkingOffset = await PointerAll(Offsets.UnionWorkIsTalkingPointer, token).ConfigureAwait(false);
+            UnionTalkingOffset = await SwitchConnection.PointerAll(Offsets.UnionWorkIsTalkingPointer, token).ConfigureAwait(false);
             await Task.Delay(1_000).ConfigureAwait(false);
-            SoftBanOffset = await PointerAll(Offsets.UnionWorkPenaltyPointer, token).ConfigureAwait(false);
+            SoftBanOffset = await SwitchConnection.PointerAll(Offsets.UnionWorkPenaltyPointer, token).ConfigureAwait(false);
             await Task.Delay(1_000).ConfigureAwait(false);
         }
 
@@ -579,7 +579,7 @@ namespace SysBot.Pokemon
             var start = DateTime.Now;
             var pkprev = new PB8();
 
-            var offset = await PointerAll(Offsets.LinkTradePartnerPokemonPointer, token).ConfigureAwait(false);
+            var offset = await SwitchConnection.PointerAll(Offsets.LinkTradePartnerPokemonPointer, token).ConfigureAwait(false);
 
             while (ctr < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.Now - start < time)
             {
@@ -617,8 +617,8 @@ namespace SysBot.Pokemon
 
         private async Task<TradePartnerBS> GetTradePartnerInfo(CancellationToken token)
         {
-            var id = await PointerPeek(4, Offsets.LinkTradePartnerIDPointer, token).ConfigureAwait(false);
-            var name = await PointerPeek(TradePartnerBS.MaxByteLengthStringObject, Offsets.LinkTradePartnerNamePointer, token).ConfigureAwait(false);
+            var id = await SwitchConnection.PointerPeek(4, Offsets.LinkTradePartnerIDPointer, token).ConfigureAwait(false);
+            var name = await SwitchConnection.PointerPeek(TradePartnerBS.MaxByteLengthStringObject, Offsets.LinkTradePartnerNamePointer, token).ConfigureAwait(false);
             return new TradePartnerBS(id, name);
         }
 
