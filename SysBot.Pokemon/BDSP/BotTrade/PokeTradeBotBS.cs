@@ -229,7 +229,7 @@ namespace SysBot.Pokemon
 
             var toSend = poke.TradeData;
             if (toSend.Species != 0)
-                await SetBoxPokemon(toSend, token, sav).ConfigureAwait(false);
+                await SetBoxPokemonAbsolute(BoxStartOffset, toSend, token, sav).ConfigureAwait(false);
 
             // Enter Union Room and set ourselves up as Trading.
             if (!await EnterUnionRoomWithCode(poke.Type, poke.Code, token).ConfigureAwait(false))
@@ -311,7 +311,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.RoutineCancel;
 
             // Trade was Successful!
-            var received = await ReadBoxPokemon(0, 0, token).ConfigureAwait(false);
+            var received = await ReadPokemon(BoxStartOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
             // Pokémon in b1s1 is same as the one they were supposed to receive (was never sent).
             if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend) && received.Checksum == toSend.Checksum)
             {
@@ -684,7 +684,7 @@ namespace SysBot.Pokemon
                 return (offered, PokeTradeResult.TrainerTooSlow);
             }
 
-            await SetBoxPokemon(clone, token, sav).ConfigureAwait(false);
+            await SetBoxPokemonAbsolute(BoxStartOffset, clone, token, sav).ConfigureAwait(false);
             await Click(A, 0_800, token).ConfigureAwait(false);
 
             for (int i = 0; i < 5; i++)
@@ -713,7 +713,7 @@ namespace SysBot.Pokemon
 
                 poke.SendNotification(this, "Injecting the requested Pokémon.");
                 await Click(A, 0_800, token).ConfigureAwait(false);
-                await SetBoxPokemon(toSend, token, sav).ConfigureAwait(false);
+                await SetBoxPokemonAbsolute(BoxStartOffset, toSend, token, sav).ConfigureAwait(false);
                 await Task.Delay(2_500, token).ConfigureAwait(false);
             }
             else if (config.LedyQuitIfNoMatch)

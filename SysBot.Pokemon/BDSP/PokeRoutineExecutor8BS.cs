@@ -68,15 +68,12 @@ namespace SysBot.Pokemon
 
         public override async Task<PB8> ReadBoxPokemon(int box, int slot, CancellationToken token)
         {
-            if (box != 0 || (uint)slot > 5)
-                throw new Exception("I can only see b1s1 to b1s5 for now");
-
+            // Shouldn't be reading anything but box1slot1 here. Slots are not consecutive.
             var jumps = Offsets.BoxStartPokemonPointer.ToArray();
-            jumps[^1] -= slot * BoxFormatSlotSize;
             return await ReadPokemonPointer(jumps, BoxFormatSlotSize, token).ConfigureAwait(false);
         }
 
-        public async Task SetBoxPokemon(PB8 pkm, CancellationToken token, ITrainerInfo? sav = null)
+        public async Task SetBoxPokemonAbsolute(ulong offset, PB8 pkm, CancellationToken token, ITrainerInfo? sav = null)
         {
             if (sav != null)
             {
@@ -87,7 +84,9 @@ namespace SysBot.Pokemon
             }
 
             pkm.ResetPartyStats();
-            await PointerPoke(pkm.EncryptedPartyData, Offsets.BoxStartPokemonPointer, token).ConfigureAwait(false);
+            var command = SwitchCommand.PokeAbsolute(offset, pkm.EncryptedPartyData, true);
+            await SwitchConnection.SendRaw(command, token).ConfigureAwait(false);
+
         }
 
         public async Task<SAV8BS> IdentifyTrainer(CancellationToken token)
