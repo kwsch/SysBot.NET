@@ -481,13 +481,13 @@ namespace SysBot.Pokemon
         {
             Log("Caching session offsets...");
             BoxStartOffset = await PointerAll(Offsets.BoxStartPokemonPointer, token).ConfigureAwait(false);
-            await Task.Delay(2_000).ConfigureAwait(false);
+            await Task.Delay(1_000).ConfigureAwait(false);
             UnionGamingOffset = await PointerAll(Offsets.UnionWorkIsGamingPointer, token).ConfigureAwait(false);
-            await Task.Delay(2_000).ConfigureAwait(false);
+            await Task.Delay(1_000).ConfigureAwait(false);
             UnionTalkingOffset = await PointerAll(Offsets.UnionWorkIsTalkingPointer, token).ConfigureAwait(false);
-            await Task.Delay(2_000).ConfigureAwait(false);
+            await Task.Delay(1_000).ConfigureAwait(false);
             SoftBanOffset = await PointerAll(Offsets.UnionWorkPenaltyPointer, token).ConfigureAwait(false);
-            await Task.Delay(2_000).ConfigureAwait(false);
+            await Task.Delay(1_000).ConfigureAwait(false);
         }
 
         // todo: future
