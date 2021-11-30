@@ -1,9 +1,10 @@
 ﻿using Discord.Commands;
 using System.Threading.Tasks;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord
 {
-    public class LegalizerModule : ModuleBase<SocketCommandContext>
+    public class LegalizerModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
     {
         [Command("legalize"), Alias("alm")]
         [Summary("Tries to legalize the attached pkm data.")]
@@ -27,7 +28,7 @@ namespace SysBot.Pokemon.Discord
         [Priority(0)]
         public async Task ConvertShowdown([Remainder][Summary("Showdown Set")] string content)
         {
-            await Context.Channel.ReplyWithLegalizedSetAsync(content).ConfigureAwait(false);
+            await Context.Channel.ReplyWithLegalizedSetAsync<T>(content).ConfigureAwait(false);
         }
     }
 }

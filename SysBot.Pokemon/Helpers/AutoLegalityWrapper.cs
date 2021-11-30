@@ -69,6 +69,14 @@ namespace SysBot.Pokemon
                     TrainerSettings.Register(fallback);
             }
 
+            // Handle BDSP fallback separately since they are in the same generation (8).
+            var blankBDSP = SaveUtil.GetBlankSAV(GameVersion.BD, OT, cfg.GenerateLanguage);
+            blankBDSP.TID = TID;
+            blankBDSP.SID = SID;
+            var b = TrainerSettings.GetSavedTrainerData(GameVersion.BDSP, 8);
+            if (b.OT == "PKHeX" && b.TID == 12345 && b.SID == 54321) // ALM returned a SimpleTrainerInfo
+                TrainerSettings.Register(blankBDSP);
+
             var trainer = TrainerSettings.GetSavedTrainerData(PKX.Generation);
             PKMConverter.SetPrimaryTrainer(trainer);
         }

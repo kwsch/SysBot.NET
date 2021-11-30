@@ -43,11 +43,11 @@ namespace SysBot.Pokemon.Discord
             await channel.ReplyWithLegalizedSetAsync(sav, set).ConfigureAwait(false);
         }
 
-        public static async Task ReplyWithLegalizedSetAsync(this ISocketMessageChannel channel, string content)
+        public static async Task ReplyWithLegalizedSetAsync<T>(this ISocketMessageChannel channel, string content) where T : PKM, new()
         {
             content = ReusableActions.StripCodeBlock(content);
             var set = new ShowdownSet(content);
-            var sav = AutoLegalityWrapper.GetTrainerInfo(set.Format);
+            var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
             await channel.ReplyWithLegalizedSetAsync(sav, set).ConfigureAwait(false);
         }
 
