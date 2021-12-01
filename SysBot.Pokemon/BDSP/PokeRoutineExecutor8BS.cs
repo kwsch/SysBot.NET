@@ -84,9 +84,8 @@ namespace SysBot.Pokemon
             }
 
             pkm.ResetPartyStats();
-            var command = SwitchCommand.PokeAbsolute(offset, pkm.EncryptedPartyData, true);
+            var command = SwitchCommand.PokeAbsolute(offset, pkm.EncryptedPartyData);
             await SwitchConnection.SendRaw(command, token).ConfigureAwait(false);
-
         }
 
         public async Task<SAV8BS> IdentifyTrainer(CancellationToken token)

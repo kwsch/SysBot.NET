@@ -28,10 +28,10 @@ namespace SysBot.Pokemon
             }
         }
 
-        [Category(Generate), Description("Default 16 Bit Trainer ID (TID) for PKM files that don't match any of the provided PKM files.")]
+        [Category(Generate), Description("Default 16-bit Trainer ID (TID) for requests that don't match any of the provided trainer data files. This should be a 5-digit number.")]
         public int GenerateTID16 { get; set; } = 12345;
 
-        [Category(Generate), Description("Default 16 Bit Secret ID (SID) for PKM files that that don't match any of the provided PKM files.")]
+        [Category(Generate), Description("Default 16-bit Secret ID (SID) for requests that don't match any of the provided trainer data files. This should be a 5-digit number.")]
         public int GenerateSID16 { get; set; } = 54321;
 
         [Category(Generate), Description("Default language for PKM files that don't match any of the provided PKM files.")]
