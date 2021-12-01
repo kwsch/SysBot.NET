@@ -8,7 +8,6 @@ using PKHeX.Core;
 using SysBot.Base;
 using static SysBot.Pokemon.BasePokeDataOffsetsBS;
 using static SysBot.Base.SwitchButton;
-using Decoder = SysBot.Base.Decoder;
 
 namespace SysBot.Pokemon
 {
@@ -17,25 +16,6 @@ namespace SysBot.Pokemon
         protected IPokeDataOffsetsBS Offsets { get; private set; } = new PokeDataOffsetsBS_BD();
         protected PokeRoutineExecutor8BS(PokeBotState cfg) : base(cfg)
         {
-        }
-
-        protected async Task<byte[]> PointerPeek(int size, IEnumerable<long> jumps, CancellationToken token)
-        {
-            byte[] command = Encoding.UTF8.GetBytes($"pointerPeek {size}{string.Concat(jumps.Select(z => $" {z}"))}\r\n");
-            byte[] socketReturn = await SwitchConnection.ReadRaw(command, (size * 2) + 1, token).ConfigureAwait(false);
-            return Decoder.ConvertHexByteStringToBytes(socketReturn);
-        }
-
-        // SysBot.NET likes heap offsets
-        protected async Task<ulong> PointerRelative(IEnumerable<long> jumps, CancellationToken token)
-        {
-            byte[] command = Encoding.UTF8.GetBytes($"pointerRelative{string.Concat(jumps.Select(z => $" {z}"))}\r\n");
-            byte[] socketReturn = await SwitchConnection.ReadRaw(command, (sizeof(ulong) * 2) + 1, token).ConfigureAwait(false);
-            var bytes = Decoder.ConvertHexByteStringToBytes(socketReturn);
-            bytes = bytes.Reverse().ToArray();
-
-            var offset = BitConverter.ToUInt64(bytes, 0);
-            return offset;
         }
 
         protected async Task PointerPoke(byte[] bytes, IEnumerable<long> jumps, CancellationToken token)
@@ -91,7 +71,7 @@ namespace SysBot.Pokemon
         public async Task<SAV8BS> IdentifyTrainer(CancellationToken token)
         {
             // pull title so we know which set of offsets to use
-            string title = Encoding.ASCII.GetString(await SwitchConnection.ReadRaw(SwitchCommand.GetTitleID(), 17, token).ConfigureAwait(false)).Trim();
+            string title = await SwitchConnection.GetTitleID(token).ConfigureAwait(false);
             Offsets = title switch
             {
                 BrilliantDiamondID => new PokeDataOffsetsBS_BD(),
@@ -100,7 +80,7 @@ namespace SysBot.Pokemon
             };
 
             // generate a fake savefile
-            var myStatusOffset = await PointerAll(Offsets.MainSavePointer, token).ConfigureAwait(false);
+            var myStatusOffset = await SwitchConnection.PointerAll(Offsets.MainSavePointer, token).ConfigureAwait(false);
 
             // we only need config and mystatus regions
             const ulong offs = 0x79B74;
@@ -235,14 +215,14 @@ namespace SysBot.Pokemon
 
         private async Task<uint> GetSceneID(CancellationToken token)
         {
-            var xVal = await PointerPeek(1, Offsets.SceneIDPointer, token).ConfigureAwait(false);
+            var xVal = await SwitchConnection.PointerPeek(1, Offsets.SceneIDPointer, token).ConfigureAwait(false);
             var xParsed = BitConverter.ToUInt32(xVal, 0);
             return xParsed;
         }
 
         private async Task<bool> IsSceneID(uint expected, CancellationToken token)
         {
-            var byt = await PointerPeek(1, Offsets.SceneIDPointer, token).ConfigureAwait(false);
+            var byt = await SwitchConnection.PointerPeek(1, Offsets.SceneIDPointer, token).ConfigureAwait(false);
             return byt[0] == expected;
         }
 
@@ -256,15 +236,15 @@ namespace SysBot.Pokemon
         // Whenever we're in a trade, this pointer will be loaded, otherwise 0
         public async Task<bool> IsPartnerParamLoaded(CancellationToken token)
         {
-            var byt = await PointerPeek(8, Offsets.LinkTradePartnerParamPointer, token).ConfigureAwait(false);
+            var byt = await SwitchConnection.PointerPeek(8, Offsets.LinkTradePartnerParamPointer, token).ConfigureAwait(false);
             return BitConverter.ToUInt64(byt, 0) != 0;
         }
 
-        public async Task<ulong> GetTradePartnerNID(CancellationToken token) => BitConverter.ToUInt64(await PointerPeek(sizeof(ulong), Offsets.LinkTradePartnerNIDPointer, token).ConfigureAwait(false), 0);
+        public async Task<ulong> GetTradePartnerNID(CancellationToken token) => BitConverter.ToUInt64(await SwitchConnection.PointerPeek(sizeof(ulong), Offsets.LinkTradePartnerNIDPointer, token).ConfigureAwait(false), 0);
 
         public async Task<TextSpeedOption> GetTextSpeed(CancellationToken token)
         {
-            var data = await PointerPeek(1, Offsets.ConfigPointer, token).ConfigureAwait(false);
+            var data = await SwitchConnection.PointerPeek(1, Offsets.ConfigPointer, token).ConfigureAwait(false);
             return (TextSpeedOption)data[0];
         }
     }

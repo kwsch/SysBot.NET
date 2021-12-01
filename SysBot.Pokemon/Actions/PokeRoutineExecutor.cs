@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using PKHeX.Core;
+﻿using PKHeX.Core;
 using SysBot.Base;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace SysBot.Pokemon
 {
@@ -51,18 +48,8 @@ namespace SysBot.Pokemon
 
         protected async Task<(bool, ulong)> ValidatePointerAll(IEnumerable<long> jumps, CancellationToken token)
         {
-            var solved = await PointerAll(jumps, token).ConfigureAwait(false);
+            var solved = await SwitchConnection.PointerAll(jumps, token).ConfigureAwait(false);
             return (solved != 0, solved);
-        }
-
-        protected async Task<ulong> PointerAll(IEnumerable<long> jumps, CancellationToken token)
-        {
-            byte[] command = Encoding.UTF8.GetBytes($"pointerAll{string.Concat(jumps.Select(z => $" {z}"))}\r\n");
-            byte[] socketReturn = await SwitchConnection.ReadRaw(command, (sizeof(ulong) * 2) + 1, token).ConfigureAwait(false);
-            var bytes = Base.Decoder.ConvertHexByteStringToBytes(socketReturn);
-            Array.Reverse(bytes);
-
-            return BitConverter.ToUInt64(bytes, 0);
         }
 
         public static void DumpPokemon(string folder, string subfolder, T pk)

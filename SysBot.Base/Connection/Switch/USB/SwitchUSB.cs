@@ -52,6 +52,9 @@ namespace SysBot.Base
 
             lock (_sync)
             {
+                if (!usb.UsbRegistryInfo.IsAlive)
+                    usb.ResetDevice();
+
                 if (usb.IsOpen)
                     usb.Close();
                 usb.Open();
@@ -96,11 +99,14 @@ namespace SysBot.Base
             {
                 if (SwDevice is { } x)
                 {
-                    Send(SwitchCommand.DetachController(false));
                     if (x.IsOpen)
                     {
                         if (x is IUsbDevice wholeUsbDevice)
+                        {
+                            if (!wholeUsbDevice.UsbRegistryInfo.IsAlive)
+                                wholeUsbDevice.ResetDevice();
                             wholeUsbDevice.ReleaseInterface(0);
+                        }
                         x.Close();
                     }
                 }
@@ -124,9 +130,43 @@ namespace SysBot.Base
 
         protected byte[] Read(ulong offset, int length, Func<ulong, int, byte[]> method)
         {
-            if (length > MaximumTransferSize)
-                return ReadLarge(offset, length, method);
-            return ReadSmall(offset, length, method);
+            var cmd = method(offset, length);
+            SendInternal(cmd);
+            return ReadBulkUSB();
+        }
+
+        protected byte[] ReadBulkUSB()
+        {
+            // Give it time to push back.
+            Thread.Sleep(1);
+
+            lock (_sync)
+            {
+                if (reader == null)
+                    throw new Exception("USB device not found or not connected.");
+
+                // Let usb-botbase tell us the response size.
+                byte[] sizeOfReturn = new byte[4];
+                reader.Read(sizeOfReturn, 5000, out _);
+
+                int size = BitConverter.ToInt32(sizeOfReturn, 0);
+                byte[] buffer = new byte[size];
+
+                // Loop until we have read everything.
+                int transfSize = 0;
+                while (transfSize < size)
+                {
+                    Thread.Sleep(1);
+                    var ec = reader.Read(buffer, transfSize, Math.Min(reader.ReadBufferSize, size - transfSize), 5000, out int lenVal);
+                    if (ec != ErrorCode.None)
+                    {
+                        Disconnect();
+                        throw new Exception(UsbDevice.LastErrorString);
+                    }
+                    transfSize += lenVal;
+                }
+                return buffer;
+            }
         }
 
         protected void Write(byte[] data, ulong offset, Func<ulong, byte[], byte[]> method)
@@ -134,20 +174,6 @@ namespace SysBot.Base
             if (data.Length > MaximumTransferSize)
                 WriteLarge(data, offset, method);
             else WriteSmall(data, offset, method);
-        }
-
-        public byte[] ReadSmall(ulong offset, int length, Func<ulong, int, byte[]> method)
-        {
-            lock (_sync)
-            {
-                var cmd = method(offset, length);
-                SendInternal(cmd);
-                Thread.Sleep(1);
-
-                var buffer = new byte[length];
-                var _ = ReadInternal(buffer);
-                return buffer;
-            }
         }
 
         public void WriteSmall(byte[] data, ulong offset, Func<ulong, byte[], byte[]> method)
@@ -200,28 +226,6 @@ namespace SysBot.Base
                 var slice = data.SliceSafe(i, MaximumTransferSize);
                 Write(slice, offset + (uint)i, method);
                 Thread.Sleep((MaximumTransferSize / DelayFactor) + BaseDelay);
-            }
-        }
-
-        private byte[] ReadLarge(ulong offset, int length, Func<ulong, int, byte[]> method)
-        {
-            var result = new byte[length];
-            for (int i = 0; i < length; i += MaximumTransferSize)
-            {
-                Read(offset + (uint)i, Math.Min(MaximumTransferSize, length - i), method).CopyTo(result, i);
-                Thread.Sleep((MaximumTransferSize / DelayFactor) + BaseDelay);
-            }
-            return result;
-        }
-
-        protected byte[] ReadResponse(int length)
-        {
-            Thread.Sleep(1);
-            lock (_sync)
-            {
-                var buffer = new byte[(length * 2) + 0];
-                var _ = Read(buffer);
-                return buffer;
             }
         }
     }

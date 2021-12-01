@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Text;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using static SysBot.Base.SwitchOffsetType;
 
 namespace SysBot.Base
@@ -128,6 +131,12 @@ namespace SysBot.Base
             return BitConverter.ToUInt64(baseBytes, 0);
         }
 
+        public async Task<string> GetTitleID(CancellationToken token)
+        {
+            var bytes = await ReadRaw(SwitchCommand.GetTitleID(), 17, token).ConfigureAwait(false);
+            return Encoding.ASCII.GetString(bytes).Trim();
+        }
+
         private async Task<byte[]> Read(ulong offset, int length, SwitchOffsetType type, CancellationToken token)
         {
             var method = type.GetReadMethod();
@@ -183,6 +192,31 @@ namespace SysBot.Base
         public async Task SendRaw(byte[] command, CancellationToken token)
         {
             await SendAsync(command, token).ConfigureAwait(false);
+        }
+
+        public async Task<byte[]> PointerPeek(int size, IEnumerable<long> jumps, CancellationToken token)
+        {
+            byte[] command = Encoding.UTF8.GetBytes($"pointerPeek {size}{string.Concat(jumps.Select(z => $" {z}"))}\r\n");
+            byte[] socketReturn = await ReadRaw(command, (size * 2) + 1, token).ConfigureAwait(false);
+            return Decoder.ConvertHexByteStringToBytes(socketReturn);
+        }
+
+        public async Task<ulong> PointerAll(IEnumerable<long> jumps, CancellationToken token)
+        {
+            byte[] command = Encoding.UTF8.GetBytes($"pointerAll{string.Concat(jumps.Select(z => $" {z}"))}\r\n");
+            byte[] socketReturn = await ReadRaw(command, (sizeof(ulong) * 2) + 1, token).ConfigureAwait(false);
+            var bytes = Decoder.ConvertHexByteStringToBytes(socketReturn);
+            Array.Reverse(bytes);
+            return BitConverter.ToUInt64(bytes, 0);
+        }
+
+        public async Task<ulong> PointerRelative(IEnumerable<long> jumps, CancellationToken token)
+        {
+            byte[] command = Encoding.UTF8.GetBytes($"pointerRelative{string.Concat(jumps.Select(z => $" {z}"))}\r\n");
+            byte[] socketReturn = await ReadRaw(command, (sizeof(ulong) * 2) + 1, token).ConfigureAwait(false);
+            var bytes = Decoder.ConvertHexByteStringToBytes(socketReturn);
+            bytes = bytes.Reverse().ToArray();
+            return BitConverter.ToUInt64(bytes, 0);
         }
     }
 }
