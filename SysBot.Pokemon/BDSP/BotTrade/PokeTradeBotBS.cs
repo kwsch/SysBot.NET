@@ -588,16 +588,20 @@ namespace SysBot.Pokemon
             int ctr = 0;
             var time = TimeSpan.FromSeconds(Hub.Config.Trade.MaxDumpTradeTime);
             var start = DateTime.Now;
-            var pkprev = new PB8();
 
             while (ctr < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.Now - start < time)
             {
-                var pk = await ReadUntilPresent(LinkTradePokemonOffset, 3_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
-                if (pk == null || pk.Species < 1 || !pk.ChecksumValid || SearchUtil.HashByDetails(pk) == SearchUtil.HashByDetails(pkprev))
+                // Wait for user input... Needs to be different from the previously offered Pokémon.
+                var tradeOffered = await ReadUntilChanged(LinkTradePokemonOffset, lastOffered, 3_000, 1_000, false, true, token).ConfigureAwait(false);
+                if (!tradeOffered)
                     continue;
 
-                // Save the new Pokémon for comparison next round.
-                pkprev = pk;
+                // If we detected a change, they offered something.
+                var pk = await ReadPokemon(LinkTradePokemonOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
+                var newEC = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
+                if (pk == null || pk.Species < 1 || !pk.ChecksumValid || lastOffered == newEC)
+                    continue;
+                lastOffered = newEC;
 
                 // Send results from separate thread; the bot doesn't need to wait for things to be calculated.
                 if (DumpSetting.Dump)
