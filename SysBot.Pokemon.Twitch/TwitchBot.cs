@@ -274,6 +274,7 @@ namespace SysBot.Pokemon.Twitch
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
+                LogUtil.LogSafe(ex, nameof(TwitchBot<T>));
                 LogUtil.LogError($"{ex.Message}", nameof(TwitchBot<T>));
             }
         }
