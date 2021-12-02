@@ -61,6 +61,9 @@ namespace SysBot.Pokemon
             var fn = Path.Combine(dir, Util.CleanFileName(pk.FileName));
             File.WriteAllBytes(fn, pk.DecryptedPartyData);
             LogUtil.LogInfo($"Saved file: {fn}", "Dump");
+            int fCount = Directory.GetFiles(dir, "*", SearchOption.AllDirectories).Length;
+            string distcount = $"Total distributed Pokémon: {fCount}";
+            File.WriteAllText("Totaldistributed.txt", distcount);
         }
     }
 }
