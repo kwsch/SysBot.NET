@@ -71,7 +71,10 @@ namespace SysBot.Base
 
         public static void LogSafe(Exception exception, string identity)
         {
-            Logger.Log(LogLevel.Error, exception, identity);
+            Logger.Log(LogLevel.Error, $"Exception from {identity}:");
+            Logger.Log(LogLevel.Error, exception);
+            while ((exception = exception.InnerException) is { } x)
+                Logger.Log(LogLevel.Error, x);
         }
     }
 }
