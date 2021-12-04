@@ -53,6 +53,12 @@ namespace SysBot.Pokemon
         [Category(OpenGame), Description("[BDSP] Extra time in milliseconds to wait for the overworld to load after leaving the Union Room.")]
         public int ExtraTimeLeaveUnionRoom { get; set; } = 1000;
 
+        [Category(OpenGame), Description("[BDSP] Extra time in milliseconds to wait for the Y Menu to load at the start of each trade loop.")]
+        public int ExtraTimeOpenYMenu { get; set; } = 500;
+
+        [Category(OpenGame), Description("[BDSP] Extra time in milliseconds to wait for the Union Room to load before trying to call for a trade.")]
+        public int ExtraTimeJoinUnionRoom { get; set; } = 500;
+
         [Category(Misc), Description("Time to wait after opening the keyboard for code entry during trades.")]
         public int ExtraTimeOpenCodeEntry { get; set; } = 1000;
 
