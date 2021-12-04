@@ -216,8 +216,12 @@ namespace SysBot.Pokemon
             {
                 detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
                 EchoUtil.Echo("No Trainer found or Trade aborted! Changing room...");
-                string boboText = "No Trainer found or Trade aborted! Changing room...";
-                File.WriteAllText("LinkCode.txt", boboText);
+                    string boboText = "No Trainer found or Trade aborted! Changing room...";
+                    File.WriteAllText($"LinkCode.txt", boboText);
+                File.WriteAllText($"LinkCode_{Connection.Name}.txt", boboText);
+
+
+
                 detail.TradeCanceled(this, result);
             }
         }
@@ -295,8 +299,11 @@ namespace SysBot.Pokemon
 
             poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. Waiting for a Pokémon...");
             EchoUtil.Echo($"Found Link Trade partner: {tradePartner.TrainerName}. Waiting for a Pokémon...");
-            string otherText = "Trade Partner found! Wait for new Link Code...";
-            File.WriteAllText("LinkCode.txt", otherText);
+            
+
+                string otherText = "Trade Partner found! Wait for new Link Code...";
+                File.WriteAllText($"LinkCode.txt", otherText);
+                File.WriteAllText($"LinkCode_{Connection.Name}.txt", otherText);
             // Requires at least one trade for this pointer to make sense, so cache it here.
             LinkTradePokemonOffset = await SwitchConnection.PointerAll(Offsets.LinkTradePartnerPokemonPointer, token).ConfigureAwait(false);
 
@@ -463,9 +470,11 @@ namespace SysBot.Pokemon
             if (tradeType != PokeTradeType.Random)
                 Hub.Config.Stream.StartEnterCode(this);
             Log($"Entering Link Trade code: {tradeCode:0000 0000}...");
+                string createText = $"new Link Trade code: {tradeCode:0000 0000}...";
+                File.WriteAllText($"LinkCode.txt", createText);
+                File.WriteAllText($"LinkCode_{Connection.Name}.txt", createText);
+
             EchoUtil.Echo($"Entering new Link Trade code: {tradeCode:0000 0000}...");
-            string createText = $"new Link Trade code: {tradeCode:0000 0000}...";
-            File.WriteAllText("LinkCode.txt", createText);
             await EnterLinkCode(tradeCode, Hub.Config, token).ConfigureAwait(false);
 
             // Wait for Barrier to trigger all bots simultaneously.
