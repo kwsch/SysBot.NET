@@ -41,17 +41,28 @@ namespace SysBot.Pokemon.Discord
             // Notify in PM to mirror what is said in the channel.
             await trader.SendMessageAsync($"{msg}\nYour trade code will be **{code:0000 0000}**.").ConfigureAwait(false);
 
-            // Clean Up
-            if (result)
+            try
             {
-                // Delete the user's join message for privacy
-                if (!context.IsPrivate)
-                    await context.Message.DeleteAsync(RequestOptions.Default).ConfigureAwait(false);
+                // Clean Up
+                if (result)
+                {
+                    // Delete the user's join message for privacy
+                    if (!context.IsPrivate)
+                        await context.Message.DeleteAsync(RequestOptions.Default).ConfigureAwait(false);
+                }
+                else
+                {
+                    // Delete our "I'm adding you!", and send the same message that we sent to the general channel.
+                    await test.DeleteAsync().ConfigureAwait(false);
+                }
             }
-            else
+            catch (HttpException)
             {
-                // Delete our "I'm adding you!", and send the same message that we sent to the general channel.
-                await test.DeleteAsync().ConfigureAwait(false);
+                var app = await context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
+                var owner = app.Owner.Id;
+                var noAccessMsg = $"<@{owner}> You must grant me permissions to delete messages!";
+                await context.Channel.SendMessageAsync(noAccessMsg).ConfigureAwait(false);
+                return;
             }
         }
 

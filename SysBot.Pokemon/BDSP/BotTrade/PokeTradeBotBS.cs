@@ -413,7 +413,7 @@ namespace SysBot.Pokemon
         private async Task<bool> EnterUnionRoomWithCode(PokeTradeType tradeType, int tradeCode, CancellationToken token)
         {
             // Open y-comm and select global room
-            await Click(Y, 1_000, token).ConfigureAwait(false);
+            await Click(Y, 1_000 + Hub.Config.Timings.ExtraTimeOpenYMenu, token).ConfigureAwait(false);
             await Click(DRIGHT, 0_400, token).ConfigureAwait(false);
 
             // French has one less menu
@@ -484,7 +484,7 @@ namespace SysBot.Pokemon
                     return false;
             }
 
-            await Task.Delay(1_300, token).ConfigureAwait(false);
+            await Task.Delay(1_300 + Hub.Config.Timings.ExtraTimeJoinUnionRoom, token).ConfigureAwait(false);
 
             // Y-button trades always put us in a place where we can open the call menu without having to move.
             Log("Attempting to open the Y menu.");
