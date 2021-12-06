@@ -346,6 +346,9 @@ namespace SysBot.Pokemon
             if (!await EnsureOutsideOfUnionRoom(token).ConfigureAwait(false))
                 return PokeTradeResult.RecoverReturnOverworld;
 
+            // Sometimes they offered another mon, so store that immediately upon leaving Union Room.
+            lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
+
             return PokeTradeResult.Success;
         }
 
@@ -687,9 +690,6 @@ namespace SysBot.Pokemon
                 Log("Trade partner did not change their Pokémon.");
                 return (offered, PokeTradeResult.TrainerTooSlow);
             }
-
-            // Update the last Pokémon they intended to show us.
-            lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
 
             await SetBoxPokemonAbsolute(BoxStartOffset, clone, token, sav).ConfigureAwait(false);
             await Click(A, 0_800, token).ConfigureAwait(false);
