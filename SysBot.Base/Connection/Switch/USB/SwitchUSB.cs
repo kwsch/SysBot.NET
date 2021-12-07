@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using LibUsbDotNet;
 using LibUsbDotNet.Main;
@@ -131,6 +132,13 @@ namespace SysBot.Base
         protected byte[] Read(ulong offset, int length, Func<ulong, int, byte[]> method)
         {
             var cmd = method(offset, length);
+            SendInternal(cmd);
+            return ReadBulkUSB();
+        }
+
+        protected byte[] ReadMulti(IReadOnlyDictionary<ulong, int> offsetSizes, Func<IReadOnlyDictionary<ulong, int>, byte[]> method)
+        {
+            var cmd = method(offsetSizes);
             SendInternal(cmd);
             return ReadBulkUSB();
         }
