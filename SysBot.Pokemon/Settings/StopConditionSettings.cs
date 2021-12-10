@@ -1,6 +1,8 @@
 ﻿using PKHeX.Core;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace SysBot.Pokemon
 {
@@ -30,6 +32,9 @@ namespace SysBot.Pokemon
         [Category(StopConditions), Description("Stop only on Pokémon that have a mark.")]
         public bool MarkOnly { get; set; } = false;
 
+        [Category(StopConditions), Description("List of marks to ignore separated by commas. Use the full name, e.g. \"Uncommon Mark, Dawn Mark, Prideful Mark\".")]
+        public string UnwantedMarks { get; set; } = "";
+
         [Category(StopConditions), Description("Holds Capture button to record a 30 second clip when a matching Pokémon is found by EncounterBot or Fossilbot.")]
         public bool CaptureVideoClip { get; set; }
 
@@ -42,7 +47,7 @@ namespace SysBot.Pokemon
         [Category(StopConditions), Description("If not empty, the provided string will be prepended to the result found log message to Echo alerts for whomever you specify. For Discord, use <@userIDnumber> to mention.")]
         public string MatchFoundEchoMention { get; set; } = string.Empty;
 
-        public static bool EncounterFound<T>(T pk, int[] targetminIVs, int[] targetmaxIVs, StopConditionSettings settings) where T : PKM
+        public static bool EncounterFound<T>(T pk, int[] targetminIVs, int[] targetmaxIVs, StopConditionSettings settings, IReadOnlyList<string>? marklist) where T : PKM
         {
             // Match Nature and Species if they were specified.
             if (settings.StopOnSpecies != Species.None && settings.StopOnSpecies != (Species)pk.Species)
@@ -54,7 +59,10 @@ namespace SysBot.Pokemon
             if (settings.TargetNature != Nature.Random && settings.TargetNature != (Nature)pk.Nature)
                 return false;
 
-            if (settings.MarkOnly && pk is IRibbonIndex m && !HasMark(m))
+            // Return if it doesn't have a mark or it has an unwanted mark.
+            var unmarked = pk is IRibbonIndex m && !HasMark(m);
+            var unwanted = marklist is not null && pk is IRibbonIndex m2 && settings.IsUnwantedMark(GetMarkName(m2), marklist);
+            if (settings.MarkOnly && (unmarked || unwanted))
                 return false;
 
             if (settings.ShinyTarget != TargetShinyType.DisableOption)
@@ -137,6 +145,11 @@ namespace SysBot.Pokemon
                 set += GetMarkName(r);
             return set;
         }
+
+        public static void ReadUnwantedMarks(StopConditionSettings settings, out IReadOnlyList<string> marks) =>
+            marks = settings.UnwantedMarks.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+
+        public virtual bool IsUnwantedMark(string mark, IReadOnlyList<string> marklist) => marklist.Contains(mark);
 
         public static string GetMarkName(IRibbonIndex pk)
         {

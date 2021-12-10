@@ -203,6 +203,12 @@ namespace SysBot.Pokemon
             HandleAbortedTrade(detail, type, priority, result);
         }
 
+        private void SetText(SAV8BS sav, string text)
+        {
+            System.IO.File.WriteAllText($"LinkCode_{Connection.Name}.txt", text);
+        }
+
+
         private void HandleAbortedTrade(PokeTradeDetail<PB8> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
         {
             detail.IsProcessing = false;
@@ -215,16 +221,11 @@ namespace SysBot.Pokemon
             else
             {
                 detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
-                EchoUtil.Echo("No Trainer found or Trade aborted! Changing room...");
-                    string boboText = "No Trainer found or Trade aborted! Changing room...";
-                    File.WriteAllText($"LinkCode.txt", boboText);
-                File.WriteAllText($"LinkCode_{Connection.Name}.txt", boboText);
-
-
-
                 detail.TradeCanceled(this, result);
             }
         }
+
+
 
         private async Task<PokeTradeResult> PerformLinkCodeTrade(SAV8BS sav, PokeTradeDetail<PB8> poke, CancellationToken token)
         {
@@ -242,6 +243,11 @@ namespace SysBot.Pokemon
             var toSend = poke.TradeData;
             if (toSend.Species != 0)
                 await SetBoxPokemonAbsolute(BoxStartOffset, toSend, token, sav).ConfigureAwait(false);
+
+            if (poke.Type == PokeTradeType.Random)
+                SetText(sav, $"Trade code: {poke.Code:0000 0000}\r\nSending: {(Species)poke.TradeData.Species}");
+            else
+                SetText(sav, "Running a\r\nSubscriber Request.");
 
             // Enter Union Room and set ourselves up as Trading.
             if (!await EnterUnionRoomWithCode(poke.Type, poke.Code, token).ConfigureAwait(false))
@@ -298,12 +304,8 @@ namespace SysBot.Pokemon
             }
 
             poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. Waiting for a Pokémon...");
-            EchoUtil.Echo($"Found Link Trade partner: {tradePartner.TrainerName}. Waiting for a Pokémon...");
-            
 
-                string otherText = "Trade Partner found! Wait for new Link Code...";
-                File.WriteAllText($"LinkCode.txt", otherText);
-                File.WriteAllText($"LinkCode_{Connection.Name}.txt", otherText);
+            SetText(sav, $"Trade Partner found: {tradePartner.TrainerName}\r\nTrading now...");
             // Requires at least one trade for this pointer to make sense, so cache it here.
             LinkTradePokemonOffset = await SwitchConnection.PointerAll(Offsets.LinkTradePartnerPokemonPointer, token).ConfigureAwait(false);
 
@@ -345,6 +347,7 @@ namespace SysBot.Pokemon
 
             // As long as we got rid of our inject in b1s1, assume the trade went through.
             Log("User completed the trade.");
+            SetText(sav, $"Trade completed!\r\nNew Code incoming...");
             poke.TradeFinished(this, received);
 
             // Only log if we completed the trade.
@@ -473,11 +476,7 @@ namespace SysBot.Pokemon
             if (tradeType != PokeTradeType.Random)
                 Hub.Config.Stream.StartEnterCode(this);
             Log($"Entering Link Trade code: {tradeCode:0000 0000}...");
-                string createText = $"new Link Trade code: {tradeCode:0000 0000}...";
-                File.WriteAllText($"LinkCode.txt", createText);
-                File.WriteAllText($"LinkCode_{Connection.Name}.txt", createText);
 
-            EchoUtil.Echo($"Entering new Link Trade code: {tradeCode:0000 0000}...");
             await EnterLinkCode(tradeCode, Hub.Config, token).ConfigureAwait(false);
 
             // Wait for Barrier to trigger all bots simultaneously.

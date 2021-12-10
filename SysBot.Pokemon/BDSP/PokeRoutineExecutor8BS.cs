@@ -18,12 +18,6 @@ namespace SysBot.Pokemon
         {
         }
 
-        protected async Task PointerPoke(byte[] bytes, IEnumerable<long> jumps, CancellationToken token)
-        {
-            byte[] command = Encoding.UTF8.GetBytes($"pointerPoke 0x{string.Concat(bytes.Select(z => $"{z:X2}"))}{string.Concat(jumps.Select(z => $" {z}"))}\r\n");
-            await SwitchConnection.SendRaw(command, token).ConfigureAwait(false);
-        }
-
         public override async Task<PB8> ReadPokemon(ulong offset, CancellationToken token) => await ReadPokemon(offset, BoxFormatSlotSize, token).ConfigureAwait(false);
 
         public override async Task<PB8> ReadPokemon(ulong offset, int size, CancellationToken token)
@@ -64,8 +58,7 @@ namespace SysBot.Pokemon
             }
 
             pkm.ResetPartyStats();
-            var command = SwitchCommand.PokeAbsolute(offset, pkm.EncryptedPartyData);
-            await SwitchConnection.SendRaw(command, token).ConfigureAwait(false);
+            await SwitchConnection.WriteBytesAbsoluteAsync(pkm.EncryptedPartyData, offset, token).ConfigureAwait(false);
         }
 
         public async Task<SAV8BS> IdentifyTrainer(CancellationToken token)
@@ -76,7 +69,7 @@ namespace SysBot.Pokemon
             {
                 BrilliantDiamondID => new PokeDataOffsetsBS_BD(),
                 ShiningPearlID => new PokeDataOffsetsBS_SP(),
-                _ => throw new Exception($"Title for {title} is unknown."),
+                _ => throw new Exception($"{title} is not a valid Pokémon BDSP title. Is your mode correct?"),
             };
 
             // generate a fake savefile
@@ -146,7 +139,7 @@ namespace SysBot.Pokemon
             Log("Soft ban detected, unbanning.");
             // Write the float value to 0.
             var data = BitConverter.GetBytes(0);
-            await PointerPoke(data, Offsets.UnionWorkPenaltyPointer, token).ConfigureAwait(false);
+            await SwitchConnection.PointerPoke(data, Offsets.UnionWorkPenaltyPointer, token).ConfigureAwait(false);
         }
 
         public async Task<bool> CheckIfSoftBanned(ulong offset, CancellationToken token)

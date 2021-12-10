@@ -207,6 +207,8 @@ namespace SysBot.Pokemon.Twitch
             switch (c)
             {
                 // User Usable Commands
+                case "trade" when !subscriber():
+                    return $"@{m.Username}, become Subscriber to request any Pokemon!";
                 case "trade":
                     var _ = TwitchCommandsHelper<T>.AddToWaitingList(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg);
                     return msg;

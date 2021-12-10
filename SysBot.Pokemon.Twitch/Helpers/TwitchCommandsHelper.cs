@@ -39,11 +39,11 @@ namespace SysBot.Pokemon.Twitch
                 var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
                 PKM pkm = sav.GetLegal(template, out var result);
 
-                if (!pkm.CanBeTraded())
-                {
-                    msg = $"Skipping trade, @{username}: Provided Pokémon content is blocked from trading!";
-                    return false;
-                }
+//                if (!pkm.CanBeTraded())
+//                {
+//                    msg = $"Skipping trade, @{username}: Provided Pokémon content is blocked from trading!";
+//                    return false;
+//                }
 
                 if (pkm is T pk)
                 {

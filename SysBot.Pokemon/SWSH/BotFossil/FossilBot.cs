@@ -115,7 +115,7 @@ namespace SysBot.Pokemon
 
                 Settings.AddCompletedFossils();
 
-                if (!StopConditionSettings.EncounterFound(pk, DesiredMinIVs, DesiredMaxIVs, Hub.Config.StopConditions))
+                if (!StopConditionSettings.EncounterFound(pk, DesiredMinIVs, DesiredMaxIVs, Hub.Config.StopConditions, null))
                     continue;
 
                 if (Hub.Config.StopConditions.CaptureVideoClip)

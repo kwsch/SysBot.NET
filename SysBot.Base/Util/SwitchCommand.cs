@@ -123,6 +123,14 @@ namespace SysBot.Base
         public static byte[] Peek(uint offset, int count, bool crlf = true) => Encode($"peek 0x{offset:X8} {count}", crlf);
 
         /// <summary>
+        /// Requests the Bot to send concat bytes from offsets of sizes in the <see cref="offsetSizeDictionary"/> relative to the heap.
+        /// </summary>
+        /// <param name="offsetSizeDictionary">Dictionary of offset and sizes to be looked up</param>
+        /// <param name="crlf">Line terminator (unused by USB protocol)</param>
+        /// <returns>Encoded command bytes</returns>
+        public static byte[] PeekMulti(IReadOnlyDictionary<ulong, int> offsetSizeDictionary, bool crlf = true) => Encode($"peekMulti{string.Concat(offsetSizeDictionary.Select(z => $" 0x{z.Key:X16} {z.Value}"))}", crlf);
+
+        /// <summary>
         /// Sends the Bot <see cref="data"/> to be written to <see cref="offset"/>.
         /// </summary>
         /// <param name="offset">Address of the data</param>
@@ -139,6 +147,14 @@ namespace SysBot.Base
         /// <param name="crlf">Line terminator (unused by USB protocol)</param>
         /// <returns>Encoded command bytes</returns>
         public static byte[] PeekAbsolute(ulong offset, int count, bool crlf = true) => Encode($"peekAbsolute 0x{offset:X16} {count}", crlf);
+
+        /// <summary>
+        /// Requests the Bot to send concat bytes from offsets of sizes in the <see cref="offsetSizeDictionary"/> in absolute space.
+        /// </summary>
+        /// <param name="offsetSizeDictionary">Dictionary of offset and sizes to be looked up</param>
+        /// <param name="crlf">Line terminator (unused by USB protocol)</param>
+        /// <returns>Encoded command bytes</returns>
+        public static byte[] PeekAbsoluteMulti(IReadOnlyDictionary<ulong, int> offsetSizeDictionary, bool crlf = true) => Encode($"peekAbsoluteMulti{string.Concat(offsetSizeDictionary.Select(z => $" 0x{z.Key:X16} {z.Value}"))}", crlf);
 
         /// <summary>
         /// Sends the Bot <see cref="data"/> to be written to absolute <see cref="offset"/>.
@@ -159,6 +175,14 @@ namespace SysBot.Base
         public static byte[] PeekMain(ulong offset, int count, bool crlf = true) => Encode($"peekMain 0x{offset:X16} {count}", crlf);
 
         /// <summary>
+        /// Requests the Bot to send concat bytes from offsets of sizes in the <see cref="offsetSizeDictionary"/> relative to the main region.
+        /// </summary>
+        /// <param name="offsetSizeDictionary">Dictionary of offset and sizes to be looked up</param>
+        /// <param name="crlf">Line terminator (unused by USB protocol)</param>
+        /// <returns>Encoded command bytes</returns>
+        public static byte[] PeekMainMulti(IReadOnlyDictionary<ulong, int> offsetSizeDictionary, bool crlf = true) => Encode($"peekMainMulti{string.Concat(offsetSizeDictionary.Select(z => $" 0x{z.Key:X16} {z.Value}"))}", crlf);
+
+        /// <summary>
         /// Sends the Bot <see cref="data"/> to be written to main <see cref="offset"/>.
         /// </summary>
         /// <param name="offset">Main NSO address of the data</param>
@@ -166,6 +190,46 @@ namespace SysBot.Base
         /// <param name="crlf">Line terminator (unused by USB protocol)</param>
         /// <returns>Encoded command bytes</returns>
         public static byte[] PokeMain(ulong offset, byte[] data, bool crlf = true) => Encode($"pokeMain 0x{offset:X16} 0x{string.Concat(data.Select(z => $"{z:X2}"))}", crlf);
+
+        /*
+         * 
+         * Pointer Commands
+         * 
+         */
+
+        /// <summary>
+        /// Requests the Bot to send <see cref="count"/> bytes from pointer traversals defined by <see cref="jumps"/>
+        /// </summary>
+        /// <param name="jumps">All traversals in the pointer expression</param>
+        /// <param name="count">Amount of bytes</param>
+        /// <param name="crlf">Line terminator (unused by USB protocol)</param>
+        /// <returns>Encoded command bytes</returns>
+        public static byte[] PointerPeek(IEnumerable<long> jumps, int count, bool crlf = true) => Encode($"pointerPeek {count}{string.Concat(jumps.Select(z => $" {z}"))}", crlf);
+
+        /// <summary>
+        /// Sends the Bot <see cref="data"/> to be written to the offset at the end pointer traversals defined by <see cref="offset"/>.
+        /// </summary>
+        /// <param name="jumps">All traversals in the pointer expression</param>
+        /// <param name="data">Data to write</param>
+        /// <param name="crlf">Line terminator (unused by USB protocol)</param>
+        /// <returns>Encoded command bytes</returns>
+        public static byte[] PointerPoke(IEnumerable<long> jumps, byte[] data, bool crlf = true) => Encode($"pointerPoke 0x{string.Concat(data.Select(z => $"{z:X2}"))}{string.Concat(jumps.Select(z => $" {z}"))}", crlf);
+
+        /// <summary>
+        /// Requests the Bot to solve the pointer traversals defined by <see cref="jumps"/> and send the final absolute offset.
+        /// </summary>
+        /// <param name="jumps">All traversals in the pointer expression</param>
+        /// <param name="crlf">Line terminator (unused by USB protocol)</param>
+        /// <returns>Encoded command bytes</returns>
+        public static byte[] PointerAll(IEnumerable<long> jumps, bool crlf = true) => Encode($"pointerAll{string.Concat(jumps.Select(z => $" {z}"))}", crlf);
+
+        /// <summary>
+        /// Requests the Bot to solve the pointer traversals defined by <see cref="jumps"/> and send the final offset relative to the heap region.
+        /// </summary>
+        /// <param name="jumps">All traversals in the pointer expression</param>
+        /// <param name="crlf">Line terminator (unused by USB protocol)</param>
+        /// <returns>Encoded command bytes</returns>
+        public static byte[] PointerRelative(IEnumerable<long> jumps, bool crlf = true) => Encode($"pointerRelative{string.Concat(jumps.Select(z => $" {z}"))}", crlf);
 
         /* 
          *

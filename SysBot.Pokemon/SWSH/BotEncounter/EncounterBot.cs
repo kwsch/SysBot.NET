@@ -1,5 +1,6 @@
 ﻿using PKHeX.Core;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SysBot.Base;
@@ -17,6 +18,7 @@ namespace SysBot.Pokemon
         private readonly int[] DesiredMaxIVs;
         protected readonly byte[] BattleMenuReady = { 0, 0, 0, 255 };
         public ICountSettings Counts => Settings;
+        public readonly IReadOnlyList<string> UnwantedMarks;
 
         protected EncounterBot(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
@@ -24,6 +26,7 @@ namespace SysBot.Pokemon
             Settings = Hub.Config.Encounter;
             DumpSetting = Hub.Config.Folder;
             StopConditionSettings.InitializeTargetIVs(Hub, out DesiredMinIVs, out DesiredMaxIVs);
+            StopConditionSettings.ReadUnwantedMarks(Hub.Config.StopConditions, out UnwantedMarks);
         }
 
         private int encounterCount;
@@ -79,7 +82,7 @@ namespace SysBot.Pokemon
             if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
                 DumpPokemon(DumpSetting.DumpFolder, legendary ? "legends" : "encounters", pk);
 
-            if (!StopConditionSettings.EncounterFound(pk, DesiredMinIVs, DesiredMaxIVs, Hub.Config.StopConditions))
+            if (!StopConditionSettings.EncounterFound(pk, DesiredMinIVs, DesiredMaxIVs, Hub.Config.StopConditions, UnwantedMarks))
                 return false;
 
             if (Hub.Config.StopConditions.CaptureVideoClip)

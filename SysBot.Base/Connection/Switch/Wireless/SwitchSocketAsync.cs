@@ -113,6 +113,10 @@ namespace SysBot.Base
         public async Task<byte[]> ReadBytesMainAsync(ulong offset, int length, CancellationToken token) => await Read(offset, length, Main, token).ConfigureAwait(false);
         public async Task<byte[]> ReadBytesAbsoluteAsync(ulong offset, int length, CancellationToken token) => await Read(offset, length, Absolute, token).ConfigureAwait(false);
 
+        public async Task<byte[]> ReadBytesMultiAsync(IReadOnlyDictionary<ulong, int> offsetSizes, CancellationToken token) => await ReadMulti(offsetSizes, Heap, token).ConfigureAwait(false);
+        public async Task<byte[]> ReadBytesMainMultiAsync(IReadOnlyDictionary<ulong, int> offsetSizes, CancellationToken token) => await ReadMulti(offsetSizes, Main, token).ConfigureAwait(false);
+        public async Task<byte[]> ReadBytesAbsoluteMultiAsync(IReadOnlyDictionary<ulong, int> offsetSizes, CancellationToken token) => await ReadMulti(offsetSizes, Absolute, token).ConfigureAwait(false);
+
         public async Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token) => await Write(data, offset, Heap, token).ConfigureAwait(false);
         public async Task WriteBytesMainAsync(byte[] data, ulong offset, CancellationToken token) => await Write(data, offset, Main, token).ConfigureAwait(false);
         public async Task WriteBytesAbsoluteAsync(byte[] data, ulong offset, CancellationToken token) => await Write(data, offset, Absolute, token).ConfigureAwait(false);
@@ -162,6 +166,14 @@ namespace SysBot.Base
             return result;
         }
 
+        private async Task<byte[]> ReadMulti(IReadOnlyDictionary<ulong, int> offsetSizes, SwitchOffsetType type, CancellationToken token)
+        {
+            var method = type.GetReadMultiMethod();
+            var cmd = method(offsetSizes);
+            var totalSize = offsetSizes.Select(x => x.Value).Sum();
+            return await ReadBytesFromCmdAsync(cmd, totalSize, token).ConfigureAwait(false);
+        }
+
         private async Task Write(byte[] data, ulong offset, SwitchOffsetType type, CancellationToken token)
         {
             var method = type.GetWriteMethod();
@@ -196,27 +208,26 @@ namespace SysBot.Base
 
         public async Task<byte[]> PointerPeek(int size, IEnumerable<long> jumps, CancellationToken token)
         {
-            byte[] command = Encoding.UTF8.GetBytes($"pointerPeek {size}{string.Concat(jumps.Select(z => $" {z}"))}\r\n");
-            byte[] socketReturn = await ReadRaw(command, (size * 2) + 1, token).ConfigureAwait(false);
-            return Decoder.ConvertHexByteStringToBytes(socketReturn);
+            return await ReadBytesFromCmdAsync(SwitchCommand.PointerPeek(jumps, size), size, token).ConfigureAwait(false);
+        }
+
+        public async Task PointerPoke(byte[] data, IEnumerable<long> jumps, CancellationToken token)
+        {
+            await SendAsync(SwitchCommand.PointerPoke(jumps, data), token).ConfigureAwait(false);
         }
 
         public async Task<ulong> PointerAll(IEnumerable<long> jumps, CancellationToken token)
         {
-            byte[] command = Encoding.UTF8.GetBytes($"pointerAll{string.Concat(jumps.Select(z => $" {z}"))}\r\n");
-            byte[] socketReturn = await ReadRaw(command, (sizeof(ulong) * 2) + 1, token).ConfigureAwait(false);
-            var bytes = Decoder.ConvertHexByteStringToBytes(socketReturn);
-            Array.Reverse(bytes);
-            return BitConverter.ToUInt64(bytes, 0);
+            var offsetBytes = await ReadBytesFromCmdAsync(SwitchCommand.PointerAll(jumps), sizeof(ulong), token).ConfigureAwait(false);
+            Array.Reverse(offsetBytes, 0, 8);
+            return BitConverter.ToUInt64(offsetBytes, 0);
         }
 
         public async Task<ulong> PointerRelative(IEnumerable<long> jumps, CancellationToken token)
         {
-            byte[] command = Encoding.UTF8.GetBytes($"pointerRelative{string.Concat(jumps.Select(z => $" {z}"))}\r\n");
-            byte[] socketReturn = await ReadRaw(command, (sizeof(ulong) * 2) + 1, token).ConfigureAwait(false);
-            var bytes = Decoder.ConvertHexByteStringToBytes(socketReturn);
-            bytes = bytes.Reverse().ToArray();
-            return BitConverter.ToUInt64(bytes, 0);
+            var offsetBytes = await ReadBytesFromCmdAsync(SwitchCommand.PointerRelative(jumps), sizeof(ulong), token).ConfigureAwait(false);
+            Array.Reverse(offsetBytes, 0, 8);
+            return BitConverter.ToUInt64(offsetBytes, 0);
         }
     }
 }
