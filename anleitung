@@ -11,30 +11,17 @@ Shiny: Yes
 Ability: Solar Power
 EVs: 4 Def / 252 SpA / 252 Spe
 Timid Nature
+Level: 5
+Language: French
+Shiny: Yes
+Ball: Poke Ball
 
 Flamethrower
 Hurricane
 Solar Beam
 Focus Blast
 
-oder
-
-!trade Melty (Melmetal) @ Leftovers
-IVs: 0 Spe
-EVs: 252 HP / 252 Atk / 4 Def
-Ability: Iron Fist
-Level: 5
-Language: French
-Shiny: Yes
-Ball: Poke Ball
-Brave Nature
-
-Double Iron Bash
-Thunder Punch
-Ice Punch
-Earthquake (edited)
-
 oder einfach nur ganz simpel:
 
-!trade Melmetal
+!trade Pikachu
 Shiny: Yes
