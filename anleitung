@@ -7,18 +7,14 @@ Sobald du dran bist, kommt der Bot in dein Raum und tauscht dir dein Pokemon.
 Die Trade-Anfrage muss englisch sein!
 
 Beispiel:
-!trade Charizard @ Heavy-Duty Boots
-Shiny: Yes
-Ability: Solar Power
-EVs: 4 Def / 252 SpA / 252 Spe
-Timid Nature
-Level: 5
-Language: French
-Ball: Poke Ball
-
-- Flamethrower
-- Hurricane
-- Solar Beam
+!trade Charizard (F) @ Master Ball 
+EVs: 4 HP / 252 SpA / 252 Spe 
+Ability: Solar Power 
+Shiny: Yes 
+Timid Nature 
+- Fire Blast 
+- Air Slash 
+- Solar Beam 
 - Focus Blast
 
 oder einfach nur ganz simpel:
