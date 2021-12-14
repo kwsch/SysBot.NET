@@ -170,7 +170,7 @@ namespace SysBot.Base
         {
             var method = type.GetReadMultiMethod();
             var cmd = method(offsetSizes);
-            var totalSize = offsetSizes.Select(x => x.Value).Sum();
+            var totalSize = offsetSizes.Values.Sum();
             return await ReadBytesFromCmdAsync(cmd, totalSize, token).ConfigureAwait(false);
         }
 
