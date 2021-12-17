@@ -986,7 +986,7 @@ namespace SysBot.Pokemon
         protected async Task BlockUser(CancellationToken token)
         {
             Log("Blocking user in-game...");
-            await PressAndHold(RSTICK, 0_750, 0_500, token).ConfigureAwait(false);
+            await PressAndHold(RSTICK, 0_750, 0, token).ConfigureAwait(false);
             await Click(DUP, 0_300, token).ConfigureAwait(false);
             await Click(A, 1_300, token).ConfigureAwait(false);
             await Click(A, 1_300, token).ConfigureAwait(false);

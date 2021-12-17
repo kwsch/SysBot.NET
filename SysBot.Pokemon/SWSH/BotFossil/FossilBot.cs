@@ -121,7 +121,7 @@ namespace SysBot.Pokemon
                 if (Hub.Config.StopConditions.CaptureVideoClip)
                 {
                     await Task.Delay(Hub.Config.StopConditions.ExtraTimeWaitCaptureVideo, token).ConfigureAwait(false);
-                    await PressAndHold(CAPTURE, 2_000, 1_000, token).ConfigureAwait(false);
+                    await PressAndHold(CAPTURE, 2_000, 0, token).ConfigureAwait(false);
                 }
 
                 var mode = Settings.ContinueAfterMatch;
