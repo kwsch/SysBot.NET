@@ -1,14 +1,15 @@
 Subscriber only!
 
-Du musst in den Chat !trade mit deinem Pokemon und deren Eigenschaften senden! 
-Anschließend flüsterst du Bot_RocketGrunt einen 8-stelligen Trade Code zu, in dem ihr euch trefft. 
-Sobald du dran bist, kommt der Bot in dein Raum und tauscht dir dein Pokemon.
+You need to use the !trade command with your desired Pokemon and skills!
+After that you need to whisper Bot_RocketGrunt your 8-digit-number Trade Code and enter this Trade Room
+The Bot will mention you when you are next. It will enter you room and starts trading.
 
-Die Trade-Anfrage muss englisch sein!
+Your Trade Request has to be English!
 
 Beispiel:
 !trade Charizard (F) @ Master Ball 
 EVs: 4 HP / 252 SpA / 252 Spe 
+Level: 45
 Ability: Solar Power 
 Shiny: Yes 
 Timid Nature 
@@ -17,7 +18,7 @@ Timid Nature
 - Solar Beam 
 - Focus Blast
 
-oder einfach nur ganz simpel:
+or as simple as it gets:
 
 !trade Pikachu
 Shiny: Yes
