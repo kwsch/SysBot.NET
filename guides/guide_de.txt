@@ -10,6 +10,7 @@ Beispiel:
 !trade Charizard (F) @ Master Ball 
 EVs: 4 HP / 252 SpA / 252 Spe 
 Ability: Solar Power 
+Level: 45
 Shiny: Yes 
 Timid Nature 
 - Fire Blast 
