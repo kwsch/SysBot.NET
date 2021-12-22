@@ -22,7 +22,7 @@ namespace SysBot.Pokemon
 
         public const int MaxByteLengthStringObject = 0x14 + 0x1A;
 
-        private static string ReadStringFromRAMObject(byte[] obj)
+        public static string ReadStringFromRAMObject(byte[] obj)
         {
             // 0x10 typeinfo/monitor, 0x4 len, char[len]
             const int ofs_len = 0x10;

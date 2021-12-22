@@ -277,8 +277,8 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.TrainerTooSlow;
 
             var tradePartner = await GetTradePartnerInfo(token).ConfigureAwait(false);
-            var trainerNID = await GetTradePartnerNID(token).ConfigureAwait(false);
-            Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7} (ID: {trainerNID})");
+            //var trainerNID = await GetTradePartnerNID(token).ConfigureAwait(false);
+            Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7}");
 
             await Task.Delay(2_000, token).ConfigureAwait(false);
 
@@ -309,7 +309,7 @@ namespace SysBot.Pokemon
             lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
 
             PokeTradeResult update;
-            var trainer = new PartnerDataHolder(trainerNID, tradePartner.TrainerName, tradePartner.TID7);
+            var trainer = new PartnerDataHolder(0, tradePartner.TrainerName, tradePartner.TID7);
             (toSend, update) = await GetEntityToSend(sav, poke, offered, toSend, trainer, token).ConfigureAwait(false);
             if (update != PokeTradeResult.Success)
                 return update;
@@ -495,13 +495,9 @@ namespace SysBot.Pokemon
         {
             Log("Caching session offsets...");
             BoxStartOffset = await SwitchConnection.PointerAll(Offsets.BoxStartPokemonPointer, token).ConfigureAwait(false);
-            await Task.Delay(1_000).ConfigureAwait(false);
             UnionGamingOffset = await SwitchConnection.PointerAll(Offsets.UnionWorkIsGamingPointer, token).ConfigureAwait(false);
-            await Task.Delay(1_000).ConfigureAwait(false);
             UnionTalkingOffset = await SwitchConnection.PointerAll(Offsets.UnionWorkIsTalkingPointer, token).ConfigureAwait(false);
-            await Task.Delay(1_000).ConfigureAwait(false);
             SoftBanOffset = await SwitchConnection.PointerAll(Offsets.UnionWorkPenaltyPointer, token).ConfigureAwait(false);
-            await Task.Delay(1_000).ConfigureAwait(false);
         }
 
         // todo: future
