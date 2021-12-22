@@ -14,7 +14,9 @@ namespace SysBot.Pokemon
         public IReadOnlyList<long> UnionWorkIsGamingPointer { get; }
         public IReadOnlyList<long> UnionWorkIsTalkingPointer { get; }
         public IReadOnlyList<long> UnionWorkPenaltyPointer { get; }
-        public IReadOnlyList<long> MainSavePointer { get; }
-        public IReadOnlyList<long> ConfigPointer { get; }
+        public IReadOnlyList<long> MyStatusTrainerPointer { get; }
+        public IReadOnlyList<long> MyStatusTIDPointer { get; }
+        public IReadOnlyList<long> ConfigTextSpeedPointer { get; }
+        public IReadOnlyList<long> ConfigLanguagePointer { get; }
     }
 }
