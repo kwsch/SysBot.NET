@@ -1,0 +1,24 @@
+Subscriber only!
+
+You need to use the !trade command with your desired Pokemon and skills!
+After that you need to whisper Bot_RocketGrunt your 8-digit-number Trade Code and enter this Trade Room
+The Bot will mention you when you are next. It will enter you room and starts trading.
+
+Your Trade Request has to be English!
+
+Beispiel:
+!trade Charizard (F) @ Master Ball 
+EVs: 4 HP / 252 SpA / 252 Spe 
+Level: 45
+Ability: Solar Power 
+Shiny: Yes 
+Timid Nature 
+- Fire Blast 
+- Air Slash 
+- Solar Beam 
+- Focus Blast
+
+or as simple as it gets:
+
+!trade Pikachu
+Shiny: Yes

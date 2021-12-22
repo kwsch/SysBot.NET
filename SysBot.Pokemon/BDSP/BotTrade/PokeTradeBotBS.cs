@@ -433,11 +433,11 @@ namespace SysBot.Pokemon
             if (GameLang is not LanguageID.French)
             {
                 await Click(A, 0_050, token).ConfigureAwait(false);
-                await PressAndHold(A, 1_000, 1_000, token).ConfigureAwait(false);
+                await PressAndHold(A, 1_000, 0, token).ConfigureAwait(false);
             }
 
             await Click(A, 0_050, token).ConfigureAwait(false);
-            await PressAndHold(A, 1_500, 1_500, token).ConfigureAwait(false);
+            await PressAndHold(A, 1_500, 0, token).ConfigureAwait(false);
 
             await Click(A, 1_000, token).ConfigureAwait(false); // Would you like to enter? Screen
 
@@ -448,21 +448,21 @@ namespace SysBot.Pokemon
 
             Log("Connecting to internet.");
             await Click(A, 0_050, token).ConfigureAwait(false);
-            await PressAndHold(A, 2_000, 2_000, token).ConfigureAwait(false);
+            await PressAndHold(A, 2_000, 0, token).ConfigureAwait(false);
 
             // Extra menus.
             if (GameLang is LanguageID.German or LanguageID.Italian or LanguageID.Korean)
             {
                 await Click(A, 0_050, token).ConfigureAwait(false);
-                await PressAndHold(A, 0_750, 0_750, token).ConfigureAwait(false);
+                await PressAndHold(A, 0_750, 0, token).ConfigureAwait(false);
             }
 
             await Click(A, 0_050, token).ConfigureAwait(false);
-            await PressAndHold(A, 1_000, 1_000, token).ConfigureAwait(false);
+            await PressAndHold(A, 1_000, 0, token).ConfigureAwait(false);
             await Click(A, 0_050, token).ConfigureAwait(false);
-            await PressAndHold(A, 1_500, 1_500, token).ConfigureAwait(false);
+            await PressAndHold(A, 1_500, 0, token).ConfigureAwait(false);
             await Click(A, 0_050, token).ConfigureAwait(false);
-            await PressAndHold(A, 1_500, 1_500, token).ConfigureAwait(false);
+            await PressAndHold(A, 1_500, 0, token).ConfigureAwait(false);
 
             // Would you like to save your adventure so far?
             await Click(A, 0_500, token).ConfigureAwait(false);
@@ -471,7 +471,7 @@ namespace SysBot.Pokemon
             Log("Saving the game.");
             // Agree and save the game.
             await Click(A, 0_050, token).ConfigureAwait(false);
-            await PressAndHold(A, 6_500, 6_500, token).ConfigureAwait(false);
+            await PressAndHold(A, 6_500, 0, token).ConfigureAwait(false);
 
             if (tradeType != PokeTradeType.Random)
                 Hub.Config.Stream.StartEnterCode(this);

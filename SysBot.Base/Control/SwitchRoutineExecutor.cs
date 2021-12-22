@@ -29,14 +29,10 @@ namespace SysBot.Base
 
         public async Task PressAndHold(SwitchButton b, int hold, int delay, CancellationToken token)
         {
-            // Set hold delay
-            var delaycgf = SwitchCommand.Configure(SwitchConfigureParameter.buttonClickSleepTime, hold, UseCRLF);
-            await Connection.SendAsync(delaycgf, token).ConfigureAwait(false);
-            // Press the button
-            await Click(b, delay, token).ConfigureAwait(false);
-            // Reset delay
-            delaycgf = SwitchCommand.Configure(SwitchConfigureParameter.buttonClickSleepTime, 50, UseCRLF); // 50 ms
-            await Connection.SendAsync(delaycgf, token).ConfigureAwait(false);
+            await Connection.SendAsync(SwitchCommand.Hold(b, UseCRLF), token).ConfigureAwait(false);
+            await Task.Delay(hold).ConfigureAwait(false);
+            await Connection.SendAsync(SwitchCommand.Release(b, UseCRLF), token).ConfigureAwait(false);
+            await Task.Delay(delay).ConfigureAwait(false);
         }
 
         public async Task DaisyChainCommands(int delay, IEnumerable<SwitchButton> buttons, CancellationToken token)
