@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using PKHeX.Core;
@@ -92,7 +90,7 @@ namespace SysBot.Pokemon
             info.OT = TradePartnerBS.ReadStringFromRAMObject(name);
 
             // Set the TID, SID, and Language
-            var id = await SwitchConnection.PointerPeek(10, Offsets.MyStatusTIDPointer, token).ConfigureAwait(false);
+            var id = await SwitchConnection.PointerPeek(4, Offsets.MyStatusTIDPointer, token).ConfigureAwait(false);
             info.TID = BitConverter.ToUInt16(id, 0);
             info.SID = BitConverter.ToUInt16(id, 2);
 
