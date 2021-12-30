@@ -439,6 +439,13 @@ namespace SysBot.Pokemon
             await Click(A, 0_050, token).ConfigureAwait(false);
             await PressAndHold(A, 1_500, 0, token).ConfigureAwait(false);
 
+            // Japanese has one extra menu
+            if (GameLang is LanguageID.Japanese)
+            {
+                await Click(A, 0_050, token).ConfigureAwait(false);
+                await PressAndHold(A, 1_000, 0, token).ConfigureAwait(false);
+            }
+
             await Click(A, 1_000, token).ConfigureAwait(false); // Would you like to enter? Screen
 
             Log("Selecting Link Code room.");
