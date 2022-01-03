@@ -13,6 +13,7 @@ namespace SysBot.Pokemon.Discord
     public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
     {
         private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
+        bool skipcheck = SysCord<T>.Runner.Hub.Config.Legality.SkipLegalityCheckOnTrade;
 
         [Command("tradeList")]
         [Alias("tl")]
@@ -63,8 +64,9 @@ namespace SysBot.Pokemon.Discord
                 var pkm = sav.GetLegal(template, out var result);
                 var la = new LegalityAnalysis(pkm);
                 var spec = GameInfo.Strings.Species[template.Species];
+                var check = !skipcheck && !la.Valid;
                 pkm = PKMConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
-                if (pkm is not T pk || !la.Valid)
+                if (pkm is not T pk || check)
                 {
                     var reason = result == "Timeout" ? "That set took too long to generate." : "I wasn't able to create something from that.";
                     var imsg = $"Oops! {reason} Here's my best attempt for that {spec}!";
@@ -189,14 +191,14 @@ namespace SysBot.Pokemon.Discord
 
         private async Task AddTradeToQueueAsync(int code, string trainerName, T pk, RequestSignificance sig, SocketUser usr)
         {
-            if (!pk.CanBeTraded())
-            {
-                await ReplyAsync("Provided Pokémon content is blocked from trading!").ConfigureAwait(false);
-                return;
-            }
+            //if (!pk.CanBeTraded())
+            //{
+            //    await ReplyAsync("Provided Pokémon content is blocked from trading!").ConfigureAwait(false);
+            //    return;
+            //}
 
             var la = new LegalityAnalysis(pk);
-            if (!la.Valid)
+            if (!la.Valid && !skipcheck)
             {
                 await ReplyAsync($"{typeof(T).Name} attachment is not legal, and cannot be traded!").ConfigureAwait(false);
                 return;

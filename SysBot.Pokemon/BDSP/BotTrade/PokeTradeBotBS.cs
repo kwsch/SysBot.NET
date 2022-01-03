@@ -206,6 +206,9 @@ namespace SysBot.Pokemon
         private void SetText(SAV8BS sav, string text)
         {
             System.IO.File.WriteAllText($"LinkCode_{Connection.Name}.txt", text);
+            int fCount = Directory.GetFiles($"{DumpSetting.DumpFolder}", "*", SearchOption.AllDirectories).Length;
+            System.IO.File.WriteAllText($"{DumpSetting.DumpFolder}" + "\\TotalDistributed.txt", $"Total distributed Pokémon: {fCount}");
+
         }
 
 
@@ -247,7 +250,7 @@ namespace SysBot.Pokemon
             if (poke.Type == PokeTradeType.Random)
                 SetText(sav, $"Trade code: {poke.Code:0000 0000}\r\nSending: {(Species)poke.TradeData.Species}");
             else
-                SetText(sav, "Running a\r\nSubscriber Request.");
+                SetText(sav, $"Running a Trade Request for\r\n{poke.Trainer.TrainerName}");
 
             // Enter Union Room and set ourselves up as Trading.
             if (!await EnterUnionRoomWithCode(poke.Type, poke.Code, token).ConfigureAwait(false))
@@ -674,7 +677,7 @@ namespace SysBot.Pokemon
                 poke.SendNotification(this, offered, "Here's what you showed me!");
 
             var la = new LegalityAnalysis(offered);
-            if (!la.Valid)
+            if (!la.Valid && Hub.Config.Legality.SkipLegalityCheckOnTrade)
             {
                 Log($"Clone request (from {poke.Trainer.TrainerName}) has detected an invalid Pokémon: {(Species)offered.Species}.");
                 if (DumpSetting.Dump)

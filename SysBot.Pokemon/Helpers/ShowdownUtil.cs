@@ -13,7 +13,11 @@ namespace SysBot.Pokemon
         {
             // LiveStreams remove new lines, so we are left with a single line set
             var restorenick = string.Empty;
-
+            if (setstring.Contains("(Egg)")) 
+            {
+                if (!setstring.Contains("Level:"))
+                    setstring = setstring + " Level: 1";
+            }
             var nickIndex = setstring.LastIndexOf(')');
             if (nickIndex > -1)
             {
@@ -28,7 +32,16 @@ namespace SysBot.Pokemon
                 if (setstring.Contains(i))
                     setstring = setstring.Replace(i, $"\r\n{i}");
             }
-
+            if (setstring.Contains("(Egg)"))
+            {
+                int count = 2;
+                while (count < 100)
+                {
+                    if (setstring.Contains($"Level: {count.ToString()}"))
+                        setstring = setstring.Replace($"Level: {count.ToString()}", $"Level: 1");
+                    count = count + 1;
+                }
+            }
             var finalset = restorenick + setstring;
             return new ShowdownSet(finalset);
         }

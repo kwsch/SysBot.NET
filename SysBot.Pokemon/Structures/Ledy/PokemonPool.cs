@@ -6,6 +6,7 @@ using PKHeX.Core;
 
 namespace SysBot.Pokemon
 {
+
     public class PokemonPool<T> : List<T> where T : PKM, new()
     {
         private readonly int ExpectedSize = new T().Data.Length;
@@ -61,26 +62,35 @@ namespace SysBot.Pokemon
                 var data = File.ReadAllBytes(file);
                 var pkm = PKMConverter.GetPKMfromBytes(data);
                 if (pkm is null)
+                {
+                    LogUtil.LogInfo("SKIPPED: pkm is null", nameof(PokemonPool<T>));
                     continue;
+                }
+
                 if (pkm is not T)
+                    if (Settings.Legality.SkipLegalityCheckOnDistribution)
+                    {
+                        PKMConverter.AllowIncompatibleConversion = true;
+                    }
                     pkm = PKMConverter.ConvertToType(pkm, typeof(T), out _);
                 if (pkm is not T dest)
+                {
+                    LogUtil.LogInfo("SKIPPED: pkm is not T pkm", nameof(PokemonPool<T>));
                     continue;
+                }
 
-                if (dest.Species == 0)
+                if (pkm.Species == 0)
                 {
                     LogUtil.LogInfo("SKIPPED: Provided file is not valid: " + dest.FileName, nameof(PokemonPool<T>));
                     continue;
                 }
-
-              //  if (!dest.CanBeTraded())
-              //  {
-              //      LogUtil.LogInfo("SKIPPED: Provided file cannot be traded: " + dest.FileName, nameof(PokemonPool<T>));
-              //      continue;
-              //  }
-
+                 // if (!dest.CanBeTraded())
+                 // {
+                 //     LogUtil.LogInfo("SKIPPED: Provided file cannot be traded: " + dest.FileName, nameof(PokemonPool<T>));
+                 //     continue;
+                 // }
                 var la = new LegalityAnalysis(dest);
-                if (!la.Valid)
+                if (!la.Valid && !Settings.Legality.SkipLegalityCheckOnDistribution)
                 {
                     var reason = la.Report();
                     LogUtil.LogInfo($"SKIPPED: Provided file is not legal: {dest.FileName} -- {reason}", nameof(PokemonPool<T>));

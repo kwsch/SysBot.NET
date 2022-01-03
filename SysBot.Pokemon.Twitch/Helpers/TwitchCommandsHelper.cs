@@ -11,7 +11,7 @@ namespace SysBot.Pokemon.Twitch
         {
             if (!TwitchBot<T>.Info.GetCanQueue())
             {
-                msg = "Sorry, I am not currently accepting queue requests!";
+                msg = "Sorry, I am still booting! Try again in a minute!";
                 return false;
             }
 
@@ -24,7 +24,7 @@ namespace SysBot.Pokemon.Twitch
             var template = AutoLegalityWrapper.GetTemplate(set);
             if (template.Species < 1)
             {
-                msg = $"Skipping trade, @{username}: Please read what you are supposed to type as the command argument.";
+                msg = $"Skipping trade, @{username}: Incorrect Trade request. Check '!tradeguide' to get more informations.";
                 return false;
             }
 
@@ -48,17 +48,40 @@ namespace SysBot.Pokemon.Twitch
                 if (pkm is T pk)
                 {
                     var valid = new LegalityAnalysis(pkm).Valid;
+
+                    if (pkm.Nickname == "Egg")
+                    {
+                        pkm.IsEgg = true;
+                        pkm.Egg_Location = 60002;
+                        pkm.Met_Location = 0;
+                        pkm.CurrentFriendship = 1;
+                        pkm.Met_Level = 1;
+                    }
+
+                    if (!sub)
+                    {
+                        pkm.IsNicknamed = true;
+                        pkm.Nickname = "rocketpkm.de";
+                        pkm.OT_Name = "rocketpkm.de";
+                     //   pkm.HeldItem = 0; // no item for follower
+                    }
+
                     if (valid)
                     {
                         var tq = new TwitchQueue<T>(pk, new PokeTradeTrainerInfo(display, mUserId), username, sub);
                         TwitchBot<T>.QueuePool.RemoveAll(z => z.UserName == username); // remove old requests if any
                         TwitchBot<T>.QueuePool.Add(tq);
-                        msg = $"@{username} - added to the waiting list. Please whisper your trade code to me! Your request from the waiting list will be removed if you are too slow!";
+                        if (sub)
+                        {
+                            msg = $"@{username} - added {(Species)pkm.Species} to the Subscriber Priority list. Please whisper your trade code to me! Your request from the waiting list will be removed if you are too slow!";
+                            return true;
+                        }
+                        msg = $"@{username} - added {(Species)pkm.Species} to the waiting list. Please whisper your trade code to me! Your request from the waiting list will be removed if you are too slow!";
                         return true;
                     }
                 }
 
-                var reason = result == "Timeout" ? "Set took too long to generate." : "Unable to legalize the Pokémon.";
+                var reason = result == "Timeout" ? "Set took too long to generate." : "Pokémon is not legal. Check your Request and remove illegal settings.";
                 msg = $"Skipping trade, @{username}: {reason}";
             }
 #pragma warning disable CA1031 // Do not catch general exception types

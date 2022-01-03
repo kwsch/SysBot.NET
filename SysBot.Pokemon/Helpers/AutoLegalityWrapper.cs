@@ -10,6 +10,7 @@ namespace SysBot.Pokemon
     {
         private static bool Initialized;
 
+
         public static void EnsureInitialized(LegalitySettings cfg)
         {
             if (Initialized)

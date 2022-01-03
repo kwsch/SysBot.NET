@@ -121,7 +121,7 @@ namespace SysBot.Pokemon.Twitch
             }
 
             var position = Info.CheckPosition(userID, type);
-            msg = $"@{name}: Added to the {type} queue, unique ID: {detail.ID}. Current Position: {position.Position}";
+            msg = $"@{name}: Added to the queue, unique ID: {detail.ID}. Current Position: {position.Position}";
 
             var botct = Info.Hub.Bots.Count;
             if (position.Position > botct)
@@ -207,8 +207,6 @@ namespace SysBot.Pokemon.Twitch
             switch (c)
             {
                 // User Usable Commands
-                case "trade" when !subscriber():
-                    return $"@{m.Username}, become Subscriber to request any Pokemon!";
                 case "trade":
                     var _ = TwitchCommandsHelper<T>.AddToWaitingList(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg);
                     return msg;
@@ -219,7 +217,10 @@ namespace SysBot.Pokemon.Twitch
 
                 case "code" when whisper:
                     return TwitchCommandsHelper<T>.GetCode(ulong.Parse(m.UserId));
-
+                case "eggtrade":
+                    return $"@{m.Username}:This command is not used anymore. Nickname your Pokemon \"Egg\" to request an Egg. Example: !trade Charmander (Egg) Shiny: Yes";
+                case "freetrade":
+                    return $"@{m.Username}:This command is not used anymore! Use the simple \"!trade\" command. Example: !trade Charizard Shiny: Yes";
                 // Sudo Only Commands
                 case "tca" when !sudo():
                 case "pr" when !sudo():

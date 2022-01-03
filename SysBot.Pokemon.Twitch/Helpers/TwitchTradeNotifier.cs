@@ -57,7 +57,7 @@ namespace SysBot.Pokemon.Twitch
         public void TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
         {
             var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";
-            var msg = $"@{info.Trainer.TrainerName} (ID: {info.ID}): Initializing trade{receive} with you. Please be ready. Use the code you whispered me to search!";
+            var msg = $"@{info.Trainer.TrainerName} (ID: {info.ID}): Initializing your Trade request ({(Species)Data.Species}). Please be ready. Use the code you whispered me to search!";
             var dest = Settings.TradeStartDestination;
             if (dest == TwitchMessageDestination.Whisper)
                 msg += $" Your trade code is: {info.Code:0000 0000}";

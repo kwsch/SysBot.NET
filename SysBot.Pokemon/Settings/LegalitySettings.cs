@@ -11,6 +11,12 @@ namespace SysBot.Pokemon
         public override string ToString() => "Legality Generating Settings";
 
         // Generate
+        [Category(Generate), Description("Skip Legality Checks when true")]
+        public bool SkipLegalityCheckOnDistribution { get; set; } = false;
+
+        [Category(Generate), Description("Skip Legality Checks when true")]
+        public bool SkipLegalityCheckOnTrade { get; set; } = false;
+
         [Category(Generate), Description("MGDB directory path for Wonder Cards.")]
         public string MGDBPath { get; set; } = string.Empty;
 
@@ -18,15 +24,7 @@ namespace SysBot.Pokemon
         public string GeneratePathTrainerInfo { get; set; } = string.Empty;
 
         [Category(Generate), Description("Default Original Trainer name for PKM files that don't match any of the provided PKM files.")]
-        public string GenerateOT
-        {
-            get => DefaultTrainerName;
-            set
-            {
-                if (!StringsUtil.IsSpammyString(value))
-                    DefaultTrainerName = value;
-            }
-        }
+        public string GenerateOT { get; set; } = string.Empty;
 
         [Category(Generate), Description("Default 16-bit Trainer ID (TID) for requests that don't match any of the provided trainer data files. This should be a 5-digit number.")]
         public int GenerateTID16 { get; set; } = 12345;

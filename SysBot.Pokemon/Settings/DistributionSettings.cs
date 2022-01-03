@@ -30,6 +30,8 @@ namespace SysBot.Pokemon
         [Category(Distribute), Description("Distribution Trade Link Code uses the Min and Max range rather than the fixed trade code.")]
         public bool RandomCode { get; set; }
 
+
+
         // Synchronize
 
         [Category(Synchronize), Description("Link Trade: Using multiple distribution bots -- all bots will confirm their trade code at the same time. When Local, the bots will continue when all are at the barrier. When Remote, something else must signal the bots to continue.")]

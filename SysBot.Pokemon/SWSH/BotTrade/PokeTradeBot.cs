@@ -548,7 +548,7 @@ namespace SysBot.Pokemon
                 poke.SendNotification(this, offered, "Here's what you showed me!");
 
             var la = new LegalityAnalysis(offered);
-            if (!la.Valid)
+            if (!la.Valid && !Hub.Config.Legality.SkipLegalityCheckOnTrade)
             {
                 Log($"Clone request (from {poke.Trainer.TrainerName}) has detected an invalid Pokémon: {(Species)offered.Species}.");
                 if (DumpSetting.Dump)
