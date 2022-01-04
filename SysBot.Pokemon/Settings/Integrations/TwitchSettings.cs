@@ -43,6 +43,29 @@ namespace SysBot.Pokemon
         public double ThrottleWhispersSeconds { get; set; } = 60;
 
         // Operation
+        [Category(Operation), Description("Subscriber only Trades")]
+        public bool SubTradesOnly { get; set; } = false;
+
+        [Category(Operation), Description("Allow Egg Requests when Nicknaming the Pokemon Egg")]
+        public bool CreateEggsWithNickname { get; set; } = true;
+
+        [Category(Operation), Description("Subscriber only Eggs")]
+        public bool EggsSubsOnly { get; set; } = false;
+
+        [Category(Operation), Description("Nickname all Pokemon from Non Subscriber Trades")]
+        public bool AutoNicknameNonSubs { get; set; } = true;
+
+        [Category(Operation), Description("Nickname all Pokemon from Non Subscriber Trades")]
+        public string AutoNickname { get; set; } = "PlsSubscribe";
+
+        [Category(Operation), Description("Specific OT for all Pokemon from Non Subscriber Trades")]
+        public bool AutoOTNonSubs { get; set; } = true;
+
+        [Category(Operation), Description("Specific OT for all Pokemon from Non Subscriber Trades")]
+        public string AutoOT { get; set; } = "PlsSubscribe";
+
+        [Category(Operation), Description("Allow Held Items for Subscriber only")]
+        public bool HeldItemsSubsOnly { get; set; } = false;
 
         [Category(Operation), Description("Sudo Usernames")]
         public string SudoList { get; set; } = string.Empty;

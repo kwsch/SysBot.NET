@@ -9,11 +9,11 @@ namespace SysBot.Pokemon
         /// </summary>
         /// <param name="setstring">single string</param>
         /// <returns>ShowdownSet object</returns>
-        public static ShowdownSet? ConvertToShowdown(string setstring)
+        public static ShowdownSet? ConvertToShowdown(string setstring, bool eggsallowed)
         {
             // LiveStreams remove new lines, so we are left with a single line set
             var restorenick = string.Empty;
-            if (setstring.Contains("(Egg)")) 
+            if (setstring.Contains("(Egg)") && eggsallowed) 
             {
                 if (!setstring.Contains("Level:"))
                     setstring = setstring + " Level: 1";
@@ -32,7 +32,7 @@ namespace SysBot.Pokemon
                 if (setstring.Contains(i))
                     setstring = setstring.Replace(i, $"\r\n{i}");
             }
-            if (setstring.Contains("(Egg)"))
+            if (setstring.Contains("(Egg)") && eggsallowed)
             {
                 int count = 2;
                 while (count < 100)

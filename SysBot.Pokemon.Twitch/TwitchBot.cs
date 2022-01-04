@@ -207,9 +207,17 @@ namespace SysBot.Pokemon.Twitch
             switch (c)
             {
                 // User Usable Commands
-                case "trade":
-                    var _ = TwitchCommandsHelper<T>.AddToWaitingList(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg);
+                case "specialtrade" when !subscriber():
+                    return $"@{m.Username}:Become Subscriber to request Special Trades";
+                case "trade" when !subscriber() && Hub.Config.Twitch.SubTradesOnly:
+                    return $"@{m.Username}:Become Subscriber to request Trades";
+
+                case "specialtrade":
+                    var _ = TwitchCommandsHelper<T>.AddToWaitingListSpecial(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg, Hub);
                     return msg;
+                case "trade":
+                    var __ = TwitchCommandsHelper<T>.AddToWaitingList(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg2, Hub);
+                    return msg2;
                 case "ts":
                     return $"@{m.Username}: {Info.GetPositionString(ulong.Parse(m.UserId))}";
                 case "tc":
