@@ -124,6 +124,7 @@ namespace SysBot.Pokemon
             return result;
         }
 
+        public static string GetLegalizationHint(IBattleTemplate set, ITrainerInfo sav, PKM pk) => set.SetAnalysis(sav, pk);
         public static PKM LegalizePokemon(this PKM pk) => pk.Legalize();
         public static IBattleTemplate GetTemplate(ShowdownSet set) => new RegenTemplate(set);
     }

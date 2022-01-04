@@ -23,11 +23,17 @@ namespace SysBot.Pokemon.Discord
                 var pkm = sav.GetLegal(template, out var result);
                 var la = new LegalityAnalysis(pkm);
                 var spec = GameInfo.Strings.Species[template.Species];
-                var reason = result == "Timeout" ? "That set took too long to generate." : "I wasn't able to create something from that.";
+                if (!la.Valid)
+                {
+                    var reason = result == "Timeout" ? $"That {spec} set took too long to generate." : $"I wasn't able to create a {spec} from that set.";
+                    var imsg = $"Oops! {reason}";
+                    if (result == "Failed")
+                        imsg += $"\n{AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm)}";
+                    await channel.SendMessageAsync(imsg).ConfigureAwait(false);
+                    return;
+                }
 
-                var msg = la.Valid
-                    ? $"Here's your ({result}) legalized PKM for {spec} ({la.EncounterOriginal.Name})!"
-                    : $"Oops! {reason} Here's my best attempt for that {spec}!";
+                var msg = $"Here's your ({result}) legalized PKM for {spec} ({la.EncounterOriginal.Name})!";
                 await channel.SendPKMAsync(pkm, msg + $"\n{ReusableActions.GetFormattedShowdownText(pkm)}").ConfigureAwait(false);
             }
             catch (Exception ex)

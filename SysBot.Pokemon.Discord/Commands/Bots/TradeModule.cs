@@ -68,9 +68,11 @@ namespace SysBot.Pokemon.Discord
                 pkm = PKMConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
                 if (pkm is not T pk || check)
                 {
-                    var reason = result == "Timeout" ? "That set took too long to generate." : "I wasn't able to create something from that.";
-                    var imsg = $"Oops! {reason} Here's my best attempt for that {spec}!";
-                    await Context.Channel.SendPKMAsync(pkm, imsg).ConfigureAwait(false);
+                    var reason = result == "Timeout" ? $"That {spec} set took too long to generate." : $"I wasn't able to create a {spec} from that set.";
+                    var imsg = $"Oops! {reason}";
+                    if (result == "Failed")
+                        imsg += $"\n{AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm)}";
+                    await ReplyAsync(imsg).ConfigureAwait(false);
                     return;
                 }
                 pk.ResetPartyStats();
