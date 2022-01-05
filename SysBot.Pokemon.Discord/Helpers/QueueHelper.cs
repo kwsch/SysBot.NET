@@ -56,13 +56,23 @@ namespace SysBot.Pokemon.Discord
                     await test.DeleteAsync().ConfigureAwait(false);
                 }
             }
-            catch (HttpException)
+            catch (HttpException ex)
             {
-                var app = await context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
-                var owner = app.Owner.Id;
-                var noAccessMsg = $"<@{owner}> You must grant me permissions to delete messages!";
-                await context.Channel.SendMessageAsync(noAccessMsg).ConfigureAwait(false);
-                return;
+                string message;
+                // Check if the exception was raised due to missing "Manage Messages" permissions. Ping the bot host if so.
+                var permissions = context.Guild.CurrentUser.GetPermissions(context.Channel as IGuildChannel);
+                if (!permissions.ManageMessages)
+                {
+                    var app = await context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
+                    var owner = app.Owner.Id;
+                    message = $"<@{owner}> You must grant me \"Manage Messages\" permissions!";
+                }
+                else
+                {
+                    // Send a generic error message if we're not missing "Manage Messages" permissions.
+                    message = $"{ex.HttpCode}: {ex.Reason}!";
+                }
+                await context.Channel.SendMessageAsync(message).ConfigureAwait(false);
             }
         }
 
