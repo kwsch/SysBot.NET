@@ -18,6 +18,6 @@ namespace SysBot.Pokemon
     {
         ClosestOnly,            // Only gets the first shiny
         FirstStarAndSquare,     // Gets the first star shiny and first square shiny
-        FirstThree,             // Gets the first three frames
+        FirstThree             // Gets the first three frames
     }
 }

@@ -107,6 +107,7 @@ namespace SysBot.Pokemon
             {
                 if (waitCounter == 0)
                     Log("No task assigned. Waiting for new task assignment.");
+
                 waitCounter++;
                 if (waitCounter % 10 == 0 && Hub.Config.AntiIdle)
                     await Click(B, 1_000, token).ConfigureAwait(false);
@@ -135,8 +136,16 @@ namespace SysBot.Pokemon
                 Log($"Starting next {type}{tradetype} Bot Trade. Getting data...");
                 Hub.Config.Stream.StartTrade(this, detail, Hub);
                 Hub.Queues.StartTrade(this, detail);
-
-                await PerformTrade(sav, detail, type, priority, token).ConfigureAwait(false);
+                if (tradetype == " (Random)" && Hub.Config.Distribution.DistributeOrSurprise == DistOrSurprise.SurpriseTrade)
+                {
+                    var pkm = Hub.Ledy.Pool.GetRandomSurprise();
+                    await EnsureConnectedToYComm(Hub.Config, token).ConfigureAwait(false);
+                    await PerformSurpriseTrade(sav, pkm, token).ConfigureAwait(false);
+                }
+                else
+                {
+                    await PerformTrade(sav, detail, type, priority, token).ConfigureAwait(false);
+                }
             }
         }
 

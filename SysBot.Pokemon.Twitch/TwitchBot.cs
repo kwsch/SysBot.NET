@@ -21,7 +21,7 @@ namespace SysBot.Pokemon.Twitch
         private readonly TwitchClient client;
         private readonly string Channel;
         private readonly TwitchSettings Settings;
-
+        
         public TwitchBot(TwitchSettings settings, PokeTradeHub<T> hub)
         {
             Hub = hub;
@@ -218,11 +218,14 @@ namespace SysBot.Pokemon.Twitch
                 case "trade":
                     var __ = TwitchCommandsHelper<T>.AddToWaitingList(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg2, Hub);
                     return msg2;
+                case "swshtrade":
+                    var ___ = TwitchCommandsHelper<T>.AddToWaitingList(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg3, Hub);
+                    return msg3;
+
                 case "ts":
                     return $"@{m.Username}: {Info.GetPositionString(ulong.Parse(m.UserId))}";
                 case "tc":
                     return $"@{m.Username}: {TwitchCommandsHelper<T>.ClearTrade(ulong.Parse(m.UserId))}";
-
                 case "code" when whisper:
                     return TwitchCommandsHelper<T>.GetCode(ulong.Parse(m.UserId));
                 case "eggtrade":

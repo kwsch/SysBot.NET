@@ -12,8 +12,11 @@ namespace SysBot.Pokemon
 
         // Distribute
 
-        [Category(Distribute), Description("When enabled, idle LinkTrade bots will randomly distribute PKM files from the DistributeFolder.")]
-        public bool DistributeWhileIdle { get; set; } = true;
+        [Category(Distribute), Description("When enabled, idle LinkTrade bots will randomly distribute or Surprise Trade PKM files from the DistributeFolder.\r\n BDSP Bot can only Distribute.")]
+        public bool DoSomethingWhileIdle { get; set; } = true;
+
+        [Category(Distribute), Description("[SWSH only] Should the Bot do Surprise Trades or Distribution?")]
+        public DistOrSurprise DistributeOrSurprise { get; set; }
 
         [Category(Distribute), Description("When enabled, the DistributionFolder will yield randomly rather than in the same sequence.")]
         public bool Shuffled { get; set; }
@@ -42,5 +45,11 @@ namespace SysBot.Pokemon
 
         [Category(Synchronize), Description("Link Trade: Using multiple distribution bots -- how long (Seconds) a bot will wait for synchronization before continuing anyways.")]
         public double SynchronizeTimeout { get; set; } = 90;
+    }
+
+    public enum DistOrSurprise
+    {
+        SurpriseTrade = 1,            
+        Distribution = 2           
     }
 }

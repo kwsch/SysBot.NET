@@ -13,7 +13,7 @@ namespace SysBot.Pokemon
         {
             // LiveStreams remove new lines, so we are left with a single line set
             var restorenick = string.Empty;
-            if (setstring.Contains("(Egg)") && eggsallowed) 
+            if (setstring.Contains("Egg") && !setstring.Contains("Egg Bomb") && eggsallowed) 
             {
                 if (!setstring.Contains("Level:"))
                     setstring = setstring + " Level: 1";
@@ -32,7 +32,7 @@ namespace SysBot.Pokemon
                 if (setstring.Contains(i))
                     setstring = setstring.Replace(i, $"\r\n{i}");
             }
-            if (setstring.Contains("(Egg)") && eggsallowed)
+            if (setstring.Contains("Egg") && !setstring.Contains("Egg Bomb") && eggsallowed)
             {
                 int count = 2;
                 while (count < 100)

@@ -43,7 +43,7 @@ namespace SysBot.Pokemon
         {
             detail = default!;
             var cfg = Hub.Config.Distribution;
-            if (!cfg.DistributeWhileIdle && !force)
+            if (!cfg.DoSomethingWhileIdle && !force)
                 return false;
 
             if (Hub.Ledy.Pool.Count == 0)
