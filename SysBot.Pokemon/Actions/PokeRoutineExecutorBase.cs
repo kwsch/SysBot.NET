@@ -33,6 +33,8 @@ namespace SysBot.Pokemon
             Log($"{Connection.Name} identified as {Connection.Label}, using {GameLang}.");
         }
 
+        protected bool IsValidTrainerData() => GameLang > LanguageID.Hacked && GameLang <= LanguageID.ChineseT && InGameName.Length > 0 && Version > 0;
+
         public override void SoftStop() => Config.Pause();
 
         public async Task Click(SwitchButton b, int delayMin, int delayMax, CancellationToken token) =>
