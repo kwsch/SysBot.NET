@@ -148,7 +148,7 @@ namespace SysBot.Pokemon
                 if (CreateCompletedTrades)
                     GenerateCompletedTrades(hub);
                 if (CreateTradeStartSprite)
-                    GenerateBotSprite(b, detail);
+                    GenerateBotSprite(b, detail, hub);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
@@ -284,13 +284,54 @@ namespace SysBot.Pokemon
             File.WriteAllText($"{file}.txt", name);
         }
 
-        private static void GenerateBotSprite<T>(PokeRoutineExecutorBase b, PokeTradeDetail<T> detail) where T : PKM, new()
+        private static void GenerateBotSprite<T>(PokeRoutineExecutorBase b, PokeTradeDetail<T> detail, PokeTradeHub<T> hub) where T : PKM, new()
         {
             var func = CreateSpriteFile;
             if (func == null)
                 return;
             var file = b.Connection.Name;
             var pk = detail.TradeData;
+            bool shinycheck = pk.IsShiny;
+
+            if (!String.IsNullOrEmpty(hub.Config.Folder.GifSpritesFolder) || !String.IsNullOrEmpty(hub.Config.Folder.GifShinySpritesFolder)) {
+                string filename = (Species)pk.Species + ".gif";
+                filename = filename.ToLower();
+                var sourcepath = String.Empty;
+
+                if (shinycheck)
+                {
+                    if (String.IsNullOrEmpty(hub.Config.Folder.GifShinySpritesFolder))
+                    {
+                        sourcepath = hub.Config.Folder.GifSpritesFolder;
+                    }
+                    else
+                    {
+                        sourcepath = hub.Config.Folder.GifShinySpritesFolder;
+                    }
+                }
+                else
+                {
+                    {
+                        if (String.IsNullOrEmpty(hub.Config.Folder.GifSpritesFolder))
+                        {
+                            sourcepath = hub.Config.Folder.GifShinySpritesFolder;
+                        }
+                        else
+                        {
+                            sourcepath = hub.Config.Folder.GifSpritesFolder;
+                        }
+                    }
+                }
+
+                var targetpath = AppDomain.CurrentDomain.BaseDirectory;
+                string sourcefile = System.IO.Path.Combine(sourcepath, filename);
+                string destfile = System.IO.Path.Combine(targetpath, $"sprite_{file}.gif");
+                if (File.Exists(sourcefile))
+                {
+                    System.IO.File.Copy(sourcefile, destfile, true);
+                }
+
+            }
             func.Invoke(pk, $"sprite_{file}.png");
         }
 

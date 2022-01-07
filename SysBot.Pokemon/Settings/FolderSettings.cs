@@ -18,6 +18,12 @@ namespace SysBot.Pokemon
         [Category(Files), Description("Destination folder: where all received PKM files are dumped to.")]
         public string DumpFolder { get; set; } = string.Empty;
 
+        [Category(Files), Description("Folder with animated regular Sprites")]
+        public string GifSpritesFolder { get; set; } = string.Empty;
+
+        [Category(Files), Description("Folder with animated shiny Sprites")]
+        public string GifShinySpritesFolder { get; set; } = string.Empty;
+
         public void CreateDefaults(string path)
         {
             var dump = Path.Combine(path, "dump");
