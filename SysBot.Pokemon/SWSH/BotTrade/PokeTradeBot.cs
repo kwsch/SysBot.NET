@@ -228,7 +228,7 @@ namespace SysBot.Pokemon
             Hub.Config.Stream.EndEnterCode(this);
 
             if (await CheckIfSoftBanned(token).ConfigureAwait(false))
-                await Unban(token).ConfigureAwait(false);
+                await UnSoftBan(token).ConfigureAwait(false);
 
             var toSend = poke.TradeData;
             if (toSend.Species != 0)
@@ -651,9 +651,15 @@ namespace SysBot.Pokemon
             var time = TimeSpan.FromSeconds(Hub.Config.Trade.MaxDumpTradeTime);
             var start = DateTime.Now;
             var pkprev = new PK8();
+            var bctr = 0;
             while (ctr < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.Now - start < time)
             {
-                var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 3_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
+                if (await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
+                    break;
+                if (bctr++ % 3 == 0)
+                    await Click(B, 0_100, token).ConfigureAwait(false);
+
+                var pk = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 3_000, 0_500, BoxFormatSlotSize, token).ConfigureAwait(false);
                 if (pk == null || pk.Species < 1 || !pk.ChecksumValid || SearchUtil.HashByDetails(pk) == SearchUtil.HashByDetails(pkprev))
                     continue;
 
@@ -696,7 +702,7 @@ namespace SysBot.Pokemon
 
             // Inject to b1s1
             if (await CheckIfSoftBanned(token).ConfigureAwait(false))
-                await Unban(token).ConfigureAwait(false);
+                await UnSoftBan(token).ConfigureAwait(false);
 
             Log("Starting next Surprise Trade. Getting data...");
             await SetBoxPokemon(pkm, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
@@ -1011,7 +1017,7 @@ namespace SysBot.Pokemon
         {
             var ofs = GetTrainerNameOffset(tradeMethod);
             var data = await Connection.ReadBytesAsync(ofs, 26, token).ConfigureAwait(false);
-            return StringConverter.GetString7(data, 0, 26);
+            return StringConverter8.GetString(data);
         }
 
         private async Task<string> GetTradePartnerTID7(TradeMethod tradeMethod, CancellationToken token)

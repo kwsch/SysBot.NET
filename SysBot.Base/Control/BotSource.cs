@@ -68,17 +68,17 @@ namespace SysBot.Base
             LogUtil.LogError("Bot has crashed!", ident);
 
             if (!string.IsNullOrEmpty(ae.Message))
-                LogUtil.LogError("Aggregate message:" + ae.Message, ident);
+                LogUtil.LogError("Aggregate message: " + ae.Message, ident);
 
             var st = ae.StackTrace;
             if (!string.IsNullOrEmpty(st))
-                LogUtil.LogError("Aggregate stacktrace:" + st, ident);
+                LogUtil.LogError("Aggregate stacktrace: " + st, ident);
 
             foreach (var e in ae.InnerExceptions)
             {
                 if (!string.IsNullOrEmpty(e.Message))
-                    LogUtil.LogError("Inner message:" + e.Message, ident);
-                LogUtil.LogError("Inner stacktrace:" + e.StackTrace, ident);
+                    LogUtil.LogError("Inner message: " + e.Message, ident);
+                LogUtil.LogError("Inner stacktrace: " + e.StackTrace, ident);
             }
         }
 

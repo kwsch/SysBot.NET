@@ -80,6 +80,11 @@ namespace SysBot.Pokemon
 
         public async Task<SAV8SWSH> IdentifyTrainer(CancellationToken token)
         {
+            // Check title so we can warn if mode is incorrect.
+            string title = await SwitchConnection.GetTitleID(token).ConfigureAwait(false);
+            if (title is not (SwordID or ShieldID))
+                throw new Exception($"{title} is not a valid SWSH title. Is your mode correct?");
+
             Log("Grabbing trainer data of host console...");
             var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
             InitSaveData(sav);
@@ -188,10 +193,10 @@ namespace SysBot.Pokemon
             await StartGame(config, token).ConfigureAwait(false);
 
             // In case we are soft banned, reset the timestamp
-            await Unban(token).ConfigureAwait(false);
+            await UnSoftBan(token).ConfigureAwait(false);
         }
 
-        public async Task Unban(CancellationToken token)
+        public async Task UnSoftBan(CancellationToken token)
         {
             // Like previous generations, the game uses a Unix timestamp for 
             // how long we are soft banned and once the soft ban is lifted

@@ -7,6 +7,8 @@
         // Trade Partner Failures
         NoTrainerFound,
         TrainerTooSlow,
+        TrainerLeft,
+        TrainerOfferCanceledQuick,
         TrainerRequestBad,
         IllegalTrade,
         SuspiciousActivity,
