@@ -140,6 +140,7 @@ namespace SysBot.Pokemon.Twitch
                         TwitchBot<T>.QueuePool.RemoveAll(z => z.UserName == username); // remove old requests if any
                         TwitchBot<T>.QueuePool.Add(tq);
                         var mode = String.Empty;
+                        if (sub)
                         {
                             msg = $"@{username} - added {(Species)pkm.Species} to the" + mode + " Subscriber Priority list. Please whisper your trade code to me! Your request from the waiting list will be removed if you are too slow!";
                             return true;
