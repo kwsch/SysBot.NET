@@ -24,6 +24,9 @@ namespace SysBot.Pokemon
         [Category(Files), Description("Folder with animated shiny Sprites")]
         public string GifShinySpritesFolder { get; set; } = string.Empty;
 
+        [Category(Files), Description("Folder with all PKM Files for specialtrade")]
+        public string SpecialTradeFolder { get; set; } = string.Empty;
+
         public void CreateDefaults(string path)
         {
             var dump = Path.Combine(path, "dump");
@@ -34,6 +37,10 @@ namespace SysBot.Pokemon
             var distribute = Path.Combine(path, "distribute");
             Directory.CreateDirectory(distribute);
             DistributeFolder = distribute;
+
+            var specialtrade = Path.Combine(path, "specialtrade");
+            Directory.CreateDirectory(specialtrade);
+            DistributeFolder = specialtrade;
         }
     }
 }

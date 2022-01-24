@@ -246,11 +246,18 @@ namespace SysBot.Pokemon
             var toSend = poke.TradeData;
             if (toSend.Species != 0)
                 await SetBoxPokemonAbsolute(BoxStartOffset, toSend, token, sav).ConfigureAwait(false);
-
+            var egg = String.Empty;
+            if (poke.TradeData.IsEgg)
+                egg = " (Egg)";
+            var shiny = String.Empty;
+            if (poke.TradeData.IsShiny)
+                shiny = "Shiny ";
             if (poke.Type == PokeTradeType.Random)
-                SetText(sav, $"Trade code: {poke.Code:0000 0000}\r\nSending: {(Species)poke.TradeData.Species}");
+            {
+                SetText(sav, $"Trade code: {poke.Code:0000 0000}\r\nSending: " + shiny + $"{(Species)poke.TradeData.Species}" + egg);
+            }
             else
-                SetText(sav, $"Running a Trade Request for\r\n{poke.Trainer.TrainerName}");
+                SetText(sav, $"Trade Request for {poke.Trainer.TrainerName}\r\nSending: " + shiny + $"{(Species)poke.TradeData.Species}" + egg);
 
             // Enter Union Room and set ourselves up as Trading.
             if (!await EnterUnionRoomWithCode(poke.Type, poke.Code, token).ConfigureAwait(false))
@@ -677,7 +684,7 @@ namespace SysBot.Pokemon
                 poke.SendNotification(this, offered, "Here's what you showed me!");
 
             var la = new LegalityAnalysis(offered);
-            if (!la.Valid && Hub.Config.Legality.SkipLegalityCheckOnTrade)
+            if (!la.Valid && !Hub.Config.Legality.SkipLegalityCheckOnTrade)
             {
                 Log($"Clone request (from {poke.Trainer.TrainerName}) has detected an invalid Pokémon: {(Species)offered.Species}.");
                 if (DumpSetting.Dump)

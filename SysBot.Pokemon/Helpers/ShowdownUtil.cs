@@ -1,4 +1,5 @@
 ﻿using PKHeX.Core;
+using System.Text.RegularExpressions;
 
 namespace SysBot.Pokemon
 {
@@ -9,14 +10,58 @@ namespace SysBot.Pokemon
         /// </summary>
         /// <param name="setstring">single string</param>
         /// <returns>ShowdownSet object</returns>
-        public static ShowdownSet? ConvertToShowdown(string setstring, bool eggsallowed)
+        public static ShowdownSet? ConvertToShowdown(string setstring, out string pokerus, bool eggsallowed = false)
         {
             // LiveStreams remove new lines, so we are left with a single line set
             var restorenick = string.Empty;
-            if (setstring.Contains("Egg") && !setstring.Contains("Egg Bomb") && eggsallowed) 
+            bool eggy = false;
+            pokerus = "No";
+
+            if (setstring.Substring(0,3) == "Egg" || setstring.Contains("(Egg)"))
+                eggy = true;
+
+            if (setstring.Contains(" Pokerus:"))
             {
-                if (!setstring.Contains("Level:"))
-                    setstring = setstring + " Level: 1";
+                if (setstring.Contains(" Pokerus: Yes") || setstring.Contains(" Pokerus:Yes"))
+                {
+                    pokerus = "Yes";
+                    setstring = setstring.Replace(" Pokerus: Yes", "");
+                    setstring = setstring.Replace(" Pokerus:Yes", "");
+                }
+                else if (setstring.Contains(" Pokerus: No") || setstring.Contains(" Pokerus:No"))
+                {
+                    setstring = setstring.Replace(" Pokerus: No", "");
+                    setstring = setstring.Replace(" Pokerus:No", "");
+                }
+                else if (setstring.Contains(" Pokerus: Cured") || setstring.Contains(" Pokerus:Cured"))
+                {
+                    pokerus = "Cured";
+                    setstring = setstring.Replace(" Pokerus: Cured", "");
+                    setstring = setstring.Replace(" Pokerus:Cured", "");
+                }
+            }
+
+
+            if (eggy && eggsallowed) 
+            {
+                if (!setstring.Contains("Level:")) { 
+                    if (setstring.Contains("- "))
+                    {
+                        var regex = new Regex(Regex.Escape("- "));
+                        setstring = regex.Replace(setstring, "Level: 1 - ", 1);
+                    }
+                    else
+                        setstring = setstring + " Level: 1";
+                }
+                int count = 2;
+                while (count < 100)
+                {
+                    if (setstring.Contains($"Level: {count.ToString()}"))
+                        setstring = setstring.Replace($"Level: {count.ToString()}", $"Level: 1");
+                    if (setstring.Contains($"Level:{count.ToString()}"))
+                        setstring = setstring.Replace($"Level: {count.ToString()}", $"Level: 1");
+                    count = count + 1;
+                }
             }
             var nickIndex = setstring.LastIndexOf(')');
             if (nickIndex > -1)
@@ -32,17 +77,8 @@ namespace SysBot.Pokemon
                 if (setstring.Contains(i))
                     setstring = setstring.Replace(i, $"\r\n{i}");
             }
-            if (setstring.Contains("Egg") && !setstring.Contains("Egg Bomb") && eggsallowed)
-            {
-                int count = 2;
-                while (count < 100)
-                {
-                    if (setstring.Contains($"Level: {count.ToString()}"))
-                        setstring = setstring.Replace($"Level: {count.ToString()}", $"Level: 1");
-                    count = count + 1;
-                }
-            }
             var finalset = restorenick + setstring;
+            System.IO.File.WriteAllText("FinalSet.txt", finalset);
             return new ShowdownSet(finalset);
         }
 

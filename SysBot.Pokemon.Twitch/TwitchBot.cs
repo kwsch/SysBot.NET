@@ -207,27 +207,45 @@ namespace SysBot.Pokemon.Twitch
             switch (c)
             {
                 // User Usable Commands
-                case "specialtrade" when !subscriber():
+
+                case "specialtrade" when !subscriber() && !Hub.Config.Twitch.Disablespecialtrade:
                     return $"@{m.Username}:Become Subscriber to request Special Trades";
+
                 case "trade" when !subscriber() && Hub.Config.Twitch.SubTradesOnly:
                     return $"@{m.Username}:Become Subscriber to request Trades";
 
-                case "specialtrade":
-                    var _ = TwitchCommandsHelper<T>.AddToWaitingListSpecial(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg, Hub);
+                case "specialtrade" when !Hub.Config.Twitch.Disablespecialtrade:
+                    _ = TwitchCommandsHelper<T>.AddToWaitingListSpecial(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg, Hub);
                     return msg;
-                case "trade":
-                    var __ = TwitchCommandsHelper<T>.AddToWaitingList(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg2, Hub);
-                    return msg2;
-                case "swshtrade":
-                    var ___ = TwitchCommandsHelper<T>.AddToWaitingList(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg3, Hub);
+
+                case "trade" when !Hub.Config.Twitch.DisableNormalTrade:
+                    _ = TwitchCommandsHelper<T>.AddToWaitingList(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg2, Hub);
+                        return msg2;
+
+                case "swshtrade" when Hub.Config.Twitch.UseSWSHTrade:
+                    _ = TwitchCommandsHelper<T>.AddToWaitingList(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg3, Hub);
                     return msg3;
 
-                case "ts":
+                case "bdsptrade" when Hub.Config.Twitch.UseBDSPTrade:
+                    _ = TwitchCommandsHelper<T>.AddToWaitingList(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg4, Hub);
+                        return msg4;
+
+                case "ts" when !Hub.Config.Twitch.DisableNormalTrade:
                     return $"@{m.Username}: {Info.GetPositionString(ulong.Parse(m.UserId))}";
-                case "tc":
+                case "position" when !Hub.Config.Twitch.DisableNormalTrade:
+                    return $"@{m.Username}: {Info.GetPositionString(ulong.Parse(m.UserId))}";
+
+                case "tc" when !Hub.Config.Twitch.DisableNormalTrade:
                     return $"@{m.Username}: {TwitchCommandsHelper<T>.ClearTrade(ulong.Parse(m.UserId))}";
+                case "skip" when !Hub.Config.Twitch.DisableNormalTrade:
+                    return $"@{m.Username}: {TwitchCommandsHelper<T>.ClearTrade(ulong.Parse(m.UserId))}";
+                case "cancel" when !Hub.Config.Twitch.DisableNormalTrade:
+                    return $"@{m.Username}: {TwitchCommandsHelper<T>.ClearTrade(ulong.Parse(m.UserId))}";
+
+
                 case "code" when whisper:
                     return TwitchCommandsHelper<T>.GetCode(ulong.Parse(m.UserId));
+
                 case "eggtrade":
                     return $"@{m.Username}:This command is not used anymore. Nickname your Pokemon \"Egg\" to request an Egg. Example: !trade Charmander (Egg) Shiny: Yes";
                 case "freetrade":

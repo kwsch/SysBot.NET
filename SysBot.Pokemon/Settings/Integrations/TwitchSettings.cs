@@ -25,6 +25,18 @@ namespace SysBot.Pokemon
         [Category(Startup), Description("Bot Command Prefix")]
         public char CommandPrefix { get; set; } = '$';
 
+        [Category(Operation), Description("Disables the specialtrade command")]
+        public bool Disablespecialtrade { get; set; } = true;
+
+        [Category(Operation), Description("Disables the normal trade command")]
+        public bool DisableNormalTrade { get; set; } = false;
+
+        [Category(Operation), Description("Enables the swshtrade command")]
+        public bool UseSWSHTrade { get; set; } = false;
+
+        [Category(Operation), Description("enables the bdsptrade command")]
+        public bool UseBDSPTrade { get; set; } = false;
+
         [Category(Operation), Description("Message sent when the Barrier is released.")]
         public string MessageStart { get; set; } = string.Empty;
 
@@ -46,11 +58,23 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Subscriber only Trades")]
         public bool SubTradesOnly { get; set; } = false;
 
+        [Category(Operation), Description("Enables The specialtrade command (Experimental)")]
+        public bool EnableSpecialTrades { get; set; } = false;
+
         [Category(Operation), Description("Allow Egg Requests when Nicknaming the Pokemon Egg")]
         public bool CreateEggsWithNickname { get; set; } = true;
 
         [Category(Operation), Description("Subscriber only Eggs")]
         public bool EggsSubsOnly { get; set; } = false;
+
+        [Category(Operation), Description("Give Eggs Nicknames")]
+        public bool EnableNicknameEggs { get; set; } = false;
+
+        [Category(Operation), Description("Give only Eggs Nicknames when Non-Sub")]
+        public bool EggNicknamesNonSubsOnly { get; set; } = false;
+
+        [Category(Operation), Description("Nickname of Eggs when enabled")]
+        public string EggNickname { get; set; } = "PlsSubscribe";
 
         [Category(Operation), Description("Nickname all Pokemon from Non Subscriber Trades")]
         public bool AutoNicknameNonSubs { get; set; } = true;

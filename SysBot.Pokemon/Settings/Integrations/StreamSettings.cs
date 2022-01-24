@@ -291,47 +291,43 @@ namespace SysBot.Pokemon
                 return;
             var file = b.Connection.Name;
             var pk = detail.TradeData;
-            bool shinycheck = pk.IsShiny;
 
-            if (!String.IsNullOrEmpty(hub.Config.Folder.GifSpritesFolder) || !String.IsNullOrEmpty(hub.Config.Folder.GifShinySpritesFolder)) {
-                string filename = (Species)pk.Species + ".gif";
-                filename = filename.ToLower();
-                var sourcepath = String.Empty;
+            string filename = (Species)pk.Species + ".gif";
+            filename = filename.ToLower();
+            var primarysourcepath = String.Empty;
+            var backupsourcepath = String.Empty;
 
-                if (shinycheck)
-                {
-                    if (String.IsNullOrEmpty(hub.Config.Folder.GifShinySpritesFolder))
-                    {
-                        sourcepath = hub.Config.Folder.GifSpritesFolder;
-                    }
-                    else
-                    {
-                        sourcepath = hub.Config.Folder.GifShinySpritesFolder;
-                    }
-                }
-                else
-                {
-                    {
-                        if (String.IsNullOrEmpty(hub.Config.Folder.GifSpritesFolder))
-                        {
-                            sourcepath = hub.Config.Folder.GifShinySpritesFolder;
-                        }
-                        else
-                        {
-                            sourcepath = hub.Config.Folder.GifSpritesFolder;
-                        }
-                    }
-                }
-
-                var targetpath = AppDomain.CurrentDomain.BaseDirectory;
-                string sourcefile = System.IO.Path.Combine(sourcepath, filename);
-                string destfile = System.IO.Path.Combine(targetpath, $"sprite_{file}.gif");
-                if (File.Exists(sourcefile))
-                {
-                    System.IO.File.Copy(sourcefile, destfile, true);
-                }
-
+            if (pk.IsShiny)
+            {
+                primarysourcepath = hub.Config.Folder.GifShinySpritesFolder;
+                backupsourcepath = hub.Config.Folder.GifSpritesFolder;
             }
+            else
+            {
+                primarysourcepath = hub.Config.Folder.GifSpritesFolder;
+                backupsourcepath = hub.Config.Folder.GifShinySpritesFolder;
+            }
+
+            var targetpath = AppDomain.CurrentDomain.BaseDirectory;
+            string sourcefile = System.IO.Path.Combine(primarysourcepath, filename);
+            string backupfile = System.IO.Path.Combine(backupsourcepath, filename);
+            string destfile = System.IO.Path.Combine(targetpath, $"sprite_{file}.gif");
+
+            if (File.Exists(sourcefile))
+            {
+                System.IO.File.Copy(sourcefile, destfile, true);
+            }
+            else if (File.Exists(backupfile))
+            {
+                System.IO.File.Copy(backupfile, destfile, true);
+            }
+            else
+            {
+                if (!File.Exists(System.IO.Path.Combine(targetpath, "MissingGifSprites.txt")))
+                    System.IO.File.WriteAllText((System.IO.Path.Combine(targetpath, "MissingGifSprites.txt")), "No Animated Sprite was found for following Pokemon:" + Environment.NewLine);
+                File.AppendAllText((System.IO.Path.Combine(targetpath, "MissingGifSprites.txt")), filename + Environment.NewLine);
+            }
+
             func.Invoke(pk, $"sprite_{file}.png");
         }
 
