@@ -17,7 +17,7 @@ namespace SysBot.Pokemon
         // Union Work - Detects states in the Union Room
         public override IReadOnlyList<long> UnionWorkIsGamingPointer { get; } = new long[] { 0x4E4ED98, 0xB8, 0x3C }; // 1 when loaded into Union Room, 0 otherwise
         public override IReadOnlyList<long> UnionWorkIsTalkingPointer { get; } = new long[] { 0x4E4ED98, 0xB8, 0x85 };  // 1 when talking to another player or in box, 0 otherwise
-        public override IReadOnlyList<long> UnionWorkPenaltyPointer { get; } = new long[] { 0x4E4ED98, 0xB8, 0x9C }; // 0 when no penalty, float value otherwise.
+        public override IReadOnlyList<long> UnionWorkPenaltyPointer { get; } = new long[] { 0x4E4ED98, 0xB8, 0x90 }; // 0 when no penalty, float value otherwise.
 
         public override IReadOnlyList<long> MyStatusTrainerPointer { get; } = new long[] { 0x4E59E60, 0xB8, 0x10, 0xE0, 0x0 };
         public override IReadOnlyList<long> MyStatusTIDPointer { get; } = new long[] { 0x4E59E60, 0xB8, 0x10, 0xE8 };
