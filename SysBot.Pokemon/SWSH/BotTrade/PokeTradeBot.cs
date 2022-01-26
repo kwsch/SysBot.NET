@@ -734,7 +734,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.RecoverPostLinkCode;
             }
 
-            Log("Selecting Pokémon.");
+            Log($"Selecting Pokémon: {pkm.FileName}");
             // Box 1 Slot 1; no movement required.
             await Click(A, 0_700, token).ConfigureAwait(false);
 
