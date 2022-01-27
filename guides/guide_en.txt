@@ -1,12 +1,21 @@
-**RocketsBlackmarket Exclusive:**
+**************************RocketsBlackmarket Exclusive:**************************
 Request **Eggs**!
 Simply use **Egg** as Nickname to request Eggs!
 Example:
 **!trade Charmander (Egg) Shiny: Yes**
 
-**How to Request Pokemon!**
+**Another RocketsBlackmarket Exclusive: adding PokeRus**
+You can add **Pokerus: Yes** or **Pokerus: Cured** to your request!
+Example:
+**!trade Charizard Shiny: Yes Pokerus: Yes**
 
-To Request a Pokemon, write **!trade** in Chat and add your Pokemon. After that, whisper you 8-digit Trade Code to **Bot_RocketGrunt**
+**************************How to Request Pokemon!**************************
+
+To Request a Pokemon, use **!trade** or **!swshtrade** in Chat and add your Pokemon. After that, whisper you 8-digit Trade Code to **Bot_RocketGrunt**
+
+**!trade** is used for Pokemon Diamond / Pearl
+**!swshtrade** is used for Pokemon Sword / Shield
+
 Simple Example:
 **!trade Charizard**
 
@@ -22,7 +31,7 @@ If you want to make your Pokemon Shiny, simply add **Shiny: Yes**
 Example:
 **!trade Charizard (F) @ Life Orb Shiny: Yes**
 
-The same is for Level, Language, PokeBall Ability & EVs:
+The same is for Level, Language, PokeBall, Ability & EVs:
 Example:
 **!trade Charizard (F) @ Life Orb Shiny: Yes EVs: 4 HP / 252 SpA / 252 Spe Ability: Solar Power Language: German Ball: Love Ball Level: 80**
 
@@ -33,7 +42,7 @@ To Customize Attacks, add them with **- Attack**
 Example:
 **!trade Charizard (F) @ Life Orb Shiny: Yes EVs: 4 HP / 252 SpA / 252 Spe Language: German Ball: Love Ball Ability: Solar Power Level: 80 Timid Nature - Fire Blast - Air Slash - Solar Beam - Focus Blast**
 
-*************Subscriber only Features**************************
+**************************Subscriber only Features**************************
 **Another RocketBlacksmarket Exclusive:**
 Request unobtainable Shiny Pokemon with **!specialtrade** and one of these available Pokemon: **Mew, Celebi, Jirachi, Deoxys, Deoxys-A, Deoxys-S, Deoxys-D**. 
 You cannot customize these Pokemon because they would change to illegal and not tradeable!
