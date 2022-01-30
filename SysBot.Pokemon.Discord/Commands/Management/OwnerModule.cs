@@ -64,6 +64,19 @@ namespace SysBot.Pokemon.Discord
             await Context.Guild.LeaveAsync();
         }
 
+        [Command("leaveall")]
+        [Summary("Leaves all servers the bot is currently in.")]
+        [RequireOwner]
+        // ReSharper disable once UnusedParameter.Global
+        public async Task LeaveAll()
+        {
+            await ReplyAsync("Leaving all servers.").ConfigureAwait(false);
+            foreach (var guild in Context.Client.Guilds)
+            {
+                await guild.LeaveAsync();
+            }
+        }
+
         [Command("sudoku")]
         [Alias("kill", "shutdown")]
         [Summary("Causes the entire process to end itself!")]
