@@ -75,7 +75,7 @@ namespace SysBot.Pokemon.Discord
             if (!ulong.TryParse(userInput, out ulong id))
                 return;
             var guild = Context.Client.Guilds.FirstOrDefault(x => x.Id == id);
-            await ReplyAsync($"Leaving guild {id}.").ConfigureAwait(false);
+            await ReplyAsync($"Leaving {guild}.").ConfigureAwait(false);
             await guild.LeaveAsync().ConfigureAwait(false);
         }
 
