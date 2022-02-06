@@ -74,7 +74,7 @@ namespace SysBot.Pokemon.Discord
         {
             if (!ulong.TryParse(userInput, out ulong id) || id <= 999999999999999)
             {
-                await ReplyAsync("Please provide a valid Guild ID").ConfigureAwait(false);
+                await ReplyAsync("Please provide a valid Guild ID.").ConfigureAwait(false);
                 return;
             }
             var guild = Context.Client.Guilds.FirstOrDefault(x => x.Id == id);
