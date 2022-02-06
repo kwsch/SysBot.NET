@@ -62,7 +62,7 @@ namespace SysBot.Pokemon.Discord
         public async Task Leave()
         {
             await ReplyAsync("Goodbye.").ConfigureAwait(false);
-            await Context.Guild.LeaveAsync();
+            await Context.Guild.LeaveAsync().ConfigureAwait(false);
         }
 
         [Command("leaveguild")]
@@ -72,8 +72,11 @@ namespace SysBot.Pokemon.Discord
         // ReSharper disable once UnusedParameter.Global
         public async Task LeaveGuild(string userInput = "1234")
         {
-            if (!ulong.TryParse(userInput, out ulong id))
+            if (!ulong.TryParse(userInput, out ulong id) || id <= 999999999999999)
+            {
+                await ReplyAsync("Please provide a valid Guild ID").ConfigureAwait(false);
                 return;
+            }
             var guild = Context.Client.Guilds.FirstOrDefault(x => x.Id == id);
             await ReplyAsync($"Leaving {guild}.").ConfigureAwait(false);
             await guild.LeaveAsync().ConfigureAwait(false);
@@ -88,7 +91,7 @@ namespace SysBot.Pokemon.Discord
             await ReplyAsync("Leaving all servers.").ConfigureAwait(false);
             foreach (var guild in Context.Client.Guilds)
             {
-                await guild.LeaveAsync();
+                await guild.LeaveAsync().ConfigureAwait(false);
             }
         }
 
