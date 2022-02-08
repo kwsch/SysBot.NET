@@ -33,7 +33,7 @@ namespace SysBot.Pokemon
             Log($"{Connection.Name} identified as {Connection.Label}, using {GameLang}.");
         }
 
-        protected bool IsValidTrainerData() => GameLang > LanguageID.Hacked && GameLang <= LanguageID.ChineseT && InGameName.Length > 0 && Version > 0;
+        protected bool IsValidTrainerData() => GameLang is (> 0 and <= LanguageID.ChineseT) && InGameName.Length > 0 && Version > 0;
 
         public override void SoftStop() => Config.Pause();
 

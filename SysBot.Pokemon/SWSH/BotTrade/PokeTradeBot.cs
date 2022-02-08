@@ -472,7 +472,7 @@ namespace SysBot.Pokemon
             return PokeTradeResult.Success;
         }
 
-        private RemoteControlAccess GetReference(string name, ulong id, string comment) => new()
+        private static RemoteControlAccess GetReference(string name, ulong id, string comment) => new()
         {
             ID = id,
             Name = name,

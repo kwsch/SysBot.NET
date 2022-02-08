@@ -23,7 +23,7 @@ namespace SysBot.Pokemon
             var choice = this[Counter];
             Counter = (Counter + 1) % Count;
             if (Counter == 0 && Randomized)
-                Shuffle(this, 0, this.Count, Util.Rand);
+                Shuffle(this, 0, Count, Util.Rand);
             return choice;
         }
 

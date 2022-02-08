@@ -207,7 +207,7 @@ namespace SysBot.Base
         public static byte[] PointerPeek(IEnumerable<long> jumps, int count, bool crlf = true) => Encode($"pointerPeek {count}{string.Concat(jumps.Select(z => $" {z}"))}", crlf);
 
         /// <summary>
-        /// Sends the Bot <see cref="data"/> to be written to the offset at the end pointer traversals defined by <see cref="offset"/>.
+        /// Sends the Bot <see cref="data"/> to be written to the offset at the end pointer traversals defined by <see cref="jumps"/>.
         /// </summary>
         /// <param name="jumps">All traversals in the pointer expression</param>
         /// <param name="data">Data to write</param>

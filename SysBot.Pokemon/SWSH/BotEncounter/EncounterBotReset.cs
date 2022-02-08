@@ -53,15 +53,12 @@ namespace SysBot.Pokemon
             }
         }
 
-        private uint GetResetOffset(EncounterMode mode)
+        private static uint GetResetOffset(EncounterMode mode) => mode switch
         {
-            return mode switch
-            {
-                EncounterMode.Gift => BoxStartOffset,
-                EncounterMode.Regigigas or EncounterMode.Eternatus => RaidPokemonOffset,
-                EncounterMode.MotostokeGym => LegendaryPokemonOffset,
-                _ => WildPokemonOffset,
-            };
-        }
+            EncounterMode.Gift => BoxStartOffset,
+            EncounterMode.Regigigas or EncounterMode.Eternatus => RaidPokemonOffset,
+            EncounterMode.MotostokeGym => LegendaryPokemonOffset,
+            _ => WildPokemonOffset,
+        };
     }
 }

@@ -68,7 +68,7 @@ namespace SysBot.Pokemon.Discord
         private static string GetDateOfDll(string dll)
         {
             var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            var path = Path.Combine(folder, dll);
+            var path = Path.Combine(folder ?? "", dll);
             var date = File.GetLastWriteTime(path);
             return date.ToString(@"yy-MM-dd\.hh\:mm");
         }

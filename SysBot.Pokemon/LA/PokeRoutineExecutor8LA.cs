@@ -12,7 +12,7 @@ namespace SysBot.Pokemon
 {
     public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
     {
-        protected PokeDataOffsetsLA Offsets { get; private set; } = new PokeDataOffsetsLA();
+        protected PokeDataOffsetsLA Offsets { get; } = new();
         protected PokeRoutineExecutor8LA(PokeBotState cfg) : base(cfg)
         {
         }

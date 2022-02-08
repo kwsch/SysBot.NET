@@ -98,18 +98,15 @@ namespace SysBot.Base
         {
             lock (_sync)
             {
-                if (SwDevice is { } x)
+                if (SwDevice is { IsOpen: true } x)
                 {
-                    if (x.IsOpen)
+                    if (x is IUsbDevice wholeUsbDevice)
                     {
-                        if (x is IUsbDevice wholeUsbDevice)
-                        {
-                            if (!wholeUsbDevice.UsbRegistryInfo.IsAlive)
-                                wholeUsbDevice.ResetDevice();
-                            wholeUsbDevice.ReleaseInterface(0);
-                        }
-                        x.Close();
+                        if (!wholeUsbDevice.UsbRegistryInfo.IsAlive)
+                            wholeUsbDevice.ResetDevice();
+                        wholeUsbDevice.ReleaseInterface(0);
                     }
+                    x.Close();
                 }
 
                 reader?.Dispose();

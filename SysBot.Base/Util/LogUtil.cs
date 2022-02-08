@@ -73,8 +73,13 @@ namespace SysBot.Base
         {
             Logger.Log(LogLevel.Error, $"Exception from {identity}:");
             Logger.Log(LogLevel.Error, exception);
-            while ((exception = exception.InnerException) is { } x)
-                Logger.Log(LogLevel.Error, x);
+
+            var err = exception.InnerException;
+            while (err is not null)
+            {
+                Logger.Log(LogLevel.Error, err);
+                err = err.InnerException;
+            }
         }
     }
 }

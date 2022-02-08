@@ -305,7 +305,7 @@ namespace SysBot.Pokemon
 
             // If we detected a change, they offered something.
             var offered = await ReadPokemon(LinkTradePokemonOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
-            if (offered is null)
+            if (offered.Species == 0 || !offered.ChecksumValid)
                 return PokeTradeResult.TrainerTooSlow;
             lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
 
@@ -607,7 +607,7 @@ namespace SysBot.Pokemon
                 // If we detected a change, they offered something.
                 var pk = await ReadPokemon(LinkTradePokemonOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
                 var newEC = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
-                if (pk == null || pk.Species < 1 || !pk.ChecksumValid || lastOffered == newEC)
+                if (pk.Species < 1 || !pk.ChecksumValid || lastOffered == newEC)
                     continue;
                 lastOffered = newEC;
 
@@ -690,7 +690,7 @@ namespace SysBot.Pokemon
             }
 
             var pk2 = await ReadPokemon(LinkTradePokemonOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
-            if (!partnerFound || pk2 == null || SearchUtil.HashByDetails(pk2) == SearchUtil.HashByDetails(offered))
+            if (!partnerFound || !pk2.ChecksumValid || SearchUtil.HashByDetails(pk2) == SearchUtil.HashByDetails(offered))
             {
                 Log("Trade partner did not change their Pokémon.");
                 return (offered, PokeTradeResult.TrainerTooSlow);
