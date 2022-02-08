@@ -304,6 +304,19 @@ namespace SysBot.Pokemon
             //var trainerNID = await GetTradePartnerNID(token).ConfigureAwait(false);
             Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7}");
 
+
+            //TODO Irgendwie Infos für Sub weitergeben. Und Gender herausfinden
+            //if (true)
+            //{
+            //    toSend.TrainerID7 = Convert.ToInt32(tradePartner.TID7);
+            //    toSend.TrainerSID7 = Convert.ToInt32(tradePartner.SID7);
+            //    toSend.OT_Name = tradePartner.TrainerName;
+            //    await SetBoxPokemonAbsolute(BoxStartOffset, toSend, token, sav).ConfigureAwait(false);
+            //}
+
+
+            //TODO Schleife für mehrere Pokemon tauschen
+
             await Task.Delay(2_000, token).ConfigureAwait(false);
 
             // Confirm Box 1 Slot 1
@@ -316,6 +329,7 @@ namespace SysBot.Pokemon
             poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. Waiting for a Pokémon...");
 
             SetText(sav, $"Trade Partner found: {tradePartner.TrainerName}\r\nTrading now...");
+
             // Requires at least one trade for this pointer to make sense, so cache it here.
             LinkTradePokemonOffset = await SwitchConnection.PointerAll(Offsets.LinkTradePartnerPokemonPointer, token).ConfigureAwait(false);
 
@@ -664,6 +678,7 @@ namespace SysBot.Pokemon
         private async Task<TradePartnerBS> GetTradePartnerInfo(CancellationToken token)
         {
             var id = await SwitchConnection.PointerPeek(4, Offsets.LinkTradePartnerIDPointer, token).ConfigureAwait(false);
+            
             var name = await SwitchConnection.PointerPeek(TradePartnerBS.MaxByteLengthStringObject, Offsets.LinkTradePartnerNamePointer, token).ConfigureAwait(false);
             return new TradePartnerBS(id, name);
         }

@@ -150,7 +150,9 @@ namespace SysBot.Pokemon.Twitch
                     }
                 }
 
-                var reason = result == "Timeout" ? "Set took too long to generate." : "Pokémon is not legal. Check your Request and remove illegal settings.";
+                var reason = result == "Timeout" ? "Set took too long to generate." : "Pokémon is not legal.";
+                if (result == "Failed")
+                    reason += $" Here is a hint: {AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm)}";
                 msg = $"Skipping trade, @{username}: {reason}";
             }
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -158,7 +160,7 @@ namespace SysBot.Pokemon.Twitch
 #pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogUtil.LogSafe(ex, nameof(TwitchCommandsHelper<T>));
-                msg = $"Skipping trade, @{username}: An unexpected problem occurred.";
+                msg = $"Skipping trade, @{username}: An unexpected problem occurred. Maybe the Pokemon is not yet available in the game.";
             }
             return false;
         }
