@@ -1,50 +1,55 @@
-**RocketsBlackmarket Exclusive:**
-Request **Eggs**!
-Simply use **Egg** as Nickname to request Eggs!
+**************************RocketsBlackmarket Exclusive:**************************
+Request Eggs!
+Simply use Egg as Nickname to request Eggs!
 Example:
-**!trade Charmander (Egg) Shiny: Yes**
+!trade Charmander (Egg) Shiny: Yes
 
-**How to Request Pokemon!**
+Adding PokeRus
+You can add Pokerus: Yes or Pokerus: Cured to your request!
+Example:
+!trade Charizard Shiny: Yes Pokerus: Yes
 
-To Request a Pokemon, write **!trade** in Chat and add your Pokemon. After that, whisper you 8-digit Trade Code to **Bot_RocketGrunt**
+**************************How to Request Pokemon!**************************
+
+To Request a Pokemon, use **!trade** or **!swshtrade** in Chat and add your Pokemon. After that, whisper you 8-digit Trade Code to **Bot_RocketGrunt**
+
+!trade is used for Pokemon Diamond / Pearl
+!swshtrade is used for Pokemon Sword / Shield
+
 Simple Example:
-**!trade Charizard**
+!trade Charizard
 
 Specify the Gender with (F) or (M) after its name.
 Example:
-**!trade Charizard (F)**
+!trade Charizard (F)
 
-To add an Item to your Pokemon, add **@Item** 
+To add an Item to your Pokemon, add @Item 
 Example:
-**!trade Charizard (F) @ Life Orb**
+!trade Charizard (F) @ Life Orb
 
-If you want to make your Pokemon Shiny, simply add **Shiny: Yes**
+If you want to make your Pokemon Shiny, simply add Shiny: Yes
 Example:
-**!trade Charizard (F) @ Life Orb Shiny: Yes**
+!trade Charizard (F) @ Life Orb Shiny: Yes
 
-The same is for Level, Language, PokeBall Ability & EVs:
+The same is for Level, Language, PokeBall, Ability & EVs:
 Example:
-**!trade Charizard (F) @ Life Orb Shiny: Yes EVs: 4 HP / 252 SpA / 252 Spe Ability: Solar Power Language: German Ball: Love Ball Level: 80**
+!trade Charizard (F) @ Life Orb Shiny: Yes EVs: 4 HP / 252 SpA / 252 Spe Ability: Solar Power Language: German Ball: Love Ball Level: 80
 
 Simply add the Nature you want:
-**!trade Charizard (F) @ Life Orb Shiny: Yes EVs: 4 HP / 252 SpA / 252 Spe Language: German Ball: Love Ball Ability: Solar Power Level: 80 Timid Nature**
+!trade Charizard (F) @ Life Orb Shiny: Yes EVs: 4 HP / 252 SpA / 252 Spe Language: German Ball: Love Ball Ability: Solar Power Level: 80 Timid Nature
 
-To Customize Attacks, add them with **- Attack**
+To Customize Attacks, add them with - Attack
 Example:
-**!trade Charizard (F) @ Life Orb Shiny: Yes EVs: 4 HP / 252 SpA / 252 Spe Language: German Ball: Love Ball Ability: Solar Power Level: 80 Timid Nature - Fire Blast - Air Slash - Solar Beam - Focus Blast**
+!trade Charizard (F) @ Life Orb Shiny: Yes EVs: 4 HP / 252 SpA / 252 Spe Language: German Ball: Love Ball Ability: Solar Power Level: 80 Timid Nature - Fire Blast - Air Slash - Solar Beam - Focus Blast
 
-*************Subscriber only Features**************************
-**Another RocketBlacksmarket Exclusive:**
+**************************Subscriber only Features**************************
+Another RocketBlacksmarket Exclusive:
 Request unobtainable Shiny Pokemon with **!specialtrade** and one of these available Pokemon: **Mew, Celebi, Jirachi, Deoxys, Deoxys-A, Deoxys-S, Deoxys-D**. 
 You cannot customize these Pokemon because they would change to illegal and not tradeable!
 Example:
-**!specialtrade Deoxys-A**
+!specialtrade Deoxys-A
 
-**Subscribers have additional Perks for normal trades:**
-By default, **Subscribers** have no Nicknames on requested Pokemon. You can add one yourself with **(Nickname)** right after the Pokemon Name.
-Example:
-**!trade Charizard (Lizzy)**
-
+Subscribers have additional Perks for normal trades:
 Subscribers can also change OT, OTGender, SID & TID to make the Pokemon their own!
 Example:
-**!trade Charizard OT: Johnny OTGender: Male SID: 12345 TID: 54321**
+!trade Charizard OT: Johnny OTGender: Male SID: 12345 TID: 54321
