@@ -6,9 +6,16 @@ namespace SysBot.Pokemon.WinForms
 {
     public static class InitUtil
     {
-        public static void InitializeStubs()
+        public static void InitializeStubs(ProgramMode mode)
         {
-            var sav8 = new SAV8SWSH();
+            SaveFile sav8 = mode switch
+            {
+                ProgramMode.SWSH => new SAV8SWSH(),
+                ProgramMode.BDSP => new SAV8BS(),
+                ProgramMode.LA   => new SAV8LA(),
+                _                => throw new System.ArgumentOutOfRangeException(nameof(mode)),
+            };
+
             SetUpSpriteCreator(sav8);
         }
 

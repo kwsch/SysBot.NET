@@ -7,6 +7,9 @@ namespace SysBot.Pokemon
     /// </summary>
     public static class PokeDataOffsets
     {
+        public const string SwordID = "0100ABF008968000";
+        public const string ShieldID = "01008DB008C2C000";
+
         public const uint BoxStartOffset = 0x45075880;
         public const uint CurrentBoxOffset = 0x450C680E;
         public const uint TrainerDataOffset = 0x45068F18;

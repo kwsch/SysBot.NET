@@ -85,7 +85,8 @@ namespace SysBot.Pokemon
                     return false;
             }
 
-            int[] pkIVList = PKX.ReorderSpeedLast(pk.IVs);
+            int[] pkIVList = pk.IVs;
+            PKX.ReorderSpeedLast(pkIVList);
 
             for (int i = 0; i < 6; i++)
             {
@@ -142,7 +143,11 @@ namespace SysBot.Pokemon
         {
             var set = ShowdownParsing.GetShowdownText(pk);
             if (pk is IRibbonIndex r)
-                set += GetMarkName(r);
+            {
+                var rstring = GetMarkName(r);
+                if (!string.IsNullOrEmpty(rstring))
+                    set += $"\nPokémon found to have **{GetMarkName(r)}**!";
+            }
             return set;
         }
 
@@ -156,7 +161,7 @@ namespace SysBot.Pokemon
             for (var mark = RibbonIndex.MarkLunchtime; mark <= RibbonIndex.MarkSlump; mark++)
             {
                 if (pk.GetRibbon((int)mark))
-                    return $"\nPokémon found to have **{RibbonStrings.GetName($"Ribbon{mark}")}**!";
+                    return RibbonStrings.GetName($"Ribbon{mark}");
             }
             return "";
         }

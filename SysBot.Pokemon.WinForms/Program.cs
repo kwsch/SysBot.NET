@@ -18,11 +18,6 @@ namespace SysBot.Pokemon.WinForms
 #if NETCOREAPP
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
 #endif
-
-#if NETFRAMEWORK
-            InitUtil.InitializeStubs();
-#endif
-
             var cmd = Environment.GetCommandLineArgs();
             var cfg = Array.Find(cmd, z => z.EndsWith(".json"));
             if (cfg != null)

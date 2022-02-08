@@ -146,7 +146,7 @@ namespace SysBot.Pokemon
             await StartGame(config, token).ConfigureAwait(false);
         }
 
-        public async Task Unban(CancellationToken token)
+        public async Task UnSoftBan(CancellationToken token)
         {
             Log("Soft ban detected, unbanning.");
             // Write the float value to 0.

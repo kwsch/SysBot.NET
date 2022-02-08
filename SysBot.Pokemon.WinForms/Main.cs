@@ -45,12 +45,16 @@ namespace SysBot.Pokemon.WinForms
             LoadControls();
             Text = $"{Text} ({Config.Mode})";
             Task.Run(BotMonitor);
+#if NETFRAMEWORK
+            InitUtil.InitializeStubs(Config.Mode);
+#endif
         }
 
         private static IPokeBotRunner GetRunner(ProgramConfig cfg) => cfg.Mode switch
         {
             ProgramMode.SWSH => new PokeBotRunnerImpl<PK8>(cfg.Hub, new BotFactory8()),
             ProgramMode.BDSP => new PokeBotRunnerImpl<PB8>(cfg.Hub, new BotFactory8BS()),
+            ProgramMode.LA => new PokeBotRunnerImpl<PA8>(cfg.Hub, new BotFactory8LA()),
             _ => throw new IndexOutOfRangeException("Unsupported mode."),
         };
 

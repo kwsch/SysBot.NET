@@ -32,6 +32,7 @@ namespace SysBot.Pokemon.WinForms
         {
             this.TC_Main = new System.Windows.Forms.TabControl();
             this.Tab_Bots = new System.Windows.Forms.TabPage();
+            this.CB_Protocol = new System.Windows.Forms.ComboBox();
             this.FLP_Bots = new System.Windows.Forms.FlowLayoutPanel();
             this.TB_IP = new System.Windows.Forms.TextBox();
             this.CB_Routine = new System.Windows.Forms.ComboBox();
@@ -43,7 +44,6 @@ namespace SysBot.Pokemon.WinForms
             this.RTB_Logs = new System.Windows.Forms.RichTextBox();
             this.B_Stop = new System.Windows.Forms.Button();
             this.B_Start = new System.Windows.Forms.Button();
-            this.CB_Protocol = new System.Windows.Forms.ComboBox();
             this.TC_Main.SuspendLayout();
             this.Tab_Bots.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.NUD_Port)).BeginInit();
@@ -77,6 +77,16 @@ namespace SysBot.Pokemon.WinForms
             this.Tab_Bots.TabIndex = 0;
             this.Tab_Bots.Text = "Bots";
             this.Tab_Bots.UseVisualStyleBackColor = true;
+            // 
+            // CB_Protocol
+            // 
+            this.CB_Protocol.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CB_Protocol.FormattingEnabled = true;
+            this.CB_Protocol.Location = new System.Drawing.Point(248, 5);
+            this.CB_Protocol.Name = "CB_Protocol";
+            this.CB_Protocol.Size = new System.Drawing.Size(58, 21);
+            this.CB_Protocol.TabIndex = 10;
+            this.CB_Protocol.SelectedIndexChanged += new System.EventHandler(this.CB_Protocol_SelectedIndexChanged);
             // 
             // FLP_Bots
             // 
@@ -199,16 +209,6 @@ namespace SysBot.Pokemon.WinForms
             this.B_Start.UseVisualStyleBackColor = true;
             this.B_Start.Click += new System.EventHandler(this.B_Start_Click);
             // 
-            // CB_Protocol
-            // 
-            this.CB_Protocol.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CB_Protocol.FormattingEnabled = true;
-            this.CB_Protocol.Location = new System.Drawing.Point(248, 5);
-            this.CB_Protocol.Name = "CB_Protocol";
-            this.CB_Protocol.Size = new System.Drawing.Size(58, 21);
-            this.CB_Protocol.TabIndex = 10;
-            this.CB_Protocol.SelectedIndexChanged += new System.EventHandler(this.CB_Protocol_SelectedIndexChanged);
-            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -218,8 +218,6 @@ namespace SysBot.Pokemon.WinForms
             this.Controls.Add(this.B_Start);
             this.Controls.Add(this.TC_Main);
             this.Icon = global::SysBot.Pokemon.WinForms.Properties.Resources.icon;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
             this.Name = "Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "SysBot: Pokémon";
