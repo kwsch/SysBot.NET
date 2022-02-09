@@ -392,7 +392,7 @@ namespace SysBot.Pokemon
                 tradeCounter++;
 
                 var newEC = await SwitchConnection.ReadBytesAbsoluteAsync(BoxStartOffset, 8, token).ConfigureAwait(false);
-                if (newEC.SequenceEqual(oldEC))
+                if (!newEC.SequenceEqual(oldEC))
                 {
                     await Task.Delay(5_000, token).ConfigureAwait(false);
                     return PokeTradeResult.Success;
