@@ -284,6 +284,8 @@ namespace SysBot.Pokemon
 
             poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. Waiting for a Pokémon...");
 
+            await Task.Delay(2_000, token).ConfigureAwait(false);
+
             if (poke.Type == PokeTradeType.Dump)
             {
                 var result = await ProcessDumpTradeAsync(poke, token).ConfigureAwait(false);
