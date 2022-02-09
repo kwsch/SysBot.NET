@@ -255,8 +255,6 @@ namespace SysBot.Pokemon
             WaitAtBarrierIfApplicable(token);
             await Click(PLUS, 1_000, token).ConfigureAwait(false);
 
-            Hub.Config.Stream.EndEnterCode(this);
-
             poke.TradeSearching(this);
 
             // Wait for a Trainer...
@@ -269,6 +267,8 @@ namespace SysBot.Pokemon
                 await ExitTrade(false, token).ConfigureAwait(false);
                 return PokeTradeResult.NoTrainerFound;
             }
+
+            Hub.Config.Stream.EndEnterCode(this);
 
             var tradePartner = await GetTradePartnerInfo(token).ConfigureAwait(false);
             var trainerNID = await GetTradePartnerNID(TradePartnerNIDOffset, token).ConfigureAwait(false);
