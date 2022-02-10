@@ -4,6 +4,7 @@ using NLog.Targets;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace SysBot.Base
 {
@@ -24,6 +25,8 @@ namespace SysBot.Base
                 ArchiveDateFormat = "yyyy-MM-dd",
                 ArchiveAboveSize = 104857600, // 100MB (never)
                 MaxArchiveFiles = 14, // 2 weeks
+                Encoding = Encoding.Unicode,
+                WriteBom = true,
             };
             config.AddRule(LogLevel.Debug, LogLevel.Fatal, logfile);
             LogManager.Configuration = config;
