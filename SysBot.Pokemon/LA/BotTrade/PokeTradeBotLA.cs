@@ -450,9 +450,10 @@ namespace SysBot.Pokemon
             if (unexpected)
                 Log("Unexpected behavior, recovering position.");
 
+            int ctr = 120_000;
             while (!await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
             {
-                if (await CheckIfSoftBanned(SoftBanOffset, token).ConfigureAwait(false))
+                if (ctr < 0)
                 {
                     await RestartGameLA(token).ConfigureAwait(false);
                     return;
@@ -470,6 +471,8 @@ namespace SysBot.Pokemon
                 await Click(B, 1_000, token).ConfigureAwait(false);
                 if (await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
                     return;
+
+                ctr -= 3_000;
             }
         }
 
