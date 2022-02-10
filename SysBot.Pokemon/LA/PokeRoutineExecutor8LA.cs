@@ -60,6 +60,17 @@ namespace SysBot.Pokemon
             await SwitchConnection.WriteBytesAbsoluteAsync(pkm.EncryptedBoxData, offset, token).ConfigureAwait(false);
         }
 
+        public async Task SetCurrentBox(byte box, CancellationToken token)
+        {
+            await SwitchConnection.PointerPoke(BitConverter.GetBytes(box), Offsets.CurrentBoxPointer, token).ConfigureAwait(false);
+        }
+
+        public async Task<byte> GetCurrentBox(CancellationToken token)
+        {
+            var data = await SwitchConnection.PointerPeek(1, Offsets.CurrentBoxPointer, token).ConfigureAwait(false);
+            return data[0];
+        }
+
         public async Task<SAV8LA> IdentifyTrainer(CancellationToken token)
         {
             // Check title so we can warn if mode is incorrect.

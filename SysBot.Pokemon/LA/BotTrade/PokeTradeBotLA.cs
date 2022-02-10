@@ -125,6 +125,7 @@ namespace SysBot.Pokemon
         {
             var type = Config.CurrentRoutineType;
             int waitCounter = 0;
+            await SetCurrentBox(0, token).ConfigureAwait(false);
             while (!token.IsCancellationRequested && Config.NextRoutineType == type)
             {
                 var (detail, priority) = GetTradeData(type);
