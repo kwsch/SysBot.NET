@@ -304,14 +304,10 @@ namespace SysBot.Pokemon
 
             Log("Checking offered Pokémon.");
             // If we got to here, we can read their offered Pokémon.
-            var offered = await ReadPokemonPointer(Offsets.LinkTradePartnerPokemonPointer, BoxFormatSlotSize, token).ConfigureAwait(false);
-            if (offered.Species <= 0 || !offered.ChecksumValid)
-            {
-                await ExitTrade(false, token).ConfigureAwait(false);
-                return PokeTradeResult.TrainerTooSlow;
-            }
 
-            if (offered.Species < 1 || !offered.ChecksumValid)
+            // Wait for user input... Needs to be different from the previously offered Pokémon.
+            var offered = await ReadUntilPresentPointer(Offsets.LinkTradePartnerPokemonPointer, 3_000, 0_050, BoxFormatSlotSize, token).ConfigureAwait(false);
+            if (offered == null || offered.Species < 1 || !offered.ChecksumValid)
             {
                 Log("Trade ended because trainer offer was rescinded too quickly.");
                 await ExitTrade(false, token).ConfigureAwait(false);
