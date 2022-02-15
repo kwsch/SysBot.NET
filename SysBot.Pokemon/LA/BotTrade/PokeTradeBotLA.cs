@@ -271,6 +271,9 @@ namespace SysBot.Pokemon
 
             Hub.Config.Stream.EndEnterCode(this);
 
+            // Some more time to fully enter the trade.
+            await Task.Delay(1_000, token).ConfigureAwait(false);
+
             var tradePartner = await GetTradePartnerInfo(token).ConfigureAwait(false);
             var trainerNID = await GetTradePartnerNID(TradePartnerNIDOffset, token).ConfigureAwait(false);
             RecordUtil<PokeTradeBot>.Record($"Initiating\t{trainerNID:X16}\t{tradePartner.TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
@@ -284,8 +287,6 @@ namespace SysBot.Pokemon
             }
 
             poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. Waiting for a Pokémon...");
-
-            await Task.Delay(2_000, token).ConfigureAwait(false);
 
             if (poke.Type == PokeTradeType.Dump)
             {
