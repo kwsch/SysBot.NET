@@ -256,6 +256,7 @@ namespace SysBot.Pokemon
                 if (--waitPartner <= 0)
                     return PokeTradeResult.NoTrainerFound;
             }
+            Log("Found a user talking to us!");
 
             // Keep pressing A until TargetTranerParam is loaded (when we hit the box).
             while (!await IsPartnerParamLoaded(token).ConfigureAwait(false) && waitPartner > 0)
@@ -269,6 +270,7 @@ namespace SysBot.Pokemon
                 if (--waitPartner <= 0)
                     return PokeTradeResult.TrainerTooSlow;
             }
+            Log("Entering the box...");
 
             // Still going through dialog and box opening.
             await Task.Delay(3_000, token).ConfigureAwait(false);
@@ -493,6 +495,7 @@ namespace SysBot.Pokemon
             Log("Attempting to open the Y menu.");
             await Click(Y, 1_000, token).ConfigureAwait(false);
             await Click(A, 0_400, token).ConfigureAwait(false);
+            await Click(DDOWN, 0_400, token).ConfigureAwait(false);
             await Click(DDOWN, 0_400, token).ConfigureAwait(false);
             await Click(A, 0_100, token).ConfigureAwait(false);
 
