@@ -9,7 +9,6 @@ namespace SysBot.Pokemon
         {
             PokeRoutineType.FlexTrade or PokeRoutineType.Idle
                 or PokeRoutineType.LinkTrade
-                or PokeRoutineType.Clone
                 or PokeRoutineType.Dump
                 => new PokeTradeBotBS(Hub, cfg),
 
@@ -22,7 +21,6 @@ namespace SysBot.Pokemon
         {
             PokeRoutineType.FlexTrade or PokeRoutineType.Idle
                 or PokeRoutineType.LinkTrade
-                or PokeRoutineType.Clone
                 or PokeRoutineType.Dump
                 => true,
 

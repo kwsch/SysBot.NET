@@ -10,7 +10,7 @@ namespace SysBot.Pokemon
         public override IReadOnlyList<long> LinkTradePartnerNamePointer { get; } = new long[] { 0x4E37770, 0xB8, 0x30, 0x110, 0x28, 0x90, 0x20, 0x0 };
         public override IReadOnlyList<long> LinkTradePartnerIDPointer { get; } = new long[] { 0x4E37770, 0xB8, 0x30, 0x110, 0x28, 0x90, 0x10 };
         public override IReadOnlyList<long> LinkTradePartnerParamPointer { get; } = new long[] { 0x4E37770, 0xB8, 0x30, 0x110, 0x28, 0x90 };
-        public override IReadOnlyList<long> LinkTradePartnerNIDPointer { get; } = new long[] { 0x4FFE810, 0x70, 0x168, 0x40 }; // Not updated until multi-user Union Room; limited penalties available.
+        public override IReadOnlyList<long> LinkTradePartnerNIDPointer { get; } = new long[] { 0x4FFE810, 0x70, 0x168, 0x40 }; // todo for multi-user Union Room; limited penalties available.
 
         public override IReadOnlyList<long> SceneIDPointer { get; } = new long[] { 0x4E2BC08, 0xB8, 0x18 };
 

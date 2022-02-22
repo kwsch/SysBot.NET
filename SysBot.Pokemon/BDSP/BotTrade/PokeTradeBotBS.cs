@@ -360,8 +360,6 @@ namespace SysBot.Pokemon
             var counts = TradeSettings;
             if (poke.Type == PokeTradeType.Random)
                 counts.AddCompletedDistribution();
-            else if (poke.Type == PokeTradeType.Clone)
-                counts.AddCompletedClones();
             else
                 counts.AddCompletedTrade();
 
@@ -369,7 +367,7 @@ namespace SysBot.Pokemon
             {
                 var subfolder = poke.Type.ToString().ToLower();
                 DumpPokemon(DumpSetting.DumpFolder, subfolder, received); // received by bot
-                if (poke.Type is PokeTradeType.Specific or PokeTradeType.Clone)
+                if (poke.Type is PokeTradeType.Specific)
                     DumpPokemon(DumpSetting.DumpFolder, "traded", toSend); // sent to partner
             }
         }
@@ -651,61 +649,8 @@ namespace SysBot.Pokemon
             return poke.Type switch
             {
                 PokeTradeType.Random => await HandleRandomLedy(sav, poke, offered, toSend, partnerID, token).ConfigureAwait(false),
-                PokeTradeType.Clone => await HandleClone(sav, poke, offered, token).ConfigureAwait(false),
                 _ => (toSend, PokeTradeResult.Success),
             };
-        }
-
-        private async Task<(PB8 toSend, PokeTradeResult check)> HandleClone(SAV8BS sav, PokeTradeDetail<PB8> poke, PB8 offered, CancellationToken token)
-        {
-            if (Hub.Config.Discord.ReturnPKMs)
-                poke.SendNotification(this, offered, "Here's what you showed me!");
-
-            var la = new LegalityAnalysis(offered);
-            if (!la.Valid)
-            {
-                Log($"Clone request (from {poke.Trainer.TrainerName}) has detected an invalid Pokémon: {(Species)offered.Species}.");
-                if (DumpSetting.Dump)
-                    DumpPokemon(DumpSetting.DumpFolder, "hacked", offered);
-
-                var report = la.Report();
-                Log(report);
-                poke.SendNotification(this, "This Pokémon is not legal per PKHeX's legality checks. I am forbidden from cloning this. Exiting trade.");
-                poke.SendNotification(this, report);
-
-                return (offered, PokeTradeResult.IllegalTrade);
-            }
-
-            // Inject the shown Pokémon.
-            var clone = (PB8)offered.Clone();
-            if (Hub.Config.Legality.ResetHOMETracker)
-                clone.Tracker = 0;
-
-            poke.SendNotification(this, $"**Cloned your {(Species)clone.Species}!**\nNow press B to cancel your offer and trade me a Pokémon you don't want.");
-            Log($"Cloned a {(Species)clone.Species}. Waiting for user to change their Pokémon...");
-
-            var partnerFound = await ReadUntilChanged(LinkTradePokemonOffset, lastOffered, 15_000, 0_200, false, true, token).ConfigureAwait(false);
-            if (!partnerFound)
-            {
-                // They get one more chance.
-                poke.SendNotification(this, "**HEY CHANGE IT NOW OR I AM LEAVING!!!**");
-                partnerFound = await ReadUntilChanged(LinkTradePokemonOffset, lastOffered, 15_000, 0_200, false, true, token).ConfigureAwait(false);
-            }
-
-            var pk2 = await ReadPokemon(LinkTradePokemonOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
-            if (!partnerFound || !pk2.ChecksumValid || SearchUtil.HashByDetails(pk2) == SearchUtil.HashByDetails(offered))
-            {
-                Log("Trade partner did not change their Pokémon.");
-                return (offered, PokeTradeResult.TrainerTooSlow);
-            }
-
-            await SetBoxPokemonAbsolute(BoxStartOffset, clone, token, sav).ConfigureAwait(false);
-            await Click(A, 0_800, token).ConfigureAwait(false);
-
-            for (int i = 0; i < 5; i++)
-                await Click(A, 0_500, token).ConfigureAwait(false);
-
-            return (clone, PokeTradeResult.Success);
         }
 
         private async Task<(PB8 toSend, PokeTradeResult check)> HandleRandomLedy(SAV8BS sav, PokeTradeDetail<PB8> poke, PB8 offered, PB8 toSend, PartnerDataHolder partner, CancellationToken token)
