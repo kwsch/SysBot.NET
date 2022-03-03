@@ -218,13 +218,6 @@ namespace SysBot.Pokemon
             Log("Back in the overworld!");
         }
 
-        private async Task<uint> GetSceneID(CancellationToken token)
-        {
-            var xVal = await SwitchConnection.PointerPeek(1, Offsets.SceneIDPointer, token).ConfigureAwait(false);
-            var xParsed = BitConverter.ToUInt32(xVal, 0);
-            return xParsed;
-        }
-
         private async Task<bool> IsSceneID(uint expected, CancellationToken token)
         {
             var byt = await SwitchConnection.PointerPeek(1, Offsets.SceneIDPointer, token).ConfigureAwait(false);

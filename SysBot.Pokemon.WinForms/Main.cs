@@ -67,9 +67,7 @@ namespace SysBot.Pokemon.WinForms
                     foreach (var c in FLP_Bots.Controls.OfType<BotController>())
                         c.ReadState();
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch
-#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     // Updating the collection by adding/removing bots will change the iterator
                     // Can try a for-loop or ToArray, but those still don't prevent concurrent mutations of the array.

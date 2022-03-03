@@ -40,7 +40,7 @@ namespace SysBot.Pokemon.WinForms
             }
         }
 
-        private void RcMenuOnOpening(object sender, CancelEventArgs e)
+        private void RcMenuOnOpening(object? sender, CancelEventArgs? e)
         {
             if (Runner == null)
                 return;
