@@ -22,6 +22,9 @@ namespace SysBot.Pokemon
         [Category(Monitoring), Description("When a person using multiple Discord/Twitch accounts is detected, the echo message will include their Nintendo Account ID.")]
         public bool EchoNintendoOnlineIDMulti { get; set; } = true;
 
+        [Category(Monitoring), Description("When a person sending to multiple in-game accounts is detected, the echo message will include their Nintendo Account ID.")]
+        public bool EchoNintendoOnlineIDMultiRecipients { get; set; } = true;
+
         [Category(Monitoring), Description("When a person using multiple Discord/Twitch accounts is detected, this action is taken.")]
         public TradeAbuseAction TradeAbuseAction { get; set; } = TradeAbuseAction.Quit;
 
@@ -30,6 +33,9 @@ namespace SysBot.Pokemon
 
         [Category(Monitoring), Description("If not empty, the provided string will be appended to Echo alerts to notify whomever you specify when a user is found using multiple accounts. For Discord, use <@userIDnumber> to mention.")]
         public string MultiAbuseEchoMention { get; set; } = string.Empty;
+
+        [Category(Monitoring), Description("If not empty, the provided string will be appended to Echo alerts to notify whomever you specify when a user is found sending to multiple players in-game. For Discord, use <@userIDnumber> to mention.")]
+        public string MultiRecipientEchoMention { get; set; } = string.Empty;
 
         [Category(Monitoring), Description("Banned online IDs that will trigger trade exit or in-game block.")]
         public RemoteControlAccessList BannedIDs { get; set; } = new();

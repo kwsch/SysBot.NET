@@ -16,8 +16,13 @@ namespace SysBot.Pokemon
     {
         private readonly PokeTradeHub<PB8> Hub;
         private readonly TradeSettings TradeSettings;
+        private readonly TradeAbuseSettings AbuseSettings;
 
         public ICountSettings Counts => TradeSettings;
+
+        private static readonly TrackedUserLog PreviousUsers = new();
+        private static readonly TrackedUserLog PreviousUsersDistribution = new();
+        private static readonly TrackedUserLog EncounteredUsers = new();
 
         /// <summary>
         /// Folder to dump received trade data to.
@@ -39,6 +44,7 @@ namespace SysBot.Pokemon
         {
             Hub = hub;
             TradeSettings = hub.Config.Trade;
+            AbuseSettings = hub.Config.TradeAbuse;
             DumpSetting = hub.Config.Folder;
             lastOffered = new byte[8];
         }
@@ -276,8 +282,13 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.TrainerTooSlow;
 
             var tradePartner = await GetTradePartnerInfo(token).ConfigureAwait(false);
-            //var trainerNID = await GetTradePartnerNID(token).ConfigureAwait(false);
+            var trainerNID = GetFakeNID(tradePartner.TrainerName, tradePartner.TrainerID);
+            RecordUtil<PokeTradeBot>.Record($"Initiating\t{trainerNID:X16}\t{tradePartner.TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
             Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7}");
+
+            var partnerCheck = CheckPartnerReputation(poke, trainerNID, tradePartner.TrainerName);
+            if (partnerCheck != PokeTradeResult.Success)
+                return PokeTradeResult.SuspiciousActivity;
 
             await Task.Delay(2_000, token).ConfigureAwait(false);
 
@@ -349,6 +360,12 @@ namespace SysBot.Pokemon
             lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
 
             return PokeTradeResult.Success;
+        }
+
+        private static ulong GetFakeNID(string trainerName, uint trainerID)
+        {
+            var nameHash = trainerName.GetHashCode();
+            return (ulong)(trainerID << 32) + (uint)nameHash;
         }
 
         private void UpdateCountsAndExport(PokeTradeDetail<PB8> poke, PB8 received, PB8 toSend)
@@ -731,5 +748,101 @@ namespace SysBot.Pokemon
                 Log($"Left the Barrier. Count: {Hub.BotSync.Barrier.ParticipantCount}");
             }
         }
+        private PokeTradeResult CheckPartnerReputation(PokeTradeDetail<PB8> poke, ulong TrainerNID, string TrainerName)
+        {
+            bool quit = false;
+            var user = poke.Trainer;
+            var isDistribution = poke.Type == PokeTradeType.Random;
+            var useridmsg = isDistribution ? "" : $" ({user.ID})";
+            var list = isDistribution ? PreviousUsersDistribution : PreviousUsers;
+
+            var cooldown = list.TryGetPrevious(TrainerNID);
+            if (cooldown != null)
+            {
+                var delta = DateTime.Now - cooldown.Time;
+                Log($"Last saw {user.TrainerName} {delta.TotalMinutes:F1} minutes ago (OT: {TrainerName}).");
+
+                var cd = AbuseSettings.TradeCooldown;
+                if (cd != 0 && TimeSpan.FromMinutes(cd) > delta)
+                {
+                    poke.Notifier.SendNotification(this, poke, "You have ignored the trade cooldown set by the bot owner. The owner has been notified.");
+                    var msg = $"Found {user.TrainerName}{useridmsg} ignoring the {cd} minute trade cooldown. Last encountered {delta.TotalMinutes:F1} minutes ago.";
+                    if (AbuseSettings.EchoNintendoOnlineIDCooldown)
+                        msg += $"\nID: {TrainerNID}";
+                    if (!string.IsNullOrWhiteSpace(AbuseSettings.CooldownAbuseEchoMention))
+                        msg = $"{AbuseSettings.CooldownAbuseEchoMention} {msg}";
+                    EchoUtil.Echo(msg);
+                    quit = true;
+                }
+            }
+
+            if (!isDistribution)
+            {
+                var previousEncounter = EncounteredUsers.TryRegister(poke.Trainer.ID, TrainerName, poke.Trainer.ID);
+                if (previousEncounter != null && previousEncounter.Name != TrainerName)
+                {
+                    var msg = $"Found {user.TrainerName}{useridmsg} sending to multiple in-game players. Previous OT: {previousEncounter.Name}, Current OT: {TrainerName}";
+                    if (AbuseSettings.EchoNintendoOnlineIDMultiRecipients)
+                        msg += $"\nID: {TrainerNID}";
+                    if (!string.IsNullOrWhiteSpace(AbuseSettings.MultiRecipientEchoMention))
+                        msg = $"{AbuseSettings.MultiRecipientEchoMention} {msg}";
+                    EchoUtil.Echo(msg);
+                    quit = true;
+                }
+            }
+
+            if (quit)
+                return PokeTradeResult.SuspiciousActivity;
+
+            // Try registering the partner in our list of recently seen.
+            // Get back the details of their previous interaction.
+            var previous = isDistribution
+                ? list.TryRegister(TrainerNID, TrainerName)
+                : list.TryRegister(TrainerNID, TrainerName, poke.Trainer.ID);
+            if (previous != null && previous.NetworkID != TrainerNID && !isDistribution)
+            {
+                var delta = DateTime.Now - previous.Time;
+                if (delta > TimeSpan.FromMinutes(AbuseSettings.TradeAbuseExpiration) && AbuseSettings.TradeAbuseAction != TradeAbuseAction.Ignore)
+                {
+                    if (AbuseSettings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
+                    {
+                        AbuseSettings.BannedIDs.AddIfNew(new[] { GetReference(TrainerName, TrainerNID, "in-game block for multiple accounts") });
+                        Log($"Added {TrainerNID} to the BannedIDs list.");
+                    }
+                    quit = true;
+                }
+
+                var msg = $"Found {user.TrainerName}{useridmsg} using multiple accounts.\nPreviously encountered {previous.Name} ({previous.RemoteID}) {delta.TotalMinutes:F1} minutes ago on OT: {TrainerName}.";
+                if (AbuseSettings.EchoNintendoOnlineIDMulti)
+                    msg += $"\nID: {TrainerNID}";
+                if (!string.IsNullOrWhiteSpace(AbuseSettings.MultiAbuseEchoMention))
+                    msg = $"{AbuseSettings.MultiAbuseEchoMention} {msg}";
+                EchoUtil.Echo(msg);
+            }
+
+            if (quit)
+                return PokeTradeResult.SuspiciousActivity;
+
+            var entry = AbuseSettings.BannedIDs.List.Find(z => z.ID == TrainerNID);
+            if (entry != null)
+            {
+                var msg = $"{user.TrainerName}{useridmsg} is a banned user, and was encountered in-game using OT: {TrainerName}.";
+                if (!string.IsNullOrWhiteSpace(entry.Comment))
+                    msg += $"\nUser was banned for: {entry.Comment}";
+                if (!string.IsNullOrWhiteSpace(AbuseSettings.BannedIDMatchEchoMention))
+                    msg = $"{AbuseSettings.BannedIDMatchEchoMention} {msg}";
+                EchoUtil.Echo(msg);
+                return PokeTradeResult.SuspiciousActivity;
+            }
+
+            return PokeTradeResult.Success;
+        }
+
+        private static RemoteControlAccess GetReference(string name, ulong id, string comment) => new()
+        {
+            ID = id,
+            Name = name,
+            Comment = $"Added automatically on {DateTime.Now:yyyy.MM.dd-hh:mm:ss} ({comment})",
+        };
     }
 }

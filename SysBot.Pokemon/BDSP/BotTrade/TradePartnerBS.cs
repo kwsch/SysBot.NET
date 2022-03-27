@@ -8,6 +8,7 @@ namespace SysBot.Pokemon
     {
         public string TID7 { get; }
         public string SID7 { get; }
+        public uint TrainerID { get; }
         public string TrainerName { get; }
 
         public TradePartnerBS(byte[] TIDSID, byte[] trainerNameObject)
@@ -16,6 +17,7 @@ namespace SysBot.Pokemon
             var tidsid = BitConverter.ToUInt32(TIDSID, 0);
             TID7 = $"{tidsid % 1_000_000:000000}";
             SID7 = $"{tidsid / 1_000_000:0000}";
+            TrainerID = tidsid;
 
             TrainerName = ReadStringFromRAMObject(trainerNameObject);
         }

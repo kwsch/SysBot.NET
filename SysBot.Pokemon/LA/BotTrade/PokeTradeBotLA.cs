@@ -22,6 +22,7 @@ namespace SysBot.Pokemon
 
         private static readonly TrackedUserLog PreviousUsers = new();
         private static readonly TrackedUserLog PreviousUsersDistribution = new();
+        private static readonly TrackedUserLog EncounteredUsers = new();
 
         /// <summary>
         /// Folder to dump received trade data to.
@@ -740,6 +741,24 @@ namespace SysBot.Pokemon
                     quit = true;
                 }
             }
+
+            if (!isDistribution)
+            {
+                var previousEncounter = EncounteredUsers.TryRegister(poke.Trainer.ID, TrainerName, poke.Trainer.ID);
+                if (previousEncounter != null && previousEncounter.Name != TrainerName)
+                {
+                    var msg = $"Found {user.TrainerName}{useridmsg} sending to multiple in-game players. Previous OT: {previousEncounter.Name}, Current OT: {TrainerName}";
+                    if (AbuseSettings.EchoNintendoOnlineIDMultiRecipients)
+                        msg += $"\nID: {TrainerNID}";
+                    if (!string.IsNullOrWhiteSpace(AbuseSettings.MultiRecipientEchoMention))
+                        msg = $"{AbuseSettings.MultiRecipientEchoMention} {msg}";
+                    EchoUtil.Echo(msg);
+                    quit = true;
+                }
+            }
+
+            if (quit)
+                return PokeTradeResult.SuspiciousActivity;
 
             // Try registering the partner in our list of recently seen.
             // Get back the details of their previous interaction.
