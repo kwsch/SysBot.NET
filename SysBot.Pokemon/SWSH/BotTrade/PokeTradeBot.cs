@@ -692,8 +692,9 @@ namespace SysBot.Pokemon
                 var verbose = la.Report(true);
                 Log($"Shown Pokémon is: {(la.Valid ? "Valid" : "Invalid")}.");
 
-                detail.SendNotification(this, pk, verbose);
                 ctr++;
+                var msg = Hub.Config.Trade.DumpTradeLegalityCheck ? verbose : $"File {ctr}";
+                detail.SendNotification(this, pk, msg);
             }
 
             Log($"Ended Dump loop after processing {ctr} Pokémon.");

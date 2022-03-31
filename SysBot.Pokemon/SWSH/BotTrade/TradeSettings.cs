@@ -23,11 +23,14 @@ namespace SysBot.Pokemon
         [Category(TradeCode), Description("Maximum Link Code.")]
         public int MaxTradeCode { get; set; } = 8199;
 
-        [Category(Dumping), Description("Link Trade: Dumping routine will stop after a maximum number of dumps from a single user.")]
+        [Category(Dumping), Description("Dump Trade: Dumping routine will stop after a maximum number of dumps from a single user.")]
         public int MaxDumpsPerTrade { get; set; } = 20;
 
-        [Category(Dumping), Description("Link Trade: Dumping routine will stop after spending x seconds in trade.")]
+        [Category(Dumping), Description("Dump Trade: Dumping routine will stop after spending x seconds in trade.")]
         public int MaxDumpTradeTime { get; set; } = 180;
+
+        [Category(Dumping), Description("Dump Trade: Dumping routine will stop after spending x seconds in trade.")]
+        public bool DumpTradeLegalityCheck { get; set; } = true;
 
         [Category(TradeConfig), Description("When enabled, the screen will be turned off during normal bot loop operation to save power.")]
         public bool ScreenOff { get; set; } = false;
