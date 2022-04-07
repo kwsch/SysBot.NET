@@ -32,9 +32,6 @@ namespace SysBot.Pokemon.Discord
         private readonly CommandService _commands;
         private readonly IServiceProvider _services;
 
-        // Bot listens to channel messages to reply with a ShowdownSet whenever a PKM file is attached (not with a command).
-        private bool ConvertPKMToShowdownSet { get; } = true;
-
         // Track loading of Echo/Logging channels so they aren't loaded multiple times.
         private bool MessageChannelsLoaded { get; set; }
 
@@ -195,10 +192,15 @@ namespace SysBot.Pokemon.Discord
         private async Task TryHandleMessageAsync(SocketMessage msg)
         {
             // should this be a service?
-            if (msg.Attachments.Count > 0 && ConvertPKMToShowdownSet)
+            if (msg.Attachments.Count > 0)
             {
-                foreach (var att in msg.Attachments)
-                    await msg.Channel.RepostPKMAsShowdownAsync(att).ConfigureAwait(false);
+                var mgr = Manager;
+                var cfg = mgr.Config;
+                if (cfg.ConvertPKMToShowdownSet && (cfg.ConvertPKMReplyAnyChannel || mgr.CanUseCommandChannel(msg.Channel.Id)))
+                {
+                    foreach (var att in msg.Attachments)
+                        await msg.Channel.RepostPKMAsShowdownAsync(att).ConfigureAwait(false);
+                }
             }
         }
 
