@@ -42,6 +42,7 @@ namespace SysBot.Pokemon.WinForms
                 Config.Hub.Folder.CreateDefaults(Program.WorkingDirectory);
             }
 
+            RTB_Logs.MaxLength = 32_767; // character length
             LoadControls();
             Text = $"{Text} ({Config.Mode})";
             Task.Run(BotMonitor);
@@ -108,14 +109,22 @@ namespace SysBot.Pokemon.WinForms
                 UpdateLog(line);
         }
 
+        private readonly object _logLock = new();
+
         private void UpdateLog(string line)
         {
-            // ghetto truncate
-            if (RTB_Logs.Lines.Length > 99_999)
-                RTB_Logs.Lines = RTB_Logs.Lines.Skip(25_0000).ToArray();
+            lock (_logLock)
+            {
+                // ghetto truncate
+                var rtb = RTB_Logs;
+                var text = rtb.Text;
+                var max = rtb.MaxLength;
+                if (text.Length + line.Length + 2 >= max)
+                    rtb.Text = text[(max / 4)..];
 
-            RTB_Logs.AppendText(line);
-            RTB_Logs.ScrollToCaret();
+                rtb.AppendText(line);
+                rtb.ScrollToCaret();
+            }
         }
 
         private ProgramConfig GetCurrentConfiguration()
