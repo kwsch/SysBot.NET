@@ -423,13 +423,26 @@ namespace SysBot.Pokemon
                 var previousEncounter = EncounteredUsers.TryRegister(poke.Trainer.ID, TrainerName, poke.Trainer.ID);
                 if (previousEncounter != null && previousEncounter.Name != TrainerName)
                 {
+                    if (AbuseSettings.TradeAbuseAction != TradeAbuseAction.Ignore)
+                    {
+                        if (AbuseSettings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
+                        {
+                            await BlockUser(token).ConfigureAwait(false);
+                            if (AbuseSettings.BanIDWhenBlockingUser)
+                            {
+                                AbuseSettings.BannedIDs.AddIfNew(new[] { GetReference(TrainerName, TrainerNID, "in-game block for sending to multiple in-game players") });
+                                Log($"Added {TrainerNID} to the BannedIDs list.");
+                            }
+                        }
+                        quit = true;
+                    }
+
                     var msg = $"Found {user.TrainerName}{useridmsg} sending to multiple in-game players. Previous OT: {previousEncounter.Name}, Current OT: {TrainerName}";
                     if (AbuseSettings.EchoNintendoOnlineIDMultiRecipients)
                         msg += $"\nID: {TrainerNID}";
                     if (!string.IsNullOrWhiteSpace(AbuseSettings.MultiRecipientEchoMention))
                         msg = $"{AbuseSettings.MultiRecipientEchoMention} {msg}";
                     EchoUtil.Echo(msg);
-                    quit = true;
                 }
             }
 
