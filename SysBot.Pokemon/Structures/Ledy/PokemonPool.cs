@@ -69,11 +69,11 @@ namespace SysBot.Pokemon
             foreach (var file in matchFiles)
             {
                 var data = File.ReadAllBytes(file);
-                var pkm = PKMConverter.GetPKMfromBytes(data);
+                var pkm = EntityFormat.GetFromBytes(data);
                 if (pkm is null)
                     continue;
                 if (pkm is not T)
-                    pkm = PKMConverter.ConvertToType(pkm, typeof(T), out _);
+                    pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _);
                 if (pkm is not T dest)
                     continue;
 

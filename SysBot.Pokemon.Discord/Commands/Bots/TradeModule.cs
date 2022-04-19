@@ -63,7 +63,7 @@ namespace SysBot.Pokemon.Discord
                 var pkm = sav.GetLegal(template, out var result);
                 var la = new LegalityAnalysis(pkm);
                 var spec = GameInfo.Strings.Species[template.Species];
-                pkm = PKMConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
+                pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
                 if (pkm is not T pk || !la.Valid)
                 {
                     var reason = result == "Timeout" ? $"That {spec} set took too long to generate." : $"I wasn't able to create a {spec} from that set.";
@@ -183,7 +183,7 @@ namespace SysBot.Pokemon.Discord
             {
                 null => null,
                 T pk => pk,
-                _ => PKMConverter.ConvertToType(dl.Data, typeof(T), out _) as T,
+                _ => EntityConverter.ConvertToType(dl.Data, typeof(T), out _) as T,
             };
         }
 

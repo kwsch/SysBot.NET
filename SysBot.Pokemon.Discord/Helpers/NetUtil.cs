@@ -17,7 +17,7 @@ namespace SysBot.Pokemon.Discord
         public static async Task<Download<PKM>> DownloadPKMAsync(IAttachment att)
         {
             var result = new Download<PKM> { SanitizedFileName = Format.Sanitize(att.Filename) };
-            if (!PKX.IsPKM(att.Size))
+            if (!EntityDetection.IsSizePlausible(att.Size))
             {
                 result.ErrorMessage = $"{result.SanitizedFileName}: Invalid size.";
                 return result;
@@ -27,7 +27,7 @@ namespace SysBot.Pokemon.Discord
 
             // Download the resource and load the bytes into a buffer.
             var buffer = await DownloadFromUrlAsync(url).ConfigureAwait(false);
-            var pkm = PKMConverter.GetPKMfromBytes(buffer, result.SanitizedFileName.Contains("pk6") ? 6 : 7);
+            var pkm = EntityFormat.GetFromBytes(buffer, result.SanitizedFileName.Contains("pk6") ? 6 : 7);
             if (pkm == null)
             {
                 result.ErrorMessage = $"{result.SanitizedFileName}: Invalid pkm attachment.";
