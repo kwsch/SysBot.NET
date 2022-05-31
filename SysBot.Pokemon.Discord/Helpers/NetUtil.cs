@@ -27,7 +27,8 @@ namespace SysBot.Pokemon.Discord
 
             // Download the resource and load the bytes into a buffer.
             var buffer = await DownloadFromUrlAsync(url).ConfigureAwait(false);
-            var pkm = EntityFormat.GetFromBytes(buffer, result.SanitizedFileName.Contains("pk6") ? 6 : 7);
+            var prefer = EntityFileExtension.GetContextFromExtension(result.SanitizedFileName, EntityContext.None);
+            var pkm = EntityFormat.GetFromBytes(buffer, prefer);
             if (pkm == null)
             {
                 result.ErrorMessage = $"{result.SanitizedFileName}: Invalid pkm attachment.";

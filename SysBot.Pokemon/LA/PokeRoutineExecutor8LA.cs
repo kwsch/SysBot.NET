@@ -51,8 +51,7 @@ namespace SysBot.Pokemon
             if (sav != null)
             {
                 // Update PKM to the current save's handler data
-                DateTime Date = DateTime.Now;
-                pkm.Trade(sav, Date.Day, Date.Month, Date.Year);
+                pkm.Trade(sav);
                 pkm.RefreshChecksum();
             }
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Z3;
 using PKHeX.Core;
 using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -8,7 +9,7 @@ namespace SysBot.Pokemon.Z3
 {
     public static class Z3Search
     {
-        public static SeedSearchResult GetFirstSeed(uint ec, uint pid, int[] ivs, SeedCheckResults mode)
+        public static SeedSearchResult GetFirstSeed(uint ec, uint pid, Span<int> ivs, SeedCheckResults mode)
         {
             var seeds = GetSeeds(ec, pid);
             bool hasClosest = false;
@@ -30,7 +31,7 @@ namespace SysBot.Pokemon.Z3
             return SeedSearchResult.None;
         }
 
-        public static IList<SeedSearchResult> GetAllSeeds(uint ec, uint pid, int[] ivs, SeedCheckResults mode)
+        public static IList<SeedSearchResult> GetAllSeeds(uint ec, uint pid, Span<int> ivs, SeedCheckResults mode)
         {
             var result = new List<SeedSearchResult>();
             var seeds = GetSeeds(ec, pid);
@@ -138,7 +139,7 @@ namespace SysBot.Pokemon.Z3
             return solver.Model;
         }
 
-        public static bool IsMatch(ulong seed, int[] ivs, int fixed_ivs)
+        public static bool IsMatch(ulong seed, Span<int> ivs, int fixed_ivs)
         {
             var rng = new Xoroshiro128Plus(seed);
             rng.NextInt(); // EC
@@ -147,10 +148,10 @@ namespace SysBot.Pokemon.Z3
             int[] check_ivs = { -1, -1, -1, -1, -1, -1 };
             for (int i = 0; i < fixed_ivs; i++)
             {
-                uint slot;
+                int slot;
                 do
                 {
-                    slot = (uint)rng.NextInt(6);
+                    slot = (int)rng.NextInt(6);
                 } while (check_ivs[slot] != -1);
 
                 if (ivs[slot] != 31)

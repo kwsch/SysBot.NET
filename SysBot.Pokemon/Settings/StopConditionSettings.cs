@@ -85,8 +85,10 @@ namespace SysBot.Pokemon
                     return false;
             }
 
-            int[] pkIVList = pk.IVs;
-            PKX.ReorderSpeedLast(pkIVList);
+            // Reorder the speed to be last.
+            Span<int> pkIVList = stackalloc int[6];
+            pk.GetIVs(pkIVList);
+            (pkIVList[5], pkIVList[3], pkIVList[4]) = (pkIVList[3], pkIVList[4], pkIVList[5]);
 
             for (int i = 0; i < 6; i++)
             {

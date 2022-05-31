@@ -1,4 +1,5 @@
 ﻿using PKHeX.Core;
+using System;
 
 namespace SysBot.Pokemon.Z3
 {
@@ -8,8 +9,11 @@ namespace SysBot.Pokemon.Z3
         {
             var ec = pkm.EncryptionConstant;
             var pid = pkm.PID;
-            int[] IVs = pkm.IVs;
-            PKX.ReorderSpeedLast(IVs);
+
+            // Reorder the speed to be last.
+            Span<int> IVs = stackalloc int[6];
+            pkm.GetIVs(IVs);
+            (IVs[5], IVs[3], IVs[4]) = (IVs[3], IVs[4], IVs[5]);
 
             if (settings.ShowAllZ3Results)
             {
