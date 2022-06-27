@@ -70,14 +70,21 @@ namespace SysBot.Pokemon.Discord
         [Summary("Leaves guild based on supplied ID.")]
         [RequireOwner]
         // ReSharper disable once UnusedParameter.Global
-        public async Task LeaveGuild(string userInput = "1234")
+        public async Task LeaveGuild(string userInput)
         {
-            if (!ulong.TryParse(userInput, out ulong id) || id <= 999999999999999)
+            if (!ulong.TryParse(userInput, out ulong id))
             {
                 await ReplyAsync("Please provide a valid Guild ID.").ConfigureAwait(false);
                 return;
             }
+
             var guild = Context.Client.Guilds.FirstOrDefault(x => x.Id == id);
+            if (guild is null)
+            {
+                await ReplyAsync($"Provided input ({userInput}) is not a valid guild ID or the bot is not in the specified guild.").ConfigureAwait(false);
+                return;
+            }
+
             await ReplyAsync($"Leaving {guild}.").ConfigureAwait(false);
             await guild.LeaveAsync().ConfigureAwait(false);
         }
