@@ -297,20 +297,9 @@ namespace SysBot.Pokemon
 
         public async Task<bool> IsOnOverworld(PokeTradeHubConfig config, CancellationToken token)
         {
-            // Uses CurrentScreenOffset and compares the value to CurrentScreen_Overworld.
-            if (config.ScreenDetection == ScreenDetectionMode.Original)
-            {
-                var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
-                var dataint = BitConverter.ToUInt32(data, 0);
-                return dataint is CurrentScreen_Overworld1 or CurrentScreen_Overworld2;
-            }
             // Uses an appropriate OverworldOffset for the console language.
-            if (config.ScreenDetection == ScreenDetectionMode.ConsoleLanguageSpecific)
-            {
-                var data = await Connection.ReadBytesAsync(GetOverworldOffset(config.ConsoleLanguage), 1, token).ConfigureAwait(false);
-                return data[0] == 1;
-            }
-            return false;
+            var data = await Connection.ReadBytesAsync(GetOverworldOffset(config.ConsoleLanguage), 1, token).ConfigureAwait(false);
+            return data[0] == 1;
         }
 
         public async Task<TextSpeedOption> GetTextSpeed(CancellationToken token)

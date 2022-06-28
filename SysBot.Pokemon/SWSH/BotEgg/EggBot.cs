@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using SysBot.Base;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Base.SwitchStick;
+using static SysBot.Pokemon.PokeDataOffsets;
 
 namespace SysBot.Pokemon
 {
@@ -14,7 +15,6 @@ namespace SysBot.Pokemon
         private readonly IDumper DumpSetting;
         private readonly int[] DesiredMinIVs;
         private readonly int[] DesiredMaxIVs;
-        private const SwordShieldDaycare Location = SwordShieldDaycare.Route5;
         private readonly EggSettings Settings;
         public ICountSettings Counts => Settings;
 
@@ -161,7 +161,7 @@ namespace SysBot.Pokemon
             int attempts = 0;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.EggFetch)
             {
-                await SetEggStepCounter(Location, token).ConfigureAwait(false);
+                await SetEggStepCounter(token).ConfigureAwait(false);
 
                 // Walk Diagonally Left
                 await SetStick(LEFT, -19000, 19000, 0_500, token).ConfigureAwait(false);
@@ -171,7 +171,7 @@ namespace SysBot.Pokemon
                 await SetStick(LEFT, 19000, 19000, 0_550, token).ConfigureAwait(false);
                 await SetStick(LEFT, 0, 0, 500, token).ConfigureAwait(false); // reset
 
-                bool eggReady = await IsEggReady(Location, token).ConfigureAwait(false);
+                bool eggReady = await IsEggReady(token).ConfigureAwait(false);
                 if (eggReady)
                     return attempts;
 
@@ -186,22 +186,20 @@ namespace SysBot.Pokemon
             return -1; // aborted
         }
 
-        public async Task<bool> IsEggReady(SwordShieldDaycare daycare, CancellationToken token)
+        public async Task<bool> IsEggReady(CancellationToken token)
         {
-            var ofs = PokeDataOffsets.GetDaycareEggIsReadyOffset(daycare);
             // Read a single byte of the Daycare metadata to check the IsEggReady flag.
-            var data = await Connection.ReadBytesAsync(ofs, 1, token).ConfigureAwait(false);
+            var data = await Connection.ReadBytesAsync(DayCare_Route5_Egg_Is_Ready, 1, token).ConfigureAwait(false);
             return data[0] == 1;
         }
 
-        public async Task SetEggStepCounter(SwordShieldDaycare daycare, CancellationToken token)
+        public async Task SetEggStepCounter(CancellationToken token)
         {
             // Set the step counter in the Daycare metadata to 180. This is the threshold that triggers the "Should I create a new egg" subroutine.
             // When the game executes the subroutine, it will generate a new seed and set the IsEggReady flag.
             // Just setting the IsEggReady flag won't refresh the seed; we want a different egg every time.
             var data = new byte[] { 0xB4, 0, 0, 0 }; // 180
-            var ofs = PokeDataOffsets.GetDaycareStepCounterOffset(daycare);
-            await Connection.WriteBytesAsync(data, ofs, token).ConfigureAwait(false);
+            await Connection.WriteBytesAsync(data, DayCare_Route5_Step_Counter, token).ConfigureAwait(false);
         }
     }
 }
