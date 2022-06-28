@@ -55,7 +55,7 @@ namespace SysBot.Pokemon
             {
                 if (!await IsInBattle(token).ConfigureAwait(false))
                 {
-                    switch (Hub.Config.Encounter.EncounteringType)
+                    switch (Hub.Config.EncounterSWSH.EncounteringType)
                     {
                         case EncounterMode.VerticalLine:
                             await SetStick(LEFT, 0, -30000, 2_400, token).ConfigureAwait(false);

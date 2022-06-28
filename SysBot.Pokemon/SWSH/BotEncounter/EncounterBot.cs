@@ -23,9 +23,9 @@ namespace SysBot.Pokemon
         protected EncounterBot(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
             Hub = hub;
-            Settings = Hub.Config.Encounter;
+            Settings = Hub.Config.EncounterSWSH;
             DumpSetting = Hub.Config.Folder;
-            StopConditionSettings.InitializeTargetIVs(Hub, out DesiredMinIVs, out DesiredMaxIVs);
+            StopConditionSettings.InitializeTargetIVs(Hub.Config, out DesiredMinIVs, out DesiredMaxIVs);
             StopConditionSettings.ReadUnwantedMarks(Hub.Config.StopConditions, out UnwantedMarks);
         }
 
@@ -33,7 +33,7 @@ namespace SysBot.Pokemon
 
         public override async Task MainLoop(CancellationToken token)
         {
-            var settings = Hub.Config.Encounter;
+            var settings = Hub.Config.EncounterSWSH;
             Log("Identifying trainer data of the host console.");
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
             await InitializeHardware(settings, token).ConfigureAwait(false);
@@ -101,7 +101,6 @@ namespace SysBot.Pokemon
             if (!string.IsNullOrWhiteSpace(Hub.Config.StopConditions.MatchFoundEchoMention))
                 msg = $"{Hub.Config.StopConditions.MatchFoundEchoMention} {msg}";
             EchoUtil.Echo(msg);
-            Log(msg);
 
             if (mode == ContinueAfterMatch.StopExit)
                 return true;

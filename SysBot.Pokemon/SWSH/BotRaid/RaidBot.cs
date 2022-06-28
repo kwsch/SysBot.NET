@@ -17,7 +17,7 @@ namespace SysBot.Pokemon
         public RaidBot(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
             Hub = hub;
-            Settings = hub.Config.Raid;
+            Settings = hub.Config.RaidSWSH;
         }
 
         private int encounterCount;

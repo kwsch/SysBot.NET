@@ -891,7 +891,7 @@ namespace SysBot.Pokemon
                 return;
             }
 
-            SeedChecker.CalculateAndNotify(result, detail, Hub.Config.SeedCheck, this);
+            SeedChecker.CalculateAndNotify(result, detail, Hub.Config.SeedCheckSWSH, this);
             Log("Seed calculation completed.");
         }
 

@@ -16,7 +16,7 @@ namespace SysBot.Pokemon
 
         protected override async Task EncounterLoop(SAV8SWSH sav, CancellationToken token)
         {
-            var monoffset = GetResetOffset(Hub.Config.Encounter.EncounteringType);
+            var monoffset = GetResetOffset(Hub.Config.EncounterSWSH.EncounteringType);
             var pkoriginal = monoffset is BoxStartOffset ? await ReadBoxPokemon(0, 0, token).ConfigureAwait(false) : new PK8();
 
             while (!token.IsCancellationRequested)
@@ -26,7 +26,7 @@ namespace SysBot.Pokemon
                 Log("Looking for a Pokémon...");
                 do
                 {
-                    await DoExtraCommands(token, Hub.Config.Encounter.EncounteringType).ConfigureAwait(false);
+                    await DoExtraCommands(token, Hub.Config.EncounterSWSH.EncounteringType).ConfigureAwait(false);
                     pknew = await ReadUntilPresent(monoffset, 0_050, 0_050, BoxFormatSlotSize, token).ConfigureAwait(false);
                 } while (pknew is null || SearchUtil.HashByDetails(pkoriginal) == SearchUtil.HashByDetails(pknew));
 
@@ -55,9 +55,9 @@ namespace SysBot.Pokemon
 
         private static uint GetResetOffset(EncounterMode mode) => mode switch
         {
-            EncounterMode.Gift => BoxStartOffset,
+            EncounterMode.Gift                                 => BoxStartOffset,
             EncounterMode.Regigigas or EncounterMode.Eternatus => RaidPokemonOffset,
-            EncounterMode.MotostokeGym => LegendaryPokemonOffset,
+            EncounterMode.MotostokeGym                         => LegendaryPokemonOffset,
             _ => WildPokemonOffset,
         };
     }

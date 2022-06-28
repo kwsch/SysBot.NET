@@ -23,7 +23,7 @@ namespace SysBot.Pokemon
             Hub = hub;
             Settings = Hub.Config.Egg;
             DumpSetting = Hub.Config.Folder;
-            StopConditionSettings.InitializeTargetIVs(Hub, out DesiredMinIVs, out DesiredMaxIVs);
+            StopConditionSettings.InitializeTargetIVs(Hub.Config, out DesiredMinIVs, out DesiredMaxIVs);
         }
 
         private int encounterCount;

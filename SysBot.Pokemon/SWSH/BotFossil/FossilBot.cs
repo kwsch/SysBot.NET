@@ -20,9 +20,9 @@ namespace SysBot.Pokemon
         public FossilBot(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
             Hub = hub;
-            Settings = Hub.Config.Fossil;
+            Settings = Hub.Config.FossilSWSH;
             DumpSetting = Hub.Config.Folder;
-            StopConditionSettings.InitializeTargetIVs(Hub, out DesiredMinIVs, out DesiredMaxIVs);
+            StopConditionSettings.InitializeTargetIVs(Hub.Config, out DesiredMinIVs, out DesiredMaxIVs);
         }
 
         private int encounterCount;

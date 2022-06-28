@@ -72,7 +72,7 @@ namespace SysBot.Pokemon.Discord
 
             var seed = Util.GetHexValue64(seedString);
 
-            var r = new SeedSearchResult(Z3SearchResult.Success, seed, -1, hub.Config.SeedCheck.ResultDisplayMode);
+            var r = new SeedSearchResult(Z3SearchResult.Success, seed, -1, hub.Config.SeedCheckSWSH.ResultDisplayMode);
             var msg = r.ToString();
 
             var embed = new EmbedBuilder { Color = Color.LighterGrey };
