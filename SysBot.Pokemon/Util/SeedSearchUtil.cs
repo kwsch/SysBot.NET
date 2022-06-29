@@ -30,9 +30,9 @@ namespace SysBot.Pokemon
             var rng = new Xoroshiro128Plus(seed);
             for (int i = 0; ; i++)
             {
-                uint _ = (uint)rng.NextInt(0xFFFFFFFF); // EC
-                uint SIDTID = (uint)rng.NextInt(0xFFFFFFFF);
-                uint PID = (uint)rng.NextInt(0xFFFFFFFF);
+                rng.NextInt(); // EC
+                uint SIDTID = (uint)rng.NextInt();
+                uint PID = (uint)rng.NextInt();
                 var shinytype = GetShinyType(PID, SIDTID);
 
                 // If we found a shiny, record it and return if we got everything we wanted.
@@ -92,38 +92,6 @@ namespace SysBot.Pokemon
                 }
                 rng = origrng;
             }
-        }
-
-        public static bool IsMatch(ulong seed, int[] ivs, int fixed_ivs)
-        {
-            var rng = new Xoroshiro128Plus(seed);
-            rng.NextInt(); // EC
-            rng.NextInt(); // TID
-            rng.NextInt(); // PID
-            int[] check_ivs = { -1, -1, -1, -1, -1, -1 };
-            for (int i = 0; i < fixed_ivs; i++)
-            {
-                uint slot;
-                do
-                {
-                    slot = (uint)rng.NextInt(6);
-                } while (check_ivs[slot] != -1);
-
-                if (ivs[slot] != 31)
-                    return false;
-
-                check_ivs[slot] = 31;
-            }
-            for (int i = 0; i < 6; i++)
-            {
-                if (check_ivs[i] != -1)
-                    continue; // already verified?
-
-                uint iv = (uint)rng.NextInt(32);
-                if (iv != ivs[i])
-                    return false;
-            }
-            return true;
         }
     }
 }

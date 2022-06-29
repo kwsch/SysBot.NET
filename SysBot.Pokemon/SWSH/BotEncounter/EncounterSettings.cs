@@ -9,7 +9,7 @@ namespace SysBot.Pokemon
     {
         private const string Counts = nameof(Counts);
         private const string Encounter = nameof(Encounter);
-        public override string ToString() => "Encounter Bot Settings";
+        public override string ToString() => "Encounter Bot SWSH Settings";
 
         [Category(Encounter), Description("The method by which the Line bot will encounter Pokémon.")]
         public EncounterMode EncounteringType { get; set; } = EncounterMode.VerticalLine;
