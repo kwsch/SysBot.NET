@@ -143,7 +143,8 @@ namespace SysBot.Pokemon
                 waitCounter = 0;
 
                 detail.IsProcessing = true;
-                await RestartGameIfCantLeaveUnionRoom(token).ConfigureAwait(false);
+                if (detail.Type != PokeTradeType.Random || !Hub.Config.Distribution.RemainInUnionRoomBDSP)
+                    await RestartGameIfCantLeaveUnionRoom(token).ConfigureAwait(false);
                 string tradetype = $" ({detail.Type})";
                 Log($"Starting next {type}{tradetype} Bot Trade. Getting data...");
                 await Task.Delay(500, token).ConfigureAwait(false);
@@ -151,7 +152,6 @@ namespace SysBot.Pokemon
                 Hub.Queues.StartTrade(this, detail);
 
                 await PerformTrade(sav, detail, type, priority, token).ConfigureAwait(false);
-                await RestartGameIfCantLeaveUnionRoom(token).ConfigureAwait(false);
             }
         }
 
@@ -228,8 +228,16 @@ namespace SysBot.Pokemon
             // Update Barrier Settings
             UpdateBarrier(poke.IsSynchronized);
             poke.TradeInitialize(this);
-            await RestartGameIfCantLeaveUnionRoom(token).ConfigureAwait(false);
             Hub.Config.Stream.EndEnterCode(this);
+
+            var distroRemainInRoom = poke.Type == PokeTradeType.Random && Hub.Config.Distribution.RemainInUnionRoomBDSP;
+
+            // If we weren't supposed to remain and started out in the Union Room, ensure we're out of the box.
+            if (!distroRemainInRoom && await IsUnionWork(UnionGamingOffset, token).ConfigureAwait(false))
+            {
+                if (!await ExitBoxToUnionRoom(token).ConfigureAwait(false))
+                    return PokeTradeResult.RecoverReturnOverworld;
+            }
 
             if (await CheckIfSoftBanned(SoftBanOffset, token).ConfigureAwait(false))
                 await UnSoftBan(token).ConfigureAwait(false);
@@ -238,7 +246,7 @@ namespace SysBot.Pokemon
             if (toSend.Species != 0)
                 await SetBoxPokemonAbsolute(BoxStartOffset, toSend, token, sav).ConfigureAwait(false);
 
-            // Enter Union Room and set ourselves up as Trading.
+            // Enter Union Room. Shouldn't do anything if we're already there.
             if (!await EnterUnionRoomWithCode(poke.Type, poke.Code, token).ConfigureAwait(false))
             {
                 // We don't know how far we made it in, so restart the game to be safe.
@@ -246,6 +254,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.RecoverEnterUnionRoom;
             }
 
+            await RequestUnionRoomTrade(token).ConfigureAwait(false);
             poke.TradeSearching(this);
             var waitPartner = Hub.Config.Trade.TradeWaitTime;
 
@@ -351,10 +360,17 @@ namespace SysBot.Pokemon
             for (var i = 0; i < 30; i++)
                 await Click(A, 0_500, token).ConfigureAwait(false);
 
-            Log("Trying to get out of the Union Room.");
-            // Now get out of the Union Room.
-            if (!await EnsureOutsideOfUnionRoom(token).ConfigureAwait(false))
+            // Try to get out of the box.
+            if (!await ExitBoxToUnionRoom(token).ConfigureAwait(false))
                 return PokeTradeResult.RecoverReturnOverworld;
+
+            // Leave the Union room if we chose not to stay.
+            if (!distroRemainInRoom)
+            {
+                Log("Trying to get out of the Union Room.");
+                if (!await EnsureOutsideOfUnionRoom(token).ConfigureAwait(false))
+                    return PokeTradeResult.RecoverReturnOverworld;
+            }
 
             // Sometimes they offered another mon, so store that immediately upon leaving Union Room.
             lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
@@ -395,6 +411,9 @@ namespace SysBot.Pokemon
             {
                 if (await IsUserBeingShifty(detail, token).ConfigureAwait(false))
                     return PokeTradeResult.SuspiciousActivity;
+                // We're no longer talking, so they probably quit on us.
+                if (!await IsUnionWork(UnionTalkingOffset, token).ConfigureAwait(false))
+                    return PokeTradeResult.TrainerTooSlow;
                 await Click(A, 1_500, token).ConfigureAwait(false);
             }
 
@@ -424,6 +443,10 @@ namespace SysBot.Pokemon
 
         private async Task<bool> EnterUnionRoomWithCode(PokeTradeType tradeType, int tradeCode, CancellationToken token)
         {
+            // Already in Union Room.
+            if (await IsUnionWork(UnionGamingOffset, token).ConfigureAwait(false))
+                return true;
+
             // Open y-comm and select global room
             await Click(Y, 1_000 + Hub.Config.Timings.ExtraTimeOpenYMenu, token).ConfigureAwait(false);
             await Click(DRIGHT, 0_400, token).ConfigureAwait(false);
@@ -502,6 +525,11 @@ namespace SysBot.Pokemon
 
             await Task.Delay(1_300 + Hub.Config.Timings.ExtraTimeJoinUnionRoom, token).ConfigureAwait(false);
 
+            return true; // We've made it into the room and are ready to request.
+        }
+
+        private async Task RequestUnionRoomTrade(CancellationToken token)
+        {
             // Y-button trades always put us in a place where we can open the call menu without having to move.
             Log("Attempting to open the Y menu.");
             await Click(Y, 1_000, token).ConfigureAwait(false);
@@ -509,8 +537,6 @@ namespace SysBot.Pokemon
             await Click(DDOWN, 0_400, token).ConfigureAwait(false);
             await Click(DDOWN, 0_400, token).ConfigureAwait(false);
             await Click(A, 0_100, token).ConfigureAwait(false);
-
-            return true; // we are now searching
         }
 
         // These don't change per session and we access them frequently, so set these each time we start.
@@ -564,6 +590,8 @@ namespace SysBot.Pokemon
                 while (await IsUnionWork(UnionTalkingOffset, token).ConfigureAwait(false))
                 {
                     await Click(B, 0_500, token).ConfigureAwait(false);
+                    if (!await IsUnionWork(UnionTalkingOffset, token).ConfigureAwait(false))
+                        break;
                     await Click(DUP, 0_200, token).ConfigureAwait(false);
                     await Click(A, 0_500, token).ConfigureAwait(false);
                     // Keeps regular quitting a little faster, only need this for trade evolutions + moves.

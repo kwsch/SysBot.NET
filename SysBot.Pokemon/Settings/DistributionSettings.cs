@@ -30,6 +30,9 @@ namespace SysBot.Pokemon
         [Category(Distribute), Description("Distribution Trade Link Code uses the Min and Max range rather than the fixed trade code.")]
         public bool RandomCode { get; set; }
 
+        [Category(Distribute), Description("For BDSP, the distribution bot will go to a specific room and remain there until the bot is stopped.")]
+        public bool RemainInUnionRoomBDSP { get; set; } = true;
+
         // Synchronize
 
         [Category(Synchronize), Description("Link Trade: Using multiple distribution bots -- all bots will confirm their trade code at the same time. When Local, the bots will continue when all are at the barrier. When Remote, something else must signal the bots to continue.")]
@@ -38,7 +41,8 @@ namespace SysBot.Pokemon
         [Category(Synchronize), Description("Link Trade: Using multiple distribution bots -- once all bots are ready to confirm trade code, the Hub will wait X milliseconds before releasing all bots.")]
         public int SynchronizeDelayBarrier { get; set; }
 
-        [Category(Synchronize), Description("Link Trade: Using multiple distribution bots -- how long (Seconds) a bot will wait for synchronization before continuing anyways.")]
+        [Category(Synchronize), Description("Link Trade: Using multiple distribution bots -- how long (seconds) a bot will wait for synchronization before continuing anyways.")]
         public double SynchronizeTimeout { get; set; } = 90;
+
     }
 }
