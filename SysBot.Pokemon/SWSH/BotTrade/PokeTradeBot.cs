@@ -309,6 +309,8 @@ namespace SysBot.Pokemon
 
             var trainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
             var trainerTID = await GetTradePartnerTID7(TradeMethod.LinkTrade, token).ConfigureAwait(false);
+            var trainerSID = await GetTradePartnerSID7(TradeMethod.LinkTrade, token).ConfigureAwait(false);
+            var partnerIdBytes = await GetTradePartnerIdBytes(TradeMethod.LinkTrade, token).ConfigureAwait(false);
             var trainerNID = await GetTradePartnerNID(token).ConfigureAwait(false);
             RecordUtil<PokeTradeBot>.Record($"Initiating\t{trainerNID:X16}\t{trainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
             Log($"Found Link Trade partner: {trainerName}-{trainerTID} (ID: {trainerNID})");
@@ -338,6 +340,9 @@ namespace SysBot.Pokemon
             if (poke.Type == PokeTradeType.Dump)
                 return await ProcessDumpTradeAsync(poke, token).ConfigureAwait(false);
 
+            if (poke.Type == PokeTradeType.Random)
+                await SetBoxPkmWithSwappedIDDetailsSS(toSend, token, trainerName, trainerTID, trainerSID, partnerIdBytes, sav).ConfigureAwait(false);
+
             // Wait for User Input...
             var offered = await ReadUntilPresent(LinkTradePartnerPokemonOffset, 25_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
             var oldEC = await Connection.ReadBytesAsync(LinkTradePartnerPokemonOffset, 4, token).ConfigureAwait(false);
@@ -355,7 +360,7 @@ namespace SysBot.Pokemon
 
             PokeTradeResult update;
             var trainer = new PartnerDataHolder(trainerNID, trainerName, trainerTID);
-            (toSend, update) = await GetEntityToSend(sav, poke, offered, oldEC, toSend, trainer, token).ConfigureAwait(false);
+            (toSend, update) = await GetEntityToSend(sav, poke, offered, oldEC, toSend, trainer, token, trainerSID, partnerIdBytes).ConfigureAwait(false);
             if (update != PokeTradeResult.Success)
             {
                 await ExitTrade(Hub.Config, false, token).ConfigureAwait(false);
@@ -560,11 +565,11 @@ namespace SysBot.Pokemon
             return PokeTradeResult.Success;
         }
 
-        protected virtual async Task<(PK8 toSend, PokeTradeResult check)> GetEntityToSend(SAV8SWSH sav, PokeTradeDetail<PK8> poke, PK8 offered, byte[] oldEC, PK8 toSend, PartnerDataHolder partnerID, CancellationToken token)
+        protected virtual async Task<(PK8 toSend, PokeTradeResult check)> GetEntityToSend(SAV8SWSH sav, PokeTradeDetail<PK8> poke, PK8 offered, byte[] oldEC, PK8 toSend, PartnerDataHolder partnerID, CancellationToken token, string partnerSID, byte[] partnerIdBytes)
         {
             return poke.Type switch
             {
-                PokeTradeType.Random => await HandleRandomLedy(sav, poke, offered, toSend, partnerID, token).ConfigureAwait(false),
+                PokeTradeType.Random => await HandleRandomLedy(sav, poke, offered, toSend, partnerID, token, partnerSID, partnerIdBytes).ConfigureAwait(false),
                 PokeTradeType.Clone => await HandleClone(sav, poke, offered, oldEC, token).ConfigureAwait(false),
                 _ => (toSend, PokeTradeResult.Success),
             };
@@ -625,7 +630,7 @@ namespace SysBot.Pokemon
             return (clone, PokeTradeResult.Success);
         }
 
-        private async Task<(PK8 toSend, PokeTradeResult check)> HandleRandomLedy(SAV8SWSH sav, PokeTradeDetail<PK8> poke, PK8 offered, PK8 toSend, PartnerDataHolder partner, CancellationToken token)
+        private async Task<(PK8 toSend, PokeTradeResult check)> HandleRandomLedy(SAV8SWSH sav, PokeTradeDetail<PK8> poke, PK8 offered, PK8 toSend, PartnerDataHolder partner, CancellationToken token, string partnerSID, byte[] partnerIdBytes)
         {
             // Allow the trade partner to do a Ledy swap.
             var config = Hub.Config.Distribution;
@@ -649,7 +654,8 @@ namespace SysBot.Pokemon
 
                 poke.SendNotification(this, "Injecting the requested Pokémon.");
                 await Click(A, 0_800, token).ConfigureAwait(false);
-                await SetBoxPokemon(toSend, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+                if (!await SetBoxPkmWithSwappedIDDetailsSS(toSend, token, partner.TrainerName, partner.TrainerTID, partnerSID, partnerIdBytes, sav).ConfigureAwait(false))
+                    await SetBoxPokemon(toSend, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
                 await Task.Delay(2_500, token).ConfigureAwait(false);
             }
             else if (config.LedyQuitIfNoMatch)
@@ -1057,10 +1063,118 @@ namespace SysBot.Pokemon
             return tid7;
         }
 
+        private async Task<string> GetTradePartnerSID7(TradeMethod tradeMethod, CancellationToken token)
+        {
+            var ofs = GetTrainerTIDSIDOffset(tradeMethod);
+            var data = await Connection.ReadBytesAsync(ofs, 8, token).ConfigureAwait(false);
+
+            var tidsid = BitConverter.ToUInt32(data, 0);
+            var sid7 = $"{tidsid / 1_000_000:0000}";
+            return sid7;
+        }
+
+        private async Task<byte[]> GetTradePartnerIdBytes(TradeMethod tradeMethod, CancellationToken token)
+        {
+            var ofs = GetTrainerTIDSIDOffset(tradeMethod);
+            var data = await Connection.ReadBytesAsync(ofs + 0x04, 4, token).ConfigureAwait(false);
+
+            return data;
+        }
+
         public async Task<ulong> GetTradePartnerNID(CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(LinkTradePartnerNIDOffset, 8, token).ConfigureAwait(false);
             return BitConverter.ToUInt64(data, 0);
+        }
+
+        private async Task<bool> SetBoxPkmWithSwappedIDDetailsSS(PK8 pkm, CancellationToken token, string TrainerName, string TrainerTID, string partnerSID, byte[] TrainerIdBytes, ITrainerInfo? sav = null)
+        {
+            var cln = (PK8)pkm.Clone();
+            cln.TrainerID7 = Int32.Parse(TrainerTID);
+            cln.TrainerSID7 = Int32.Parse(partnerSID);
+            cln.OT_Name = TrainerName;
+            cln.OT_Gender = TrainerIdBytes[2];
+            cln.Language = TrainerIdBytes[1];
+            cln.Version = TrainerIdBytes[0];
+            cln.ClearNickname();
+
+            if (pkm.IsShiny)
+            {
+                while (cln.ShinyXor != 0)
+                {
+                    cln.SetShiny();
+                }
+            }
+
+            cln.RefreshChecksum();
+
+            var tradess = new LegalityAnalysis(cln);
+            PK8 cln2;
+            LegalityAnalysis tradess2;
+            PK8 cln3;
+            LegalityAnalysis tradess3;
+            if (!tradess.Valid)
+            {
+                cln2 = TryAgainWithXOR1(cln);
+                tradess2 = new LegalityAnalysis(cln2);
+
+                if (!tradess2.Valid)
+                {
+                    cln3 = TryAnyShiny(cln);
+                    tradess3 = new LegalityAnalysis(cln3);
+
+                    if (tradess3.Valid)
+                    {
+                        await SetBoxPokemon(cln3, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+                        tradess = tradess3;
+                    }
+                }
+                else
+                {
+                    await SetBoxPokemon(cln2, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+                    tradess = tradess2;
+                }
+            }
+            else
+                await SetBoxPokemon(cln, InjectBox, InjectSlot, token, sav).ConfigureAwait(false);
+
+            return tradess.Valid;
+        }
+
+        private PK8 TryAgainWithXOR1(PK8 pkm)
+        {
+            var cln = (PK8)pkm.Clone();
+            cln.ClearNickname();
+
+            if (pkm.IsShiny)
+            {
+                while (cln.ShinyXor != 1)
+                {
+                    cln.SetShiny();
+                }
+            }
+
+            cln.RefreshChecksum();
+
+            return cln;
+        }
+
+        private PK8 TryAnyShiny(PK8 pkm)
+        {
+            var cln = (PK8)pkm.Clone();
+            cln.ClearNickname();
+
+            if (pkm.IsShiny)
+            {
+                while (cln.ShinyXor <= 1)
+                {
+                    cln.SetShiny();
+                }
+            }
+
+            cln.RefreshChecksum();
+
+            return cln;
         }
     }
 }
