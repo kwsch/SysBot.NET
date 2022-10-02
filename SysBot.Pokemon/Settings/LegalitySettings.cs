@@ -55,6 +55,9 @@ namespace SysBot.Pokemon
         [Category(Generate), Description("Allow XOROSHIRO when generating Gen 8 Raid Pokémon.")]
         public bool UseXOROSHIRO { get; set; } = true;
 
+        [Category(Generate), Description("Adds Battle Version for games that support it (SWSH only) for using past-gen Pokémon in online competitive play.")]
+        public bool SetBattleVersion { get; set; } = false;
+
         [Category(Generate), Description("Bot will create an Easter Egg Pokémon if provided an illegal set.")]
         public bool EnableEasterEggs { get; set; } = false;
 
