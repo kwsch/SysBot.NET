@@ -68,9 +68,6 @@ namespace SysBot.Pokemon
                         TrainerSettings.Register(fallback);
                 }
             }
-
-            var trainer = TrainerSettings.GetSavedTrainerData(PKX.Generation);
-            RecentTrainerCache.SetRecentTrainer(trainer);
         }
 
         private static void InitializeCoreStrings()

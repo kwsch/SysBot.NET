@@ -69,6 +69,7 @@ namespace SysBot.Pokemon
 
                 Log("Identifying trainer data of the host console.");
                 var sav = await IdentifyTrainer(token).ConfigureAwait(false);
+                RecentTrainerCache.SetRecentTrainer(sav);
 
                 await RestartGameIfCantLeaveUnionRoom(token).ConfigureAwait(false);
                 await InitializeSessionOffsets(token).ConfigureAwait(false);

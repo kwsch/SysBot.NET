@@ -57,6 +57,7 @@ namespace SysBot.Pokemon
 
                 Log("Identifying trainer data of the host console.");
                 var sav = await IdentifyTrainer(token).ConfigureAwait(false);
+                RecentTrainerCache.SetRecentTrainer(sav);
 
                 Log($"Starting main {nameof(PokeTradeBot)} loop.");
                 await InnerLoop(sav, token).ConfigureAwait(false);
