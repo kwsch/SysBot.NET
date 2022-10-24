@@ -298,7 +298,20 @@ namespace SysBot.Pokemon
 
             var partnerCheck = CheckPartnerReputation(poke, trainerNID, tradePartner.TrainerName);
             if (partnerCheck != PokeTradeResult.Success)
+            {
+                // Try to get out of the box.
+                if (!await ExitBoxToUnionRoom(token).ConfigureAwait(false))
+                    return PokeTradeResult.RecoverReturnOverworld;
+
+                // Leave the Union room if we chose not to stay.
+                if (!distroRemainInRoom)
+                {
+                    Log("Trying to get out of the Union Room.");
+                    if (!await EnsureOutsideOfUnionRoom(token).ConfigureAwait(false))
+                        return PokeTradeResult.RecoverReturnOverworld;
+                }
                 return PokeTradeResult.SuspiciousActivity;
+            }
 
             await Task.Delay(2_000, token).ConfigureAwait(false);
 
