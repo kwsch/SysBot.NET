@@ -270,7 +270,7 @@ namespace SysBot.Pokemon
             }
             Log("Found a user talking to us!");
 
-            // Keep pressing A until TargetTranerParam is loaded (when we hit the box).
+            // Keep pressing A until TargetTranerParam (sic) is loaded (when we hit the box).
             while (!await IsPartnerParamLoaded(token).ConfigureAwait(false) && waitPartner > 0)
             {
                 for (int i = 0; i < 2; ++i)
@@ -395,7 +395,7 @@ namespace SysBot.Pokemon
         private static ulong GetFakeNID(string trainerName, uint trainerID)
         {
             var nameHash = trainerName.GetHashCode();
-            return (ulong)(trainerID << 32) + (uint)nameHash;
+            return ((ulong)trainerID << 32) | (uint)nameHash;
         }
 
         private void UpdateCountsAndExport(PokeTradeDetail<PB8> poke, PB8 received, PB8 toSend)
@@ -653,8 +653,15 @@ namespace SysBot.Pokemon
             var time = TimeSpan.FromSeconds(Hub.Config.Trade.MaxDumpTradeTime);
             var start = DateTime.Now;
 
+            var bctr = 0;
             while (ctr < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.Now - start < time)
             {
+                // We're no longer talking, so they probably quit on us.
+                if (!await IsUnionWork(UnionTalkingOffset, token).ConfigureAwait(false))
+                    break;
+                if (bctr++ % 3 == 0)
+                    await Click(B, 0_100, token).ConfigureAwait(false);
+
                 // Wait for user input... Needs to be different from the previously offered Pokémon.
                 var tradeOffered = await ReadUntilChanged(LinkTradePokemonOffset, lastOffered, 3_000, 1_000, false, true, token).ConfigureAwait(false);
                 if (!tradeOffered)
@@ -675,11 +682,14 @@ namespace SysBot.Pokemon
                 }
 
                 var la = new LegalityAnalysis(pk);
-                var verbose = la.Report(true);
+                var verbose = $"```{la.Report(true)}```";
                 Log($"Shown Pokémon is: {(la.Valid ? "Valid" : "Invalid")}.");
 
                 ctr++;
                 var msg = Hub.Config.Trade.DumpTradeLegalityCheck ? verbose : $"File {ctr}";
+                // Extra information for shiny eggs, because of people dumping to skip hatching.
+                var eggstring = pk.IsEgg ? "Egg " : string.Empty;
+                msg += pk.IsShiny ? $"\n**This Pokémon {eggstring}is shiny!**" : string.Empty;
                 detail.SendNotification(this, pk, msg);
             }
 

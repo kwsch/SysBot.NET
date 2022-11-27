@@ -113,23 +113,26 @@ namespace SysBot.Pokemon.Discord
                             Base.LogUtil.LogError(message, "QueueHelper");
                             return;
                         }
-                        else if (!permissions.ManageMessages)
+                        if (!permissions.ManageMessages)
                         {
                             var app = await context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
                             var owner = app.Owner.Id;
                             message = $"<@{owner}> You must grant me \"Manage Messages\" permissions!";
                         }
-                    }; break;
+                    }
+                    break;
                 case DiscordErrorCode.CannotSendMessageToUser:
                     {
                         // The user either has DMs turned off, or Discord thinks they do.
                         message = context.User == trader ? "You must enable private messages in order to be queued!" : "The mentioned user must enable private messages in order for them to be queued!";
-                    }; break;
+                    }
+                    break;
                 default:
                     {
                         // Send a generic error message.
                         message = ex.DiscordCode != null ? $"Discord error {(int)ex.DiscordCode}: {ex.Reason}" : $"Http error {(int)ex.HttpCode}: {ex.Message}";
-                    }; break;
+                    }
+                    break;
             }
             await context.Channel.SendMessageAsync(message).ConfigureAwait(false);
         }

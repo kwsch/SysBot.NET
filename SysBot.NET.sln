@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29613.14
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SysBot.Base", "SysBot.Base\SysBot.Base.csproj", "{850BECFD-3789-4C07-885E-0AA108C46F60}"
 EndProject
@@ -69,7 +69,7 @@ Global
 		{1D51AD25-4C03-49D3-8074-7D092168CB20}.Release|x64.Build.0 = Release|Any CPU
 		{1D51AD25-4C03-49D3-8074-7D092168CB20}.Release|x86.ActiveCfg = Release|Any CPU
 		{1D51AD25-4C03-49D3-8074-7D092168CB20}.Release|x86.Build.0 = Release|Any CPU
-		{886B1440-B333-4095-8E44-D71D043D20A9}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{886B1440-B333-4095-8E44-D71D043D20A9}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{886B1440-B333-4095-8E44-D71D043D20A9}.Debug|x64.ActiveCfg = Debug|x64
 		{886B1440-B333-4095-8E44-D71D043D20A9}.Debug|x64.Build.0 = Debug|x64
 		{886B1440-B333-4095-8E44-D71D043D20A9}.Debug|x86.ActiveCfg = Debug|x86
@@ -103,7 +103,7 @@ Global
 		{5CA6568C-CD16-499C-A63F-8EF86AAF4499}.Release|x64.Build.0 = Release|Any CPU
 		{5CA6568C-CD16-499C-A63F-8EF86AAF4499}.Release|x86.ActiveCfg = Release|Any CPU
 		{5CA6568C-CD16-499C-A63F-8EF86AAF4499}.Release|x86.Build.0 = Release|Any CPU
-		{C0525606-4ED4-4998-9AF3-31E2DE65717A}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{C0525606-4ED4-4998-9AF3-31E2DE65717A}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{C0525606-4ED4-4998-9AF3-31E2DE65717A}.Debug|x64.ActiveCfg = Debug|x64
 		{C0525606-4ED4-4998-9AF3-31E2DE65717A}.Debug|x64.Build.0 = Debug|x64
 		{C0525606-4ED4-4998-9AF3-31E2DE65717A}.Debug|x86.ActiveCfg = Debug|x86
@@ -113,7 +113,7 @@ Global
 		{C0525606-4ED4-4998-9AF3-31E2DE65717A}.Release|x64.Build.0 = Release|x64
 		{C0525606-4ED4-4998-9AF3-31E2DE65717A}.Release|x86.ActiveCfg = Release|x86
 		{C0525606-4ED4-4998-9AF3-31E2DE65717A}.Release|x86.Build.0 = Release|x86
-		{DCC41103-1303-4CAB-AE01-5EA68317410D}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{DCC41103-1303-4CAB-AE01-5EA68317410D}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{DCC41103-1303-4CAB-AE01-5EA68317410D}.Debug|x64.ActiveCfg = Debug|x64
 		{DCC41103-1303-4CAB-AE01-5EA68317410D}.Debug|x64.Build.0 = Debug|x64
 		{DCC41103-1303-4CAB-AE01-5EA68317410D}.Debug|x86.ActiveCfg = Debug|x86

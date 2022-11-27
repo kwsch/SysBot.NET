@@ -154,7 +154,7 @@ namespace SysBot.Pokemon
 
         public async Task<bool> IsGameConnectedToYComm(CancellationToken token)
         {
-            // Reads the Y-Comm Flag is the Game is connected Online
+            // Reads the Y-Comm Flag to check if the game is connected online
             var data = await Connection.ReadBytesAsync(IsConnectedOffset, 1, token).ConfigureAwait(false);
             return data[0] == 1;
         }
@@ -177,7 +177,7 @@ namespace SysBot.Pokemon
 
             // Press it twice for safety -- sometimes misses it the first time.
             await Click(PLUS, 2_000, token).ConfigureAwait(false);
-            await Click(PLUS, 5_000 + config.Timings.ExtraTimeReconnectYComm, token).ConfigureAwait(false);
+            await Click(PLUS, 5_000 + config.Timings.ExtraTimeConnectOnline, token).ConfigureAwait(false);
 
             for (int i = 0; i < 5; i++)
             {

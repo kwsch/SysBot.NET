@@ -50,7 +50,7 @@ namespace System.Collections.Concurrent
         /// no object was available to be removed, the value is unspecified.
         /// </param>
         /// <returns>
-        /// true if an element was removed and returned from the queue succesfully; otherwise, false.
+        /// true if an element was removed and returned from the queue successfully; otherwise, false.
         /// </returns>
         public bool TryDequeue(out KeyValuePair<TKey, TValue> result)
         {
@@ -70,7 +70,7 @@ namespace System.Collections.Concurrent
         /// The queue was not modified by the operation.
         /// </param>
         /// <returns>
-        /// true if an element was returned from the queue succesfully; otherwise, false.
+        /// true if an element was returned from the queue successfully; otherwise, false.
         /// </returns>
         public bool TryPeek(out KeyValuePair<TKey, TValue> result)
         {
@@ -155,7 +155,7 @@ namespace System.Collections.Concurrent
         /// no object was available to be removed, the value is unspecified.
         /// </param>
         /// <returns>
-        /// true if an element was removed and returned from the queue succesfully; otherwise, false.
+        /// true if an element was removed and returned from the queue successfully; otherwise, false.
         /// </returns>
         bool IProducerConsumerCollection<KeyValuePair<TKey, TValue>>.TryTake(out KeyValuePair<TKey, TValue> item)
         {
