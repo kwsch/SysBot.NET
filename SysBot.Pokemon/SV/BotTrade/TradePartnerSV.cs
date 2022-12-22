@@ -29,6 +29,6 @@ namespace SysBot.Pokemon
         public int Gender => Data[5];
         public int Language => Data[6];
 
-        public string OT => StringConverter8.GetString(Data.AsSpan(8, 18));
+        public string OT => StringConverter8.GetString(Data.AsSpan(8, 24));
     }
 }
