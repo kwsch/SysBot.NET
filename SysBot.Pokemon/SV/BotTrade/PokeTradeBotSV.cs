@@ -306,6 +306,7 @@ namespace SysBot.Pokemon
             var partnerCheck = CheckPartnerReputation(poke, trainerNID, tradePartner.TrainerName);
             if (partnerCheck != PokeTradeResult.Success)
             {
+                await Click(A, 1_000, token).ConfigureAwait(false); // Ensures we dismiss a popup.
                 await ExitTradeToPortal(false, token).ConfigureAwait(false);
                 return partnerCheck;
             }
