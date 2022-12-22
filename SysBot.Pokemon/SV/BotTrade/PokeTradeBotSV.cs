@@ -294,8 +294,17 @@ namespace SysBot.Pokemon
             Hub.Config.Stream.EndEnterCode(this);
 
             // Wait until we get into the box.
+            var cnt = 0;
             while (!await IsInBox(PortalOffset, token).ConfigureAwait(false))
+            {
                 await Task.Delay(0_500, token).ConfigureAwait(false);
+                if (++cnt > 20) // Didn't make it in after 10 seconds.
+                {
+                    await Click(A, 1_000, token).ConfigureAwait(false); // Ensures we dismiss a popup.
+                    await RecoverToPortal(token).ConfigureAwait(false);
+                    return PokeTradeResult.NoTrainerFound;
+                }
+            }
             await Task.Delay(2_000, token).ConfigureAwait(false);
 
             var tradePartner = await GetTradePartnerInfo(token).ConfigureAwait(false);
