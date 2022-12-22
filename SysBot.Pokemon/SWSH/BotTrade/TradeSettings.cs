@@ -15,7 +15,7 @@ namespace SysBot.Pokemon
         public override string ToString() => "Trade Bot Settings";
 
         [Category(TradeConfig), Description("Time to wait for a trade partner in seconds.")]
-        public int TradeWaitTime { get; set; } = 45;
+        public int TradeWaitTime { get; set; } = 30;
 
         [Category(TradeCode), Description("Minimum Link Code.")]
         public int MinTradeCode { get; set; } = 8180;
