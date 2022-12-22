@@ -122,16 +122,10 @@ namespace SysBot.Pokemon
 
         private async Task DoNothing(CancellationToken token)
         {
-            int waitCounter = 0;
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.Idle)
             {
-                if (waitCounter == 0)
-                    Log("No task assigned. Waiting for new task assignment.");
-                waitCounter++;
-                if (waitCounter % 10 == 0 && Hub.Config.AntiIdle)
-                    await Click(B, 1_000, token).ConfigureAwait(false);
-                else
-                    await Task.Delay(1_000, token).ConfigureAwait(false);
+                Log("No task assigned. Waiting for new task assignment.");
+                await Task.Delay(1_000, token).ConfigureAwait(false);
             }
         }
 
