@@ -302,7 +302,7 @@ namespace SysBot.Pokemon
                 {
                     await Click(A, 1_000, token).ConfigureAwait(false); // Ensures we dismiss a popup.
                     await RecoverToPortal(token).ConfigureAwait(false);
-                    return PokeTradeResult.NoTrainerFound;
+                    return PokeTradeResult.RecoverOpenBox;
                 }
             }
             await Task.Delay(2_000, token).ConfigureAwait(false);
