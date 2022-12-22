@@ -163,11 +163,7 @@ namespace SysBot.Pokemon
                 Log("Nothing to check, waiting for new users...");
             }
 
-            const int interval = 10;
-            if (waitCounter % interval == interval - 1 && Hub.Config.AntiIdle)
-                await Click(B, 1_000, token).ConfigureAwait(false);
-            else
-                await Task.Delay(1_000, token).ConfigureAwait(false);
+            await Task.Delay(1_000, token).ConfigureAwait(false);
         }
 
         protected virtual (PokeTradeDetail<PK9>? detail, uint priority) GetTradeData(PokeRoutineType type)
