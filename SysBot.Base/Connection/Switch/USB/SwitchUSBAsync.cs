@@ -73,8 +73,7 @@ namespace SysBot.Base
             {
                 Send(SwitchCommand.IsProgramRunning(pid, false));
                 byte[] baseBytes = ReadBulkUSB();
-                var bytes = BitConverter.ToUInt64(baseBytes, 0).ToString("X16").Trim();
-                return ulong.TryParse(bytes, out var value) && value == 1;
+                return baseBytes.Length == 1 && BitConverter.ToBoolean(baseBytes, 0);
             }, token);
         }
 
