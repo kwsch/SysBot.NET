@@ -80,6 +80,10 @@ namespace SysBot.Pokemon
                 RecentTrainerCache.SetRecentTrainer(sav);
                 await InitializeSessionOffsets(token).ConfigureAwait(false);
 
+                // Force the bot to go through all the motions again on its first pass.
+                StartFromOverworld = true;
+                LastTradeDistributionFixed = false;
+
                 Log($"Starting main {nameof(PokeTradeBotSV)} loop.");
                 await InnerLoop(sav, token).ConfigureAwait(false);
             }
