@@ -126,11 +126,9 @@ namespace SysBot.Pokemon
 
         private async Task DoNothing(CancellationToken token)
         {
+            Log("No task assigned. Waiting for new task assignment.");
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.Idle)
-            {
-                Log("No task assigned. Waiting for new task assignment.");
                 await Task.Delay(1_000, token).ConfigureAwait(false);
-            }
         }
 
         private async Task DoTrades(SAV9SV sav, CancellationToken token)
