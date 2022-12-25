@@ -393,10 +393,6 @@ namespace SysBot.Pokemon
             // Only log if we completed the trade.
             UpdateCountsAndExport(poke, received, toSend);
 
-            // Still need to wait out the trade animation.
-            for (var i = 0; i < 30; i++)
-                await Click(B, 0_500, token).ConfigureAwait(false);
-
             await ExitTradeToPortal(false, token).ConfigureAwait(false);
             return PokeTradeResult.Success;
         }
@@ -426,31 +422,22 @@ namespace SysBot.Pokemon
             var oldEC = await SwitchConnection.ReadBytesAbsoluteAsync(BoxStartOffset, 8, token).ConfigureAwait(false);
 
             await Click(A, 3_000, token).ConfigureAwait(false);
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < Hub.Config.Trade.MaxTradeConfirmTime; i++)
             {
                 if (await IsUserBeingShifty(detail, token).ConfigureAwait(false))
                     return PokeTradeResult.SuspiciousActivity;
-                await Click(A, 1_500, token).ConfigureAwait(false);
-            }
+                await Click(A, 1_000, token).ConfigureAwait(false);
 
-            var tradeCounter = 0;
-            while (true)
-            {
+                // EC is detectable at the start of the animation.
                 var newEC = await SwitchConnection.ReadBytesAbsoluteAsync(BoxStartOffset, 8, token).ConfigureAwait(false);
                 if (!newEC.SequenceEqual(oldEC))
                 {
-                    await Task.Delay(5_000, token).ConfigureAwait(false);
+                    await Task.Delay(25_000, token).ConfigureAwait(false);
                     return PokeTradeResult.Success;
                 }
-
-                tradeCounter++;
-
-                if (tradeCounter >= Hub.Config.Trade.TradeAnimationMaxDelaySeconds)
-                {
-                    // If we don't detect a B1S1 change, the trade didn't go through in that time.
-                    return PokeTradeResult.TrainerTooSlow;
-                }
             }
+            // If we don't detect a B1S1 change, the trade didn't go through in that time.
+            return PokeTradeResult.TrainerTooSlow;
         }
 
         // Upon connecting, their Nintendo ID will instantly update.

@@ -370,10 +370,6 @@ namespace SysBot.Pokemon
             // Only log if we completed the trade.
             UpdateCountsAndExport(poke, received, toSend);
 
-            // Still need to wait out the trade animation.
-            for (var i = 0; i < 30; i++)
-                await Click(A, 0_500, token).ConfigureAwait(false);
-
             // Try to get out of the box.
             if (!await ExitBoxToUnionRoom(token).ConfigureAwait(false))
                 return PokeTradeResult.RecoverReturnOverworld;
@@ -421,34 +417,22 @@ namespace SysBot.Pokemon
             var oldEC = await SwitchConnection.ReadBytesAbsoluteAsync(BoxStartOffset, 8, token).ConfigureAwait(false);
 
             await Click(A, 3_000, token).ConfigureAwait(false);
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < Hub.Config.Trade.MaxTradeConfirmTime; i++)
             {
                 if (await IsUserBeingShifty(detail, token).ConfigureAwait(false))
                     return PokeTradeResult.SuspiciousActivity;
                 // We're no longer talking, so they probably quit on us.
                 if (!await IsUnionWork(UnionTalkingOffset, token).ConfigureAwait(false))
                     return PokeTradeResult.TrainerTooSlow;
-                await Click(A, 1_500, token).ConfigureAwait(false);
-            }
-
-            var tradeCounter = 0;
-            while (await IsUnionWork(UnionTalkingOffset, token).ConfigureAwait(false))
-            {
                 await Click(A, 1_000, token).ConfigureAwait(false);
-                tradeCounter++;
 
+                // EC is detectable at the start of the animation.
                 var newEC = await SwitchConnection.ReadBytesAbsoluteAsync(BoxStartOffset, 8, token).ConfigureAwait(false);
                 if (!newEC.SequenceEqual(oldEC))
                 {
-                    await Task.Delay(5_000, token).ConfigureAwait(false);
+                    await Task.Delay(25_000, token).ConfigureAwait(false);
                     return PokeTradeResult.Success;
                 }
-
-                // We've somehow failed out of the Union Room -- can happen with connection error.
-                if (!await IsUnionWork(UnionGamingOffset, token).ConfigureAwait(false))
-                    return PokeTradeResult.TrainerTooSlow;
-                if (tradeCounter >= Hub.Config.Trade.TradeAnimationMaxDelaySeconds)
-                    break;
             }
 
             // If we don't detect a B1S1 change, the trade didn't go through in that time.
