@@ -313,7 +313,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.SuspiciousActivity;
             }
 
-            await Task.Delay(2_000, token).ConfigureAwait(false);
+            await Task.Delay(2_000 + Hub.Config.Timings.ExtraTimeOpenBox, token).ConfigureAwait(false);
 
             // Confirm Box 1 Slot 1
             if (poke.Type == PokeTradeType.Specific)

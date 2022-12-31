@@ -308,7 +308,7 @@ namespace SysBot.Pokemon
 
             // Select Pokemon
             // pkm already injected to b1s1
-            await Task.Delay(5_500, token).ConfigureAwait(false); // necessary delay to get to the box properly
+            await Task.Delay(5_500 + Hub.Config.Timings.ExtraTimeOpenBox, token).ConfigureAwait(false); // necessary delay to get to the box properly
 
             var trainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
             var trainerTID = await GetTradePartnerTID7(TradeMethod.LinkTrade, token).ConfigureAwait(false);

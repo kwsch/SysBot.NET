@@ -277,7 +277,7 @@ namespace SysBot.Pokemon
             Hub.Config.Stream.EndEnterCode(this);
 
             // Some more time to fully enter the trade.
-            await Task.Delay(1_000, token).ConfigureAwait(false);
+            await Task.Delay(1_000 + Hub.Config.Timings.ExtraTimeOpenBox, token).ConfigureAwait(false);
 
             var tradePartner = await GetTradePartnerInfo(token).ConfigureAwait(false);
             var trainerNID = await GetTradePartnerNID(TradePartnerNIDOffset, token).ConfigureAwait(false);
