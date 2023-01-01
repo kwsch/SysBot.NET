@@ -56,8 +56,6 @@ namespace SysBot.Pokemon
         private ulong SoftBanOffset;
         private ulong LinkTradePokemonOffset;
 
-        // Count up how many trades we did without rebooting.
-        private int sessionTradeCount;
         // Track the last Pokémon we were offered since it persists between trades.
         private byte[] lastOffered;
 
@@ -224,8 +222,6 @@ namespace SysBot.Pokemon
 
         private async Task<PokeTradeResult> PerformLinkCodeTrade(SAV8BS sav, PokeTradeDetail<PB8> poke, CancellationToken token)
         {
-            sessionTradeCount++;
-            Log($"Starting trade #{sessionTradeCount} for this session.");
             // Update Barrier Settings
             UpdateBarrier(poke.IsSynchronized);
             poke.TradeInitialize(this);
@@ -564,7 +560,6 @@ namespace SysBot.Pokemon
         {
             await ReOpenGame(Hub.Config, token).ConfigureAwait(false);
             await InitializeSessionOffsets(token).ConfigureAwait(false);
-            sessionTradeCount = 0;
         }
 
         private async Task<bool> EnsureOutsideOfUnionRoom(CancellationToken token)

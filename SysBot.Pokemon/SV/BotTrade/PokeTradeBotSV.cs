@@ -46,6 +46,7 @@ namespace SysBot.Pokemon
             TradeSettings = hub.Config.Trade;
             AbuseSettings = hub.Config.TradeAbuse;
             DumpSetting = hub.Config.Folder;
+            lastOffered = new byte[8];
         }
 
         // Cached offsets that stay the same per session.
@@ -65,6 +66,9 @@ namespace SysBot.Pokemon
         private bool StartFromOverworld = true;
         // Stores whether the last trade was Distribution with fixed code, in which case we don't need to re-enter the code.
         private bool LastTradeDistributionFixed;
+
+        // Track the last Pokémon we were offered since it persists between trades.
+        private byte[] lastOffered;
 
         public override async Task MainLoop(CancellationToken token)
         {
@@ -341,6 +345,12 @@ namespace SysBot.Pokemon
                 return partnerCheck;
             }
 
+            // Hard check to verify that the offset changed from the last thing offered from the previous trade.
+            // This is because box opening times can vary per person, the offset persists between trades, and can also change offset between trades.
+            var tradeOffered = await ReadUntilChanged(TradePartnerOfferedOffset, lastOffered, 10_000, 0_500, false, true, token).ConfigureAwait(false);
+            if (!tradeOffered)
+                return PokeTradeResult.TrainerTooSlow;
+
             poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. Waiting for a Pokémon...");
 
             if (poke.Type == PokeTradeType.Dump)
@@ -401,6 +411,9 @@ namespace SysBot.Pokemon
 
             // Only log if we completed the trade.
             UpdateCountsAndExport(poke, received, toSend);
+
+            // Sometimes they offered another mon, so store that immediately upon leaving Union Room.
+            lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(TradePartnerOfferedOffset, 8, token).ConfigureAwait(false);
 
             await ExitTradeToPortal(false, token).ConfigureAwait(false);
             return PokeTradeResult.Success;
