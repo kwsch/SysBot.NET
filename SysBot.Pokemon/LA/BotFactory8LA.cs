@@ -13,7 +13,7 @@ namespace SysBot.Pokemon
                 or PokeRoutineType.Dump
                 => new PokeTradeBotLA(Hub, cfg),
 
-            PokeRoutineType.RemoteControl => new RemoteControlBot(cfg),
+            PokeRoutineType.RemoteControl => new RemoteControlBotLA(cfg),
 
             _ => throw new ArgumentException(nameof(cfg.NextRoutineType)),
         };

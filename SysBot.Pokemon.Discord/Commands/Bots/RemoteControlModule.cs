@@ -15,7 +15,7 @@ namespace SysBot.Pokemon.Discord
         [RequireRoleAccess(nameof(DiscordManager.RolesRemoteControl))]
         public async Task ClickAsync(SwitchButton b)
         {
-            var bot = SysCord<T>.Runner.Bots.Find(z => z.Bot is RemoteControlBot);
+            var bot = SysCord<T>.Runner.Bots.Find(z => IsRemoteControlBot(z.Bot));
             if (bot == null)
             {
                 await ReplyAsync($"No bot is available to execute your command: {b}").ConfigureAwait(false);
@@ -45,7 +45,7 @@ namespace SysBot.Pokemon.Discord
         [RequireRoleAccess(nameof(DiscordManager.RolesRemoteControl))]
         public async Task SetStickAsync(SwitchStick s, short x, short y, ushort ms = 1_000)
         {
-            var bot = SysCord<T>.Runner.Bots.Find(z => z.Bot is RemoteControlBot);
+            var bot = SysCord<T>.Runner.Bots.Find(z => IsRemoteControlBot(z.Bot));
             if (bot == null)
             {
                 await ReplyAsync($"No bot is available to execute your command: {s}").ConfigureAwait(false);
@@ -139,5 +139,8 @@ namespace SysBot.Pokemon.Discord
             await b.Connection.SendAsync(SwitchCommand.ResetStick(s, crlf), CancellationToken.None).ConfigureAwait(false);
             await ReplyAsync($"{b.Connection.Name} has reset the stick position.").ConfigureAwait(false);
         }
+
+        private bool IsRemoteControlBot(RoutineExecutor<PokeBotState> botstate)
+            => botstate is RemoteControlBot or RemoteControlBotBS or RemoteControlBotLA or RemoteControlBotSV;
     }
 }
