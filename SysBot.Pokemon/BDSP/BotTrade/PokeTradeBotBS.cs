@@ -106,8 +106,12 @@ namespace SysBot.Pokemon
                 }
                 catch (SocketException e)
                 {
-                    Log(e.Message);
-                    Connection.Reset();
+                    Connection.LogError(e.StackTrace);
+                    var attempts = Hub.Config.Timings.ReconnectAttempts;
+                    var delay = Hub.Config.Timings.ExtraReconnectDelay;
+                    var protocol = Config.Connection.Protocol;
+                    if (!await TryReconnect(attempts, delay, protocol, token).ConfigureAwait(false))
+                        return;
                 }
             }
         }

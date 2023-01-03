@@ -14,7 +14,7 @@ namespace SysBot.Base
 
         public string Name { get; }
         public string Label { get; set; }
-        public bool Connected { get; protected set; }
+        public bool Connected { get => Connection.Connected; }
 
         public int MaximumTransferSize { get; set; } = 0x1C0;
         public int BaseDelay { get; set; } = 64;
