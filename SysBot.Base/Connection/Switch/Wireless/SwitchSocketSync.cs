@@ -18,7 +18,6 @@ namespace SysBot.Base
         {
             Log("Connecting to device...");
             Connection.Connect(Info.IP, Info.Port);
-            Connected = true;
             Log("Connected!");
         }
 
@@ -32,7 +31,6 @@ namespace SysBot.Base
         {
             Log("Disconnecting from device...");
             Connection.Disconnect(false);
-            Connected = false;
             Log("Disconnected!");
         }
 

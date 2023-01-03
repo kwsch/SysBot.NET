@@ -62,5 +62,23 @@ namespace SysBot.Pokemon
             File.WriteAllBytes(fn, pk.DecryptedPartyData);
             LogUtil.LogInfo($"Saved file: {fn}", "Dump");
         }
+
+        public async Task<bool> TryReconnect(uint attempts, uint extraDelay, SwitchProtocol protocol, CancellationToken token)
+        {
+            // USB can have several reasons for connection loss, some of which is not recoverable (power loss, sleep). Only deal with WiFi for now.
+            if (protocol is SwitchProtocol.WiFi)
+            {
+                for (int i = 0; i < attempts; i++)
+                {
+                    LogUtil.LogInfo($"Trying to reconnect... ({i + 1})", Connection.Label);
+                    Connection.Reset();
+                    if (Connection.Connected)
+                        break;
+
+                    await Task.Delay(30_000 + (int)extraDelay, token).ConfigureAwait(false);
+                }
+            }
+            return Connection.Connected;
+        }
     }
 }

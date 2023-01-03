@@ -50,6 +50,12 @@ namespace SysBot.Pokemon
         [Category(Misc), Description("[SWSH/SV] Extra time in milliseconds to wait after clicking + to connect to Y-Comm (SWSH) or L to connect online (SV).")]
         public int ExtraTimeConnectOnline { get; set; } = 0;
 
+        [Category(Misc), Description("Amount of attempts to reconnect to a socket connection after a connection loss.")]
+        public uint ReconnectAttempts { get; set; } = 30;
+
+        [Category(Misc), Description("Extra time in milliseconds to wait between attempts to reconnect.")]
+        public uint ExtraReconnectDelay { get; set; } = 0;
+
         [Category(Misc), Description("[BDSP] Extra time in milliseconds to wait for the overworld to load after leaving the Union Room.")]
         public int ExtraTimeLeaveUnionRoom { get; set; } = 1000;
 
