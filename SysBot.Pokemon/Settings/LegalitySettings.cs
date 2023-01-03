@@ -50,22 +50,22 @@ namespace SysBot.Pokemon
         public bool SetMatchingBalls { get; set; }
 
         [Category(Generate), Description("Force the specified ball if legal.")]
-        public bool ForceSpecifiedBall { get; set; } = false;
+        public bool ForceSpecifiedBall { get; set; }
 
         [Category(Generate), Description("Allow XOROSHIRO when generating Gen 8 Raid Pokémon.")]
         public bool UseXOROSHIRO { get; set; } = true;
 
         [Category(Generate), Description("Adds Battle Version for games that support it (SWSH only) for using past-gen Pokémon in online competitive play.")]
-        public bool SetBattleVersion { get; set; } = false;
+        public bool SetBattleVersion { get; set; }
 
         [Category(Generate), Description("Bot will create an Easter Egg Pokémon if provided an illegal set.")]
-        public bool EnableEasterEggs { get; set; } = false;
+        public bool EnableEasterEggs { get; set; }
 
         [Category(Generate), Description("Allow users to submit custom OT, TID, SID, and OT Gender in Showdown sets.")]
-        public bool AllowTrainerDataOverride { get; set; } = false;
+        public bool AllowTrainerDataOverride { get; set; }
 
         [Category(Generate), Description("Allow users to submit further customization with Batch Editor commands.")]
-        public bool AllowBatchCommands { get; set; } = false;
+        public bool AllowBatchCommands { get; set; }
 
         [Category(Generate), Description("Maximum time in seconds to spend when generating a set before canceling. This prevents difficult sets from freezing the bot.")]
         public int Timeout { get; set; } = 15;

@@ -36,7 +36,7 @@ namespace SysBot.Pokemon
         public bool DumpTradeLegalityCheck { get; set; } = true;
 
         [Category(TradeConfig), Description("When enabled, the screen will be turned off during normal bot loop operation to save power.")]
-        public bool ScreenOff { get; set; } = false;
+        public bool ScreenOff { get; set; }
 
         /// <summary>
         /// Gets a random trade code based on the range settings.

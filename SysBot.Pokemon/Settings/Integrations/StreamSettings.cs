@@ -16,7 +16,7 @@ namespace SysBot.Pokemon
         public static Action<PKM, string>? CreateSpriteFile { get; set; }
 
         [Category(Operation), Description("Generate stream assets; turning off will prevent generation of assets.")]
-        public bool CreateAssets { get; set; } = false;
+        public bool CreateAssets { get; set; }
 
         [Category(Operation), Description("Generate trade start details, indicating who the bot is trading with.")]
         public bool CreateTradeStart { get; set; } = true;
@@ -36,7 +36,7 @@ namespace SysBot.Pokemon
         public int OnDeckTake { get; set; } = 5;
 
         [Category(Operation), Description("Amount of on-deck users to skip at the top. If you want to hide people being processed, set this to your amount of consoles.")]
-        public int OnDeckSkip { get; set; } = 0;
+        public int OnDeckSkip { get; set; }
 
         [Category(Operation), Description("Separator to split the on-deck list users.")]
         public string OnDeckSeparator { get; set; } = "\n";
@@ -53,7 +53,7 @@ namespace SysBot.Pokemon
         public int OnDeckTake2 { get; set; } = 5;
 
         [Category(Operation), Description("Amount of on-deck #2 users to skip at the top. If you want to hide people being processed, set this to your amount of consoles.")]
-        public int OnDeckSkip2 { get; set; } = 0;
+        public int OnDeckSkip2 { get; set; }
 
         [Category(Operation), Description("Separator to split the on-deck #2 list users.")]
         public string OnDeckSeparator2 { get; set; } = "\n";
@@ -70,7 +70,7 @@ namespace SysBot.Pokemon
         public int UserListTake { get; set; } = -1;
 
         [Category(Operation), Description("Amount of users to skip at the top. If you want to hide people being processed, set this to your amount of consoles.")]
-        public int UserListSkip { get; set; } = 0;
+        public int UserListSkip { get; set; }
 
         [Category(Operation), Description("Separator to split the list users.")]
         public string UserListSeparator { get; set; } = ", ";

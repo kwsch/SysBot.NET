@@ -63,11 +63,12 @@ namespace SysBot.Pokemon
             LogUtil.LogInfo($"Saved file: {fn}", "Dump");
         }
 
-        public async Task<bool> TryReconnect(uint attempts, uint extraDelay, SwitchProtocol protocol, CancellationToken token)
+        public async Task<bool> TryReconnect(int attempts, int extraDelay, SwitchProtocol protocol, CancellationToken token)
         {
             // USB can have several reasons for connection loss, some of which is not recoverable (power loss, sleep). Only deal with WiFi for now.
             if (protocol is SwitchProtocol.WiFi)
             {
+                // If ReconnectAttempts is set to -1, this should allow it to reconnect indefinitely.
                 for (int i = 0; i < attempts; i++)
                 {
                     LogUtil.LogInfo($"Trying to reconnect... ({i + 1})", Connection.Label);

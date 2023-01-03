@@ -30,7 +30,7 @@ namespace SysBot.Pokemon
         public TargetShinyType ShinyTarget { get; set; } = TargetShinyType.DisableOption;
 
         [Category(StopConditions), Description("Stop only on Pokémon that have a mark.")]
-        public bool MarkOnly { get; set; } = false;
+        public bool MarkOnly { get; set; }
 
         [Category(StopConditions), Description("List of marks to ignore separated by commas. Use the full name, e.g. \"Uncommon Mark, Dawn Mark, Prideful Mark\".")]
         public string UnwantedMarks { get; set; } = "";

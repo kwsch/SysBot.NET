@@ -18,7 +18,7 @@ namespace SysBot.Pokemon
         public ContinueAfterMatch ContinueAfterMatch { get; set; } = ContinueAfterMatch.StopExit;
 
         [Category(Encounter), Description("When enabled, the screen will be turned off during normal bot loop operation to save power.")]
-        public bool ScreenOff { get; set; } = false;
+        public bool ScreenOff { get; set; }
 
         private int _completedWild;
         private int _completedLegend;
