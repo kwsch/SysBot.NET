@@ -68,8 +68,8 @@ namespace SysBot.Pokemon
             // USB can have several reasons for connection loss, some of which is not recoverable (power loss, sleep). Only deal with WiFi for now.
             if (protocol is SwitchProtocol.WiFi)
             {
-                // If ReconnectAttempts is set to -1, this should allow it to reconnect indefinitely.
-                for (int i = 0; i < attempts; i++)
+                // If ReconnectAttempts is set to -1, this should allow it to reconnect (essentially) indefinitely.
+                for (int i = 0; i < (uint)attempts; i++)
                 {
                     LogUtil.LogInfo($"Trying to reconnect... ({i + 1})", Connection.Label);
                     Connection.Reset();
