@@ -83,7 +83,7 @@ namespace SysBot.Pokemon
         public override async Task HardStop()
         {
             UpdateBarrier(false);
-            await CleanExit(TradeSettings, CancellationToken.None).ConfigureAwait(false);
+            await CleanExit(CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task InnerLoop(SAV8LA sav, CancellationToken token)

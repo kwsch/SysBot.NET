@@ -67,7 +67,7 @@ namespace SysBot.Pokemon
         {
             // If aborting the sequence, we might have the stick set at some position. Clear it just in case.
             await SetStick(LEFT, 0, 0, 0, CancellationToken.None).ConfigureAwait(false); // reset
-            await CleanExit(Hub.Config.Trade, CancellationToken.None).ConfigureAwait(false);
+            await CleanExit(CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>

@@ -40,7 +40,7 @@ namespace SysBot.Pokemon
         public override async Task HardStop()
         {
             await SetStick(SwitchStick.LEFT, 0, 0, 0_500, CancellationToken.None).ConfigureAwait(false); // reset
-            await CleanExit(new DummyReset(), CancellationToken.None).ConfigureAwait(false);
+            await CleanExit(CancellationToken.None).ConfigureAwait(false);
         }
 
         private class DummyReset : IBotStateSettings

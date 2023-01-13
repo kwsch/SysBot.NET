@@ -151,7 +151,7 @@ namespace SysBot.Pokemon
 
         public override async Task HardStop()
         {
-            await CleanExit(Settings, CancellationToken.None).ConfigureAwait(false);
+            await CleanExit(CancellationToken.None).ConfigureAwait(false);
         }
 
         private bool IsWaiting;

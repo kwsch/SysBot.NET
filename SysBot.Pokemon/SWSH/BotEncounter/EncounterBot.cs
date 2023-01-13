@@ -59,7 +59,7 @@ namespace SysBot.Pokemon
         public override async Task HardStop()
         {
             await ResetStick(CancellationToken.None).ConfigureAwait(false);
-            await CleanExit(Settings, CancellationToken.None).ConfigureAwait(false);
+            await CleanExit(CancellationToken.None).ConfigureAwait(false);
         }
 
         protected abstract Task EncounterLoop(SAV8SWSH sav, CancellationToken token);
