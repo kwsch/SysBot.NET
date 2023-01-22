@@ -353,7 +353,10 @@ namespace SysBot.Pokemon
             // This is because box opening times can vary per person, the offset persists between trades, and can also change offset between trades.
             var tradeOffered = await ReadUntilChanged(TradePartnerOfferedOffset, lastOffered, 10_000, 0_500, false, true, token).ConfigureAwait(false);
             if (!tradeOffered)
+            {
+                await ExitTradeToPortal(false, token).ConfigureAwait(false);
                 return PokeTradeResult.TrainerTooSlow;
+            }
 
             poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. Waiting for a Pokémon...");
 
