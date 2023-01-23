@@ -59,6 +59,8 @@ namespace SysBot.Pokemon.Discord
         private static string GetBuildTime()
         {
             var assembly = Assembly.GetEntryAssembly();
+            if (assembly == null)
+                return "Unknown";
             return File.GetLastWriteTime(assembly.Location).ToString(@"yy-MM-dd\.hh\:mm");
         }
 
@@ -67,7 +69,10 @@ namespace SysBot.Pokemon.Discord
 
         private static string GetDateOfDll(string dll)
         {
-            var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            var assembly = Assembly.GetEntryAssembly();
+            if (assembly == null)
+                return "Unknown";
+            var folder = Path.GetDirectoryName(assembly.Location);
             var path = Path.Combine(folder ?? "", dll);
             var date = File.GetLastWriteTime(path);
             return date.ToString(@"yy-MM-dd\.hh\:mm");

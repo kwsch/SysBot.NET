@@ -92,9 +92,12 @@ namespace SysBot.Pokemon
             info.OT = TradePartnerBS.ReadStringFromRAMObject(name);
 
             // Set the TID, SID, and Language
-            var id = await SwitchConnection.PointerPeek(4, Offsets.MyStatusTIDPointer, token).ConfigureAwait(false);
-            info.TID = BitConverter.ToUInt16(id, 0);
-            info.SID = BitConverter.ToUInt16(id, 2);
+            var offset = await SwitchConnection.PointerAll(Offsets.MyStatusTIDPointer, token).ConfigureAwait(false);
+            var tid = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 2, token).ConfigureAwait(false);
+            var sid = await SwitchConnection.ReadBytesAbsoluteAsync(offset + 2, 2, token).ConfigureAwait(false);
+
+            info.TID16 = System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(tid);
+            info.SID16 = System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(sid);
 
             var lang = await SwitchConnection.PointerPeek(1, Offsets.ConfigLanguagePointer, token).ConfigureAwait(false);
             sav.Language = lang[0];

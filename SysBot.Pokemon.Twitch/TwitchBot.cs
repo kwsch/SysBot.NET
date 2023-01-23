@@ -132,43 +132,43 @@ namespace SysBot.Pokemon.Twitch
             return true;
         }
 
-        private void Client_OnLog(object sender, OnLogArgs e)
+        private void Client_OnLog(object? sender, OnLogArgs e)
         {
             LogUtil.LogText($"[{client.TwitchUsername}] -[{e.BotUsername}] {e.Data}");
         }
 
-        private void Client_OnConnected(object sender, OnConnectedArgs e)
+        private void Client_OnConnected(object? sender, OnConnectedArgs e)
         {
             LogUtil.LogText($"[{client.TwitchUsername}] - Connected {e.AutoJoinChannel} as {e.BotUsername}");
         }
 
-        private void Client_OnDisconnected(object sender, OnDisconnectedEventArgs e)
+        private void Client_OnDisconnected(object? sender, OnDisconnectedEventArgs e)
         {
             LogUtil.LogText($"[{client.TwitchUsername}] - Disconnected.");
             while (!client.IsConnected)
                 client.Reconnect();
         }
 
-        private void Client_OnJoinedChannel(object sender, OnJoinedChannelArgs e)
+        private void Client_OnJoinedChannel(object? sender, OnJoinedChannelArgs e)
         {
             LogUtil.LogInfo($"Joined {e.Channel}", e.BotUsername);
             client.SendMessage(e.Channel, "Connected!");
         }
 
-        private void Client_OnMessageReceived(object sender, OnMessageReceivedArgs e)
+        private void Client_OnMessageReceived(object? sender, OnMessageReceivedArgs e)
         {
             LogUtil.LogText($"[{client.TwitchUsername}] - Received message: @{e.ChatMessage.Username}: {e.ChatMessage.Message}");
             if (client.JoinedChannels.Count == 0)
                 client.JoinChannel(e.ChatMessage.Channel);
         }
 
-        private void Client_OnLeftChannel(object sender, OnLeftChannelArgs e)
+        private void Client_OnLeftChannel(object? sender, OnLeftChannelArgs e)
         {
             LogUtil.LogText($"[{client.TwitchUsername}] - Left channel {e.Channel}");
             client.JoinChannel(e.Channel);
         }
 
-        private void Client_OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
+        private void Client_OnChatCommandReceived(object? sender, OnChatCommandReceivedArgs e)
         {
             if (!Hub.Config.Twitch.AllowCommandsViaChannel || Hub.Config.Twitch.UserBlacklist.Contains(e.Command.ChatMessage.Username))
                 return;
@@ -184,7 +184,7 @@ namespace SysBot.Pokemon.Twitch
             client.SendMessage(channel, response);
         }
 
-        private void Client_OnWhisperCommandReceived(object sender, OnWhisperCommandReceivedArgs e)
+        private void Client_OnWhisperCommandReceived(object? sender, OnWhisperCommandReceivedArgs e)
         {
             if (!Hub.Config.Twitch.AllowCommandsViaWhisper || Hub.Config.Twitch.UserBlacklist.Contains(e.Command.WhisperMessage.Username))
                 return;
@@ -248,7 +248,7 @@ namespace SysBot.Pokemon.Twitch
             }
         }
 
-        private void Client_OnWhisperReceived(object sender, OnWhisperReceivedArgs e)
+        private void Client_OnWhisperReceived(object? sender, OnWhisperReceivedArgs e)
         {
             LogUtil.LogText($"[{client.TwitchUsername}] - @{e.WhisperMessage.Username}: {e.WhisperMessage.Message}");
             if (QueuePool.Count > 100)

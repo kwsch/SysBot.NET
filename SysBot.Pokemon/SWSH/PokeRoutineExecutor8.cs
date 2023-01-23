@@ -61,12 +61,12 @@ namespace SysBot.Pokemon
             return await ReadPokemon(ofs, BoxFormatSlotSize, token).ConfigureAwait(false);
         }
 
-        public async Task SetCurrentBox(int box, CancellationToken token)
+        public async Task SetCurrentBox(byte box, CancellationToken token)
         {
-            await Connection.WriteBytesAsync(BitConverter.GetBytes(box), CurrentBoxOffset, token).ConfigureAwait(false);
+            await Connection.WriteBytesAsync(new[] { box }, CurrentBoxOffset, token).ConfigureAwait(false);
         }
 
-        public async Task<int> GetCurrentBox(CancellationToken token)
+        public async Task<byte> GetCurrentBox(CancellationToken token)
         {
             var data = await Connection.ReadBytesAsync(CurrentBoxOffset, 1, token).ConfigureAwait(false);
             return data[0];

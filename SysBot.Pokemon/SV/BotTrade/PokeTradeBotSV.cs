@@ -59,8 +59,8 @@ namespace SysBot.Pokemon
 
         // Store the current save's OT and TID/SID for comparison.
         private string OT = string.Empty;
-        private int DisplaySID;
-        private int DisplayTID;
+        private uint DisplaySID;
+        private uint DisplayTID;
 
         // Stores whether we returned all the way to the overworld, which repositions the cursor.
         private bool StartFromOverworld = true;
@@ -122,7 +122,8 @@ namespace SysBot.Pokemon
                 }
                 catch (SocketException e)
                 {
-                    Connection.LogError(e.StackTrace);
+                    if (e.StackTrace != null)
+                        Connection.LogError(e.StackTrace);
                     var attempts = Hub.Config.Timings.ReconnectAttempts;
                     var delay = Hub.Config.Timings.ExtraReconnectDelay;
                     var protocol = Config.Connection.Protocol;

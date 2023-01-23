@@ -26,8 +26,7 @@ namespace SysBot.Pokemon.Discord
         [Summary("Tries to get info about the requested property.")]
         public async Task ValidateBatchInfo(string instructions)
         {
-            var split = instructions.Split('\n').Select(z => z.Trim()).ToList();
-            bool valid = IsValidInstructionSet(split, out var invalid);
+            bool valid = IsValidInstructionSet(instructions, out var invalid);
 
             if (!valid)
             {
@@ -37,11 +36,11 @@ namespace SysBot.Pokemon.Discord
             }
             else
             {
-                await ReplyAsync($"All {split.Count} line(s) are valid.").ConfigureAwait(false);
+                await ReplyAsync($"{invalid.Count} line(s) are invalid.").ConfigureAwait(false);
             }
         }
 
-        private static bool IsValidInstructionSet(List<string> split, out List<StringInstruction> invalid)
+        private static bool IsValidInstructionSet(ReadOnlySpan<char> split, out List<StringInstruction> invalid)
         {
             invalid = new List<StringInstruction>();
             var set = new StringInstructionSet(split);

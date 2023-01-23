@@ -92,12 +92,12 @@ namespace SysBot.Pokemon.YouTube
             };
         }
 
-        private static void Logger_LogOccurred(object sender, Log e)
+        private static void Logger_LogOccurred(object? sender, Log e)
         {
             LogUtil.LogError(e.Message, nameof(YouTubeBot<T>));
         }
 
-        private void Client_OnMessagesReceived(object sender, IEnumerable<LiveChatMessage> messages)
+        private void Client_OnMessagesReceived(object? sender, IEnumerable<LiveChatMessage> messages)
         {
             foreach (var message in messages)
             {

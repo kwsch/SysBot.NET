@@ -61,7 +61,7 @@ namespace SysBot.Pokemon
 
         public async Task SetCurrentBox(byte box, CancellationToken token)
         {
-            await SwitchConnection.PointerPoke(BitConverter.GetBytes(box), Offsets.CurrentBoxPointer, token).ConfigureAwait(false);
+            await SwitchConnection.PointerPoke(new[] { box }, Offsets.CurrentBoxPointer, token).ConfigureAwait(false);
         }
 
         public async Task<byte> GetCurrentBox(CancellationToken token)
