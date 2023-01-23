@@ -32,10 +32,10 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Generate a list of People currently on-deck.")]
         public bool CreateOnDeck { get; set; } = true;
 
-        [Category(Operation), Description("Amount of users to show in the on-deck list.")]
+        [Category(Operation), Description("Number of users to show in the on-deck list.")]
         public int OnDeckTake { get; set; } = 5;
 
-        [Category(Operation), Description("Amount of on-deck users to skip at the top. If you want to hide people being processed, set this to your amount of consoles.")]
+        [Category(Operation), Description("Number of on-deck users to skip at the top. If you want to hide people being processed, set this to your number of consoles.")]
         public int OnDeckSkip { get; set; }
 
         [Category(Operation), Description("Separator to split the on-deck list users.")]
@@ -49,10 +49,10 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Generate a list of People currently on-deck #2.")]
         public bool CreateOnDeck2 { get; set; } = true;
 
-        [Category(Operation), Description("Amount of users to show in the on-deck #2 list.")]
+        [Category(Operation), Description("Number of users to show in the on-deck #2 list.")]
         public int OnDeckTake2 { get; set; } = 5;
 
-        [Category(Operation), Description("Amount of on-deck #2 users to skip at the top. If you want to hide people being processed, set this to your amount of consoles.")]
+        [Category(Operation), Description("Number of on-deck #2 users to skip at the top. If you want to hide people being processed, set this to your number of consoles.")]
         public int OnDeckSkip2 { get; set; }
 
         [Category(Operation), Description("Separator to split the on-deck #2 list users.")]
@@ -66,10 +66,10 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Generate a list of People currently being traded.")]
         public bool CreateUserList { get; set; } = true;
 
-        [Category(Operation), Description("Amount of users to show in the list.")]
+        [Category(Operation), Description("Number of users to show in the list.")]
         public int UserListTake { get; set; } = -1;
 
-        [Category(Operation), Description("Amount of users to skip at the top. If you want to hide people being processed, set this to your amount of consoles.")]
+        [Category(Operation), Description("Number of users to skip at the top. If you want to hide people being processed, set this to your number of consoles.")]
         public int UserListSkip { get; set; }
 
         [Category(Operation), Description("Separator to split the list users.")]
@@ -150,9 +150,7 @@ namespace SysBot.Pokemon
                 if (CreateTradeStartSprite)
                     GenerateBotSprite(b, detail);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogUtil.LogError(e.Message, nameof(StreamSettings));
             }
@@ -188,9 +186,7 @@ namespace SysBot.Pokemon
                 if (CreateUsersInQueue)
                     File.WriteAllText("queuecount.txt", "Users in Queue: 0");
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogUtil.LogError(e.Message, nameof(StreamSettings));
             }
@@ -239,9 +235,7 @@ namespace SysBot.Pokemon
                 else
                     File.WriteAllBytes(file, BlackPixel);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogUtil.LogError(e.Message, nameof(StreamSettings));
             }
@@ -267,9 +261,7 @@ namespace SysBot.Pokemon
                 if (File.Exists(file))
                     File.Delete(file);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogUtil.LogError(e.Message, nameof(StreamSettings));
             }

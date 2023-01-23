@@ -39,7 +39,7 @@ namespace SysBot.Pokemon
                 return false;
 
             text = text.Replace(" ", "");
-            if (text.IndexOf("pkm", StringComparison.InvariantCultureIgnoreCase) >= 0)
+            if (text.Contains("pkm", StringComparison.InvariantCultureIgnoreCase))
                 return true;
 
             if (TLD.Any(z => text.EndsWith(z, StringComparison.InvariantCultureIgnoreCase)))
