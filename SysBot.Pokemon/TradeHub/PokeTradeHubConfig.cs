@@ -58,7 +58,7 @@ namespace SysBot.Pokemon
 
         [Category(BotEncounter)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
-        public EggSettings Egg { get; set; } = new();
+        public EggSettings EggSWSH { get; set; } = new();
 
         [Category(BotEncounter), Description("Stop conditions for EggBot, FossilBot, and EncounterBot.")]
         [TypeConverter(typeof(ExpandableObjectConverter))]

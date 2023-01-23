@@ -21,7 +21,7 @@ namespace SysBot.Pokemon
         public EggBot(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg)
         {
             Hub = hub;
-            Settings = Hub.Config.Egg;
+            Settings = Hub.Config.EggSWSH;
             DumpSetting = Hub.Config.Folder;
             StopConditionSettings.InitializeTargetIVs(Hub.Config, out DesiredMinIVs, out DesiredMaxIVs);
         }
@@ -35,7 +35,7 @@ namespace SysBot.Pokemon
 
         public override async Task MainLoop(CancellationToken token)
         {
-            await InitializeHardware(Hub.Config.Egg, token).ConfigureAwait(false);
+            await InitializeHardware(Hub.Config.EggSWSH, token).ConfigureAwait(false);
 
             Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);
