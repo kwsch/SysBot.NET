@@ -39,6 +39,6 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact: SysBot-x64'
   inputs:
-    PathtoPublish: 'SysBot.Pokemon.WinForms\bin\x64\Release\net47'
+    PathtoPublish: 'SysBot.Pokemon.WinForms\bin\Release\net7.0-windows\win-x64'
     ArtifactName: SysBot-x64
   condition: succeededOrFailed()
