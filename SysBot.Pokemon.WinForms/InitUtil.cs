@@ -1,4 +1,3 @@
-#if NETFRAMEWORK
 using PKHeX.Core;
 using PKHeX.Drawing.PokeSprite;
 
@@ -31,4 +30,3 @@ namespace SysBot.Pokemon.WinForms
         }
     }
 }
-#endif
