@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="PKHeX.Core" Version="23.1.26" />
+    <PackageReference Include="PKHeX.Core" Version="23.1.30" />
     <PackageReference Include="TwitchLib.Client" Version="3.2.3" />
   </ItemGroup>
 
