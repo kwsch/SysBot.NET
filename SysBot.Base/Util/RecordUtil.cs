@@ -29,7 +29,7 @@ namespace SysBot.Base
         }
 
         // ReSharper disable once StaticMemberInGenericType
-        private static readonly ILogger Logger = new LogFactory(GetConfig()).GetCurrentClassLogger();
+        private static readonly ILogger Logger = new LogFactory { Configuration = GetConfig() }.GetCurrentClassLogger();
         public static void Record(string message) => Logger.Log(LogLevel.Info, message);
     }
 }

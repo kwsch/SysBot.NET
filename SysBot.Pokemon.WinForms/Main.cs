@@ -1,14 +1,13 @@
-﻿using Newtonsoft.Json;
-using PKHeX.Core;
+﻿using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Newtonsoft.Json.Serialization;
 using SysBot.Pokemon.Z3;
 
 namespace SysBot.Pokemon.WinForms
@@ -27,7 +26,7 @@ namespace SysBot.Pokemon.WinForms
             if (File.Exists(Program.ConfigPath))
             {
                 var lines = File.ReadAllText(Program.ConfigPath);
-                Config = JsonConvert.DeserializeObject<ProgramConfig>(lines, GetSettings()) ?? new ProgramConfig();
+                Config = JsonSerializer.Deserialize(lines, ProgramConfigContext.Default.ProgramConfig) ?? new ProgramConfig();
                 RunningEnvironment = GetRunner(Config);
                 foreach (var bot in Config.Bots)
                 {
@@ -156,28 +155,13 @@ namespace SysBot.Pokemon.WinForms
         private void SaveCurrentConfig()
         {
             var cfg = GetCurrentConfiguration();
-            var lines = JsonConvert.SerializeObject(cfg, GetSettings());
+            var lines = JsonSerializer.Serialize(cfg, ProgramConfigContext.Default.ProgramConfig);
             File.WriteAllText(Program.ConfigPath, lines);
         }
 
-        private static JsonSerializerSettings GetSettings() => new()
-        {
-            Formatting = Formatting.Indented,
-            DefaultValueHandling = DefaultValueHandling.Include,
-            NullValueHandling = NullValueHandling.Ignore,
-            ContractResolver = new SerializableExpandableContractResolver(),
-        };
-
-        // https://stackoverflow.com/a/36643545
-        private sealed class SerializableExpandableContractResolver : DefaultContractResolver
-        {
-            protected override JsonContract CreateContract(Type objectType)
-            {
-                if (TypeDescriptor.GetAttributes(objectType).Contains(new TypeConverterAttribute(typeof(ExpandableObjectConverter))))
-                    return CreateObjectContract(objectType);
-                return base.CreateContract(objectType);
-            }
-        }
+        [JsonSerializable(typeof(ProgramConfig))]
+        [JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+        public sealed partial class ProgramConfigContext : JsonSerializerContext { }
 
         private void B_Start_Click(object sender, EventArgs e)
         {

@@ -1,32 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <LangVersion>11</LangVersion>
-    <Nullable>enable</Nullable>
     <Platforms>x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="PKHeX.Core" Version="23.1.30" />
-    <ProjectReference Include="..\SysBot.Pokemon\SysBot.Pokemon.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SysBot.Pokemon\SysBot.Pokemon.csproj" />
+  </ItemGroup>
+	
   <Choose>
-    
     <When Condition=" '$(Platform)' == 'x64' OR $(RuntimeIdentifier.EndsWith('x64')) ">
       <!-- x64 specific references -->
       <ItemGroup>
-        <PackageReference Include="Microsoft.Z3.x64" Version="4.8.10" />
+        <PackageReference Include="Microsoft.Z3" Version="4.12.0" />
       </ItemGroup>
     </When>
     
-    <Otherwise>
+    <When Condition=" '$(Platform)' == 'x86' OR $(RuntimeIdentifier.EndsWith('x86')) ">
       <!-- x86 specific references -->
       <ItemGroup>
-        <PackageReference Include="Microsoft.Z3.x86" Version="4.8.7" />
+        <PackageReference Include="Microsoft.Z3.x86" Version="4.12.0" />
       </ItemGroup>
-    </Otherwise>
+    </When>
   </Choose>
 
 </Project>
