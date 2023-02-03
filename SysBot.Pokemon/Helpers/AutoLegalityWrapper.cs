@@ -46,6 +46,8 @@ namespace SysBot.Pokemon
         {
             // Seed the Trainer Database with enough fake save files so that we return a generation sensitive format when needed.
             string OT = cfg.GenerateOT;
+            if (OT.Length == 0)
+                OT = "Blank"; // Will fail if actually left blank.
             ushort TID = cfg.GenerateTID16;
             ushort SID = cfg.GenerateSID16;
             int lang = (int)cfg.GenerateLanguage;
