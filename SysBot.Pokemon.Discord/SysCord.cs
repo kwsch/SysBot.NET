@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using static Discord.GatewayIntents;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -48,7 +49,7 @@ namespace SysBot.Pokemon.Discord
             {
                 // How much logging do you want to see?
                 LogLevel = LogSeverity.Info,
-
+                GatewayIntents = Guilds | GuildMessages | DirectMessages | GuildMembers | GuildPresences | MessageContent,
                 // If you or another service needs to do anything with messages
                 // (eg. checking Reactions, checking the content of edited/deleted messages),
                 // you must set the MessageCacheSize. You may adjust the number as needed.
