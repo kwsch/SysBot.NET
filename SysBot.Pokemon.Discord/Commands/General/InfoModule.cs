@@ -38,9 +38,9 @@ namespace SysBot.Pokemon.Discord
                 $"- {Format.Bold("Uptime")}: {GetUptime()}\n" +
                 $"- {Format.Bold("Runtime")}: {RuntimeInformation.FrameworkDescription} {RuntimeInformation.ProcessArchitecture} " +
                 $"({RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture})\n" +
-                $"- {Format.Bold("Buildtime")}: {GetBuildTime()}\n" +
-                $"- {Format.Bold("Core")}: {GetCoreDate()}\n" +
-                $"- {Format.Bold("AutoLegality")}: {GetALMDate()}\n"
+                $"- {Format.Bold("Buildtime")}: {GetVersionInfo("SysBot.Base", false)}\n" +
+                $"- {Format.Bold("Core Version")}: {GetVersionInfo("PKHeX.Core")}\n" +
+                $"- {Format.Bold("AutoLegality Version")}: {GetVersionInfo("PKHeX.Core.AutoMod")}\n"
                 );
 
             builder.AddField("Stats",
@@ -56,26 +56,29 @@ namespace SysBot.Pokemon.Discord
         private static string GetUptime() => (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss");
         private static string GetHeapSize() => Math.Round(GC.GetTotalMemory(true) / (1024.0 * 1024.0), 2).ToString(CultureInfo.CurrentCulture);
 
-        private static string GetBuildTime()
+        private static string GetVersionInfo(string assemblyName, bool inclVersion = true)
         {
-            var assembly = Assembly.GetEntryAssembly();
-            if (assembly == null)
-                return "Unknown";
-            return File.GetLastWriteTime(assembly.Location).ToString(@"yy-MM-dd\.hh\:mm");
-        }
+            const string _default = "Unknown";
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var assembly = assemblies.FirstOrDefault(x => x.GetName().Name == assemblyName);
+            if (assembly is null)
+                return _default;
 
-        public static string GetCoreDate() => GetDateOfDll("PKHeX.Core.dll");
-        public static string GetALMDate() => GetDateOfDll("PKHeX.Core.AutoMod.dll");
+            var attribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+            if (attribute is null)
+                return _default;
 
-        private static string GetDateOfDll(string dll)
-        {
-            var assembly = Assembly.GetEntryAssembly();
-            if (assembly == null)
-                return "Unknown";
-            var folder = Path.GetDirectoryName(assembly.Location);
-            var path = Path.Combine(folder ?? "", dll);
-            var date = File.GetLastWriteTime(path);
-            return date.ToString(@"yy-MM-dd\.hh\:mm");
+            var info = attribute.InformationalVersion;
+            var split = info.Split('+');
+            if (split.Length >= 2)
+            {
+                var version = split[0];
+                var revision = split[1];
+                if (DateTime.TryParseExact(revision, "yyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var buildTime))
+                    return inclVersion ? $"{version} ({buildTime:yy-MM-dd\\.hh\\:mm})" : buildTime.ToString(@"yy-MM-dd\.hh\:mm");
+                return inclVersion ? version : _default;
+            }
+            return _default;
         }
     }
 }
