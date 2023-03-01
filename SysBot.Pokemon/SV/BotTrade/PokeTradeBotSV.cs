@@ -244,13 +244,13 @@ namespace SysBot.Pokemon
             if (!StartFromOverworld && !await IsConnectedOnline(ConnectedOffset, token).ConfigureAwait(false))
             {
                 await RecoverToOverworld(token).ConfigureAwait(false);
-                if (!await ConnectAndEnterPortal(Hub.Config, token).ConfigureAwait(false))
+                if (!await ConnectAndEnterPortal(token).ConfigureAwait(false))
                 {
                     await RecoverToOverworld(token).ConfigureAwait(false);
                     return PokeTradeResult.RecoverStart;
                 }
             }
-            else if (StartFromOverworld && !await ConnectAndEnterPortal(Hub.Config, token).ConfigureAwait(false))
+            else if (StartFromOverworld && !await ConnectAndEnterPortal(token).ConfigureAwait(false))
             {
                 await RecoverToOverworld(token).ConfigureAwait(false);
                 return PokeTradeResult.RecoverStart;
@@ -560,7 +560,7 @@ namespace SysBot.Pokemon
 
         // Should be used from the overworld. Opens X menu, attempts to connect online, and enters the Portal.
         // The cursor should be positioned over Link Trade.
-        private async Task<bool> ConnectAndEnterPortal(PokeTradeHubConfig config, CancellationToken token)
+        private async Task<bool> ConnectAndEnterPortal(CancellationToken token)
         {
             if (!await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
                 await RecoverToOverworld(token).ConfigureAwait(false);
@@ -570,16 +570,18 @@ namespace SysBot.Pokemon
             // Open the X Menu.
             await Click(X, 1_000, token).ConfigureAwait(false);
 
-            // Connect online if not already.
-            if (!await ConnectToOnline(config, token).ConfigureAwait(false))
+            // Handle the news popping up.
+            if (await SwitchConnection.IsProgramRunning(LibAppletWeID, token).ConfigureAwait(false))
             {
-                Log("Failed to connect to online.");
-                return false; // Failed, either due to connection or softban.
+                Log("News detected, will close once it's loaded!");
+                await Task.Delay(5_000, token).ConfigureAwait(false);
+                await Click(B, 2_000, token).ConfigureAwait(false);
             }
 
-            // Make sure we're at the bottom of the Main Menu.
+            // Scroll to the bottom of the Main Menu so we don't need to care if Picnic is unlocked.
             await Click(DRIGHT, 0_300, token).ConfigureAwait(false);
             await PressAndHold(DDOWN, 1_000, 1_000, token).ConfigureAwait(false);
+            await Click(DUP, 0_200, token).ConfigureAwait(false);
             await Click(DUP, 0_200, token).ConfigureAwait(false);
             await Click(DUP, 0_200, token).ConfigureAwait(false);
             await Click(A, 1_000, token).ConfigureAwait(false);
@@ -587,7 +589,7 @@ namespace SysBot.Pokemon
             return await SetUpPortalCursor(token).ConfigureAwait(false);
         }
 
-        // Waits for the Portal to load (slow) and then moves the cursor down to link trade.
+        // Waits for the Portal to load (slow) and then moves the cursor down to Link Trade.
         private async Task<bool> SetUpPortalCursor(CancellationToken token)
         {
             // Wait for the portal to load.
@@ -602,6 +604,13 @@ namespace SysBot.Pokemon
                 }
             }
             await Task.Delay(2_000 + Hub.Config.Timings.ExtraTimeLoadPortal, token).ConfigureAwait(false);
+
+            // Connect online if not already.
+            if (!await ConnectToOnline(Hub.Config, token).ConfigureAwait(false))
+            {
+                Log("Failed to connect to online.");
+                return false; // Failed, either due to connection or softban.
+            }
 
             // Handle the news popping up.
             if (await SwitchConnection.IsProgramRunning(LibAppletWeID, token).ConfigureAwait(false))
@@ -682,7 +691,7 @@ namespace SysBot.Pokemon
                     Log("Failed to exit box, rebooting the game.");
                     if (!await RecoverToOverworld(token).ConfigureAwait(false))
                         await RestartGameSV(token).ConfigureAwait(false);
-                    await ConnectAndEnterPortal(Hub.Config, token).ConfigureAwait(false);
+                    await ConnectAndEnterPortal(token).ConfigureAwait(false);
                     return;
                 }
             }
@@ -702,7 +711,7 @@ namespace SysBot.Pokemon
                     Log("Failed to load the portal, rebooting the game.");
                     if (!await RecoverToOverworld(token).ConfigureAwait(false))
                         await RestartGameSV(token).ConfigureAwait(false);
-                    await ConnectAndEnterPortal(Hub.Config, token).ConfigureAwait(false);
+                    await ConnectAndEnterPortal(token).ConfigureAwait(false);
                     return;
                 }
             }
