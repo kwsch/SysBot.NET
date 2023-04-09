@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
+using System.Globalization;
 
 namespace SysBot.Pokemon
 {
@@ -77,7 +78,7 @@ namespace SysBot.Pokemon
                     if (Connection.Connected)
                         break;
 
-                    await Task.Delay(30_000 + (int)extraDelay, token).ConfigureAwait(false);
+                    await Task.Delay(30_000 + extraDelay, token).ConfigureAwait(false);
                 }
             }
             return Connection.Connected;
@@ -86,7 +87,7 @@ namespace SysBot.Pokemon
         public async Task VerifyBotbaseVersion(CancellationToken token)
         {
             var data = await SwitchConnection.GetBotbaseVersion(token).ConfigureAwait(false);
-            var version = decimal.TryParse(data, out var v) ? v : 0;
+            var version = decimal.TryParse(data, CultureInfo.InvariantCulture, out var v) ? v : 0;
             if (version < BotbaseVersion)
             {
                 var protocol = Config.Connection.Protocol;
