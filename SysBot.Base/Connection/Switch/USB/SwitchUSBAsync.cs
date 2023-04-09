@@ -84,7 +84,7 @@ namespace SysBot.Base
             {
                 Send(SwitchCommand.GetGameInfo(info, false));
                 byte[] baseBytes = ReadBulkUSB();
-                return Encoding.UTF8.GetString(baseBytes);
+                return Encoding.UTF8.GetString(baseBytes).Trim('\0');
             }, token);
         }
 
