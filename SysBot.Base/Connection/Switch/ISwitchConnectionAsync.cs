@@ -12,6 +12,8 @@ namespace SysBot.Base
         Task<ulong> GetMainNsoBaseAsync(CancellationToken token);
         Task<ulong> GetHeapBaseAsync(CancellationToken token);
         Task<string> GetTitleID(CancellationToken token);
+        Task<string> GetBotbaseVersion(CancellationToken token);
+        Task<string> GetGameInfo(string info, CancellationToken token);
         Task<bool> IsProgramRunning(ulong pid, CancellationToken token);
 
         Task<byte[]> ReadBytesMainAsync(ulong offset, int length, CancellationToken token);

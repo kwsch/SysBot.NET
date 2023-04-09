@@ -7,6 +7,7 @@ namespace SysBot.Pokemon
     /// </summary>
     public static class PokeDataOffsets
     {
+        public const string SWSHGameVersion = "1.3.2";
         public const string SwordID = "0100ABF008968000";
         public const string ShieldID = "01008DB008C2C000";
 

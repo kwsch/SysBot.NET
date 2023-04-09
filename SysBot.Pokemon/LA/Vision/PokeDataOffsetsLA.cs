@@ -7,6 +7,7 @@ namespace SysBot.Pokemon
     /// </summary>
     public class PokeDataOffsetsLA
     {
+        public const string LAGameVersion = "1.1.1";
         public const string LegendsArceusID = "01001F5010DFA000";
         public IReadOnlyList<long> BoxStartPokemonPointer { get; } = new long[] { 0x42BA6B0, 0x1F0, 0x68 };
         public IReadOnlyList<long> LinkTradePartnerPokemonPointer { get; } = new long[] { 0x42BEAD8, 0x188, 0x78, 0x98, 0x58, 0x0 };

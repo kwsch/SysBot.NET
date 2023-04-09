@@ -4,6 +4,7 @@ namespace SysBot.Pokemon
 {
     public abstract class BasePokeDataOffsetsBS : IPokeDataOffsetsBS
     {
+        public const string BSGameVersion = "1.3.0";
         public const string ShiningPearlID = "010018E011D92000";
         public const string BrilliantDiamondID = "0100000011D90000";
 

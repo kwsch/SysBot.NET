@@ -129,6 +129,18 @@ namespace SysBot.Base
             return Encoding.ASCII.GetString(bytes).Trim();
         }
 
+        public async Task<string> GetBotbaseVersion(CancellationToken token)
+        {
+            var bytes = await ReadRaw(SwitchCommand.GetBotbaseVersion(), 4, token).ConfigureAwait(false);
+            return Encoding.ASCII.GetString(bytes).Trim();
+        }
+
+        public async Task<string> GetGameInfo(string info, CancellationToken token)
+        {
+            var bytes = await ReadRaw(SwitchCommand.GetGameInfo(info), 17, token).ConfigureAwait(false);
+            return Encoding.ASCII.GetString(bytes).Trim(new char[] { '\0', '\n'});
+        }
+
         public async Task<bool> IsProgramRunning(ulong pid, CancellationToken token)
         {
             var bytes = await ReadRaw(SwitchCommand.IsProgramRunning(pid), 17, token).ConfigureAwait(false);
