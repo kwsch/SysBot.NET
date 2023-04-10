@@ -13,9 +13,6 @@ namespace SysBot.Pokemon
         [Browsable(false)]
         public override bool Shuffled => Distribution.Shuffled;
 
-        [Category(FeatureToggle), Description("Set your Switch console language here for SWSH bots to work properly. All consoles should be using the same language.")]
-        public ConsoleLanguageParameter ConsoleLanguage { get; set; }
-
         [Category(Operation)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public QueueSettings Queues { get; set; } = new();

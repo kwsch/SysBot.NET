@@ -1,8 +1,8 @@
 ﻿using PKHeX.Core;
+using SysBot.Base;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using SysBot.Base;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Base.SwitchStick;
 using static SysBot.Pokemon.PokeDataOffsets;
@@ -26,10 +26,10 @@ namespace SysBot.Pokemon
             StopConditionSettings.InitializeTargetIVs(Hub.Config, out DesiredMinIVs, out DesiredMaxIVs);
         }
 
-        private int encounterCount;
+        // Cached offsets that stay the same per session.
+        private ulong OverworldOffset;
 
-        private const int InjectBox = 0;
-        private const int InjectSlot = 0;
+        private int encounterCount;
 
         private static readonly PK8 Blank = new();
 
@@ -39,8 +39,9 @@ namespace SysBot.Pokemon
 
             Log("Identifying trainer data of the host console.");
             await IdentifyTrainer(token).ConfigureAwait(false);
+            await SetupBoxState(DumpSetting, token).ConfigureAwait(false);
 
-            await SetupBoxState(token).ConfigureAwait(false);
+            OverworldOffset = await SwitchConnection.PointerAll(Offsets.OverworldPointer, token).ConfigureAwait(false);
 
             Log("Starting main EggBot loop.");
             Config.IterateNextRoutine();
@@ -81,17 +82,17 @@ namespace SysBot.Pokemon
                 return true;
 
             Log($"Egg available after {attempts} attempts! Clearing destination slot.");
-            await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
+            await SetBoxPokemon(Blank, 0, 0, token).ConfigureAwait(false);
 
             for (int i = 0; i < 6; i++)
                 await Click(A, 0_400, token).ConfigureAwait(false);
 
             // Safe to mash B from here until we get out of all menus.
-            while (!await IsOnOverworld(Hub.Config, token).ConfigureAwait(false))
+            while (!await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
                 await Click(B, 0_400, token).ConfigureAwait(false);
 
             Log("Egg received. Checking details.");
-            var pk = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
+            var pk = await ReadBoxPokemon(0, 0, token).ConfigureAwait(false);
             if (pk.Species == 0)
             {
                 Log("Invalid data detected in destination slot. Restarting loop.");
@@ -133,21 +134,6 @@ namespace SysBot.Pokemon
             while (IsWaiting)
                 await Task.Delay(1_000, token).ConfigureAwait(false);
             return false;
-        }
-
-        private async Task SetupBoxState(CancellationToken token)
-        {
-            await SetCurrentBox(0, token).ConfigureAwait(false);
-
-            var existing = await ReadBoxPokemon(InjectBox, InjectSlot, token).ConfigureAwait(false);
-            if (existing.Species != 0 && existing.ChecksumValid)
-            {
-                Log("Destination slot is occupied! Dumping the Pokémon found there...");
-                DumpPokemon(DumpSetting.DumpFolder, "saved", existing);
-            }
-
-            Log("Clearing destination slot to start the bot.");
-            await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
         }
 
         private bool IsWaiting;

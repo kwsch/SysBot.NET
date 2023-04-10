@@ -20,6 +20,9 @@ namespace SysBot.Pokemon
             Settings = hub.Config.RaidSWSH;
         }
 
+        // Cached offsets that stay the same per session.
+        private ulong OverworldOffset;
+
         private int encounterCount;
         private bool deleteFriends;
         private bool addFriends;
@@ -28,7 +31,7 @@ namespace SysBot.Pokemon
 
         public override async Task MainLoop(CancellationToken token)
         {
-            if (Settings.MinTimeToWait is < 0 or > 180)
+            if (Settings.TimeToWait is < 0 or > 180)
             {
                 Log("Time to wait must be between 0 and 180 seconds.");
                 return;
@@ -38,6 +41,8 @@ namespace SysBot.Pokemon
             {
                 Log("Identifying trainer data of the host console.");
                 await IdentifyTrainer(token).ConfigureAwait(false);
+                await InitializeSessionOffsets(token).ConfigureAwait(false);
+
                 await InitializeHardware(Settings, token).ConfigureAwait(false);
 
                 Log("Starting main RaidBot loop.");
@@ -87,8 +92,7 @@ namespace SysBot.Pokemon
                     if (Settings.NumberFriendsToAdd > 0 && Settings.RaidsBetweenAddFriends > 0)
                         addFriends = (encounterCount - Settings.InitialRaidsToHost) % Settings.RaidsBetweenAddFriends == 0;
                     if (Settings.NumberFriendsToDelete > 0 && Settings.RaidsBetweenDeleteFriends > 0)
-                        deleteFriends = (encounterCount - Settings.InitialRaidsToHost) % Settings.RaidsBetweenDeleteFriends ==
-                                        0;
+                        deleteFriends = (encounterCount - Settings.InitialRaidsToHost) % Settings.RaidsBetweenDeleteFriends == 0;
                 }
 
                 int code = Settings.GetRandomRaidCode();
@@ -109,7 +113,7 @@ namespace SysBot.Pokemon
         private async Task HostRaidAsync(int code, CancellationToken token)
         {
             // Connect to Y-Comm
-            await EnsureConnectedToYComm(Hub.Config, token).ConfigureAwait(false);
+            await EnsureConnectedToYComm(OverworldOffset, Hub.Config, token).ConfigureAwait(false);
 
             // Press A and stall out a bit for the loading
             await Click(A, 5_000 + Hub.Config.Timings.ExtraTimeLoadRaid, token).ConfigureAwait(false);
@@ -126,7 +130,8 @@ namespace SysBot.Pokemon
                 // Set Link code
                 await Click(PLUS, 1_000, token).ConfigureAwait(false);
                 await EnterLinkCode(code, Hub.Config, token).ConfigureAwait(false);
-                await Click(PLUS, 2_000, token).ConfigureAwait(false);
+                await Click(PLUS, 4_000, token).ConfigureAwait(false);
+                Log("Confirming the Link Code.");
                 await Click(A, 2_000, token).ConfigureAwait(false);
             }
 
@@ -134,6 +139,7 @@ namespace SysBot.Pokemon
                 EchoUtil.Echo($"Send a friend request to Friend Code **{Settings.FriendCode}** to join in! Friends will be added after this raid.");
 
             // Invite others, confirm Pokémon and wait
+            Log("Inviting others to the raid...");
             await Click(A, 7_000 + Hub.Config.Timings.ExtraTimeOpenRaid, token).ConfigureAwait(false);
             await Click(DUP, 1_000, token).ConfigureAwait(false);
             await Click(A, 1_000, token).ConfigureAwait(false);
@@ -143,7 +149,7 @@ namespace SysBot.Pokemon
             string raiddescmsg = string.IsNullOrEmpty(Settings.RaidDescription) ? ((Species)raidBossSpecies).ToString() : Settings.RaidDescription;
             EchoUtil.Echo($"Raid lobby for {raiddescmsg} is open with {linkcodemsg}.");
 
-            var timetowait = Settings.MinTimeToWait * 1_000;
+            var timetowait = Settings.TimeToWait * 1_000;
             var timetojoinraid = 175_000 - timetowait;
 
             Log("Waiting on raid party...");
@@ -228,9 +234,17 @@ namespace SysBot.Pokemon
                 await DeleteAddFriends(token).ConfigureAwait(false);
 
             await StartGame(Hub.Config, token).ConfigureAwait(false);
+            await InitializeSessionOffsets(token).ConfigureAwait(false);
 
-            await EnsureConnectedToYComm(Hub.Config, token).ConfigureAwait(false);
+            await EnsureConnectedToYComm(OverworldOffset, Hub.Config, token).ConfigureAwait(false);
             Log("Reconnected to Y-Comm!");
+        }
+
+        // For pointer offsets that don't change per session are accessed frequently, so set these each time we start.
+        private async Task InitializeSessionOffsets(CancellationToken token)
+        {
+            Log("Caching session offsets...");
+            OverworldOffset = await SwitchConnection.PointerAll(Offsets.OverworldPointer, token).ConfigureAwait(false);
         }
 
         private async Task DeleteAddFriends(CancellationToken token)

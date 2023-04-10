@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using PKHeX.Core;
+﻿using PKHeX.Core;
+using SysBot.Base;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
-using SysBot.Base;
 
 namespace SysBot.Pokemon
 {
@@ -13,8 +13,8 @@ namespace SysBot.Pokemon
         private const string FeatureToggle = nameof(FeatureToggle);
         public override string ToString() => "Raid Bot Settings";
 
-        [Category(Hosting), Description("Minimum amount of seconds to wait before starting a raid. Ranges from 0 to 180 seconds.")]
-        public int MinTimeToWait { get; set; } = 90;
+        [Category(Hosting), Description("Number of seconds to wait before trying to start a raid. Ranges from 0 to 180 seconds.")]
+        public int TimeToWait { get; set; } = 90;
 
         [Category(Hosting), Description("Minimum Link Code to host the raid with. Set this to -1 to host with no code.")]
         public int MinRaidCode { get; set; } = 8180;

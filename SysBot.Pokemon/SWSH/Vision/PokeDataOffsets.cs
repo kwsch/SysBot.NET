@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace SysBot.Pokemon
 {
     /// <summary>
     /// Sword &amp; Shield RAM offsets
     /// </summary>
-    public static class PokeDataOffsets
+    public class PokeDataOffsets
     {
         public const string SWSHGameVersion = "1.3.2";
         public const string SwordID = "0100ABF008968000";
@@ -70,29 +71,18 @@ namespace SysBot.Pokemon
         public const int TrainerDataLength = 0x110;
 
         #region ScreenDetection
-        // CurrentScreenOffset can be unreliable for Overworld; this one is 1 on Overworld and 0 otherwise.
-        // Varies based on console language which is configured in Hub.
-        // Default setting works for English, Dutch, Portuguese, and Russian
-        public const uint OverworldOffset = 0x2F770638;
-        public const uint OverworldOffsetFrench = 0x2F770828;
-        public const uint OverworldOffsetGerman = 0x2F770908;
-        public const uint OverworldOffsetSpanish = 0x2F7707F8;
-        public const uint OverworldOffsetItalian = 0x2F7705B8;
-        public const uint OverworldOffsetJapanese = 0x2F770798;
-        public const uint OverworldOffsetChineseT = 0x2F76F7D8;
-        public const uint OverworldOffsetChineseS = 0x2F76F838;
-        public const uint OverworldOffsetKorean = 0x2F76FC38;
+        // Stable overworld detection. Value is 1 on overworld and 0 otherwise.
+        public IReadOnlyList<long> OverworldPointer { get; } = new long[] { 0x2636678, 0xC0, 0x80 };
 
-        // For detecting when we're on the in-battle menu.
+        // For detecting when we're on the in-battle menu, so we can flee.
         public const uint BattleMenuOffset = 0x6B578EDC;
 
         // Original screen detection offset.
         public const uint CurrentScreenOffset = 0x6B30FA00;
-
-        // We use this offset to check if we're in the box. It can be either value for different users.
+        // Used for checking if we're in a box. It can be either value for different users.
         public const uint CurrentScreen_Box1 = 0xFF00D59B;
         public const uint CurrentScreen_Box2 = 0xFF000000;
-
+        // Value when user is softbanned.
         public const uint CurrentScreen_Softban = 0xFF000000;
         #endregion
 
@@ -100,27 +90,14 @@ namespace SysBot.Pokemon
         {
             TradeMethod.LinkTrade => LinkTradePartnerNameOffset,
             TradeMethod.SurpriseTrade => SurpriseTradePartnerNameOffset,
-            _ => throw new ArgumentException(nameof(tradeMethod)),
+            _ => throw new ArgumentException("Trainer name offset is not available for this trade method.", nameof(tradeMethod)),
         };
 
         public static uint GetTrainerTIDSIDOffset(TradeMethod tradeMethod) => tradeMethod switch
         {
             TradeMethod.LinkTrade => LinkTradePartnerTIDSIDOffset,
             TradeMethod.SurpriseTrade => SurpriseTradePartnerTIDSIDOffset,
-            _ => throw new ArgumentException(nameof(tradeMethod)),
-        };
-
-        public static uint GetOverworldOffset(ConsoleLanguageParameter value) => value switch
-        {
-            ConsoleLanguageParameter.French => OverworldOffsetFrench,
-            ConsoleLanguageParameter.German => OverworldOffsetGerman,
-            ConsoleLanguageParameter.Spanish => OverworldOffsetSpanish,
-            ConsoleLanguageParameter.Italian => OverworldOffsetItalian,
-            ConsoleLanguageParameter.Japanese => OverworldOffsetJapanese,
-            ConsoleLanguageParameter.ChineseTraditional => OverworldOffsetChineseT,
-            ConsoleLanguageParameter.ChineseSimplified => OverworldOffsetChineseS,
-            ConsoleLanguageParameter.Korean => OverworldOffsetKorean,
-            _ => OverworldOffset,
+            _ => throw new ArgumentException("Trainer TID/SID offset is not available for this trade method.", nameof(tradeMethod)),
         };
     }
 }
