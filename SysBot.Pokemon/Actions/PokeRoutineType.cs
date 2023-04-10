@@ -38,7 +38,7 @@
         Reset = 1_001,
 
         /// <summary> Triggers encounters with Sword &amp; Shield box legend until the criteria is satisfied. </summary>
-        Dogbot = 1_002,
+        DogBot = 1_002,
 
         /// <summary> Similar to idle, but identifies the bot as available for Remote input (Twitch Plays, etc). </summary>
         RemoteControl = 6_000,

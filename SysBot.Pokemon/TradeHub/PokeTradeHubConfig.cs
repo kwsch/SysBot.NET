@@ -49,15 +49,7 @@ namespace SysBot.Pokemon
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public RaidSettings RaidSWSH { get; set; } = new();
 
-        [Category(BotEncounter)]
-        [TypeConverter(typeof(ExpandableObjectConverter))]
-        public FossilSettings FossilSWSH { get; set; } = new();
-
-        [Category(BotEncounter)]
-        [TypeConverter(typeof(ExpandableObjectConverter))]
-        public EggSettings EggSWSH { get; set; } = new();
-
-        [Category(BotEncounter), Description("Stop conditions for EggBot, FossilBot, and EncounterBot.")]
+        [Category(BotEncounter), Description("Stop conditions for EncounterBot.")]
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public StopConditionSettings StopConditions { get; set; } = new();
 

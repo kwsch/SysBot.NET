@@ -63,7 +63,7 @@ namespace SysBot.Pokemon
             Arctozolt => Math.Min(Bird, Dino),
             Dracovish => Math.Min(Fish, Drake),
             Arctovish => Math.Min(Fish, Dino),
-            _ => throw new ArgumentOutOfRangeException(nameof(FossilSpecies)),
+            _ => throw new ArgumentOutOfRangeException("Fossil species was invalid.", nameof(FossilSpecies)),
         };
     }
 }

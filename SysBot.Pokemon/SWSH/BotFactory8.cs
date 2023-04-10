@@ -15,12 +15,12 @@ namespace SysBot.Pokemon
                 or PokeRoutineType.SeedCheck
                 => new PokeTradeBot(Hub, cfg),
 
-            PokeRoutineType.EggFetch => new EggBot(cfg, Hub),
-            PokeRoutineType.FossilBot => new FossilBot(cfg, Hub),
             PokeRoutineType.RaidBot => new RaidBot(cfg, Hub),
             PokeRoutineType.EncounterLine => new EncounterBotLine(cfg, Hub),
+            PokeRoutineType.EggFetch => new EncounterBotEgg(cfg, Hub),
+            PokeRoutineType.FossilBot => new EncounterBotFossil(cfg, Hub),
             PokeRoutineType.Reset => new EncounterBotReset(cfg, Hub),
-            PokeRoutineType.Dogbot => new EncounterBotDog(cfg, Hub),
+            PokeRoutineType.DogBot => new EncounterBotDog(cfg, Hub),
 
             PokeRoutineType.RemoteControl => new RemoteControlBot(cfg),
             _ => throw new ArgumentException(nameof(cfg.NextRoutineType)),
@@ -36,12 +36,12 @@ namespace SysBot.Pokemon
                 or PokeRoutineType.SeedCheck
                 => true,
 
-            PokeRoutineType.EggFetch => true,
-            PokeRoutineType.FossilBot => true,
             PokeRoutineType.RaidBot => true,
             PokeRoutineType.EncounterLine => true,
+            PokeRoutineType.EggFetch => true,
+            PokeRoutineType.FossilBot => true,
             PokeRoutineType.Reset => true,
-            PokeRoutineType.Dogbot => true,
+            PokeRoutineType.DogBot => true,
 
             PokeRoutineType.RemoteControl => true,
 
