@@ -98,12 +98,12 @@ namespace SysBot.Pokemon
                 await Click(DDOWN, 300, token).ConfigureAwait(false);
 
             // A spam through accepting the fossil and agreeing to revive.
-            for (int i = 0; i < 8; i++)
-                await Click(A, 0_400, token).ConfigureAwait(false);
+            for (int i = 0; i < 16; i++)
+                await Click(A, 0_200, token).ConfigureAwait(false);
 
             // Safe to mash B from here until we get out of all menus.
             while (!await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
-                await Click(B, 0_400, token).ConfigureAwait(false);
+                await Click(B, 0_200, token).ConfigureAwait(false);
         }
     }
 }
