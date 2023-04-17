@@ -32,7 +32,7 @@ namespace SysBot.Pokemon
         [Category(Dumping), Description("Dump Trade: Dumping routine will stop after spending x seconds in trade.")]
         public int MaxDumpTradeTime { get; set; } = 180;
 
-        [Category(Dumping), Description("When enabled, the Dumping routine will output legality check information to the user.")]
+        [Category(Dumping), Description("Dump Trade: If enabled, Dumping routine will output legality check information to the user.")]
         public bool DumpTradeLegalityCheck { get; set; } = true;
 
         [Category(TradeConfig), Description("When enabled, the screen will be turned off during normal bot loop operation to save power.")]
