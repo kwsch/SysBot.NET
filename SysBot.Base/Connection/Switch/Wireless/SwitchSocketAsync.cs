@@ -131,8 +131,9 @@ namespace SysBot.Base
 
         public async Task<string> GetBotbaseVersion(CancellationToken token)
         {
-            var bytes = await ReadRaw(SwitchCommand.GetBotbaseVersion(), 4, token).ConfigureAwait(false);
-            return Encoding.ASCII.GetString(bytes).Trim();
+            // Allows up to 9 characters for version, and trims extra '\0' if unused.
+            var bytes = await ReadRaw(SwitchCommand.GetBotbaseVersion(), 10, token).ConfigureAwait(false);
+            return Encoding.ASCII.GetString(bytes).Trim('\0');
         }
 
         public async Task<string> GetGameInfo(string info, CancellationToken token)
