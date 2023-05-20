@@ -49,7 +49,7 @@ namespace SysBot.Pokemon
             var missing = EncounterPriority.Except(cfg.PrioritizeEncounters);
             cfg.PrioritizeEncounters.AddRange(missing);
             cfg.PrioritizeEncounters = cfg.PrioritizeEncounters.Distinct().ToList(); // Don't allow duplicates.
-            EncounterMovesetGenerator.PriorityList = cfg.PrioritizeEncounters; // Fix the original settings.
+            EncounterMovesetGenerator.PriorityList = cfg.PrioritizeEncounters;
         }
 
         private static void InitializeTrainerDatabase(LegalitySettings cfg)

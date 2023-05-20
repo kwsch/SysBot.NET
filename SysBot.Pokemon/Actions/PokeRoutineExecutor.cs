@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
 using System.Globalization;
+using static SysBot.Base.SwitchButton;
 
 namespace SysBot.Pokemon
 {
@@ -121,7 +122,7 @@ namespace SysBot.Pokemon
             {
                 if (found)
                     msg += " and ";
-                msg += "dmnt (cheat codes)";
+                msg += "dmnt (cheat codes?)";
                 found = true;
             }
             if (found)
@@ -130,6 +131,143 @@ namespace SysBot.Pokemon
                 Log(msg);
                 Log("Please remove interfering applications and reboot the Switch.");
             }
+        }
+
+        protected async Task<PokeTradeResult> CheckPartnerReputation(PokeRoutineExecutor<T> bot, PokeTradeDetail<T> poke, ulong TrainerNID, string TrainerName,
+            TradeAbuseSettings AbuseSettings, TrackedUserLog PreviousUsers, TrackedUserLog PreviousUsersDistribution, TrackedUserLog EncounteredUsers, CancellationToken token)
+        {
+            bool quit = false;
+            var user = poke.Trainer;
+            var isDistribution = poke.Type == PokeTradeType.Random;
+            var useridmsg = isDistribution ? "" : $" ({user.ID})";
+            var list = isDistribution ? PreviousUsersDistribution : PreviousUsers;
+
+            // Allows setting a cooldown for repeat trades. If the same user is encountered within the cooldown period, the user is warned and the trade will be ignored.
+            var cooldown = list.TryGetPrevious(TrainerNID);
+            if (cooldown != null)
+            {
+                var delta = DateTime.Now - cooldown.Time;
+                Log($"Last saw {user.TrainerName} {delta.TotalMinutes:F1} minutes ago (OT: {TrainerName}).");
+
+                var cd = AbuseSettings.TradeCooldown;
+                if (cd != 0 && TimeSpan.FromMinutes(cd) > delta)
+                {
+                    poke.Notifier.SendNotification(bot, poke, $"You are still on trade cooldown, and cannot trade for another {TimeSpan.FromMinutes(cd) - delta} minute(s).");
+                    var msg = $"Found {user.TrainerName}{useridmsg} ignoring the {cd} minute trade cooldown. Last encountered {delta.TotalMinutes:F1} minutes ago.";
+                    if (AbuseSettings.EchoNintendoOnlineIDCooldown)
+                        msg += $"\nID: {TrainerNID}";
+                    if (!string.IsNullOrWhiteSpace(AbuseSettings.CooldownAbuseEchoMention))
+                        msg = $"{AbuseSettings.CooldownAbuseEchoMention} {msg}";
+                    EchoUtil.Echo(msg);
+                    quit = true;
+                }
+            }
+
+            // For non-Distribution trades, we can optionally flag users sending to multiple in-game players.
+            // Can trigger if the user gets sniped, but can also catch abusers sending to many people.
+            if (!isDistribution)
+            {
+                var previousEncounter = EncounteredUsers.TryRegister(poke.Trainer.ID, TrainerName, poke.Trainer.ID);
+                if (previousEncounter != null && previousEncounter.Name != TrainerName)
+                {
+                    if (AbuseSettings.TradeAbuseAction != TradeAbuseAction.Ignore)
+                    {
+                        if (AbuseSettings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
+                        {
+                            await BlockUser(token).ConfigureAwait(false);
+                            if (AbuseSettings.BanIDWhenBlockingUser || bot is not PokeRoutineExecutor8) // Only ban ID if blocking in SWSH, always in other games.
+                            {
+                                AbuseSettings.BannedIDs.AddIfNew(new[] { GetReference(TrainerName, TrainerNID, "in-game block for sending to multiple in-game players") });
+                                Log($"Added {TrainerNID} to the BannedIDs list.");
+                            }
+                        }
+                        quit = true;
+                    }
+
+                    var msg = $"Found {user.TrainerName}{useridmsg} sending to multiple in-game players. Previous OT: {previousEncounter.Name}, Current OT: {TrainerName}";
+                    if (AbuseSettings.EchoNintendoOnlineIDMultiRecipients)
+                        msg += $"\nID: {TrainerNID}";
+                    if (!string.IsNullOrWhiteSpace(AbuseSettings.MultiRecipientEchoMention))
+                        msg = $"{AbuseSettings.MultiRecipientEchoMention} {msg}";
+                    EchoUtil.Echo(msg);
+                }
+            }
+
+            if (quit)
+                return PokeTradeResult.SuspiciousActivity;
+
+            // Try registering the partner in our list of recently seen.
+            // Get back the details of their previous interaction.
+            var previous = isDistribution
+                ? list.TryRegister(TrainerNID, TrainerName)
+                : list.TryRegister(TrainerNID, TrainerName, poke.Trainer.ID);
+            // For non-Distribution trades, flag users using multiple Discord/Twitch accounts to send to the same in-game player.
+            // This is usually to evade a ban or a trade cooldown.
+            if (previous != null && previous.NetworkID == TrainerNID && previous.RemoteID != user.ID && !isDistribution)
+            {
+                var delta = DateTime.Now - previous.Time;
+                if (delta < TimeSpan.FromMinutes(AbuseSettings.TradeAbuseExpiration) && AbuseSettings.TradeAbuseAction != TradeAbuseAction.Ignore)
+                {
+                    if (AbuseSettings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
+                    {
+                        await BlockUser(token).ConfigureAwait(false);
+                        if (AbuseSettings.BanIDWhenBlockingUser || bot is not PokeRoutineExecutor8) // Only ban ID if blocking in SWSH, always in other games.
+                        {
+                            AbuseSettings.BannedIDs.AddIfNew(new[] { GetReference(TrainerName, TrainerNID, "in-game block for multiple accounts") });
+                            Log($"Added {TrainerNID} to the BannedIDs list.");
+                        }
+                    }
+                    quit = true;
+                }
+
+                var msg = $"Found {user.TrainerName}{useridmsg} using multiple accounts.\nPreviously encountered {previous.Name} ({previous.RemoteID}) {delta.TotalMinutes:F1} minutes ago on OT: {TrainerName}.";
+                if (AbuseSettings.EchoNintendoOnlineIDMulti)
+                    msg += $"\nID: {TrainerNID}";
+                if (!string.IsNullOrWhiteSpace(AbuseSettings.MultiAbuseEchoMention))
+                    msg = $"{AbuseSettings.MultiAbuseEchoMention} {msg}";
+                EchoUtil.Echo(msg);
+            }
+
+            if (quit)
+                return PokeTradeResult.SuspiciousActivity;
+
+            // Matches to a list of banned NIDs, in case the user ever manages to enter a trade.
+            var entry = AbuseSettings.BannedIDs.List.Find(z => z.ID == TrainerNID);
+            if (entry != null)
+            {
+                if (AbuseSettings.BlockDetectedBannedUser && bot is PokeRoutineExecutor8)
+                    await BlockUser(token).ConfigureAwait(false);
+
+                var msg = $"{user.TrainerName}{useridmsg} is a banned user, and was encountered in-game using OT: {TrainerName}.";
+                if (!string.IsNullOrWhiteSpace(entry.Comment))
+                    msg += $"\nUser was banned for: {entry.Comment}";
+                if (!string.IsNullOrWhiteSpace(AbuseSettings.BannedIDMatchEchoMention))
+                    msg = $"{AbuseSettings.BannedIDMatchEchoMention} {msg}";
+                EchoUtil.Echo(msg);
+                return PokeTradeResult.SuspiciousActivity;
+            }
+
+            return PokeTradeResult.Success;
+        }
+
+        private static RemoteControlAccess GetReference(string name, ulong id, string comment) => new()
+        {
+            ID = id,
+            Name = name,
+            Comment = $"Added automatically on {DateTime.Now:yyyy.MM.dd-hh:mm:ss} ({comment})",
+        };
+
+        // Blocks a user from the box during in-game trades (SWSH).
+        protected async Task BlockUser(CancellationToken token)
+        {
+            Log("Blocking user in-game...");
+            await PressAndHold(RSTICK, 0_750, 0, token).ConfigureAwait(false);
+            await Click(DUP, 0_300, token).ConfigureAwait(false);
+            await Click(A, 1_300, token).ConfigureAwait(false);
+            await Click(A, 1_300, token).ConfigureAwait(false);
+            await Click(DUP, 0_300, token).ConfigureAwait(false);
+            await Click(A, 1_100, token).ConfigureAwait(false);
+            await Click(A, 1_100, token).ConfigureAwait(false);
         }
     }
 }
