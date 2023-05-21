@@ -20,10 +20,6 @@ namespace SysBot.Pokemon
 
         public ICountSettings Counts => TradeSettings;
 
-        public static readonly TrackedUserLog PreviousUsers = new();
-        public static readonly TrackedUserLog PreviousUsersDistribution = new();
-        public static readonly TrackedUserLog EncounteredUsers = new();
-
         /// <summary>
         /// Folder to dump received trade data to.
         /// </summary>

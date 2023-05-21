@@ -3,10 +3,11 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord
 {
-    public class OwnerModule : SudoModule
+    public class OwnerModule<T> : SudoModule<T> where T : PKM , new()
     {
         [Command("addSudo")]
         [Summary("Adds mentioned user to global sudo")]

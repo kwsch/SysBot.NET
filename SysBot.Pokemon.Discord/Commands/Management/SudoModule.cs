@@ -144,6 +144,49 @@ namespace SysBot.Pokemon.Discord
             await ReplyAsync(Format.Code(msg)).ConfigureAwait(false);
         }
 
+        [Command("forgetUser")]
+        [Alias("forget")]
+        [Summary("Forgets users that were previously encountered.")]
+        [RequireSudo]
+        public async Task ForgetPreviousUser([Summary("Comma Separated Online IDs")][Remainder] string content)
+        {
+            var IDs = GetIDs(content);
+            var objects = IDs.Select(GetReference);
+
+            foreach (var ID in IDs)
+            {
+                PokeRoutineExecutorBase.PreviousUsers.RemoveAll(ID);
+                PokeRoutineExecutorBase.PreviousUsersDistribution.RemoveAll(ID);
+            }
+            await ReplyAsync("Done.").ConfigureAwait(false);
+        }
+
+        [Command("previousUserSummary")]
+        [Alias("prevUsers")]
+        [Summary("Prints a list of previously encountered users.")]
+        [RequireSudo]
+        public async Task PrintPreviousUsers()
+        {
+            bool found = false;
+            var lines = PokeRoutineExecutorBase.PreviousUsers.Summarize();
+            if (lines.Any())
+            {
+                found = true;
+                var msg = "Previous Users:\n" + string.Join("\n", lines);
+                await ReplyAsync(Format.Code(msg)).ConfigureAwait(false);
+            }
+
+            lines = PokeRoutineExecutorBase.PreviousUsersDistribution.Summarize();
+            if (lines.Any())
+            {
+                found = true;
+                var msg = "Previous Distribution Users:\n" + string.Join("\n", lines);
+                await ReplyAsync(Format.Code(msg)).ConfigureAwait(false);
+            }
+            if (!found)
+                await ReplyAsync("No previous users found.").ConfigureAwait(false);
+        }
+
         private RemoteControlAccess GetReference(IUser channel) => new()
         {
             ID = channel.Id,
