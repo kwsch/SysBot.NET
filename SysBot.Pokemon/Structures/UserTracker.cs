@@ -65,7 +65,11 @@ namespace SysBot.Pokemon
                 return Users.Find(z => z.NetworkID == trainerNid);
         }
 
-        public IEnumerable<string> Summarize() => Users.FindAll(z => z.NetworkID != 0).ConvertAll(z => $"{z.Name}, ID: {z.NetworkID}, Remote ID: {z.RemoteID}");
+        public IEnumerable<string> Summarize()
+        {
+            lock (_sync)
+                return Users.FindAll(z => z.NetworkID != 0).ConvertAll(z => $"{z.Name}, ID: {z.NetworkID}, Remote ID: {z.RemoteID}");
+        }
     }
 
     public sealed record TrackedUser
