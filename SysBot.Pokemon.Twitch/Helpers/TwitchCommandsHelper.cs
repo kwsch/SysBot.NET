@@ -1,6 +1,6 @@
-using System;
 using PKHeX.Core;
 using SysBot.Base;
+using System;
 
 namespace SysBot.Pokemon.Twitch
 {

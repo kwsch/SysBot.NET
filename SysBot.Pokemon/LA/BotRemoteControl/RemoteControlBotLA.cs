@@ -1,7 +1,7 @@
-﻿using System;
+﻿using SysBot.Base;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using SysBot.Base;
 
 namespace SysBot.Pokemon
 {

@@ -202,7 +202,7 @@ namespace SysBot.Pokemon.Twitch
         private string HandleCommand(TwitchLibMessage m, string c, string args, bool whisper)
         {
             bool sudo() => m is ChatMessage ch && (ch.IsBroadcaster || Settings.IsSudo(m.Username));
-            bool subscriber() => m is ChatMessage {IsSubscriber: true};
+            bool subscriber() => m is ChatMessage { IsSubscriber: true };
 
             switch (c)
             {

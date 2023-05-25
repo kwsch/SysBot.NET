@@ -1,8 +1,8 @@
-﻿using System.Linq;
-using PKHeX.Core;
+﻿using PKHeX.Core;
 using PKHeX.Core.Searching;
 using SysBot.Base;
 using System;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -525,7 +525,7 @@ namespace SysBot.Pokemon
                 Log($"Shown Pokémon is: {(la.Valid ? "Valid" : "Invalid")}.");
 
                 ctr++;
-                var msg = Hub.Config.Trade.DumpTradeLegalityCheck ? verbose: $"File {ctr}";
+                var msg = Hub.Config.Trade.DumpTradeLegalityCheck ? verbose : $"File {ctr}";
 
                 // Extra information about trainer data for people requesting with their own trainer data.
                 var ot = pk.OT_Name;

@@ -13,7 +13,7 @@ namespace SysBot.Base
 
         protected SwitchRoutineExecutor(IConsoleBotManaged<IConsoleConnection, IConsoleConnectionAsync> cfg) : base(cfg)
         {
-            UseCRLF = cfg.GetInnerConfig() is ISwitchConnectionConfig {UseCRLF: true};
+            UseCRLF = cfg.GetInnerConfig() is ISwitchConnectionConfig { UseCRLF: true };
             if (Connection is not ISwitchConnectionAsync connect)
                 throw new System.Exception("Not a valid switch connection");
             SwitchConnection = connect;

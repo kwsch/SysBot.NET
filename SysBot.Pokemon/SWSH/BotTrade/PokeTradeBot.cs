@@ -4,8 +4,8 @@ using SysBot.Base;
 using System;
 using System.Linq;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Pokemon.PokeDataOffsets;
 
@@ -153,7 +153,7 @@ namespace SysBot.Pokemon
             }
 
             const int interval = 10;
-            if (waitCounter % interval == interval-1 && Hub.Config.AntiIdle)
+            if (waitCounter % interval == interval - 1 && Hub.Config.AntiIdle)
                 await Click(B, 1_000, token).ConfigureAwait(false);
             else
                 await Task.Delay(1_000, token).ConfigureAwait(false);

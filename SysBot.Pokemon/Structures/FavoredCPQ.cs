@@ -65,8 +65,8 @@ namespace SysBot.Pokemon
             int unfavored = total - favored;
             int pos = s.Mode switch
             {
-                FavoredMode.Exponent => (int) Math.Ceiling(Math.Pow(unfavored, s.Exponent)),
-                FavoredMode.Multiply => (int) Math.Ceiling(unfavored * s.Multiply),
+                FavoredMode.Exponent => (int)Math.Ceiling(Math.Pow(unfavored, s.Exponent)),
+                FavoredMode.Multiply => (int)Math.Ceiling(unfavored * s.Multiply),
                 _ => unfavored,
             };
 

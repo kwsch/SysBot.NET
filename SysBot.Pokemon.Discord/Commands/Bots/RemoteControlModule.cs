@@ -1,9 +1,9 @@
 ﻿using Discord.Commands;
+using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord
 {
@@ -109,7 +109,7 @@ namespace SysBot.Pokemon.Discord
             return r.GetBot(ip) ?? r.Bots.Find(x => x.IsRunning); // safe fallback for users who mistype IP address for single bot instances
         }
 
-        private async Task ClickAsyncImpl(SwitchButton button,BotSource<PokeBotState> bot)
+        private async Task ClickAsyncImpl(SwitchButton button, BotSource<PokeBotState> bot)
         {
             if (!Enum.IsDefined(typeof(SwitchButton), button))
             {
@@ -123,7 +123,7 @@ namespace SysBot.Pokemon.Discord
             await ReplyAsync($"{b.Connection.Name} has performed: {button}").ConfigureAwait(false);
         }
 
-        private async Task SetStickAsyncImpl(SwitchStick s, short x, short y, ushort ms,BotSource<PokeBotState> bot)
+        private async Task SetStickAsyncImpl(SwitchStick s, short x, short y, ushort ms, BotSource<PokeBotState> bot)
         {
             if (!Enum.IsDefined(typeof(SwitchStick), s))
             {

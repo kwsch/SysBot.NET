@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using Discord.Net;
+using Discord.WebSocket;
 using PKHeX.Core;
 using System.Threading.Tasks;
 

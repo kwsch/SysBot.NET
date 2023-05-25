@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using SysBot.Base;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
-using SysBot.Base;
 
 namespace SysBot.Pokemon
 {

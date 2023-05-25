@@ -1,10 +1,10 @@
-﻿using System;
+﻿using PKHeX.Core;
+using SysBot.Base;
+using SysBot.Pokemon.Z3;
+using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using PKHeX.Core;
-using SysBot.Base;
-using SysBot.Pokemon.Z3;
 
 namespace SysBot.Pokemon.ConsoleApp
 {

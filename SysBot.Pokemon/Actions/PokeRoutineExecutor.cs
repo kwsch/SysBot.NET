@@ -1,11 +1,11 @@
 ﻿using PKHeX.Core;
 using SysBot.Base;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System;
-using System.Globalization;
 using static SysBot.Base.SwitchButton;
 
 namespace SysBot.Pokemon

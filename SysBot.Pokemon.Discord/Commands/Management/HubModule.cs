@@ -1,11 +1,11 @@
 ﻿using Discord;
 using Discord.Commands;
 using PKHeX.Core;
+using SysBot.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SysBot.Base;
 
 namespace SysBot.Pokemon.Discord
 {
