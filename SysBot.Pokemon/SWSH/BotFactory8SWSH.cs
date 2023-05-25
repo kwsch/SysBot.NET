@@ -3,7 +3,7 @@ using System;
 
 namespace SysBot.Pokemon
 {
-    public sealed class BotFactory8 : BotFactory<PK8>
+    public sealed class BotFactory8SWSH : BotFactory<PK8>
     {
         public override PokeRoutineExecutorBase CreateBot(PokeTradeHub<PK8> Hub, PokeBotState cfg) => cfg.NextRoutineType switch
         {
@@ -13,7 +13,7 @@ namespace SysBot.Pokemon
                 or PokeRoutineType.Clone
                 or PokeRoutineType.Dump
                 or PokeRoutineType.SeedCheck
-                => new PokeTradeBot(Hub, cfg),
+                => new PokeTradeBotSWSH(Hub, cfg),
 
             PokeRoutineType.RaidBot => new RaidBot(cfg, Hub),
             PokeRoutineType.EncounterLine => new EncounterBotLine(cfg, Hub),
@@ -22,7 +22,7 @@ namespace SysBot.Pokemon
             PokeRoutineType.Reset => new EncounterBotReset(cfg, Hub),
             PokeRoutineType.DogBot => new EncounterBotDog(cfg, Hub),
 
-            PokeRoutineType.RemoteControl => new RemoteControlBot(cfg),
+            PokeRoutineType.RemoteControl => new RemoteControlBotSWSH(cfg),
             _ => throw new ArgumentException(nameof(cfg.NextRoutineType)),
         };
 

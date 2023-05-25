@@ -6,17 +6,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;
-using static SysBot.Pokemon.PokeDataOffsets;
+using static SysBot.Pokemon.PokeDataOffsetsSWSH;
 
 namespace SysBot.Pokemon
 {
     /// <summary>
     /// Executor for SW/SH games.
     /// </summary>
-    public abstract class PokeRoutineExecutor8 : PokeRoutineExecutor<PK8>
+    public abstract class PokeRoutineExecutor8SWSH : PokeRoutineExecutor<PK8>
     {
-        protected PokeDataOffsets Offsets { get; } = new();
-        protected PokeRoutineExecutor8(PokeBotState cfg) : base(cfg) { }
+        protected PokeDataOffsetsSWSH Offsets { get; } = new();
+        protected PokeRoutineExecutor8SWSH(PokeBotState cfg) : base(cfg) { }
 
         private static uint GetBoxSlotOffset(int box, int slot) => BoxStartOffset + (uint)(BoxFormatSlotSize * ((30 * box) + slot));
 

@@ -31,7 +31,7 @@ namespace SysBot.Pokemon
                 Log(e.Message);
             }
 
-            Log($"Ending {nameof(PokeTradeBot)} loop.");
+            Log($"Ending {nameof(RemoteControlBotSV)} loop.");
             await HardStop().ConfigureAwait(false);
         }
 

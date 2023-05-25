@@ -6,7 +6,7 @@ namespace SysBot.Pokemon
     /// <summary>
     /// Sword &amp; Shield RAM offsets
     /// </summary>
-    public class PokeDataOffsets
+    public class PokeDataOffsetsSWSH
     {
         public const string SWSHGameVersion = "1.3.2";
         public const string SwordID = "0100ABF008968000";

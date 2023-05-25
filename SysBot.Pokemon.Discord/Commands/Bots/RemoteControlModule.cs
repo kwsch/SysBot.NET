@@ -141,6 +141,6 @@ namespace SysBot.Pokemon.Discord
         }
 
         private bool IsRemoteControlBot(RoutineExecutor<PokeBotState> botstate)
-            => botstate is RemoteControlBot or RemoteControlBotBS or RemoteControlBotLA or RemoteControlBotSV;
+            => botstate is RemoteControlBotSWSH or RemoteControlBotBS or RemoteControlBotLA or RemoteControlBotSV;
     }
 }

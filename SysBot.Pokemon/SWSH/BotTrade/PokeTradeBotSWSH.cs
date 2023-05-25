@@ -7,11 +7,11 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;
-using static SysBot.Pokemon.PokeDataOffsets;
+using static SysBot.Pokemon.PokeDataOffsetsSWSH;
 
 namespace SysBot.Pokemon
 {
-    public class PokeTradeBot : PokeRoutineExecutor8, ICountBot
+    public class PokeTradeBotSWSH : PokeRoutineExecutor8SWSH, ICountBot
     {
         public static ISeedSearchHandler<PK8> SeedChecker = new NoSeedSearchHandler<PK8>();
         private readonly PokeTradeHub<PK8> Hub;
@@ -35,7 +35,7 @@ namespace SysBot.Pokemon
         /// </summary>
         public int FailedBarrier { get; private set; }
 
-        public PokeTradeBot(PokeTradeHub<PK8> hub, PokeBotState cfg) : base(cfg)
+        public PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState cfg) : base(cfg)
         {
             Hub = hub;
             TradeSettings = hub.Config.Trade;
@@ -57,7 +57,7 @@ namespace SysBot.Pokemon
                 RecentTrainerCache.SetRecentTrainer(sav);
                 await InitializeSessionOffsets(token).ConfigureAwait(false);
 
-                Log($"Starting main {nameof(PokeTradeBot)} loop.");
+                Log($"Starting main {nameof(PokeTradeBotSWSH)} loop.");
                 await InnerLoop(sav, token).ConfigureAwait(false);
             }
             catch (Exception e)
@@ -65,7 +65,7 @@ namespace SysBot.Pokemon
                 Log(e.Message);
             }
 
-            Log($"Ending {nameof(PokeTradeBot)} loop.");
+            Log($"Ending {nameof(PokeTradeBotSWSH)} loop.");
             await HardStop().ConfigureAwait(false);
         }
 
@@ -314,7 +314,7 @@ namespace SysBot.Pokemon
             var trainerName = await GetTradePartnerName(TradeMethod.LinkTrade, token).ConfigureAwait(false);
             var trainerTID = await GetTradePartnerTID7(TradeMethod.LinkTrade, token).ConfigureAwait(false);
             var trainerNID = await GetTradePartnerNID(token).ConfigureAwait(false);
-            RecordUtil<PokeTradeBot>.Record($"Initiating\t{trainerNID:X16}\t{trainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
+            RecordUtil<PokeTradeBotSWSH>.Record($"Initiating\t{trainerNID:X16}\t{trainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
             Log($"Found Link Trade partner: {trainerName}-{trainerTID} (ID: {trainerNID})");
 
             var partnerCheck = await CheckPartnerReputation(this, poke, trainerNID, trainerName, AbuseSettings, PreviousUsers, PreviousUsersDistribution, EncounteredUsers, token);
@@ -385,7 +385,7 @@ namespace SysBot.Pokemon
             if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend) && received.Checksum == toSend.Checksum)
             {
                 Log("User did not complete the trade.");
-                RecordUtil<PokeTradeBot>.Record($"Cancelled\t{trainerNID:X16}\t{trainerName}\t{poke.Trainer.TrainerName}\\t{poke.ID}\t{toSend.EncryptionConstant:X8}\t{offered.EncryptionConstant:X8}");
+                RecordUtil<PokeTradeBotSWSH>.Record($"Cancelled\t{trainerNID:X16}\t{trainerName}\t{poke.Trainer.TrainerName}\\t{poke.ID}\t{toSend.EncryptionConstant:X8}\t{offered.EncryptionConstant:X8}");
                 await ExitTrade(false, token).ConfigureAwait(false);
                 return PokeTradeResult.TrainerTooSlow;
             }
@@ -394,7 +394,7 @@ namespace SysBot.Pokemon
             Log("User completed the trade.");
             poke.TradeFinished(this, received);
 
-            RecordUtil<PokeTradeBot>.Record($"Finished\t{trainerNID:X16}\t{toSend.EncryptionConstant:X8}\t{received.EncryptionConstant:X8}");
+            RecordUtil<PokeTradeBotSWSH>.Record($"Finished\t{trainerNID:X16}\t{toSend.EncryptionConstant:X8}\t{received.EncryptionConstant:X8}");
 
             // Only log if we completed the trade.
             UpdateCountsAndExport(poke, received, toSend);

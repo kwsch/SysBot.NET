@@ -9,7 +9,7 @@ using static SysBot.Base.SwitchStick;
 
 namespace SysBot.Pokemon
 {
-    public abstract class EncounterBot : PokeRoutineExecutor8, IEncounterBot
+    public abstract class EncounterBot : PokeRoutineExecutor8SWSH, IEncounterBot
     {
         protected readonly PokeTradeHub<PK8> Hub;
         private readonly IDumper DumpSetting;
