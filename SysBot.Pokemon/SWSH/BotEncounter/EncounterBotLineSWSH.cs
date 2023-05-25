@@ -6,9 +6,9 @@ using static SysBot.Pokemon.PokeDataOffsetsSWSH;
 
 namespace SysBot.Pokemon
 {
-    public sealed class EncounterBotLine : EncounterBot
+    public sealed class EncounterBotLineSWSH : EncounterBotSWSH
     {
-        public EncounterBotLine(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg, hub)
+        public EncounterBotLineSWSH(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg, hub)
         {
         }
 

@@ -7,11 +7,11 @@ using static SysBot.Pokemon.PokeDataOffsetsSWSH;
 
 namespace SysBot.Pokemon
 {
-    public class EncounterBotEgg : EncounterBot
+    public class EncounterBotEggSWSH : EncounterBotSWSH
     {
         private readonly IDumper DumpSetting;
 
-        public EncounterBotEgg(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg, hub)
+        public EncounterBotEggSWSH(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg, hub)
         {
             DumpSetting = Hub.Config.Folder;
         }

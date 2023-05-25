@@ -15,12 +15,12 @@ namespace SysBot.Pokemon
                 or PokeRoutineType.SeedCheck
                 => new PokeTradeBotSWSH(Hub, cfg),
 
-            PokeRoutineType.RaidBot => new RaidBot(cfg, Hub),
-            PokeRoutineType.EncounterLine => new EncounterBotLine(cfg, Hub),
-            PokeRoutineType.EggFetch => new EncounterBotEgg(cfg, Hub),
-            PokeRoutineType.FossilBot => new EncounterBotFossil(cfg, Hub),
-            PokeRoutineType.Reset => new EncounterBotReset(cfg, Hub),
-            PokeRoutineType.DogBot => new EncounterBotDog(cfg, Hub),
+            PokeRoutineType.RaidBot => new RaidBotSWSH(cfg, Hub),
+            PokeRoutineType.EncounterLine => new EncounterBotLineSWSH(cfg, Hub),
+            PokeRoutineType.EggFetch => new EncounterBotEggSWSH(cfg, Hub),
+            PokeRoutineType.FossilBot => new EncounterBotFossilSWSH(cfg, Hub),
+            PokeRoutineType.Reset => new EncounterBotResetSWSH(cfg, Hub),
+            PokeRoutineType.DogBot => new EncounterBotDogSWSH(cfg, Hub),
 
             PokeRoutineType.RemoteControl => new RemoteControlBotSWSH(cfg),
             _ => throw new ArgumentException(nameof(cfg.NextRoutineType)),

@@ -6,12 +6,12 @@ using static SysBot.Pokemon.PokeDataOffsetsSWSH;
 
 namespace SysBot.Pokemon
 {
-    public class EncounterBotFossil : EncounterBot
+    public class EncounterBotFossilSWSH : EncounterBotSWSH
     {
         private readonly FossilSettings Settings;
         private readonly IDumper DumpSetting;
 
-        public EncounterBotFossil(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg, hub)
+        public EncounterBotFossilSWSH(PokeBotState cfg, PokeTradeHub<PK8> hub) : base(cfg, hub)
         {
             Settings = Hub.Config.EncounterSWSH.Fossil;
             DumpSetting = Hub.Config.Folder;
