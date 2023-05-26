@@ -21,6 +21,13 @@ namespace SysBot.Pokemon.Discord
             {
                 var template = AutoLegalityWrapper.GetTemplate(set);
                 var pkm = sav.GetLegal(template, out var result);
+                if (pkm is PK8 && pkm.Nickname.ToLower() == "egg" && Breeding.CanHatchAsEgg(pkm.Species))
+                    TradeExtensions<PK8>.EggTrade(pkm, template);
+                else if (pkm is PB8 && pkm.Nickname.ToLower() == "egg" && Breeding.CanHatchAsEgg(pkm.Species))
+                    TradeExtensions<PB8>.EggTrade(pkm, template);
+                else if (pkm is PK9 && pkm.Nickname.ToLower() == "egg" && Breeding.CanHatchAsEgg(pkm.Species))
+                    TradeExtensions<PK9>.EggTrade(pkm, template);
+
                 var la = new LegalityAnalysis(pkm);
                 var spec = GameInfo.Strings.Species[template.Species];
                 if (!la.Valid)
