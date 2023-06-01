@@ -293,7 +293,7 @@ namespace SysBot.Pokemon
             RecordUtil<PokeTradeBotSWSH>.Record($"Initiating\t{trainerNID:X16}\t{tradePartner.TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
             Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7} (ID: {trainerNID}");
 
-            var partnerCheck = await CheckPartnerReputation(this, poke, trainerNID, tradePartner.TrainerName, AbuseSettings, PreviousUsers, PreviousUsersDistribution, EncounteredUsers, token);
+            var partnerCheck = await CheckPartnerReputation(this, poke, trainerNID, tradePartner.TrainerName, AbuseSettings, PreviousUsers, PreviousUsersDistribution, token);
             if (partnerCheck != PokeTradeResult.Success)
             {
                 // Try to get out of the box.
@@ -366,6 +366,9 @@ namespace SysBot.Pokemon
 
             // Only log if we completed the trade.
             UpdateCountsAndExport(poke, received, toSend);
+
+            // Log for Trade Abuse tracking.
+            LogSuccessfulTrades(poke, trainerNID, tradePartner.TrainerName);
 
             // Try to get out of the box.
             if (!await ExitBoxToUnionRoom(token).ConfigureAwait(false))

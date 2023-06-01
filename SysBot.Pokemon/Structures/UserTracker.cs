@@ -52,16 +52,28 @@ namespace SysBot.Pokemon
             ReplaceIndex = (ReplaceIndex + 1) % Capacity;
         }
 
-        public void RemoveAll(ulong networkID)
+        public void RemoveAllNID(ulong networkID)
         {
             lock (_sync)
                 Users.RemoveAll(z => z.NetworkID == networkID);
         }
 
-        public TrackedUser? TryGetPrevious(ulong trainerNid)
+        public void RemoveAllRemoteID(ulong remoteID)
+        {
+            lock (_sync)
+                Users.RemoveAll(z => z.RemoteID == remoteID);
+        }
+
+        public TrackedUser? TryGetPreviousNID(ulong trainerNid)
         {
             lock (_sync)
                 return Users.Find(z => z.NetworkID == trainerNid);
+        }
+
+        public TrackedUser? TryGetPreviousRemoteID(ulong remoteNid)
+        {
+            lock (_sync)
+                return Users.Find(z => z.RemoteID == remoteNid);
         }
 
         public IEnumerable<string> Summarize()

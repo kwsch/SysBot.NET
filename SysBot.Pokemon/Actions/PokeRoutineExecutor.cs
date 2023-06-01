@@ -134,7 +134,7 @@ namespace SysBot.Pokemon
         }
 
         protected async Task<PokeTradeResult> CheckPartnerReputation(PokeRoutineExecutor<T> bot, PokeTradeDetail<T> poke, ulong TrainerNID, string TrainerName,
-            TradeAbuseSettings AbuseSettings, TrackedUserLog PreviousUsers, TrackedUserLog PreviousUsersDistribution, TrackedUserLog EncounteredUsers, CancellationToken token)
+            TradeAbuseSettings AbuseSettings, TrackedUserLog PreviousUsers, TrackedUserLog PreviousUsersDistribution, CancellationToken token)
         {
             bool quit = false;
             var user = poke.Trainer;
@@ -158,14 +158,15 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.SuspiciousActivity;
             }
 
-            // Allows setting a cooldown for repeat trades. If the same user is encountered within the cooldown period, the user is warned and the trade will be ignored.
-            var cooldown = list.TryGetPrevious(TrainerNID);
-            if (cooldown != null)
+            // Check within the trade type (distribution or non-Distribution).
+            var previous = list.TryGetPreviousNID(TrainerNID);
+            if (previous != null)
             {
-                var delta = DateTime.Now - cooldown.Time;
-                Log($"Last saw {user.TrainerName} {delta.TotalMinutes:F1} minutes ago (OT: {TrainerName}).");
+                var delta = DateTime.Now - previous.Time; // Time that has passed since last trade.
+                Log($"Last traded with {user.TrainerName} {delta.TotalMinutes:F1} minutes ago (OT: {TrainerName}).");
 
-                var cd = AbuseSettings.TradeCooldown;
+                // Allows setting a cooldown for repeat trades. If the same user is encountered within the cooldown period for the same trade type, the user is warned and the trade will be ignored.
+                var cd = AbuseSettings.TradeCooldown;     // Time they must wait before trading again.
                 if (cd != 0 && TimeSpan.FromMinutes(cd) > delta)
                 {
                     poke.Notifier.SendNotification(bot, poke, $"You are still on trade cooldown, and cannot trade for another {TimeSpan.FromMinutes(cd) - delta} minute(s).");
@@ -177,14 +178,40 @@ namespace SysBot.Pokemon
                     EchoUtil.Echo(msg);
                     return PokeTradeResult.SuspiciousActivity;
                 }
+
+                // For non-Distribution trades, flag users using multiple Discord/Twitch accounts to send to the same in-game player within a time limit.
+                // This is usually to evade a ban or a trade cooldown.
+                if (!isDistribution && previous.NetworkID == TrainerNID && previous.RemoteID != user.ID)
+                {
+                    if (delta < TimeSpan.FromMinutes(AbuseSettings.TradeAbuseExpiration) && AbuseSettings.TradeAbuseAction != TradeAbuseAction.Ignore)
+                    {
+                        if (AbuseSettings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
+                        {
+                            await BlockUser(token).ConfigureAwait(false);
+                            if (AbuseSettings.BanIDWhenBlockingUser || bot is not PokeRoutineExecutor8SWSH) // Only ban ID if blocking in SWSH, always in other games.
+                            {
+                                AbuseSettings.BannedIDs.AddIfNew(new[] { GetReference(TrainerName, TrainerNID, "in-game block for multiple accounts") });
+                                Log($"Added {TrainerNID} to the BannedIDs list.");
+                            }
+                        }
+                        quit = true;
+                    }
+
+                    var msg = $"Found {user.TrainerName}{useridmsg} using multiple accounts.\nPreviously traded with {previous.Name} ({previous.RemoteID}) {delta.TotalMinutes:F1} minutes ago on OT: {TrainerName}.";
+                    if (AbuseSettings.EchoNintendoOnlineIDMulti)
+                        msg += $"\nID: {TrainerNID}";
+                    if (!string.IsNullOrWhiteSpace(AbuseSettings.MultiAbuseEchoMention))
+                        msg = $"{AbuseSettings.MultiAbuseEchoMention} {msg}";
+                    EchoUtil.Echo(msg);
+                }
             }
 
             // For non-Distribution trades, we can optionally flag users sending to multiple in-game players.
             // Can trigger if the user gets sniped, but can also catch abusers sending to many people.
             if (!isDistribution)
             {
-                var previousEncounter = EncounteredUsers.TryRegister(poke.Trainer.ID, TrainerName, poke.Trainer.ID);
-                if (previousEncounter != null && previousEncounter.Name != TrainerName)
+                var previous_remote = PreviousUsers.TryGetPreviousRemoteID(poke.Trainer.ID);
+                if (previous_remote != null && previous_remote.Name != TrainerName)
                 {
                     if (AbuseSettings.TradeAbuseAction != TradeAbuseAction.Ignore)
                     {
@@ -200,7 +227,7 @@ namespace SysBot.Pokemon
                         quit = true;
                     }
 
-                    var msg = $"Found {user.TrainerName}{useridmsg} sending to multiple in-game players. Previous OT: {previousEncounter.Name}, Current OT: {TrainerName}";
+                    var msg = $"Found {user.TrainerName}{useridmsg} sending to multiple in-game players. Previous OT: {previous_remote.Name}, Current OT: {TrainerName}";
                     if (AbuseSettings.EchoNintendoOnlineIDMultiRecipients)
                         msg += $"\nID: {TrainerNID}";
                     if (!string.IsNullOrWhiteSpace(AbuseSettings.MultiRecipientEchoMention))
@@ -212,42 +239,16 @@ namespace SysBot.Pokemon
             if (quit)
                 return PokeTradeResult.SuspiciousActivity;
 
-            // Try registering the partner in our list of recently seen.
-            // Get back the details of their previous interaction.
-            var previous = isDistribution
-                ? list.TryRegister(TrainerNID, TrainerName)
-                : list.TryRegister(TrainerNID, TrainerName, poke.Trainer.ID);
-            // For non-Distribution trades, flag users using multiple Discord/Twitch accounts to send to the same in-game player.
-            // This is usually to evade a ban or a trade cooldown.
-            if (previous != null && previous.NetworkID == TrainerNID && previous.RemoteID != user.ID && !isDistribution)
-            {
-                var delta = DateTime.Now - previous.Time;
-                if (delta < TimeSpan.FromMinutes(AbuseSettings.TradeAbuseExpiration) && AbuseSettings.TradeAbuseAction != TradeAbuseAction.Ignore)
-                {
-                    if (AbuseSettings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
-                    {
-                        await BlockUser(token).ConfigureAwait(false);
-                        if (AbuseSettings.BanIDWhenBlockingUser || bot is not PokeRoutineExecutor8SWSH) // Only ban ID if blocking in SWSH, always in other games.
-                        {
-                            AbuseSettings.BannedIDs.AddIfNew(new[] { GetReference(TrainerName, TrainerNID, "in-game block for multiple accounts") });
-                            Log($"Added {TrainerNID} to the BannedIDs list.");
-                        }
-                    }
-                    quit = true;
-                }
-
-                var msg = $"Found {user.TrainerName}{useridmsg} using multiple accounts.\nPreviously encountered {previous.Name} ({previous.RemoteID}) {delta.TotalMinutes:F1} minutes ago on OT: {TrainerName}.";
-                if (AbuseSettings.EchoNintendoOnlineIDMulti)
-                    msg += $"\nID: {TrainerNID}";
-                if (!string.IsNullOrWhiteSpace(AbuseSettings.MultiAbuseEchoMention))
-                    msg = $"{AbuseSettings.MultiAbuseEchoMention} {msg}";
-                EchoUtil.Echo(msg);
-            }
-
-            if (quit)
-                return PokeTradeResult.SuspiciousActivity;
-
             return PokeTradeResult.Success;
+        }
+
+        public static void LogSuccessfulTrades(PokeTradeDetail<T> poke, ulong TrainerNID, string TrainerName)
+        {
+            // All users who traded, tracked by whether it was a targeted trade or distribution.
+            if (poke.Type == PokeTradeType.Random)
+                PreviousUsersDistribution.TryRegister(TrainerNID, TrainerName);
+            else
+                PreviousUsers.TryRegister(TrainerNID, TrainerName, poke.Trainer.ID);
         }
 
         private static RemoteControlAccess GetReference(string name, ulong id, string comment) => new()

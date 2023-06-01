@@ -31,7 +31,7 @@ namespace SysBot.Pokemon
             var msg = $"You are in the {Detail.Type} queue! Position: {position} (ID {Detail.Trade.ID})";
             var pk = Detail.Trade.TradeData;
             if (pk.Species != 0)
-                msg += $", Receiving: {(Species)Detail.Trade.TradeData.Species}";
+                msg += $", Receiving: {GameInfo.GetStrings(1).Species[pk.Species]}";
             return msg;
         }
     }
