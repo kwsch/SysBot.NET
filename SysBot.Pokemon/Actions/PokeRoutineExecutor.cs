@@ -134,7 +134,7 @@ namespace SysBot.Pokemon
         }
 
         protected async Task<PokeTradeResult> CheckPartnerReputation(PokeRoutineExecutor<T> bot, PokeTradeDetail<T> poke, ulong TrainerNID, string TrainerName,
-            TradeAbuseSettings AbuseSettings, TrackedUserLog PreviousUsers, TrackedUserLog PreviousUsersDistribution, CancellationToken token)
+            TradeAbuseSettings AbuseSettings, CancellationToken token)
         {
             bool quit = false;
             var user = poke.Trainer;
