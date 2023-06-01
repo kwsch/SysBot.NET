@@ -455,6 +455,11 @@ namespace SysBot.Pokemon
             {
                 if (await IsUserBeingShifty(detail, token).ConfigureAwait(false))
                     return PokeTradeResult.SuspiciousActivity;
+
+                // We can fall out of the box if the user offers, then quits.
+                if (!await IsInBox(PortalOffset, token).ConfigureAwait(false))
+                    return PokeTradeResult.TrainerLeft;
+
                 await Click(A, 1_000, token).ConfigureAwait(false);
 
                 // EC is detectable at the start of the animation.
