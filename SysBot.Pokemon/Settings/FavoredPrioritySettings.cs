@@ -32,21 +32,21 @@ namespace SysBot.Pokemon
             set => _exponent = Math.Max(_mexp, value);
         }
 
-        [Category(Configure), Description("Multiply: Inserted after (unfavored users)*(Multiply) unfavored users.")]
+        [Category(Configure), Description("Multiply: Inserted after (unfavored users)*(multiply) unfavored users. Setting this to 0.2 adds in after 20% of users.")]
         public float Multiply
         {
             get => _multiply;
             set => _multiply = Math.Max(_mmul, value);
         }
 
-        [Category(Configure), Description("Amount of unfavored users to not skip over. This only is enforced if a significant amount of unfavored users are in the queue.")]
+        [Category(Configure), Description("Number of unfavored users to not skip over. This only is enforced if a significant number of unfavored users are in the queue.")]
         public int MinimumFreeAhead
         {
             get => _minimumFreeAhead;
             set => _minimumFreeAhead = Math.Max(_mfi, value);
         }
 
-        [Category(Configure), Description("Minimum amount of unfavored users in queue to cause {MinimumFreeAhead} to be enforced. When the aforementioned amount is higher than this value, a favored user is not placed ahead of {MinimumFreeAhead} unfavored users.")]
+        [Category(Configure), Description("Minimum number of unfavored users in queue to cause {MinimumFreeAhead} to be enforced. When the aforementioned number is higher than this value, a favored user is not placed ahead of {MinimumFreeAhead} unfavored users.")]
         public int MinimumFreeBypass => (int)Math.Ceiling(MinimumFreeAhead * MinimumFreeBypassFactor);
 
         [Category(Configure), Description("Scalar that is multiplied with {MinimumFreeAhead} to determine the {MinimumFreeBypass} value.")]
