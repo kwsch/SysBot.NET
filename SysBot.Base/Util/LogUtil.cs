@@ -8,10 +8,19 @@ using System.Text;
 
 namespace SysBot.Base
 {
+    public static class LogConfig
+    {
+        public static int MaxArchiveFiles { get; set; } = 14; // 2 weeks
+        public static bool LoggingEnabled { get; set; } = true;
+    }
+
     public static class LogUtil
     {
         static LogUtil()
         {
+            if (!LogConfig.LoggingEnabled)
+                return;
+
             var config = new LoggingConfiguration();
             Directory.CreateDirectory("logs");
             var logfile = new FileTarget("logfile")
@@ -24,7 +33,7 @@ namespace SysBot.Base
                 ArchiveFileName = Path.Combine("logs", "SysBotLog.{#}.txt"),
                 ArchiveDateFormat = "yyyy-MM-dd",
                 ArchiveAboveSize = 104857600, // 100MB (never)
-                MaxArchiveFiles = 14, // 2 weeks
+                MaxArchiveFiles = LogConfig.MaxArchiveFiles,
                 Encoding = Encoding.Unicode,
                 WriteBom = true,
             };

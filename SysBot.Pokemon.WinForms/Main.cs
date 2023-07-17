@@ -27,6 +27,9 @@ namespace SysBot.Pokemon.WinForms
             {
                 var lines = File.ReadAllText(Program.ConfigPath);
                 Config = JsonSerializer.Deserialize(lines, ProgramConfigContext.Default.ProgramConfig) ?? new ProgramConfig();
+                LogConfig.MaxArchiveFiles = Config.Hub.MaxArchiveFiles;
+                LogConfig.LoggingEnabled = Config.Hub.LoggingEnabled;
+
                 RunningEnvironment = GetRunner(Config);
                 foreach (var bot in Config.Bots)
                 {
