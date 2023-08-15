@@ -56,9 +56,6 @@ namespace SysBot.Pokemon
         [Category(Generate), Description("The order in which Pokémon encounter types are attempted.")]
         public List<EncounterTypeGroup> PrioritizeEncounters { get; set; } = new List<EncounterTypeGroup>() { EncounterTypeGroup.Egg, EncounterTypeGroup.Slot, EncounterTypeGroup.Static, EncounterTypeGroup.Mystery, EncounterTypeGroup.Trade };
 
-        [Category(Generate), Description("Allow XOROSHIRO when generating Gen 8 Raid Pokémon.")]
-        public bool UseXOROSHIRO { get; set; } = true;
-
         [Category(Generate), Description("Adds Battle Version for games that support it (SWSH only) for using past-gen Pokémon in online competitive play.")]
         public bool SetBattleVersion { get; set; }
 
