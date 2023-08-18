@@ -25,14 +25,14 @@ namespace SysBot.Pokemon.Discord
 
             // Check if this user is a Guild User, which is the only context where roles exist
             if (context.User is not SocketGuildUser gUser)
-                return Task.FromResult(PreconditionResult.FromError("You must be sending the message from a guild to run this command."));
+                return Task.FromResult(PreconditionResult.FromError("이 명령을 실행하려면 길드에서 메시지를 전송해야 합니다."));
 
             var roles = gUser.Roles;
             if (mgr.CanUseSudo(roles.Select(z => z.Name)))
                 return Task.FromResult(PreconditionResult.FromSuccess());
 
             if (!mgr.GetHasRoleAccess(_name, roles.Select(z => z.Name)))
-                return Task.FromResult(PreconditionResult.FromError("You do not have the required role to run this command."));
+                return Task.FromResult(PreconditionResult.FromError("이 명령을 실행하는 데 필요한 역할이 없습니다."));
 
             return Task.FromResult(PreconditionResult.FromSuccess());
         }

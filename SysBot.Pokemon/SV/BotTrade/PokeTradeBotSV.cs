@@ -214,11 +214,11 @@ namespace SysBot.Pokemon
             {
                 detail.IsRetry = true;
                 Hub.Queues.Enqueue(type, detail, Math.Min(priority, PokeTradePriorities.Tier2));
-                detail.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
+                detail.SendNotification(this, "앗! 문제가 생겼습니다. 다른 시도를 요청하겠습니다.");
             }
             else
             {
-                detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
+                detail.SendNotification(this, $"앗! 문제가 생겼습니다, 교환을 취소합니다: {result}.");
                 detail.TradeCanceled(this, result);
             }
         }
@@ -272,7 +272,7 @@ namespace SysBot.Pokemon
                 await Task.Delay(Hub.Config.Timings.ExtraTimeOpenCodeEntry, token).ConfigureAwait(false);
 
                 var code = poke.Code;
-                Log($"Entering Link Trade code: {code:0000 0000}...");
+                Log($"통신 교환 코드는: {code:0000 0000}...");
                 await EnterLinkCode(code, Hub.Config, token).ConfigureAwait(false);
 
                 await Click(PLUS, 3_000, token).ConfigureAwait(false);
@@ -336,7 +336,7 @@ namespace SysBot.Pokemon
             var tradePartner = await GetTradePartnerInfo(token).ConfigureAwait(false);
             var trainerNID = await GetTradePartnerNID(TradePartnerNIDOffset, token).ConfigureAwait(false);
             RecordUtil<PokeTradeBotSWSH>.Record($"Initiating\t{trainerNID:X16}\t{tradePartner.TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
-            Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7} (ID: {trainerNID})");
+            Log($"교환 상대를 찾았습니다!: {tradePartner.TrainerName}-{tradePartner.TID7} (ID: {trainerNID})");
 
             var partnerCheck = await CheckPartnerReputation(this, poke, trainerNID, tradePartner.TrainerName, AbuseSettings, token);
             if (partnerCheck != PokeTradeResult.Success)
@@ -355,7 +355,7 @@ namespace SysBot.Pokemon
                 return PokeTradeResult.TrainerTooSlow;
             }
 
-            poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. Waiting for a Pokémon...");
+            poke.SendNotification(this, $"교환 상대를 찾았습니다: {tradePartner.TrainerName}. 포켓몬을 기다리는 중...");
 
             if (poke.Type == PokeTradeType.Dump)
             {

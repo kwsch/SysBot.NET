@@ -21,7 +21,7 @@ namespace SysBot.Pokemon.Discord
 
             try
             {
-                const string helper = "I've added you to the queue! I'll message you here when your trade is starting.";
+                const string helper = "대기열에 추가했습니다! 거래가 시작되면 여기에 메시지를 보내겠습니다.";
                 IUserMessage test = await trader.SendMessageAsync(helper).ConfigureAwait(false);
 
                 // Try adding
@@ -30,7 +30,7 @@ namespace SysBot.Pokemon.Discord
                 // Notify in channel
                 await context.Channel.SendMessageAsync(msg).ConfigureAwait(false);
                 // Notify in PM to mirror what is said in the channel.
-                await trader.SendMessageAsync($"{msg}\nYour trade code will be **{code:0000 0000}**.").ConfigureAwait(false);
+                await trader.SendMessageAsync($"{msg}\n통신교환 코드는 **{code:0000 0000}**입니다.").ConfigureAwait(false);
 
                 // Clean Up
                 if (result)
@@ -85,8 +85,8 @@ namespace SysBot.Pokemon.Discord
 
             var pokeName = "";
             if (t == PokeTradeType.Specific && pk.Species != 0)
-                pokeName = $" Receiving: {GameInfo.GetStrings(1).Species[pk.Species]}.";
-            msg = $"{user.Mention} - Added to the {type} queue{ticketID}. Current Position: {position.Position}.{pokeName}";
+                pokeName = $" 받는 포켓몬: {GameInfo.GetStrings(1).Species[pk.Species]}.";
+            msg = $"{user.Mention} - {type} 대기열에 추가되었습니다. {ticketID}. 현재 대기열 위치는: {position.Position}.{pokeName}";
 
             var botct = Info.Hub.Bots.Count;
             if (position.Position > botct)
@@ -124,13 +124,13 @@ namespace SysBot.Pokemon.Discord
                 case DiscordErrorCode.CannotSendMessageToUser:
                     {
                         // The user either has DMs turned off, or Discord thinks they do.
-                        message = context.User == trader ? "You must enable private messages in order to be queued!" : "The mentioned user must enable private messages in order for them to be queued!";
+                        message = context.User == trader ? "대기열에 들어가려면 개인 DM을 사용 가능으로 설정해야 합니다!" : "언급된 사용자가 개인 메시지를 대기열에 넣으려면 개인 메시지를 활성화해야 합니다!";
                     }
                     break;
                 default:
                     {
                         // Send a generic error message.
-                        message = ex.DiscordCode != null ? $"Discord error {(int)ex.DiscordCode}: {ex.Reason}" : $"Http error {(int)ex.HttpCode}: {ex.Message}";
+                        message = ex.DiscordCode != null ? $"디스코드 오류 {(int)ex.DiscordCode}: {ex.Reason}" : $"Http 오류 {(int)ex.HttpCode}: {ex.Message}";
                     }
                     break;
             }

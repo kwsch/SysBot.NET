@@ -13,7 +13,7 @@ namespace SysBot.Pokemon.Discord
         {
             if (set.Species <= 0)
             {
-                await channel.SendMessageAsync("Oops! I wasn't able to interpret your message! If you intended to convert something, please double check what you're pasting!").ConfigureAwait(false);
+                await channel.SendMessageAsync("앗! 당신의 메시지를 해석할 수 없었습니다! 만약 당신이 무언가를 변환하려고 했다면, 당신이 붙여넣고 있는 것을 다시 한번 확인해 주세요!").ConfigureAwait(false);
                 return;
             }
 
@@ -25,21 +25,21 @@ namespace SysBot.Pokemon.Discord
                 var spec = GameInfo.Strings.Species[template.Species];
                 if (!la.Valid)
                 {
-                    var reason = result == "Timeout" ? $"That {spec} set took too long to generate." : result == "VersionMismatch" ? "Request refused: PKHeX and Auto-Legality Mod version mismatch." : $"I wasn't able to create a {spec} from that set.";
-                    var imsg = $"Oops! {reason}";
+                    var reason = result == "시간초과" ? $"보내주신 {spec} 세트를 생성하는데 너무 오래 걸립니다." : result == "버전 불일치" ? "요청 거부 : 자동 합법성 모드에서 거부되었습니다." : $"해당 {spec} 세트 포켓몬을 생성할 수 없습니다.";
+                    var imsg = $"앗! {reason}";
                     if (result == "Failed")
                         imsg += $"\n{AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm)}";
                     await channel.SendMessageAsync(imsg).ConfigureAwait(false);
                     return;
                 }
 
-                var msg = $"Here's your ({result}) legalized PKM for {spec} ({la.EncounterOriginal.Name})!";
+                var msg = $"여기 있습니다. ({result}) {spec} ({la.EncounterOriginal.Name})에 대해 합법화된 PKM 파일 입니다!";
                 await channel.SendPKMAsync(pkm, msg + $"\n{ReusableActions.GetFormattedShowdownText(pkm)}").ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 LogUtil.LogSafe(ex, nameof(AutoLegalityExtensionsDiscord));
-                var msg = $"Oops! An unexpected problem happened with this Showdown Set:\n```{string.Join("\n", set.GetSetLines())}```";
+                var msg = $"이런! 이 쇼다운 세트에 예기치 않은 문제가 발생했습니다:\n```{string.Join("\n", set.GetSetLines())}```";
                 await channel.SendMessageAsync(msg).ConfigureAwait(false);
             }
         }

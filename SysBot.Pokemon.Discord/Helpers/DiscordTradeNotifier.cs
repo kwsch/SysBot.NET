@@ -26,30 +26,30 @@ namespace SysBot.Pokemon.Discord
         public void TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
         {
             var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";
-            Trader.SendMessageAsync($"Initializing trade{receive}. Please be ready. Your code is **{Code:0000 0000}**.").ConfigureAwait(false);
+            Trader.SendMessageAsync($"거래 초기화 중입니다.{receive}. 준비하시길 바랍니다. 통신 교환 코드는 **{Code:0000 0000}**입니다.").ConfigureAwait(false);
         }
 
         public void TradeSearching(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
         {
             var name = Info.TrainerName;
             var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", {name}";
-            Trader.SendMessageAsync($"I'm waiting for you{trainer}! Your code is **{Code:0000 0000}**. My IGN is **{routine.InGameName}**.").ConfigureAwait(false);
+            Trader.SendMessageAsync($"당신을 기다리고 있습니다.{trainer}! 통신 교환 코드는 **{Code:0000 0000}**. 제 이름은 **{routine.InGameName}**입니다.").ConfigureAwait(false);
         }
 
         public void TradeCanceled(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeResult msg)
         {
             OnFinish?.Invoke(routine);
-            Trader.SendMessageAsync($"Trade canceled: {msg}").ConfigureAwait(false);
+            Trader.SendMessageAsync($"교환 취소: {msg}").ConfigureAwait(false);
         }
 
         public void TradeFinished(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result)
         {
             OnFinish?.Invoke(routine);
             var tradedToUser = Data.Species;
-            var message = tradedToUser != 0 ? $"Trade finished. Enjoy your {(Species)tradedToUser}!" : "Trade finished!";
+            var message = tradedToUser != 0 ? $"교환이 끝났습니다. {(Species)tradedToUser} 을 즐겨보세요!" : "교환 완료!";
             Trader.SendMessageAsync(message).ConfigureAwait(false);
             if (result.Species != 0 && Hub.Config.Discord.ReturnPKMs)
-                Trader.SendPKMAsync(result, "Here's what you traded me!").ConfigureAwait(false);
+                Trader.SendPKMAsync(result, "당신의 포켓몬입니다!").ConfigureAwait(false);
         }
 
         public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, string message)
@@ -88,7 +88,7 @@ namespace SysBot.Pokemon.Discord
                 x.Value = lines;
                 x.IsInline = false;
             });
-            var msg = $"Here are the details for `{r.Seed:X16}`:";
+            var msg = $"다음은 `{r.Seed:X16}`에 대한 세부 정보입니다:";
             Trader.SendMessageAsync(msg, embed: embed.Build()).ConfigureAwait(false);
         }
     }
