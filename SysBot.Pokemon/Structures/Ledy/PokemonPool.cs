@@ -140,7 +140,7 @@ namespace SysBot.Pokemon
         private static bool DisallowRandomRecipientTrade(T pk, IEncounterTemplate enc)
         {
             // Anti-spam
-            if (pk.IsNicknamed && enc is not EncounterTrade { IsNicknamed: true } && pk.Nickname.Length > 6)
+            if (pk.IsNicknamed && enc is not IFixedNickname { IsFixedNickname: true } && pk.Nickname.Length > 6)
                 return true;
 
             // Anti-spam

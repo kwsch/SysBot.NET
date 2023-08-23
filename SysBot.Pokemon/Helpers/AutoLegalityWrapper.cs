@@ -105,11 +105,14 @@ namespace SysBot.Pokemon
 
         public static bool IsFixedOT(IEncounterTemplate t, PKM pkm) => t switch
         {
-            EncounterTrade tr => tr.HasTrainerName,
+            IFixedTrainer { IsFixedTrainer: true } tr => true,
             MysteryGift g => !g.EggEncounter && g switch
             {
-                WC8 wc8 => wc8.GetHasOT(pkm.Language),
+                WC9 wc9 => wc9.GetHasOT(pkm.Language),
+                WA8 wa8 => wa8.GetHasOT(pkm.Language),
                 WB8 wb8 => wb8.GetHasOT(pkm.Language),
+                WC8 wc8 => wc8.GetHasOT(pkm.Language),
+                WB7 wb7 => wb7.GetHasOT(pkm.Language),
                 { Generation: >= 5 } gift => gift.OT_Name.Length > 0,
                 _ => true,
             },
