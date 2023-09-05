@@ -22,8 +22,7 @@ namespace SysBot.Pokemon
         private static void InitializeAutoLegality(LegalitySettings cfg)
         {
             InitializeCoreStrings();
-            if (!EncounterEvent.Initialized)
-                EncounterEvent.RefreshMGDB(cfg.MGDBPath);
+            EncounterEvent.RefreshMGDB(cfg.MGDBPath);
             InitializeTrainerDatabase(cfg);
             InitializeSettings(cfg);
         }
@@ -36,6 +35,7 @@ namespace SysBot.Pokemon
             APILegality.SetAllLegalRibbons = cfg.SetAllLegalRibbons;
             APILegality.SetMatchingBalls = cfg.SetMatchingBalls;
             APILegality.ForceSpecifiedBall = cfg.ForceSpecifiedBall;
+            APILegality.ForceLevel100for50 = cfg.ForceLevel100for50;
             Legalizer.EnableEasterEggs = cfg.EnableEasterEggs;
             APILegality.AllowTrainerOverride = cfg.AllowTrainerDataOverride;
             APILegality.AllowBatchCommands = cfg.AllowBatchCommands;
