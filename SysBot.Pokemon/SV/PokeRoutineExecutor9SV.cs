@@ -246,18 +246,18 @@ namespace SysBot.Pokemon
             return await IsOnOverworld(offset, token).ConfigureAwait(false);
         }
 
-        // Usually 0x9-0xA if fully loaded into Poké Portal.
+        // 0x10 if fully loaded into Poké Portal.
         public async Task<bool> IsInPokePortal(ulong offset, CancellationToken token)
         {
             var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 1, token).ConfigureAwait(false);
-            return data[0] >= 9;
+            return data[0] == 0x10;
         }
 
-        // Usually 4-6 in a box.
+        // 0x14 in a box and during trades, trade evolutions, and move learning.
         public async Task<bool> IsInBox(ulong offset, CancellationToken token)
         {
             var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 1, token).ConfigureAwait(false);
-            return data[0] < 8;
+            return data[0] == 0x14;
         }
 
         public async Task<TextSpeedOption> GetTextSpeed(CancellationToken token)
