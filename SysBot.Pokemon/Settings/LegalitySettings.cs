@@ -56,6 +56,9 @@ namespace SysBot.Pokemon
         [Category(Generate), Description("Assumes level 50 sets are level 100 competitive sets.")]
         public bool ForceLevel100for50 { get; set; }
 
+        [Category(Generate), Description("Allows generating transfer-only Pokémon. They will not have a HOME tracker and will not be able to enter HOME.")]
+        public bool AllowHOMETransferGeneration { get; set; } = true;
+
         [Category(Generate), Description("The order in which Pokémon encounter types are attempted.")]
         public List<EncounterTypeGroup> PrioritizeEncounters { get; set; } = new List<EncounterTypeGroup>() { EncounterTypeGroup.Egg, EncounterTypeGroup.Slot, EncounterTypeGroup.Static, EncounterTypeGroup.Mystery, EncounterTypeGroup.Trade };
 
