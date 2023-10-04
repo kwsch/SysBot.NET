@@ -1,3 +1,5 @@
+**This is a personal project and has no affliation with the Developer Server, and you will not find any support there for this Fork**
+
 # SysBot.NET
 ![License](https://img.shields.io/badge/License-AGPLv3-blue.svg)
 
