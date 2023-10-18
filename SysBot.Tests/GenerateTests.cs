@@ -23,7 +23,7 @@ namespace SysBot.Tests
         }
 
         [Theory]
-        [InlineData(InavlidSpec)]
+        [InlineData(InvalidSpec)]
         public void ShouldNotGenerate(string set)
         {
             _ = AutoLegalityWrapper.GetTrainerInfo<PK8>();
@@ -118,7 +118,7 @@ Timid Nature
 - Solar Beam 
 - Beat Up";
 
-        private const string InavlidSpec =
+        private const string InvalidSpec =
 "(Pikachu)";
     }
 }
