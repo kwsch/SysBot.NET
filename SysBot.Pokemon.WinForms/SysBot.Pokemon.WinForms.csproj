@@ -1,9 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <UseWindowsForms>true</UseWindowsForms>
     <PackageId>SysBot.Pokemon.WinForms</PackageId>
     <Company>Project Pokémon</Company>
@@ -14,7 +13,6 @@
     <StartupObject>SysBot.Pokemon.WinForms.Program</StartupObject>
     <AssemblyName>SysBot</AssemblyName>
     <Version>01.00.00</Version>
-    <Platforms>x64</Platforms>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
 
