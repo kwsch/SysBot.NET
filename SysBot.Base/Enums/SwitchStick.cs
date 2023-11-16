@@ -1,11 +1,10 @@
-﻿namespace SysBot.Base
+﻿namespace SysBot.Base;
+
+/// <summary>
+/// Controller Stick differentiation
+/// </summary>
+public enum SwitchStick
 {
-    /// <summary>
-    /// Controller Stick differentiation
-    /// </summary>
-    public enum SwitchStick
-    {
-        LEFT,
-        RIGHT,
-    }
+    LEFT,
+    RIGHT,
 }

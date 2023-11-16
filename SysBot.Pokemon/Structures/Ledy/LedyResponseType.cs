@@ -1,10 +1,9 @@
-﻿namespace SysBot.Pokemon
+﻿namespace SysBot.Pokemon;
+
+public enum LedyResponseType
 {
-    public enum LedyResponseType
-    {
-        Random,
-        MatchPool,
-        MatchRequest,
-        AbuseDetected,
-    }
+    Random,
+    MatchPool,
+    MatchRequest,
+    AbuseDetected,
 }

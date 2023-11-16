@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="Google.Apis" Version="1.59.0" />
-    <PackageReference Include="Google.Apis.Auth" Version="1.59.0" />
-    <PackageReference Include="Google.Apis.Core" Version="1.59.0" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.58.0.2874" />
+    <PackageReference Include="Google.Apis" Version="1.64.0" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.64.0" />
+    <PackageReference Include="Google.Apis.Core" Version="1.64.0" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.64.0.3205" />
     <PackageReference Include="Google.Apis.YouTubePartner.v1" Version="1.35.1.1334" />
     <PackageReference Include="PKHeX.Core" Version="23.10.11" />
   </ItemGroup>

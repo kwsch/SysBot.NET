@@ -1,14 +1,13 @@
-﻿namespace SysBot.Base
-{
-    /// <summary>
-    /// Contains details for communicating with another wireless device.
-    /// </summary>
-    public interface IWirelessConnectionConfig
-    {
-        /// <summary> IP Address (X.X.X.X) </summary>
-        string IP { get; set; }
+namespace SysBot.Base;
 
-        /// <summary> Port </summary>
-        int Port { get; set; }
-    }
+/// <summary>
+/// Contains details for communicating with another wireless device.
+/// </summary>
+public interface IWirelessConnectionConfig
+{
+    /// <summary> IP Address (X.X.X.X) </summary>
+    string IP { get; init; }
+
+    /// <summary> Port </summary>
+    int Port { get; init; }
 }

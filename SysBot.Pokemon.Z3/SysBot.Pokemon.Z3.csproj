@@ -16,7 +16,7 @@
     <When Condition=" '$(Platform)' == 'x64' OR $(RuntimeIdentifier.EndsWith('x64')) ">
       <!-- x64 specific references -->
       <ItemGroup>
-        <PackageReference Include="Microsoft.Z3" Version="4.12.0" />
+        <PackageReference Include="Microsoft.Z3" Version="4.12.2" />
       </ItemGroup>
     </When>
     
