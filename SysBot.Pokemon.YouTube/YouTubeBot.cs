@@ -8,116 +8,115 @@ using System.Threading.Tasks;
 using YouTube.Base;
 using YouTube.Base.Clients;
 
-namespace SysBot.Pokemon.YouTube
+namespace SysBot.Pokemon.YouTube;
+
+public class YouTubeBot<T> where T : PKM, new()
 {
-    public class YouTubeBot<T> where T : PKM, new()
+    private ChatClient client;
+    private readonly YouTubeSettings Settings;
+
+    private readonly PokeTradeHub<T> Hub;
+    private TradeQueueInfo<T> Info => Hub.Queues.Info;
+
+    public YouTubeBot(YouTubeSettings settings, PokeTradeHub<T> hub)
     {
-        private ChatClient client;
-        private readonly YouTubeSettings Settings;
+        Hub = hub;
+        Settings = settings;
+        Logger.LogOccurred += Logger_LogOccurred;
+        client = default!;
 
-        private readonly PokeTradeHub<T> Hub;
-        private TradeQueueInfo<T> Info => Hub.Queues.Info;
-
-        public YouTubeBot(YouTubeSettings settings, PokeTradeHub<T> hub)
+        Task.Run(async () =>
         {
-            Hub = hub;
-            Settings = settings;
-            Logger.LogOccurred += Logger_LogOccurred;
-            client = default!;
-
-            Task.Run(async () =>
+            try
             {
-                try
-                {
-                    var connection = await YouTubeConnection.ConnectViaLocalhostOAuthBrowser(Settings.ClientID, Settings.ClientSecret, Scopes.scopes, true).ConfigureAwait(false);
-                    if (connection == null)
-                        return;
+                var connection = await YouTubeConnection.ConnectViaLocalhostOAuthBrowser(Settings.ClientID, Settings.ClientSecret, Scopes.scopes, true).ConfigureAwait(false);
+                if (connection == null)
+                    return;
 
-                    var channel = await connection.Channels.GetChannelByID(Settings.ChannelID).ConfigureAwait(false);
-                    if (channel == null)
-                        return;
+                var channel = await connection.Channels.GetChannelByID(Settings.ChannelID).ConfigureAwait(false);
+                if (channel == null)
+                    return;
 
-                    client = new ChatClient(connection);
-                    client.OnMessagesReceived += Client_OnMessagesReceived;
-                    EchoUtil.Forwarders.Add(msg => client.SendMessage(msg));
+                client = new ChatClient(connection);
+                client.OnMessagesReceived += Client_OnMessagesReceived;
+                EchoUtil.Forwarders.Add(msg => client.SendMessage(msg));
 
-                    if (await client.Connect().ConfigureAwait(false))
-                        await Task.Delay(-1).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    LogUtil.LogError(ex.Message, nameof(YouTubeBot<T>));
-                }
-            });
-        }
-
-        public void StartingDistribution(string message)
-        {
-            Task.Run(async () =>
+                if (await client.Connect().ConfigureAwait(false))
+                    await Task.Delay(-1).ConfigureAwait(false);
+            }
+            catch (Exception ex)
             {
-                await client.SendMessage("5...").ConfigureAwait(false);
-                await Task.Delay(1_000).ConfigureAwait(false);
-                await client.SendMessage("4...").ConfigureAwait(false);
-                await Task.Delay(1_000).ConfigureAwait(false);
-                await client.SendMessage("3...").ConfigureAwait(false);
-                await Task.Delay(1_000).ConfigureAwait(false);
-                await client.SendMessage("2...").ConfigureAwait(false);
-                await Task.Delay(1_000).ConfigureAwait(false);
-                await client.SendMessage("1...").ConfigureAwait(false);
-                await Task.Delay(1_000).ConfigureAwait(false);
-                if (!string.IsNullOrWhiteSpace(message))
-                    await client.SendMessage(message).ConfigureAwait(false);
-            });
-        }
+                LogUtil.LogError(ex.Message, nameof(YouTubeBot<T>));
+            }
+        });
+    }
 
-        private string HandleCommand(LiveChatMessage m, string cmd, string args)
+    public void StartingDistribution(string message)
+    {
+        Task.Run(async () =>
         {
-            if (!m.AuthorDetails.IsChatOwner.Equals(true) && Settings.IsSudo(m.AuthorDetails.DisplayName))
-                return string.Empty; // sudo only commands
+            await client.SendMessage("5...").ConfigureAwait(false);
+            await Task.Delay(1_000).ConfigureAwait(false);
+            await client.SendMessage("4...").ConfigureAwait(false);
+            await Task.Delay(1_000).ConfigureAwait(false);
+            await client.SendMessage("3...").ConfigureAwait(false);
+            await Task.Delay(1_000).ConfigureAwait(false);
+            await client.SendMessage("2...").ConfigureAwait(false);
+            await Task.Delay(1_000).ConfigureAwait(false);
+            await client.SendMessage("1...").ConfigureAwait(false);
+            await Task.Delay(1_000).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(message))
+                await client.SendMessage(message).ConfigureAwait(false);
+        });
+    }
 
-            if (args.Length > 0)
-                return "Commands don't use arguments. Try again with just the command code.";
+    private string HandleCommand(LiveChatMessage m, string cmd, string args)
+    {
+        if (!m.AuthorDetails.IsChatOwner.Equals(true) && Settings.IsSudo(m.AuthorDetails.DisplayName))
+            return string.Empty; // sudo only commands
 
-            return cmd switch
+        if (args.Length > 0)
+            return "Commands don't use arguments. Try again with just the command code.";
+
+        return cmd switch
+        {
+            "pr" => (Info.Hub.Ledy.Pool.Reload(Hub.Config.Folder.DistributeFolder)
+                ? $"Reloaded from folder. Pool count: {Info.Hub.Ledy.Pool.Count}"
+                : "Failed to reload from folder."),
+
+            "pc" => $"The pool count is: {Info.Hub.Ledy.Pool.Count}",
+
+            _ => string.Empty,
+        };
+    }
+
+    private static void Logger_LogOccurred(object? sender, Log e)
+    {
+        LogUtil.LogError(e.Message, nameof(YouTubeBot<T>));
+    }
+
+    private void Client_OnMessagesReceived(object? sender, IEnumerable<LiveChatMessage> messages)
+    {
+        foreach (var message in messages)
+        {
+            var msg = message.Snippet.TextMessageDetails.MessageText;
+            try
             {
-                "pr" => (Info.Hub.Ledy.Pool.Reload(Hub.Config.Folder.DistributeFolder)
-                    ? $"Reloaded from folder. Pool count: {Info.Hub.Ledy.Pool.Count}"
-                    : "Failed to reload from folder."),
+                var space = msg.IndexOf(' ');
+                if (space < 0)
+                    return;
 
-                "pc" => $"The pool count is: {Info.Hub.Ledy.Pool.Count}",
+                var cmd = msg[..(space + 1)];
+                var args = msg[(space + 1)..];
 
-                _ => string.Empty,
-            };
-        }
-
-        private static void Logger_LogOccurred(object? sender, Log e)
-        {
-            LogUtil.LogError(e.Message, nameof(YouTubeBot<T>));
-        }
-
-        private void Client_OnMessagesReceived(object? sender, IEnumerable<LiveChatMessage> messages)
-        {
-            foreach (var message in messages)
+                var response = HandleCommand(message, cmd, args);
+                if (response.Length == 0)
+                    return;
+                client.SendMessage(response);
+            }
+            catch
             {
-                var msg = message.Snippet.TextMessageDetails.MessageText;
-                try
-                {
-                    var space = msg.IndexOf(' ');
-                    if (space < 0)
-                        return;
-
-                    var cmd = msg[..(space + 1)];
-                    var args = msg[(space + 1)..];
-
-                    var response = HandleCommand(message, cmd, args);
-                    if (response.Length == 0)
-                        return;
-                    client.SendMessage(response);
-                }
-                catch
-                {
-                    // ignored
-                }
+                // ignored
             }
         }
     }

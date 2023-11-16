@@ -1,16 +1,10 @@
 ﻿using PKHeX.Core;
 
-namespace SysBot.Pokemon
-{
-    public class LedyRequest<T> where T : PKM, new()
-    {
-        public readonly string Nickname;
-        public readonly T RequestInfo;
+namespace SysBot.Pokemon;
 
-        public LedyRequest(T requestInfo, string nickname)
-        {
-            RequestInfo = requestInfo;
-            Nickname = nickname;
-        }
-    }
+public class LedyRequest<T>(T RequestInfo, string Nickname)
+    where T : PKM, new()
+{
+    public readonly string Nickname = Nickname;
+    public readonly T RequestInfo = RequestInfo;
 }

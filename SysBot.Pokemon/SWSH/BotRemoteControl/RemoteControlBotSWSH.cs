@@ -3,47 +3,37 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SysBot.Pokemon
+namespace SysBot.Pokemon;
+
+public class RemoteControlBotSWSH(PokeBotState Config) : PokeRoutineExecutor8SWSH(Config)
 {
-    public class RemoteControlBotSWSH : PokeRoutineExecutor8SWSH
+    public override async Task MainLoop(CancellationToken token)
     {
-        public RemoteControlBotSWSH(PokeBotState cfg) : base(cfg)
+        try
         {
-        }
+            Log("Identifying trainer data of the host console.");
+            await IdentifyTrainer(token).ConfigureAwait(false);
 
-        public override async Task MainLoop(CancellationToken token)
-        {
-            try
+            Log("Starting main loop, then waiting for commands.");
+            Config.IterateNextRoutine();
+            while (!token.IsCancellationRequested)
             {
-                Log("Identifying trainer data of the host console.");
-                await IdentifyTrainer(token).ConfigureAwait(false);
-
-                Log("Starting main loop, then waiting for commands.");
-                Config.IterateNextRoutine();
-                while (!token.IsCancellationRequested)
-                {
-                    await Task.Delay(1_000, token).ConfigureAwait(false);
-                    ReportStatus();
-                }
+                await Task.Delay(1_000, token).ConfigureAwait(false);
+                ReportStatus();
             }
-            catch (Exception e)
-            {
-                Log(e.Message);
-            }
-
-            Log($"Ending {nameof(RemoteControlBotSWSH)} loop.");
-            await HardStop().ConfigureAwait(false);
         }
-
-        public override async Task HardStop()
+        catch (Exception e)
         {
-            await SetStick(SwitchStick.LEFT, 0, 0, 0_500, CancellationToken.None).ConfigureAwait(false); // reset
-            await CleanExit(CancellationToken.None).ConfigureAwait(false);
+            Log(e.Message);
         }
 
-        private class DummyReset : IBotStateSettings
-        {
-            public bool ScreenOff => true;
-        }
+        Log($"Ending {nameof(RemoteControlBotSWSH)} loop.");
+        await HardStop().ConfigureAwait(false);
+    }
+
+    public override async Task HardStop()
+    {
+        await SetStick(SwitchStick.LEFT, 0, 0, 0_500, CancellationToken.None).ConfigureAwait(false); // reset
+        await CleanExit(CancellationToken.None).ConfigureAwait(false);
     }
 }

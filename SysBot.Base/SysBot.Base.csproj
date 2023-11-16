@@ -1,11 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NLog" Version="5.1.1" />
+	<ItemGroup>
+    <PackageReference Include="NLog" Version="5.2.5" />
     <PackageReference Include="LibUsbDotNet" Version="2.2.29" />
   </ItemGroup>
 

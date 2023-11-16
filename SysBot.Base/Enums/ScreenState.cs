@@ -1,8 +1,7 @@
-﻿namespace SysBot.Base
+﻿namespace SysBot.Base;
+
+public enum ScreenState
 {
-    public enum ScreenState
-    {
-        On,
-        Off,
-    }
+    On,
+    Off,
 }

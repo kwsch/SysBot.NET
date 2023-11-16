@@ -1,8 +1,7 @@
-﻿namespace SysBot.Pokemon
+﻿namespace SysBot.Pokemon;
+
+public interface IDumper
 {
-    public interface IDumper
-    {
-        bool Dump { get; set; }
-        string DumpFolder { get; set; }
-    }
+    bool Dump { get; set; }
+    string DumpFolder { get; set; }
 }
