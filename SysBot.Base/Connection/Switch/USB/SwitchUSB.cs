@@ -128,16 +128,16 @@ public abstract class SwitchUSB : IConsoleConnection
             return ReadInternal(buffer);
     }
 
-    protected byte[] Read(ulong offset, int length, Func<ulong, int, byte[]> method)
+    protected byte[] Read(ICommandBuilder b, ulong offset, int length)
     {
-        var cmd = method(offset, length);
+        var cmd = b.Peek(offset, length, false);
         SendInternal(cmd);
         return ReadBulkUSB();
     }
 
-    protected byte[] ReadMulti(IReadOnlyDictionary<ulong, int> offsetSizes, Func<IReadOnlyDictionary<ulong, int>, byte[]> method)
+    protected byte[] ReadMulti(ICommandBuilder b, IReadOnlyDictionary<ulong, int> offsetSizes)
     {
-        var cmd = method(offsetSizes);
+        var cmd = b.PeekMulti(offsetSizes, false);
         SendInternal(cmd);
         return ReadBulkUSB();
     }
@@ -176,18 +176,19 @@ public abstract class SwitchUSB : IConsoleConnection
         }
     }
 
-    protected void Write(byte[] data, ulong offset, Func<ulong, byte[], byte[]> method)
+    protected void Write(ICommandBuilder b, ReadOnlySpan<byte> data, ulong offset)
     {
         if (data.Length > MaximumTransferSize)
-            WriteLarge(data, offset, method);
-        else WriteSmall(data, offset, method);
+            WriteLarge(b, data, offset);
+        else
+            WriteSmall(b, data, offset);
     }
 
-    public void WriteSmall(byte[] data, ulong offset, Func<ulong, byte[], byte[]> method)
+    public void WriteSmall(ICommandBuilder b, ReadOnlySpan<byte> data, ulong offset)
     {
         lock (_sync)
         {
-            var cmd = method(offset, data);
+            var cmd = b.Poke(offset, data, false);
             SendInternal(cmd);
             Thread.Sleep(1);
         }
@@ -225,13 +226,16 @@ public abstract class SwitchUSB : IConsoleConnection
         return l;
     }
 
-    private void WriteLarge(byte[] data, ulong offset, Func<ulong, byte[], byte[]> method)
+    private void WriteLarge(ICommandBuilder b, ReadOnlySpan<byte> data, ulong offset)
     {
-        int byteCount = data.Length;
-        for (int i = 0; i < byteCount; i += MaximumTransferSize)
+        while (data.Length != 0)
         {
-            var slice = data.SliceSafe(i, MaximumTransferSize);
-            Write(slice, offset + (uint)i, method);
+            var length = Math.Min(data.Length, MaximumTransferSize);
+            var slice = data[..length];
+            WriteSmall(b, slice, offset);
+
+            data = data[length..];
+            offset += (uint)length;
             Thread.Sleep((MaximumTransferSize / DelayFactor) + BaseDelay);
         }
     }
