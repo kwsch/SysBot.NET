@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
 using SysBot.Pokemon.Z3;
 using System;
@@ -53,7 +53,7 @@ public static class Program
 
 [JsonSerializable(typeof(ProgramConfig))]
 [JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
-public sealed partial class ProgramConfigContext : JsonSerializerContext { }
+public sealed partial class ProgramConfigContext : JsonSerializerContext;
 
 public static class BotContainer
 {
@@ -67,7 +67,7 @@ public static class BotContainer
                 Console.WriteLine($"Failed to add bot: {bot}");
         }
 
-        LogUtil.Forwarders.Add((msg, ident) => Console.WriteLine($"{ident}: {msg}"));
+        LogUtil.Forwarders.Add(ConsoleForwarder.Instance);
         env.StartAll();
         Console.WriteLine($"Started all bots (Count: {prog.Bots.Length}.");
         Console.WriteLine("Press any key to stop execution and quit. Feel free to minimize this window!");

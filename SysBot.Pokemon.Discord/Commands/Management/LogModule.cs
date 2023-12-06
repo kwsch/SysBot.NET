@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using SysBot.Base;
@@ -11,10 +11,7 @@ namespace SysBot.Pokemon.Discord;
 
 public class LogModule : ModuleBase<SocketCommandContext>
 {
-    private class LogAction(ulong ChannelId, Action<string, string> messager, string channel)
-        : ChannelAction<string, string>(ChannelId, messager, channel);
-
-    private static readonly Dictionary<ulong, LogAction> Channels = [];
+    private static readonly Dictionary<ulong, ChannelLogger> Channels = [];
 
     public static void RestoreLogging(DiscordSocketClient discord, DiscordSettings settings)
     {
@@ -49,24 +46,9 @@ public class LogModule : ModuleBase<SocketCommandContext>
 
     private static void AddLogChannel(ISocketMessageChannel c, ulong cid)
     {
-        void Logger(string msg, string identity)
-        {
-            try
-            {
-                c.SendMessageAsync(GetMessage(msg, identity));
-            }
-            catch (Exception ex)
-            {
-                LogUtil.LogSafe(ex, identity);
-            }
-        }
-
-        Action<string, string> l = Logger;
-        LogUtil.Forwarders.Add(l);
-        static string GetMessage(string msg, string identity) => $"> [{DateTime.Now:hh:mm:ss}] - {identity}: {msg}";
-
-        var entry = new LogAction(cid, l, c.Name);
-        Channels.Add(cid, entry);
+        var logger = new ChannelLogger(cid, c);
+        LogUtil.Forwarders.Add(logger);
+        Channels.Add(cid, logger);
     }
 
     [Command("logInfo")]
@@ -89,7 +71,7 @@ public class LogModule : ModuleBase<SocketCommandContext>
             await ReplyAsync("Not echoing in this channel.").ConfigureAwait(false);
             return;
         }
-        LogUtil.Forwarders.Remove(log.Action);
+        LogUtil.Forwarders.Remove(log);
         Channels.Remove(Context.Channel.Id);
         SysCordSettings.Settings.LoggingChannels.RemoveAll(z => z.ID == id);
         await ReplyAsync($"Logging cleared from channel: {Context.Channel.Name}").ConfigureAwait(false);
@@ -104,10 +86,10 @@ public class LogModule : ModuleBase<SocketCommandContext>
         {
             var entry = l.Value;
             await ReplyAsync($"Logging cleared from {entry.ChannelName} ({entry.ChannelID}!").ConfigureAwait(false);
-            LogUtil.Forwarders.Remove(entry.Action);
+            LogUtil.Forwarders.Remove(entry);
         }
 
-        LogUtil.Forwarders.RemoveAll(y => Channels.Select(x => x.Value.Action).Contains(y));
+        LogUtil.Forwarders.RemoveAll(y => Channels.Select(z => z.Value).Contains(y));
         Channels.Clear();
         SysCordSettings.Settings.LoggingChannels.Clear();
         await ReplyAsync("Logging cleared from all channels!").ConfigureAwait(false);
