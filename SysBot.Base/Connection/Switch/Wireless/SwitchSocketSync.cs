@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using System.Threading;
-using static SysBot.Base.SwitchOffsetType;
+using static SysBot.Base.SwitchOffsetTypeUtil;
 
 namespace SysBot.Base;
 
@@ -62,20 +62,19 @@ public sealed class SwitchSocketSync(IWirelessConnectionConfig cfg) : SwitchSock
         return BitConverter.ToUInt64(baseBytes, 0);
     }
 
-    public byte[] ReadBytes(uint offset, int length) => Read(offset, length, Heap);
-    public byte[] ReadBytesMain(ulong offset, int length) => Read(offset, length, Main);
-    public byte[] ReadBytesAbsolute(ulong offset, int length) => Read(offset, length, Absolute);
+    public byte[] ReadBytes(uint offset, int length) => Read(Heap, offset, length);
+    public byte[] ReadBytesMain(ulong offset, int length) => Read(Main, offset, length);
+    public byte[] ReadBytesAbsolute(ulong offset, int length) => Read(Absolute, offset, length);
 
-    public void WriteBytes(byte[] data, uint offset) => Write(data, offset, Heap);
-    public void WriteBytesMain(byte[] data, ulong offset) => Write(data, offset, Main);
-    public void WriteBytesAbsolute(byte[] data, ulong offset) => Write(data, offset, Absolute);
+    public void WriteBytes(ReadOnlySpan<byte> data, uint offset) => Write(Heap, data, offset);
+    public void WriteBytesMain(ReadOnlySpan<byte> data, ulong offset) => Write(Main, data, offset);
+    public void WriteBytesAbsolute(ReadOnlySpan<byte> data, ulong offset) => Write(Absolute, data, offset);
 
-    private byte[] Read(ulong offset, int length, SwitchOffsetType type)
+    private byte[] Read(ICommandBuilder b, ulong offset, int length)
     {
-        var method = type.GetReadMethod();
         if (length <= MaximumTransferSize)
         {
-            var cmd = method(offset, length);
+            var cmd = b.Peek(offset, length);
             Send(cmd);
             return ReadResponse(length);
         }
@@ -88,7 +87,7 @@ public sealed class SwitchSocketSync(IWirelessConnectionConfig cfg) : SwitchSock
             if (delta < MaximumTransferSize)
                 len = delta;
 
-            var cmd = method(offset + (uint)i, len);
+            var cmd = b.Peek(offset + (uint)i, len);
             Send(cmd);
             var bytes = ReadResponse(len);
             bytes.CopyTo(result, i);
@@ -96,21 +95,23 @@ public sealed class SwitchSocketSync(IWirelessConnectionConfig cfg) : SwitchSock
         return result;
     }
 
-    private void Write(byte[] data, ulong offset, SwitchOffsetType type)
+    private void Write(ICommandBuilder b, ReadOnlySpan<byte> data, ulong offset)
     {
-        var method = type.GetWriteMethod();
         if (data.Length <= MaximumTransferSize)
         {
-            var cmd = method(offset, data);
+            var cmd = b.Poke(offset, data);
             Send(cmd);
             return;
         }
-        int byteCount = data.Length;
-        for (int i = 0; i < byteCount; i += MaximumTransferSize)
+        while (data.Length != 0)
         {
-            var slice = data.SliceSafe(i, MaximumTransferSize);
-            var cmd = method(offset + (uint)i, slice);
+            var length = Math.Min(data.Length, MaximumTransferSize);
+            var slice = data[..length];
+            var cmd = b.Poke(offset, slice);
             Send(cmd);
+
+            data = data[length..];
+            offset += (uint)length;
             Thread.Sleep((MaximumTransferSize / DelayFactor) + BaseDelay);
         }
     }

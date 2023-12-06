@@ -1,5 +1,5 @@
 ﻿using System;
-using static SysBot.Base.SwitchOffsetType;
+ using static SysBot.Base.SwitchOffsetTypeUtil;
 
 namespace SysBot.Base;
 
@@ -11,13 +11,13 @@ namespace SysBot.Base;
 /// </remarks>
 public sealed class SwitchUSBSync(int Port) : SwitchUSB(Port), ISwitchConnectionSync
 {
-    public byte[] ReadBytes(uint offset, int length) => Read(offset, length, Heap.GetReadMethod(false));
-    public byte[] ReadBytesMain(ulong offset, int length) => Read(offset, length, Main.GetReadMethod(false));
-    public byte[] ReadBytesAbsolute(ulong offset, int length) => Read(offset, length, Absolute.GetReadMethod(false));
+    public byte[] ReadBytes(uint offset, int length) => Read(Heap, offset, length);
+    public byte[] ReadBytesMain(ulong offset, int length) => Read(Main, offset, length);
+    public byte[] ReadBytesAbsolute(ulong offset, int length) => Read(Absolute, offset, length);
 
-    public void WriteBytes(byte[] data, uint offset) => Write(data, offset, Heap.GetWriteMethod(false));
-    public void WriteBytesMain(byte[] data, ulong offset) => Write(data, offset, Main.GetWriteMethod(false));
-    public void WriteBytesAbsolute(byte[] data, ulong offset) => Write(data, offset, Absolute.GetWriteMethod(false));
+    public void WriteBytes(ReadOnlySpan<byte> data, uint offset) => Write(Heap, data, offset);
+    public void WriteBytesMain(ReadOnlySpan<byte> data, ulong offset) => Write(Main, data, offset);
+    public void WriteBytesAbsolute(ReadOnlySpan<byte> data, ulong offset) => Write(Absolute, data, offset);
 
     public ulong GetMainNsoBase()
     {

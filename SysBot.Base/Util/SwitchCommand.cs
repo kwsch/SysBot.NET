@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,6 +25,14 @@ public static class SwitchCommand
         => string.Concat(jumps.Select(z => $" {z}"));
     private static string Encode(IReadOnlyDictionary<ulong, int> offsetSizeDictionary)
         => string.Concat(offsetSizeDictionary.Select(z => $" 0x{z.Key:X16} {z.Value}"));
+
+    private static string ToHex(ReadOnlySpan<byte> data)
+    {
+        var result = new StringBuilder(data.Length * 2);
+        foreach (var b in data)
+            result.Append(b.ToString("X2"));
+        return result.ToString();
+    }
 
     /// <summary>
     /// Removes the virtual controller from the bot. Allows physical controllers to control manually.
@@ -156,7 +164,7 @@ public static class SwitchCommand
     /// <param name="data">Data to write</param>
     /// <param name="crlf">Line terminator (unused by USB protocol)</param>
     /// <returns>Encoded command bytes</returns>
-    public static byte[] Poke(uint offset, byte[] data, bool crlf = true)
+    public static byte[] Poke(uint offset, ReadOnlySpan<byte> data, bool crlf = true)
         => Encode($"poke 0x{offset:X8} 0x{ToHex(data)}", crlf);
 
     /// <summary>
@@ -185,7 +193,7 @@ public static class SwitchCommand
     /// <param name="data">Data to write</param>
     /// <param name="crlf">Line terminator (unused by USB protocol)</param>
     /// <returns>Encoded command bytes</returns>
-    public static byte[] PokeAbsolute(ulong offset, byte[] data, bool crlf = true)
+    public static byte[] PokeAbsolute(ulong offset, ReadOnlySpan<byte> data, bool crlf = true)
         => Encode($"pokeAbsolute 0x{offset:X16} 0x{ToHex(data)}", crlf);
 
     /// <summary>
@@ -214,7 +222,7 @@ public static class SwitchCommand
     /// <param name="data">Data to write</param>
     /// <param name="crlf">Line terminator (unused by USB protocol)</param>
     /// <returns>Encoded command bytes</returns>
-    public static byte[] PokeMain(ulong offset, byte[] data, bool crlf = true)
+    public static byte[] PokeMain(ulong offset, ReadOnlySpan<byte> data, bool crlf = true)
         => Encode($"pokeMain 0x{offset:X16} 0x{ToHex(data)}", crlf);
 
     /*
