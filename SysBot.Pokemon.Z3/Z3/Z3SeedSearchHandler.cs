@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using System;
 
 namespace SysBot.Pokemon.Z3;
@@ -7,6 +7,10 @@ public class Z3SeedSearchHandler<T> : ISeedSearchHandler<T> where T : PKM, new()
 {
     public void CalculateAndNotify(T pkm, PokeTradeDetail<T> detail, SeedCheckSettings settings, PokeRoutineExecutor<T> bot)
     {
+        // Let PKHeX try and deduce it first. Usually will be the best match.
+        if (TryPKHeX(pkm, detail, settings, bot) && !settings.ShowAllZ3Results)
+            return;
+
         var ec = pkm.EncryptionConstant;
         var pid = pkm.PID;
 
@@ -30,5 +34,21 @@ public class Z3SeedSearchHandler<T> : ISeedSearchHandler<T> where T : PKM, new()
             var lump = new PokeTradeSummary("Calculated Seed:", match);
             detail.SendNotification(bot, lump);
         }
+    }
+
+    private static bool TryPKHeX(T pk, PokeTradeDetail<T> detail, SeedCheckSettings settings, PokeRoutineExecutor<T> bot)
+    {
+        var la = new LegalityAnalysis(pk);
+        var enc = la.Info.EncounterMatch;
+        if (enc is not ISeedCorrelation64<PKM> x)
+            return false;
+        if (!x.TryGetSeed(pk, out var seed))
+            return false;
+
+        var flawless = enc is IFlawlessIVCount f ? f.FlawlessIVCount : 0;
+        var result = new SeedSearchResult(Z3SearchResult.Success, seed, flawless, settings.ResultDisplayMode);
+        var lump = new PokeTradeSummary("Calculated Seed:", result);
+        detail.SendNotification(bot, lump);
+        return true;
     }
 }

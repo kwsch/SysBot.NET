@@ -1,4 +1,4 @@
-﻿namespace SysBot.Base;
+namespace SysBot.Base;
 
 /// <summary>
 /// Concepts and properties to describe a connection with a console, without explicitly interacting with it.
@@ -40,19 +40,19 @@ public interface IConsoleConnection
     /// Logs a message for the connection.
     /// </summary>
     /// <param name="message">Anything you want the bot to log.</param>
-    abstract void Log(string message);
+    void Log(string message);
 
     /// <summary>
     /// Logs an information message for the connection.
     /// </summary>
     /// <param name="message"></param>
-    abstract void LogInfo(string message);
+    void LogInfo(string message);
 
     /// <summary>
     /// Logs an error message for the connection.
     /// </summary>
     /// <param name="message"></param>
-    abstract void LogError(string message);
+    void LogError(string message);
 
     /// <summary>
     /// Maximum amount of data to be sent in a single packet to the device.

@@ -1,4 +1,4 @@
-﻿using NLog;
+using NLog;
 using NLog.Config;
 using NLog.Targets;
 using System;
@@ -8,12 +8,9 @@ using System.Text;
 
 namespace SysBot.Base;
 
-public static class LogConfig
-{
-    public static int MaxArchiveFiles { get; set; } = 14; // 2 weeks
-    public static bool LoggingEnabled { get; set; } = true;
-}
-
+/// <summary>
+/// Logic wrapper to handle logging (via NLog).
+/// </summary>
 public static class LogUtil
 {
     static LogUtil()
@@ -45,7 +42,7 @@ public static class LogUtil
     public static void LogText(string message) => Logger.Log(LogLevel.Info, message);
 
     // hook in here if you want to forward the message elsewhere???
-    public static readonly List<Action<string, string>> Forwarders = [];
+    public static readonly List<ILogForwarder> Forwarders = [];
 
     public static DateTime LastLogged { get; private set; } = DateTime.Now;
 
@@ -67,7 +64,7 @@ public static class LogUtil
         {
             try
             {
-                fwd(message, identity);
+                fwd.Forward(message, identity);
             }
             catch (Exception ex)
             {

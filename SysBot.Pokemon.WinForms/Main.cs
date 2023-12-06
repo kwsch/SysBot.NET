@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
 using SysBot.Pokemon.Z3;
 using System;
@@ -99,34 +99,7 @@ public sealed partial class Main : Form
         CB_Protocol.DataSource = listP;
         CB_Protocol.SelectedIndex = (int)SwitchProtocol.WiFi; // default option
 
-        LogUtil.Forwarders.Add(AppendLog);
-    }
-
-    private void AppendLog(string message, string identity)
-    {
-        var line = $"[{DateTime.Now:HH:mm:ss}] - {identity}: {message}{Environment.NewLine}";
-        if (InvokeRequired)
-            Invoke((MethodInvoker)(() => UpdateLog(line)));
-        else
-            UpdateLog(line);
-    }
-
-    private readonly object _logLock = new();
-
-    private void UpdateLog(string line)
-    {
-        lock (_logLock)
-        {
-            // ghetto truncate
-            var rtb = RTB_Logs;
-            var text = rtb.Text;
-            var max = rtb.MaxLength;
-            if (text.Length + line.Length + 2 >= max)
-                rtb.Text = text[(max / 4)..];
-
-            rtb.AppendText(line);
-            rtb.ScrollToCaret();
-        }
+        LogUtil.Forwarders.Add(new TextBoxForwarder(RTB_Logs));
     }
 
     private ProgramConfig GetCurrentConfiguration()
