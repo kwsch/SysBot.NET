@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -88,11 +89,20 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
     private async Task<byte[]> ReadBytesFromCmdAsync(byte[] cmd, int length, CancellationToken token)
     {
         await SendAsync(cmd, token).ConfigureAwait(false);
+        var size = (length * 2) + 1;
+        var buffer = ArrayPool<byte>.Shared.Rent(size);
+        var mem = buffer.AsMemory()[..size];
+        await Connection.ReceiveAsync(mem, token);
+        var result = DecodeResult(mem, length);
+        ArrayPool<byte>.Shared.Return(buffer, true);
+        return result;
+    }
 
-        var buffer = new byte[(length * 2) + 1];
-        await Connection.ReceiveAsync(buffer, token);
+    private static byte[] DecodeResult(ReadOnlyMemory<byte> buffer, int length)
+    {
         var result = new byte[length];
-        Decoder.LoadHexBytesTo(buffer, result, 2);
+        var span = buffer.Span[..^1]; // Last byte is always a terminator
+        Decoder.LoadHexBytesTo(span, result, 2);
         return result;
     }
 
