@@ -33,7 +33,8 @@ steps:
   inputs:
     solution: '$(Project)'
     msbuildArgs: '/t:restore;rebuild;publish 
-    /p:Configuration=$(Configuration);Platform=$(Platform);PublishSingleFile=true;OutputPath=$(Build.ArtifactStagingDirectory)\'
+    /p:Configuration=$(Configuration);Platform=$(Platform);PublishSingleFile=true;OutputPath=$(Build.ArtifactStagingDirectory)\
+    /p:RuntimeIdentifier=win-$(Platform)'
 
 - task: PublishPipelineArtifact@1
   displayName: 'Publish Artifact: SysBot-x64'
