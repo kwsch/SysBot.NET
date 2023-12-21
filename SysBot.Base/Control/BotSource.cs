@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SysBot.Base;
@@ -23,11 +23,9 @@ public class BotSource<T>(RoutineExecutor<T> Bot)
         Source.Cancel();
         Source = new CancellationTokenSource();
 
-        Task.Run(async () =>
-        {
-            await Bot.HardStop().ConfigureAwait(false);
-            IsPaused = IsRunning = IsStopping = false;
-        });
+        Task.Run(async () => await Bot.HardStop()
+            .ContinueWith(ReportFailure, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously)
+            .ContinueWith(_ => IsPaused = IsRunning = IsStopping = false));
     }
 
     public void Pause()
@@ -36,7 +34,9 @@ public class BotSource<T>(RoutineExecutor<T> Bot)
             return;
 
         IsPaused = true;
-        Bot.SoftStop();
+        Task.Run(Bot.SoftStop)
+            .ContinueWith(ReportFailure, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously)
+            .ContinueWith(_ => IsPaused = false, TaskContinuationOptions.OnlyOnFaulted);
     }
 
     public void Start()
@@ -47,11 +47,25 @@ public class BotSource<T>(RoutineExecutor<T> Bot)
         if (IsRunning || IsStopping)
             return;
 
-        Task.Run(() => Bot.RunAsync(Source.Token)
+        IsRunning = true;
+        Task.Run(async () => await Bot.RunAsync(Source.Token)
             .ContinueWith(ReportFailure, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously)
             .ContinueWith(_ => IsRunning = false));
+    }
 
-        IsRunning = true;
+    public void Restart()
+    {
+        bool ok = true;
+        Task.Run(Bot.Connection.Reset).ContinueWith(task =>
+        {
+            ok = false;
+            ReportFailure(task);
+        }, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously)
+        .ContinueWith(_ =>
+        {
+            if (ok)
+                Start();
+        }, TaskContinuationOptions.RunContinuationsAsynchronously | TaskContinuationOptions.NotOnFaulted);
     }
 
     private void ReportFailure(Task finishedTask)

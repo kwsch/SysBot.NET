@@ -42,11 +42,7 @@ public partial class BotController : UserControl
 
     private void RcMenuOnOpening(object? sender, CancelEventArgs? e)
     {
-        if (Runner == null)
-            return;
-
-        bool runOnce = Runner.RunOnce;
-        var bot = Runner.GetBot(State);
+        var bot = Runner?.GetBot(State);
         if (bot is null)
             return;
 
@@ -54,7 +50,7 @@ public partial class BotController : UserControl
         {
             var text = tsi.Text;
             tsi.Enabled = Enum.TryParse(text, out BotControlCommand cmd)
-                ? runOnce && cmd.IsUsable(bot.IsRunning, bot.IsPaused)
+                ? cmd.IsUsable(bot.IsRunning, bot.IsPaused)
                 : !bot.IsRunning;
         }
     }
@@ -86,6 +82,11 @@ public partial class BotController : UserControl
         if (!b.IsRunning)
         {
             PB_Lamp.BackColor = Color.Transparent;
+            return;
+        }
+        if (!b.Bot.Connection.Connected)
+        {
+            PB_Lamp.BackColor = Color.Aqua;
             return;
         }
 
@@ -152,7 +153,9 @@ public partial class BotController : UserControl
         switch (cmd)
         {
             case BotControlCommand.Idle: bot.Pause(); break;
-            case BotControlCommand.Start: bot.Start(); break;
+            case BotControlCommand.Start:
+                Runner.InitializeStart();
+                bot.Start(); break;
             case BotControlCommand.Stop: bot.Stop(); break;
             case BotControlCommand.Resume: bot.Resume(); break;
             case BotControlCommand.Restart:
@@ -161,8 +164,8 @@ public partial class BotController : UserControl
                 if (prompt != DialogResult.Yes)
                     return;
 
-                bot.Bot.Connection.Reset();
-                bot.Start();
+                Runner.InitializeStart();
+                bot.Restart();
                 break;
             }
             default:
@@ -193,7 +196,7 @@ public partial class BotController : UserControl
 
         if (InvokeRequired)
         {
-            Invoke((MethodInvoker)(() => ReloadStatus(bot)));
+            BeginInvoke((MethodInvoker)(() => ReloadStatus(bot)));
         }
         else
         {

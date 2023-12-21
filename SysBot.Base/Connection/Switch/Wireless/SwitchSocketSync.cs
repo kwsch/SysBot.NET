@@ -1,7 +1,6 @@
 using System;
 using System.Buffers;
 using System.Threading;
-using System.Threading.Tasks;
 using static SysBot.Base.SwitchOffsetTypeUtil;
 
 namespace SysBot.Base;
@@ -17,21 +16,40 @@ public sealed class SwitchSocketSync(IWirelessConnectionConfig cfg) : SwitchSock
     public override void Connect()
     {
         Log("Connecting to device...");
-        Connection.Connect(Info.IP, Info.Port);
+        IAsyncResult result = Connection.BeginConnect(Info.IP, Info.Port, null, null);
+        bool success = result.AsyncWaitHandle.WaitOne(5000, true);
+        if (!success || !Connection.Connected)
+        {
+            InitializeSocket();
+            throw new Exception("Failed to connect to device.");
+        }
+        Connection.EndConnect(result);
         Log("Connected!");
+        Label = Name;
     }
 
     public override void Reset()
     {
-        Disconnect();
+        if (Connected)
+            Disconnect();
+        else
+            InitializeSocket();
         Connect();
     }
 
     public override void Disconnect()
     {
         Log("Disconnecting from device...");
-        Connection.Disconnect(false);
+        IAsyncResult result = Connection.BeginDisconnect(false, null, null);
+        bool success = result.AsyncWaitHandle.WaitOne(5000, true);
+        if (!success || Connection.Connected)
+        {
+            InitializeSocket();
+            throw new Exception("Failed to disconnect from device.");
+        }
+        Connection.EndDisconnect(result);
         Log("Disconnected!");
+        InitializeSocket();
     }
 
     private int Read(byte[] buffer, int size) => Connection.Receive(buffer, size, 0);

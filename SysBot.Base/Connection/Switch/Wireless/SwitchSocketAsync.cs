@@ -2,8 +2,6 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,50 +33,38 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
         }
 
         Log("Connecting to device...");
-        Connection.Connect(Info.IP, Info.Port);
+        IAsyncResult result = Connection.BeginConnect(Info.IP, Info.Port, null, null);
+        bool success = result.AsyncWaitHandle.WaitOne(5000, true);
+        if (!success || !Connection.Connected)
+        {
+            InitializeSocket();
+            throw new Exception("Failed to connect to device.");
+        }
+        Connection.EndConnect(result);
         Log("Connected!");
         Label = Name;
     }
 
     public override void Reset()
     {
-        var ip = Info.IP;
         if (Connected)
             Disconnect();
-
-        // Socket will update "Connected" condition itself based on the success of the most recent read/write call.
-        // We want to ensure we initialize the Socket if we're resetting after a crash.
-        InitializeSocket();
-        Log("Connecting to device...");
-        var address = Dns.GetHostAddresses(ip);
-        foreach (IPAddress adr in address)
-        {
-            IPEndPoint ep = new(adr, Info.Port);
-            try
-            {
-                Connection.Connect(ep);
-            }
-            catch
-            {
-                return;
-            }
-            Log("Connected!");
-        }
+        else
+            InitializeSocket();
+        Connect();
     }
 
     public override void Disconnect()
     {
         Log("Disconnecting from device...");
-        Connection.Shutdown(SocketShutdown.Both);
-        try
+        IAsyncResult result = Connection.BeginDisconnect(false, null, null);
+        bool success = result.AsyncWaitHandle.WaitOne(5000, true);
+        if (!success || Connection.Connected)
         {
-            Connection.Disconnect(false);
+            InitializeSocket();
+            throw new Exception("Failed to disconnect from device.");
         }
-        catch
-        {
-            return;
-        }
-
+        Connection.EndDisconnect(result);
         Log("Disconnected! Resetting Socket.");
         InitializeSocket();
     }

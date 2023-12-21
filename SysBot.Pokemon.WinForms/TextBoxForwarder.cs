@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using SysBot.Base;
 
@@ -21,7 +21,7 @@ public sealed class TextBoxForwarder(TextBoxBase Box) : ILogForwarder
         lock (_logLock)
         {
             if (Box.InvokeRequired)
-                Box.Invoke((MethodInvoker)(() => UpdateLog(line)));
+                Box.BeginInvoke((MethodInvoker)(() => UpdateLog(line)));
             else
                 UpdateLog(line);
         }
