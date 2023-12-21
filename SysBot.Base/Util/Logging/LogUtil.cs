@@ -20,14 +20,15 @@ public static class LogUtil
 
         var config = new LoggingConfiguration();
         Directory.CreateDirectory("logs");
+        var WorkingDirectory = Path.GetDirectoryName(Environment.ProcessPath)!;
         var logfile = new FileTarget("logfile")
         {
-            FileName = Path.Combine("logs", "SysBotLog.txt"),
+            FileName = Path.Combine(WorkingDirectory, "logs", "SysBotLog.txt"),
             ConcurrentWrites = true,
 
             ArchiveEvery = FileArchivePeriod.Day,
             ArchiveNumbering = ArchiveNumberingMode.Date,
-            ArchiveFileName = Path.Combine("logs", "SysBotLog.{#}.txt"),
+            ArchiveFileName = Path.Combine(WorkingDirectory, "logs", "SysBotLog.{#}.txt"),
             ArchiveDateFormat = "yyyy-MM-dd",
             ArchiveAboveSize = 104857600, // 100MB (never)
             MaxArchiveFiles = LogConfig.MaxArchiveFiles,
