@@ -19,7 +19,8 @@ public sealed class SwitchUSBAsync(int Port) : SwitchUSB(Port), ISwitchConnectio
     public ValueTask<int> SendAsync(byte[] data, CancellationToken token)
     {
         Debug.Assert(data.Length < MaximumTransferSize);
-        return new ValueTask<int>(new Task<int>(() => Send(data), token));
+        var res = Task.Run(() => Send(data), token);
+        return new ValueTask<int>(res);
     }
 
     public Task<byte[]> ReadBytesAsync(uint offset, int length, CancellationToken token) => Task.Run(() => Read(Heap, offset, length), token);
