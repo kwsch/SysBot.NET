@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace SysBot.Pokemon;
 
@@ -7,7 +7,7 @@ namespace SysBot.Pokemon;
 /// </summary>
 public class PokeDataOffsetsSV
 {
-    public const string SVGameVersion = "3.0.0";
+    public const string SVGameVersion = "3.0.1";
     public const string ScarletID = "0100A3D008C5C000";
     public const string VioletID  = "01008F6008C5E000";
     public IReadOnlyList<long> BoxStartPokemonPointer         { get; } = new long[] { 0x47350d8, 0xD8, 0x8, 0xB8, 0x30, 0x9D0, 0x0};
