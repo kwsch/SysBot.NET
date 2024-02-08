@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -37,6 +37,12 @@ public class TradeSettings : IBotStateSettings, ICountSettings
 
     [Category(TradeConfig), Description("When enabled, the screen will be turned off during normal bot loop operation to save power.")]
     public bool ScreenOff { get; set; }
+
+    [Category(TradeConfig), Description("When enabled, disallows requesting Pokémon from outside of their original context.")]
+    public bool DisallowNonNatives { get; set; } = true;
+
+    [Category(TradeConfig), Description("When enabled, disallows requesting Pokémon if they have a HOME Tracker.")]
+    public bool DisallowTracked { get; set; } = true;
 
     /// <summary>
     /// Gets a random trade code based on the range settings.
