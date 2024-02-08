@@ -92,8 +92,10 @@ public abstract class SwitchRoutineExecutor<T> : RoutineExecutor<T> where T : cl
         } while (sw.ElapsedMilliseconds < waitms);
         return false;
     }
-    public virtual Task SetController(CancellationToken token)
+    public override async Task SetController(CancellationToken token)
     {
-        return Task.CompletedTask;
+        var cmd = SwitchCommand.Configure(SwitchConfigureParameter.controllerType, 1);
+        await Connection.SendAsync(cmd, token).ConfigureAwait(false);
     }
+
 }

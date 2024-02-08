@@ -26,10 +26,6 @@ public sealed partial class Main : Form
     {
         InitializeComponent();
         this.Load += async (sender, e) => await InitializeAsync();
-
-
-
-        SetButtonStartStateSafe(false);
         
     }
 
@@ -75,6 +71,7 @@ public sealed partial class Main : Form
         ProgramMode.BDSP => new PokeBotRunnerImpl<PB8>(cfg.Hub, new BotFactory8BS()),
         ProgramMode.LA => new PokeBotRunnerImpl<PA8>(cfg.Hub, new BotFactory8LA()),
         ProgramMode.SV => new PokeBotRunnerImpl<PK9>(cfg.Hub, new BotFactory9SV()),
+        ProgramMode.LGPE => new PokeBotRunnerImpl<PB7>(cfg.Hub, new BotFactoryLGPE()),
         _ => throw new IndexOutOfRangeException("Unsupported mode."),
     };
 
@@ -303,20 +300,4 @@ public sealed partial class Main : Form
     {
         TB_IP.Visible = CB_Protocol.SelectedIndex == 0;
     }
-
-    private void SetButtonStartStateSafe(bool state)
-    {
-        if (B_Start.InvokeRequired)
-        {
-            B_Start.Invoke((MethodInvoker)delegate
-            {
-                B_Start.Enabled = state;
-            });
-        }
-        else
-        {
-            B_Start.Enabled = state;
-        }
-    }
-
 }
