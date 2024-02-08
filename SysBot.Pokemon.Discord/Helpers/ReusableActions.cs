@@ -28,7 +28,7 @@ public static class ReusableActions
         File.Delete(tmp);
     }
 
-    public static async Task RepostPKMAsShowdownAsync(this ISocketMessageChannel channel, IAttachment att)
+    public static async Task RepostPKMAsShowdownAsync(this ISocketMessageChannel channel, IAttachment att, SocketUserMessage userMessage)
     {
         if (!EntityDetection.IsSizePlausible(att.Size))
             return;
@@ -37,7 +37,7 @@ public static class ReusableActions
             return;
 
         var pkm = result.Data!;
-        await channel.SendPKMAsShowdownSetAsync(pkm).ConfigureAwait(false);
+        await channel.SendPKMAsShowdownSetAsync(pkm, userMessage).ConfigureAwait(false);
     }
 
     public static RequestSignificance GetFavor(this IUser user)
@@ -60,16 +60,49 @@ public static class ReusableActions
             await channel.SendMessageAsync(msg).ConfigureAwait(false);
     }
 
-    public static async Task SendPKMAsShowdownSetAsync(this ISocketMessageChannel channel, PKM pkm)
+    public static async Task SendPKMAsShowdownSetAsync(this ISocketMessageChannel channel, PKM pkm, SocketUserMessage userMessage)
     {
         var txt = GetFormattedShowdownText(pkm);
-        await channel.SendMessageAsync(txt).ConfigureAwait(false);
+        var botMessage = await channel.SendMessageAsync(txt).ConfigureAwait(false); // Capture the bot's message
+
+        // Send a warning message
+        var warningMessage = await channel.SendMessageAsync("This message will self-destruct in 15 seconds. Please copy your data.").ConfigureAwait(false);
+
+        // Wait for 2 seconds
+        await Task.Delay(2000).ConfigureAwait(false);
+
+        // Delete the user's message
+        await userMessage.DeleteAsync().ConfigureAwait(false);
+
+        // Wait for another 13 seconds (total 15 seconds)
+        await Task.Delay(13000).ConfigureAwait(false);
+
+        // Delete the bot's messages
+        await botMessage.DeleteAsync().ConfigureAwait(false);
+        await warningMessage.DeleteAsync().ConfigureAwait(false);
     }
 
     public static string GetFormattedShowdownText(PKM pkm)
     {
+        var newShowdown = new List<string>();
         var showdown = ShowdownParsing.GetShowdownText(pkm);
-        return Format.Code(showdown);
+        foreach (var line in showdown.Split('\n'))
+            newShowdown.Add(line);
+
+        if (pkm.IsEgg)
+            newShowdown.Add("\nPokémon is an egg");
+        if (pkm.Ball > (int)Ball.None)
+            newShowdown.Insert(newShowdown.FindIndex(z => z.Contains("Nature")), $"Ball: {(Ball)pkm.Ball} Ball");
+        if (pkm.IsShiny)
+        {
+            var index = newShowdown.FindIndex(x => x.Contains("Shiny: Yes"));
+            if (pkm.ShinyXor == 0 || pkm.FatefulEncounter)
+                newShowdown[index] = "Shiny: Square\r";
+            else newShowdown[index] = "Shiny: Star\r";
+        }
+
+        newShowdown.InsertRange(1, new string[] { $"OT: {pkm.OT_Name}", $"TID: {pkm.DisplayTID}", $"SID: {pkm.DisplaySID}", $"OTGender: {(Gender)pkm.OT_Gender}", $"Language: {(LanguageID)pkm.Language}" });
+        return Format.Code(string.Join("\n", newShowdown).TrimEnd());
     }
 
     private static readonly string[] separator = [ ",", ", ", " " ];

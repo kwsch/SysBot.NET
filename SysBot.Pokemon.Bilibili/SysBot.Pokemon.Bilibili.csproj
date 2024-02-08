@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<ItemGroup>
+		<ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />
+		<ProjectReference Include="..\SysBot.Pokemon\SysBot.Pokemon.csproj" />
+	</ItemGroup>
+
+</Project>

@@ -1,13 +1,21 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 
-namespace SysBot.Pokemon.Twitch;
-
-public class TwitchQueue<T>(T Entity, PokeTradeTrainerInfo Trainer, string Username, bool Subscriber)
-    where T : PKM, new()
+namespace SysBot.Pokemon.Twitch
 {
-    public T Entity { get; } = Entity;
-    public PokeTradeTrainerInfo Trainer { get; } = Trainer;
-    public string UserName { get; } = Username;
-    public string DisplayName => Trainer.TrainerName;
-    public bool IsSubscriber { get; } = Subscriber;
+    public class TwitchQueue<T> where T : PKM, new()
+    {
+        public T Pokemon { get; }
+        public PokeTradeTrainerInfo Trainer { get; }
+        public string UserName { get; }
+        public string DisplayName => Trainer.TrainerName;
+        public bool IsSubscriber { get; }
+
+        public TwitchQueue(T pkm, PokeTradeTrainerInfo trainer, string username, bool subscriber)
+        {
+            Pokemon = pkm;
+            Trainer = trainer;
+            UserName = username;
+            IsSubscriber = subscriber;
+        }
+    }
 }

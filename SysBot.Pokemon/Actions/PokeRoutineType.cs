@@ -34,6 +34,9 @@ public enum PokeRoutineType
     /// <summary> Triggers encounters with Sword &amp; Shield box legend until the criteria is satisfied. </summary>
     DogBot = 1_002,
 
+    /// <summary> Attempts to fix advert names and minor legality issues of what a trade partner shows. </summary>
+    FixOT = 6002,
+
     /// <summary> Retrieves eggs from the Day Care. </summary>
     EggFetch = 1_003,
 

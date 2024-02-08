@@ -9,6 +9,7 @@ public class DiscordManager(DiscordSettings Config)
     public readonly DiscordSettings Config = Config;
     public ulong Owner { get; internal set; }
 
+    public RemoteControlAccessList BlacklistedServers => Config.ServerBlacklist;
     public RemoteControlAccessList BlacklistedUsers => Config.UserBlacklist;
     public RemoteControlAccessList WhitelistedChannels => Config.ChannelWhitelist;
 
@@ -20,6 +21,7 @@ public class DiscordManager(DiscordSettings Config)
     public RemoteControlAccessList RolesTrade => Config.RoleCanTrade;
     public RemoteControlAccessList RolesSeed => Config.RoleCanSeedCheck;
     public RemoteControlAccessList RolesDump => Config.RoleCanDump;
+    public RemoteControlAccessList RolesFixOT => Config.RoleCanFixOT;
     public RemoteControlAccessList RolesRemoteControl => Config.RoleRemoteControl;
 
     public bool CanUseSudo(ulong uid) => SudoDiscord.Contains(uid);
@@ -53,6 +55,7 @@ public class DiscordManager(DiscordSettings Config)
         nameof(RolesTrade) => RolesTrade,
         nameof(RolesSeed) => RolesSeed,
         nameof(RolesDump) => RolesDump,
+        nameof(RolesFixOT) => RolesFixOT,
         nameof(RolesRemoteControl) => RolesRemoteControl,
         _ => throw new ArgumentOutOfRangeException(nameof(type)),
     };

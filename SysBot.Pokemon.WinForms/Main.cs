@@ -9,20 +9,38 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using SysBot.Pokemon.Helpers;
 
 namespace SysBot.Pokemon.WinForms;
 
 public sealed partial class Main : Form
 {
     private readonly List<PokeBotState> Bots = [];
-    private readonly IPokeBotRunner RunningEnvironment;
-    private readonly ProgramConfig Config;
+
+
+    private IPokeBotRunner RunningEnvironment { get; set; }
+    private ProgramConfig Config { get; set; }
+    public static bool IsUpdating { get; set; } = false;
 
     public Main()
     {
         InitializeComponent();
+        this.Load += async (sender, e) => await InitializeAsync();
 
+
+
+        SetButtonStartStateSafe(false);
+        
+    }
+
+    private async Task InitializeAsync()
+    {
+        if (IsUpdating)
+            return;
         PokeTradeBotSWSH.SeedChecker = new Z3SeedSearchHandler<PK8>();
+        // Update checker
+        UpdateChecker updateChecker = new UpdateChecker();
+        await updateChecker.CheckForUpdatesAsync();
         if (File.Exists(Program.ConfigPath))
         {
             var lines = File.ReadAllText(Program.ConfigPath);
@@ -46,9 +64,8 @@ public sealed partial class Main : Form
 
         RTB_Logs.MaxLength = 32_767; // character length
         LoadControls();
-        Text = $"{Text} ({Config.Mode})";
+        Text = $"MergeBot {TradeBot.Version} ({Config.Mode})";
         Task.Run(BotMonitor);
-
         InitUtil.InitializeStubs(Config.Mode);
     }
 
@@ -104,12 +121,20 @@ public sealed partial class Main : Form
 
     private ProgramConfig GetCurrentConfiguration()
     {
-        Config.Bots = [.. Bots];
+        if (Config == null)
+        {
+            throw new InvalidOperationException("Config has not been initialized because a valid license was not entered.");
+        }
+        Config.Bots = Bots.ToArray();
         return Config;
     }
 
     private void Main_FormClosing(object sender, FormClosingEventArgs e)
     {
+        if (IsUpdating)
+        {
+            return;
+        }
         SaveCurrentConfig();
         var bots = RunningEnvironment;
         if (!bots.IsRunning)
@@ -278,4 +303,20 @@ public sealed partial class Main : Form
     {
         TB_IP.Visible = CB_Protocol.SelectedIndex == 0;
     }
+
+    private void SetButtonStartStateSafe(bool state)
+    {
+        if (B_Start.InvokeRequired)
+        {
+            B_Start.Invoke((MethodInvoker)delegate
+            {
+                B_Start.Enabled = state;
+            });
+        }
+        else
+        {
+            B_Start.Enabled = state;
+        }
+    }
+
 }

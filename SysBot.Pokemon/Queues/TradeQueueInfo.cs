@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.Collections.Generic;
@@ -16,6 +16,13 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
     private readonly object _sync = new();
     private readonly List<TradeEntry<T>> UsersInQueue = [];
     public readonly PokeTradeHub<T> Hub = Hub;
+    public bool IsUserInQueue(ulong userId)
+    {
+        lock (_sync)
+        {
+            return UsersInQueue.Any(entry => entry.UserID == userId);
+        }
+    }
 
     public int Count
     {
@@ -153,6 +160,14 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
         lock (_sync)
         {
             return UsersInQueue.Select(z => string.Format(fmt, z.Trade.ID, z.Trade.Code, z.Trade.Type, z.Username, (Species)z.Trade.TradeData.Species));
+        }
+    }
+
+    public IEnumerable<ulong> GetUserIdList(int count)
+    {
+        lock (_sync)
+        {
+            return UsersInQueue.Take(count).Select(z => z.Trade.Trainer.ID);
         }
     }
 

@@ -16,7 +16,20 @@ public class QueueModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public async Task GetTradePositionAsync()
     {
         var msg = Context.User.Mention + " - " + Info.GetPositionString(Context.User.Id);
-        await ReplyAsync(msg).ConfigureAwait(false);
+
+        // Send the reply and capture the response message
+        var response = await ReplyAsync(msg).ConfigureAwait(false);
+
+        // Delay for 5 seconds
+        await Task.Delay(5000).ConfigureAwait(false);
+
+        // Delete user message
+        if (Context.Message is IUserMessage userMessage)
+            await userMessage.DeleteAsync().ConfigureAwait(false);
+
+        // Delete bot response
+        if (response is IUserMessage responseMessage)
+            await responseMessage.DeleteAsync().ConfigureAwait(false);
     }
 
     [Command("queueClear")]
@@ -25,8 +38,23 @@ public class QueueModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public async Task ClearTradeAsync()
     {
         string msg = ClearTrade();
-        await ReplyAsync(msg).ConfigureAwait(false);
+
+        // Send the reply and capture the response message
+        var response = await ReplyAsync(msg).ConfigureAwait(false);
+
+        // Wait for 5 seconds
+        await Task.Delay(5000).ConfigureAwait(false);
+
+        // Delete the user's command message if possible
+        if (Context.Message is IUserMessage userMessage)
+        {
+            await userMessage.DeleteAsync().ConfigureAwait(false);
+        }
+
+        // Delete the bot's response message
+        await response.DeleteAsync().ConfigureAwait(false);
     }
+
 
     [Command("queueClearUser")]
     [Alias("qcu", "tcu")]

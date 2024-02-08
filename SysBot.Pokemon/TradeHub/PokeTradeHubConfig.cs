@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
@@ -7,6 +7,7 @@ namespace SysBot.Pokemon;
 public sealed class PokeTradeHubConfig : BaseConfig
 {
     private const string BotTrade = nameof(BotTrade);
+    [Browsable(false)]
     private const string BotEncounter = nameof(BotEncounter);
     private const string Integration = nameof(Integration);
 
@@ -31,6 +32,7 @@ public sealed class PokeTradeHubConfig : BaseConfig
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public DistributionSettings Distribution { get; set; } = new();
 
+    [Browsable(false)]
     [Category(BotTrade)]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public SeedCheckSettings SeedCheckSWSH { get; set; } = new();
@@ -40,15 +42,15 @@ public sealed class PokeTradeHubConfig : BaseConfig
     public TradeAbuseSettings TradeAbuse { get; set; } = new();
 
     // Encounter Bots - For finding or hosting Pokémon in-game.
-
+    [Browsable(false)]
     [Category(BotEncounter)]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public EncounterSettings EncounterSWSH { get; set; } = new();
-
+    [Browsable(false)]
     [Category(BotEncounter)]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public RaidSettings RaidSWSH { get; set; } = new();
-
+    [Browsable(false)]
     [Category(BotEncounter), Description("Stop conditions for EncounterBot.")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public StopConditionSettings StopConditions { get; set; } = new();
@@ -74,4 +76,19 @@ public sealed class PokeTradeHubConfig : BaseConfig
     [Category(Integration), Description("Allows favored users to join the queue with a more favorable position than unfavored users.")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public FavoredPrioritySettings Favoritism { get; set; } = new();
+
+    [Browsable(false)]
+    [Category(Integration)]
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public QQSettings QQ { get; set; } = new();
+
+    [Browsable(false)]
+    [Category(Integration)]
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public BilibiliSettings Bilibili { get; set; } = new();
+
+    [Browsable(false)]
+    [Category(Integration)]
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public DodoSettings Dodo { get; set; } = new();
 }

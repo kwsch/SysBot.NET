@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using System;
 
 namespace SysBot.Pokemon;
@@ -10,6 +10,7 @@ public sealed class BotFactory8BS : BotFactory<PB8>
         PokeRoutineType.FlexTrade or PokeRoutineType.Idle
             or PokeRoutineType.LinkTrade
             or PokeRoutineType.Dump
+            or PokeRoutineType.FixOT
             => new PokeTradeBotBS(Hub, cfg),
 
         PokeRoutineType.RemoteControl => new RemoteControlBotBS(cfg),
@@ -22,6 +23,7 @@ public sealed class BotFactory8BS : BotFactory<PB8>
         PokeRoutineType.FlexTrade or PokeRoutineType.Idle
             or PokeRoutineType.LinkTrade
             or PokeRoutineType.Dump
+            or PokeRoutineType.FixOT
             => true,
 
         PokeRoutineType.RemoteControl => true,

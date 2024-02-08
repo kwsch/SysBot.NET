@@ -12,6 +12,8 @@ namespace SysBot.Pokemon;
 
 public abstract class PokeRoutineExecutor9SV : PokeRoutineExecutor<PK9>
 {
+    protected const int HidWaitTime = 46;
+    protected const int KeyboardPressTime = 35;
     protected PokeDataOffsetsSV Offsets { get; } = new();
     protected PokeRoutineExecutor9SV(PokeBotState Config) : base(Config)
     {
@@ -126,6 +128,10 @@ public abstract class PokeRoutineExecutor9SV : PokeRoutineExecutor<PK9>
             Log("Turning off screen.");
             await SetScreen(ScreenState.Off, token).ConfigureAwait(false);
         }
+
+        Log($"Setting SV-specific hid waits");
+        await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.keySleepTime, KeyboardPressTime), token).ConfigureAwait(false);
+        await Connection.SendAsync(SwitchCommand.Configure(SwitchConfigureParameter.pollRate, HidWaitTime), token).ConfigureAwait(false);
     }
 
     public async Task CleanExit(CancellationToken token)
@@ -137,14 +143,28 @@ public abstract class PokeRoutineExecutor9SV : PokeRoutineExecutor<PK9>
 
     protected virtual async Task EnterLinkCode(int code, PokeTradeHubConfig config, CancellationToken token)
     {
-        // Default implementation to just press directional arrows. Can do via Hid keys, but users are slower than bots at even the default code entry.
-        var keys = TradeUtil.GetPresses(code);
-        foreach (var key in keys)
+        if (config.UseKeyboard)
         {
-            int delay = config.Timings.KeypressTime;
-            await Click(key, delay, token).ConfigureAwait(false);
+            // Enter link code using keyboard
+            char[] codeChars = $"{code:00000000}".ToCharArray();
+            HidKeyboardKey[] keysToPress = new HidKeyboardKey[codeChars.Length];
+            for (int i = 0; i < codeChars.Length; ++i)
+                keysToPress[i] = (HidKeyboardKey)Enum.Parse(typeof(HidKeyboardKey), (int)codeChars[i] >= (int)'A' && (int)codeChars[i] <= (int)'Z' ? $"{codeChars[i]}" : $"D{codeChars[i]}");
+
+            await Connection.SendAsync(SwitchCommand.TypeMultipleKeys(keysToPress), token).ConfigureAwait(false);
+            await Task.Delay((HidWaitTime * 8) + 0_200, token).ConfigureAwait(false);
+            // Confirm Code outside of this method (allow synchronization)
         }
-        // Confirm Code outside of this method (allow synchronization)
+        else
+        {
+            // Enter link code using directional arrows
+            var keys = TradeUtil.GetPresses(code);
+            foreach (var key in keys)
+            {
+                int delay = config.Timings.KeypressTime;
+                await Click(key, delay, token).ConfigureAwait(false);
+            }
+        }
     }
 
     public async Task ReOpenGame(PokeTradeHubConfig config, CancellationToken token)

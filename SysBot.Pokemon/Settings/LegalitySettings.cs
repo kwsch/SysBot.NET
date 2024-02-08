@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using System.Collections.Generic;
 using System.ComponentModel;
 
@@ -6,7 +6,7 @@ namespace SysBot.Pokemon;
 
 public class LegalitySettings
 {
-    private string DefaultTrainerName = "SysBot";
+    private string DefaultTrainerName = "genpkm.com";
     private const string Generate = nameof(Generate);
     private const string Misc = nameof(Misc);
     public override string ToString() => "Legality Generating Settings";
@@ -41,6 +41,7 @@ public class LegalitySettings
     [Category(Generate), Description("If PrioritizeGame is set to \"True\", uses PrioritizeGameVersion to start looking for encounters. If \"False\", uses newest game as the version. It is recommended to leave this as \"True\".")]
     public bool PrioritizeGame { get; set; } = true;
 
+    [Browsable(false)]
     [Category(Generate), Description("Specifies the first game to use to generate encounters, or current game if this field is set to \"Any\". Set PrioritizeGame to \"true\" to enable. It is recommended to leave this as \"Any\".")]
     public GameVersion PrioritizeGameVersion { get; set; } = GameVersion.Any;
 
@@ -57,8 +58,9 @@ public class LegalitySettings
     public bool ForceLevel100for50 { get; set; }
 
     [Category(Generate), Description("Requires HOME tracker when trading Pokémon that had to have traveled between the Switch games.")]
-    public bool EnableHOMETrackerCheck { get; set; }
+    public bool EnableHOMETrackerCheck { get; set; } = false;
 
+    [Browsable(false)]
     [Category(Generate), Description("The order in which Pokémon encounter types are attempted.")]
     public List<EncounterTypeGroup> PrioritizeEncounters { get; set; } =
     [
@@ -67,6 +69,7 @@ public class LegalitySettings
         EncounterTypeGroup.Trade,
     ];
 
+    [Browsable(false)]
     [Category(Generate), Description("Adds Battle Version for games that support it (SWSH only) for using past-gen Pokémon in online competitive play.")]
     public bool SetBattleVersion { get; set; }
 
@@ -77,13 +80,16 @@ public class LegalitySettings
     public bool AllowTrainerDataOverride { get; set; }
 
     [Category(Generate), Description("Allow users to submit further customization with Batch Editor commands.")]
-    public bool AllowBatchCommands { get; set; }
+    public bool AllowBatchCommands { get; set; } = true;
 
     [Category(Generate), Description("Maximum time in seconds to spend when generating a set before canceling. This prevents difficult sets from freezing the bot.")]
     public int Timeout { get; set; } = 15;
 
     // Misc
-
+    [Browsable(false)]
     [Category(Misc), Description("Zero out HOME trackers for cloned and user-requested PKM files. It is recommended to leave this disabled to avoid creating invalid HOME data.")]
-    public bool ResetHOMETracker { get; set; }
+    public bool ResetHOMETracker { get; set; } = false;
+
+    [Category(Misc), Description("Apply valid pokemon with the trainers OT/SID/TID (AutoOT)")]
+    public bool UseTradePartnerInfo { get; set; } = true;
 }

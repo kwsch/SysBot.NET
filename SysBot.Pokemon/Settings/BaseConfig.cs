@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace SysBot.Pokemon;
 
@@ -9,10 +9,14 @@ public abstract class BaseConfig
 {
     protected const string FeatureToggle = nameof(FeatureToggle);
     protected const string Operation = nameof(Operation);
+    [Browsable(false)]
     private const string Debug = nameof(Debug);
 
     [Category(FeatureToggle), Description("When enabled, the bot will press the B button occasionally when it is not processing anything (to avoid sleep).")]
     public bool AntiIdle { get; set; }
+
+    [Category(FeatureToggle), Description("When enabled, the bot will Enter Link Trade Code via Keyboard (faster).")]
+    public bool UseKeyboard { get; set; } = true;
 
     [Category(FeatureToggle), Description("Enables text logs. Restart to apply changes.")]
     public bool LoggingEnabled { get; set; } = true;
@@ -20,6 +24,7 @@ public abstract class BaseConfig
     [Category(FeatureToggle), Description("Maximum number of old text log files to retain. Set this to <= 0 to disable log cleanup. Restart to apply changes.")]
     public int MaxArchiveFiles { get; set; } = 14;
 
+    [Browsable(false)]
     [Category(Debug), Description("Skips creating bots when the program is started; helpful for testing integrations.")]
     public bool SkipConsoleBotCreation { get; set; }
 

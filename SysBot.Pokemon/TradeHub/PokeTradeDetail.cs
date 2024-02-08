@@ -1,6 +1,7 @@
 ﻿using PKHeX.Core;
 using System;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace SysBot.Pokemon;
 
@@ -42,6 +43,9 @@ public class PokeTradeDetail<TPoke>(TPoke TradeData, PokeTradeTrainerInfo Traine
 
     /// <summary> Indicates if the trade data is currently being traded. </summary>
     public bool IsProcessing;
+
+    /// <summary> Customized trade parameters. </summary>
+    public Dictionary<string, object> Context = new();
 
     public void TradeInitialize(PokeRoutineExecutor<TPoke> routine) => Notifier.TradeInitialize(routine, this);
     public void TradeSearching(PokeRoutineExecutor<TPoke> routine) => Notifier.TradeSearching(routine, this);

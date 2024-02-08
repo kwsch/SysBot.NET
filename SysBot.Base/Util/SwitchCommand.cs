@@ -120,8 +120,7 @@ public static class SwitchCommand
     /// <param name="key">Keyboard key to type</param>
     /// <param name="crlf">Line terminator (unused by USB protocol)</param>
     /// <returns>Encoded command bytes</returns>
-    public static byte[] TypeKey(HidKeyboardKey key, bool crlf = true)
-        => Encode($"key {(int)key}", crlf);
+    public static byte[] TypeKey(HidKeyboardKey key, bool crlf = true) => Encode($"key {(int)key}", crlf);
 
     /// <summary>
     /// Types multiple keyboard keys.
@@ -129,8 +128,7 @@ public static class SwitchCommand
     /// <param name="keys">Keyboard keys to type</param>
     /// <param name="crlf">Line terminator (unused by USB protocol)</param>
     /// <returns>Encoded command bytes</returns>
-    public static byte[] TypeMultipleKeys(IEnumerable<HidKeyboardKey> keys, bool crlf = true)
-        => Encode($"key{string.Concat(keys.Select(z => $" {(int)z}"))}", crlf);
+    public static byte[] TypeMultipleKeys(IEnumerable<HidKeyboardKey> keys, bool crlf = true) => Encode($"key{string.Concat(keys.Select(z => $" {(int)z}"))}", crlf);
 
     /*
      *

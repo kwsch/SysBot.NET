@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.WebSocket;
 using PKHeX.Core;
 using System;
@@ -6,28 +6,46 @@ using System.Linq;
 
 namespace SysBot.Pokemon.Discord;
 
-public class DiscordTradeNotifier<T>(T Data, PokeTradeTrainerInfo Info, int Code, SocketUser Trader)
-    : IPokeTradeNotifier<T>
+public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
     where T : PKM, new()
 {
-    private T Data { get; } = Data;
-    private PokeTradeTrainerInfo Info { get; } = Info;
-    private int Code { get; } = Code;
-    private SocketUser Trader { get; } = Trader;
+    private T Data { get; }
+    private PokeTradeTrainerInfo Info { get; }
+    private int Code { get; }
+    private SocketUser Trader { get; }
+    private int BatchTradeNumber { get; }
+    private int TotalBatchTrades { get; }
+    private bool IsMysteryEgg { get; } 
+
+    public DiscordTradeNotifier(T data, PokeTradeTrainerInfo info, int code, SocketUser trader, int batchTradeNumber, int totalBatchTrades, bool isMysteryEgg)
+    {
+        Data = data;
+        Info = info;
+        Code = code;
+        Trader = trader;
+        BatchTradeNumber = batchTradeNumber;
+        TotalBatchTrades = totalBatchTrades;
+        IsMysteryEgg = isMysteryEgg;
+    }
+
     public Action<PokeRoutineExecutor<T>>? OnFinish { private get; set; }
     public readonly PokeTradeHub<T> Hub = SysCord<T>.Runner.Hub;
 
     public void TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
     {
+        var batchInfo = TotalBatchTrades > 1 ? $" (Trade {BatchTradeNumber} of {TotalBatchTrades})" : "";
         var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";
-        Trader.SendMessageAsync($"Initializing trade{receive}. Please be ready. Your code is **{Code:0000 0000}**.").ConfigureAwait(false);
+        var message = $"Initializing trade{receive}{batchInfo}. Please be ready. Your code is **{Code:0000 0000}**.";
+        Trader.SendMessageAsync(message).ConfigureAwait(false);
     }
 
     public void TradeSearching(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
     {
+        var batchInfo = TotalBatchTrades > 1 ? $" for batch trade (Trade {BatchTradeNumber} of {TotalBatchTrades})" : "";
         var name = Info.TrainerName;
-        var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", {name}";
-        Trader.SendMessageAsync($"I'm waiting for you{trainer}! Your code is **{Code:0000 0000}**. My IGN is **{routine.InGameName}**.").ConfigureAwait(false);
+        var trainer = string.IsNullOrEmpty(name) ? string.Empty : $" {name}";
+        var message = $"I'm waiting for you{trainer}{batchInfo}! Your code is **{Code:0000 0000}**. My IGN is **{routine.InGameName}**.";
+        Trader.SendMessageAsync(message).ConfigureAwait(false);
     }
 
     public void TradeCanceled(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeResult msg)
@@ -40,7 +58,7 @@ public class DiscordTradeNotifier<T>(T Data, PokeTradeTrainerInfo Info, int Code
     {
         OnFinish?.Invoke(routine);
         var tradedToUser = Data.Species;
-        var message = tradedToUser != 0 ? $"Trade finished. Enjoy your {(Species)tradedToUser}!" : "Trade finished!";
+        var message = tradedToUser != 0 ? (IsMysteryEgg ? "Trade finished. Enjoy your **Mystery Egg**!" : $"Trade finished. Enjoy your **{(Species)tradedToUser}**!") : "Trade finished!";
         Trader.SendMessageAsync(message).ConfigureAwait(false);
         if (result.Species != 0 && Hub.Config.Discord.ReturnPKMs)
             Trader.SendPKMAsync(result, "Here's what you traded me!").ConfigureAwait(false);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
@@ -54,6 +54,9 @@ public class QueueSettings
     [Category(UserBias), Description("Biases the Clone Queue's weight based on how many users are in the queue.")]
     public int YieldMultCountClone { get; set; } = 100;
 
+    [Category(UserBias), Description("Biases the FixOT Queue's weight based on how many users are in the queue.")]
+    public int YieldMultCountFixOT { get; set; } = 100;
+
     [Category(UserBias), Description("Biases the Dump Queue's weight based on how many users are in the queue.")]
     public int YieldMultCountDump { get; set; } = 100;
 
@@ -74,6 +77,9 @@ public class QueueSettings
     [Category(TimeBias), Description("Checks time elapsed since the user joined the Dump queue, and increases the queue's weight accordingly.")]
     public int YieldMultWaitDump { get; set; } = 1;
 
+    [Category(TimeBias), Description("Checks time elapsed since the user joined the FixOT queue, and increases the queue's weight accordingly.")]
+    public int YieldMultWaitFixOT { get; set; } = 1;
+
     [Category(TimeBias), Description("Multiplies the amount of users in queue to give an estimate of how much time it will take until the user is processed.")]
     public float EstimatedDelayFactor { get; set; } = 1.1f;
 
@@ -82,6 +88,7 @@ public class QueueSettings
         PokeTradeType.Seed => YieldMultCountSeedCheck,
         PokeTradeType.Clone => YieldMultCountClone,
         PokeTradeType.Dump => YieldMultCountDump,
+        PokeTradeType.FixOT => YieldMultCountFixOT,
         _ => YieldMultCountTrade,
     };
 
@@ -90,6 +97,7 @@ public class QueueSettings
         PokeTradeType.Seed => YieldMultWaitSeedCheck,
         PokeTradeType.Clone => YieldMultWaitClone,
         PokeTradeType.Dump => YieldMultWaitDump,
+        PokeTradeType.FixOT => YieldMultWaitFixOT,
         _ => YieldMultWaitTrade,
     };
 

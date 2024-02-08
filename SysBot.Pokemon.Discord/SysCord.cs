@@ -174,6 +174,16 @@ public sealed class SysCord<T> where T : PKM, new()
         if (arg is not SocketUserMessage msg)
             return;
 
+        // Check if the message is from a server and if that server is blacklisted
+        if (msg.Channel is SocketGuildChannel guildChannel)
+        {
+            if (Manager.BlacklistedServers.Contains(guildChannel.Guild.Id))
+            {
+                await guildChannel.Guild.LeaveAsync();
+                return; 
+            }
+        }
+
         // We don't want the bot to respond to itself or other bots.
         if (msg.Author.Id == _client.CurrentUser.Id || msg.Author.IsBot)
             return;
@@ -192,15 +202,17 @@ public sealed class SysCord<T> where T : PKM, new()
 
     private async Task TryHandleMessageAsync(SocketMessage msg)
     {
-        // should this be a service?
         if (msg.Attachments.Count > 0)
         {
             var mgr = Manager;
             var cfg = mgr.Config;
             if (cfg.ConvertPKMToShowdownSet && (cfg.ConvertPKMReplyAnyChannel || mgr.CanUseCommandChannel(msg.Channel.Id)))
             {
-                foreach (var att in msg.Attachments)
-                    await msg.Channel.RepostPKMAsShowdownAsync(att).ConfigureAwait(false);
+                if (msg is SocketUserMessage userMessage) // Cast to SocketUserMessage
+                {
+                    foreach (var att in msg.Attachments)
+                        await msg.Channel.RepostPKMAsShowdownAsync(att, userMessage).ConfigureAwait(false); // Pass userMessage
+                }
             }
         }
     }

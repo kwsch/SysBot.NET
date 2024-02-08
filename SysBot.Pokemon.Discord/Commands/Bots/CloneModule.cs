@@ -14,21 +14,52 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [Alias("c")]
     [Summary("Clones the Pokémon you show via Link Trade.")]
     [RequireQueueRole(nameof(DiscordManager.RolesClone))]
-    public Task CloneAsync(int code)
+    public async Task CloneAsync(int code)
     {
         var sig = Context.User.GetFavor();
-        return QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone);
+        // Execute the queue addition without capturing response
+        QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone);
+
+        // Optional: Send a confirmation message if needed
+        var confirmationMessage = await ReplyAsync("Processing your clone request...").ConfigureAwait(false);
+
+        // Delay for 5 seconds
+        await Task.Delay(5000).ConfigureAwait(false);
+
+        // Delete user message
+        if (Context.Message is IUserMessage userMessage)
+            await userMessage.DeleteAsync().ConfigureAwait(false);
+
+        // Delete bot confirmation message
+        if (confirmationMessage != null)
+            await confirmationMessage.DeleteAsync().ConfigureAwait(false);
     }
 
     [Command("clone")]
     [Alias("c")]
     [Summary("Clones the Pokémon you show via Link Trade.")]
     [RequireQueueRole(nameof(DiscordManager.RolesClone))]
-    public Task CloneAsync([Summary("Trade Code")][Remainder] string code)
+    public async Task CloneAsync([Summary("Trade Code")][Remainder] string code)
     {
         int tradeCode = Util.ToInt32(code);
         var sig = Context.User.GetFavor();
-        return QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone);
+
+        // Execute the queue addition without capturing response
+        QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone);
+
+        // Optional: Send a confirmation message if needed
+        var confirmationMessage = await ReplyAsync("Processing your clone request...").ConfigureAwait(false);
+
+        // Delay for 5 seconds
+        await Task.Delay(5000).ConfigureAwait(false);
+
+        // Delete user message
+        if (Context.Message is IUserMessage userMessage)
+            await userMessage.DeleteAsync().ConfigureAwait(false);
+
+        // Delete bot confirmation message
+        if (confirmationMessage != null)
+            await confirmationMessage.DeleteAsync().ConfigureAwait(false);
     }
 
     [Command("clone")]
@@ -39,6 +70,7 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     {
         var code = Info.GetRandomTradeCode();
         return CloneAsync(code);
+
     }
 
     [Command("cloneList")]

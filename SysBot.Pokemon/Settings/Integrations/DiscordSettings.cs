@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
+using System;
 
 namespace SysBot.Pokemon;
 
@@ -9,6 +10,8 @@ public class DiscordSettings
     private const string Channels = nameof(Channels);
     private const string Roles = nameof(Roles);
     private const string Users = nameof(Users);
+    private const string Servers = nameof(Servers);
+
     public override string ToString() => "Discord Integration Settings";
 
     // Startup
@@ -31,6 +34,9 @@ public class DiscordSettings
     [Category(Startup), Description("Indicates the Discord presence status color only considering bots that are Trade-type.")]
     public bool BotColorStatusTradeOnly { get; set; } = true;
 
+    [Category(Operation), Description("Additional text to add to the beginning of the embed description.")]
+    public string[] AdditionalEmbedText { get; set; } = Array.Empty<string>();
+
     [Category(Operation), Description("Custom message the bot will reply with when a user says hello to it. Use string formatting to mention the user in the reply.")]
     public string HelloResponse { get; set; } = "Hi {0}!";
 
@@ -48,6 +54,9 @@ public class DiscordSettings
     [Category(Roles), Description("Users with this role are allowed to enter the Dump queue.")]
     public RemoteControlAccessList RoleCanDump { get; set; } = new() { AllowIfEmpty = false };
 
+    [Category(Roles), Description("Users with this role are allowed to enter the FixOT queue.")]
+    public RemoteControlAccessList RoleCanFixOT { get; set; } = new() { AllowIfEmpty = false };
+
     [Category(Roles), Description("Users with this role are allowed to remotely control the console (if running as Remote Control Bot.")]
     public RemoteControlAccessList RoleRemoteControl { get; set; } = new() { AllowIfEmpty = false };
 
@@ -58,6 +67,9 @@ public class DiscordSettings
 
     [Category(Roles), Description("Users with this role are allowed to join the queue with a better position.")]
     public RemoteControlAccessList RoleFavored { get; set; } = new() { AllowIfEmpty = false };
+
+    [Category(Servers), Description("Servers with these IDs will not be able to use the bot, and it will leave the server.")]
+    public RemoteControlAccessList ServerBlacklist { get; set; } = new() { AllowIfEmpty = false };
 
     [Category(Users), Description("Users with these user IDs cannot use the bot.")]
     public RemoteControlAccessList UserBlacklist { get; set; } = new();

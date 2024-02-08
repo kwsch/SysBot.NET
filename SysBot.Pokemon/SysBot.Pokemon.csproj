@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <PackageReference Include="PKHeX.Core" Version="24.1.12" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.1" />
     <ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />
   </ItemGroup>
 

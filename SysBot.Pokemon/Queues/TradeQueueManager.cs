@@ -11,6 +11,7 @@ public class TradeQueueManager<T> where T : PKM, new()
     private readonly PokeTradeQueue<T> Trade = new(PokeTradeType.Specific);
     private readonly PokeTradeQueue<T> Seed = new(PokeTradeType.Seed);
     private readonly PokeTradeQueue<T> Clone = new(PokeTradeType.Clone);
+    private readonly PokeTradeQueue<T> FixOT = new(PokeTradeType.FixOT);
     private readonly PokeTradeQueue<T> Dump = new(PokeTradeType.Dump);
     public readonly TradeQueueInfo<T> Info;
     public readonly PokeTradeQueue<T>[] AllQueues;
@@ -19,7 +20,7 @@ public class TradeQueueManager<T> where T : PKM, new()
     {
         Hub = hub;
         Info = new TradeQueueInfo<T>(hub);
-        AllQueues = [Seed, Dump, Clone, Trade];
+        AllQueues = [Seed, Dump, Clone, FixOT, Trade];
 
         foreach (var q in AllQueues)
             q.Queue.Settings = hub.Config.Favoritism;
@@ -30,6 +31,7 @@ public class TradeQueueManager<T> where T : PKM, new()
         PokeRoutineType.SeedCheck => Seed,
         PokeRoutineType.Clone => Clone,
         PokeRoutineType.Dump => Dump,
+        PokeRoutineType.FixOT => FixOT,
         _ => Trade,
     };
 
@@ -123,6 +125,8 @@ public class TradeQueueManager<T> where T : PKM, new()
         if (TryDequeueInternal(PokeRoutineType.Clone, out detail, out priority))
             return true;
         if (TryDequeueInternal(PokeRoutineType.Dump, out detail, out priority))
+            return true;
+        if (TryDequeueInternal(PokeRoutineType.FixOT, out detail, out priority))
             return true;
         if (TryDequeueInternal(PokeRoutineType.LinkTrade, out detail, out priority))
             return true;
