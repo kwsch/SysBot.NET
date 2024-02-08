@@ -6,10 +6,13 @@ For support and suggestions, join my Discord Hangout - https://notpaldea.net
 **__Please don't charge people to use this free program. Be nice <3__**
 
 - __Beautiful Embeds__
+- 
 ![image](https://github.com/bdawg1989/MergeBot/assets/80122551/022e5f6a-5771-448f-a816-981782fefa55)
 
 - __Additional Embed Text__
+  
 You can add any text you want for your embeds that will show above the pokemon info.
+
 ![image](https://github.com/bdawg1989/MergeBot/assets/80122551/6b45b883-427c-410b-9dc0-2edeb9c83efe)
 
 - __Batch Trading__
