@@ -1,3 +1,4 @@
+using SysBot.Pokemon.Helpers;
 using System.ComponentModel;
 
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global

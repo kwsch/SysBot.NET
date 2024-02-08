@@ -129,6 +129,8 @@ public static class AutoLegalityWrapper
             return TrainerSettings.GetSavedTrainerData(GameVersion.PLA, 8);
         if (typeof(T) == typeof(PK9))
             return TrainerSettings.GetSavedTrainerData(GameVersion.SV, 9);
+        if (typeof(T) == typeof(SAV7b))
+            return TrainerSettings.GetSavedTrainerData(GameVersion.GG, 7);
 
         throw new ArgumentException("Type does not have a recognized trainer fetch.", typeof(T).Name);
     }
