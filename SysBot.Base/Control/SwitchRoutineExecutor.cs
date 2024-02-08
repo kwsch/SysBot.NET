@@ -92,4 +92,8 @@ public abstract class SwitchRoutineExecutor<T> : RoutineExecutor<T> where T : cl
         } while (sw.ElapsedMilliseconds < waitms);
         return false;
     }
+    public virtual Task SetController(CancellationToken token)
+    {
+        return Task.CompletedTask;
+    }
 }
