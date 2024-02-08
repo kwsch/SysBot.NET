@@ -3,6 +3,7 @@ For support and suggestions, join my Discord Hangout - https://notpaldea.net
 
 ## This sysBot offers all of the features you could ever want <3
 ### Supports The Following Games:  SV/BDSP/PLA/SWSH
+**__Please don't charge people to use this free program. Be nice <3__**
 
 - __Beautiful Embeds__
 ![image](https://github.com/bdawg1989/MergeBot/assets/80122551/022e5f6a-5771-448f-a816-981782fefa55)
@@ -48,7 +49,9 @@ Choose a popular default held item if the user doesn't provide one.  Choose from
 - __Events & BattleReady Folder__
 If you would like to provide your amazing members with Home Tracked Battle-Ready Legendaries and Event Pokemon, just add the files to a folder on your local machine, and provide the path in the settings under **Trade > EventsFolder/BattleReadyPKMFolder**
 You can download Home Tracked and Battle Ready Pokemon from my website that are ready to go!  (all .pk9 files)  Also, Thanks to all my discord users that contributed to these!  (Maddison, Marnie, Fly, Reedy, Newfie, Joseph11024)
+
 Events: https://genpkm.com/tradebot/events.zip
+
 BattleReady:  https://genpkm.com/tradebot/battleready.zip
 
 Home Tracked Database (Various Generations provided by Joseph11024)
@@ -60,7 +63,9 @@ For your users to request, they will use the following commands:
 `brl` will list all of the Battle Ready Pokemon in your folder for users to choose from.  The same filter applies to this command as above.
 
 The user will be DM'd a list and given the correct command with your bots prefix to allow them to request it.
+
 ![image](https://github.com/bdawg1989/MergeBot/assets/80122551/fd43fb3e-6bfc-472c-ac26-d55e59f94abf)
+
 ![image](https://github.com/bdawg1989/MergeBot/assets/80122551/107d3f4b-0f6a-4145-aaff-deebead6a09c)
 
 
