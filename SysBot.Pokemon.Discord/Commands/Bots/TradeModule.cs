@@ -959,13 +959,24 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await reply.DeleteAsync().ConfigureAwait(false);
             return;
         }
-
+        var cfg = Info.Hub.Config.Trade;
         var la = new LegalityAnalysis(pk);
         if (!la.Valid)
         {
             string responseMessage = pk.IsEgg ? "Invalid Showdown Set for this Egg. Please review your information and try again." :
                 $"{typeof(T).Name} attachment is not legal, and cannot be traded!";
-
+            if (cfg.DisallowNonNatives && (la.EncounterOriginal.Context != pk.Context || pk.GO))
+            {
+                // Allow the owner to prevent trading entities that require a HOME Tracker even if the file has one already.
+                await ReplyAsync($"{typeof(T).Name} attachment is not native, and cannot be traded!").ConfigureAwait(false);
+                return;
+            }
+            if (cfg.DisallowTracked && pk is IHomeTrack { HasTracker: true })
+            {
+                // Allow the owner to prevent trading entities that already have a HOME Tracker.
+                await ReplyAsync($"{typeof(T).Name} attachment is tracked by HOME, and cannot be traded!").ConfigureAwait(false);
+                return;
+            }
             var reply = await ReplyAsync(responseMessage).ConfigureAwait(false);
             await Task.Delay(6000); // Delay for 6 seconds
             await reply.DeleteAsync().ConfigureAwait(false);

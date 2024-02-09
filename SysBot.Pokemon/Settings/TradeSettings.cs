@@ -71,6 +71,12 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     [Category(TradeConfig), Description("When enabled, the screen will be turned off during normal bot loop operation to save power.")]
     public bool ScreenOff { get; set; }
 
+    [Category(TradeConfig), Description("Prevents trading Pokémon that require a HOME Tracker, even if the file has one already.")]
+    public bool DisallowNonNatives { get; set; } = false;
+
+    [Category(TradeConfig), Description("Prevents trading Pokémon that already have a HOME Tracker.")]
+    public bool DisallowTracked { get; set; } = false;
+
     /// <summary>
     /// Gets a random trade code based on the range settings.
     /// </summary>
