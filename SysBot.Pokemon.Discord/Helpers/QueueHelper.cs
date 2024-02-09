@@ -24,6 +24,7 @@ public static class QueueHelper<T> where T : PKM, new()
     // A dictionary to hold batch trade file paths and their deletion status
     private static Dictionary<int, List<string>> batchTradeFiles = new Dictionary<int, List<string>>();
     private static Dictionary<ulong, int> userBatchTradeMaxDetailId = new Dictionary<ulong, int>();
+    private static List<pictocodes> lgcode;
 
     public static async Task AddToQueueAsync(SocketCommandContext context, int code, string trainer, RequestSignificance sig, T trade, PokeRoutineType routine, PokeTradeType type, SocketUser trader, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, int formArgument = 0, bool isMysteryEgg = false)
     {
@@ -68,7 +69,7 @@ public static class QueueHelper<T> where T : PKM, new()
 
         var trainer = new PokeTradeTrainerInfo(trainerName, userID);
         var notifier = new DiscordTradeNotifier<T>(pk, trainer, code, trader, batchTradeNumber, totalBatchTrades, isMysteryEgg);
-        var detail = new PokeTradeDetail<T>(pk, trainer, notifier, t, code, sig == RequestSignificance.Favored);
+        var detail = new PokeTradeDetail<T>(pk, trainer, notifier, t, code,lgcode, sig == RequestSignificance.Favored);
         var trade = new TradeEntry<T>(detail, userID, type, name);
         var strings = GameInfo.GetStrings(1);
         var hub = SysCord<T>.Runner.Hub;

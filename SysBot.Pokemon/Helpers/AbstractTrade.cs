@@ -23,6 +23,7 @@ namespace SysBot.Pokemon.Helpers
         public abstract IPokeTradeNotifier<T> GetPokeTradeNotifier(T pkm, int code);//完善此方法以实现消息通知功能
         protected PokeTradeTrainerInfo userInfo = default!;
         private TradeQueueInfo<T> queueInfo = default!;
+        private List<pictocodes> lgcode;
         public static readonly ushort[] ShinyLock = {  (ushort)Species.Victini, (ushort)Species.Keldeo, (ushort)Species.Volcanion, (ushort)Species.Cosmog, (ushort)Species.Cosmoem, (ushort)Species.Magearna, (ushort)Species.Marshadow, (ushort)Species.Eternatus,
                                                     (ushort)Species.Kubfu, (ushort)Species.Urshifu, (ushort)Species.Zarude, (ushort)Species.Glastrier, (ushort)Species.Spectrier, (ushort)Species.Calyrex };
 
@@ -483,7 +484,7 @@ namespace SysBot.Pokemon.Helpers
                 ? PokeTradeType.Seed
                 : (type == PokeRoutineType.Dump ? PokeTradeType.Dump : PokeTradeType.Specific);
             var detail =
-                new PokeTradeDetail<T>(pk, trainer, notifier, tt, code, true);
+                new PokeTradeDetail<T>(pk, trainer, notifier, tt, code, lgcode, true);
             detail.Context.Add("skipAutoOTList", skipAutoOTList);
             if (pks.Count > 0)
             {

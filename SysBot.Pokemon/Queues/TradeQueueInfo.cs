@@ -210,7 +210,17 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
     }
 
     public int GetRandomTradeCode() => Hub.Config.Trade.GetRandomTradeCode();
+    public List<pictocodes> GetRandomLGTradeCode()
+    {
+        var code = new List<pictocodes>();
+        for (int i = 0; i <= 2; i++)
+        {
+            code.Add((pictocodes)Util.Rand.Next(10));
+            //code.Add(pictocodes.Pikachu);
 
+        }
+        return code;
+    }
     public int UserCount(Func<TradeEntry<T>, bool> func)
     {
         lock (_sync)

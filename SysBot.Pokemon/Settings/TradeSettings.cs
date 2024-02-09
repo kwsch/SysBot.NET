@@ -38,6 +38,9 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     [Category(TradeConfig), Description("Max amount of time in seconds pressing A to wait for a trade to process.")]
     public int MaxTradeConfirmTime { get; set; } = 25;
 
+    [Category(TradeConfig)]
+    public int TradeAnimationMaxDelaySeconds = 25;
+
     [Category(TradeConfig), Description("Toggle to allow or disallow batch trades.")]
     public bool AllowBatchTrades { get; set; } = true;
 
@@ -81,6 +84,30 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     /// Gets a random trade code based on the range settings.
     /// </summary>
     public int GetRandomTradeCode() => Util.Rand.Next(MinTradeCode, MaxTradeCode + 1);
+    public List<pictocodes> GetRandomLGTradeCode(bool randomtrade = false)
+    {
+        var code = new List<pictocodes>();
+        if (randomtrade)
+        {
+            for (int i = 0; i <= 2; i++)
+            {
+                //code.Add((pictocodes)Util.Rand.Next(10));
+                code.Add(pictocodes.Pikachu);
+
+            }
+        }
+        else
+        {
+            for (int i = 0; i <= 2; i++)
+            {
+                code.Add((pictocodes)Util.Rand.Next(10));
+                //code.Add(pictocodes.Pikachu);
+
+            }
+        }
+        return code;
+    }
+
 
     private int _completedSurprise;
     private int _completedDistribution;

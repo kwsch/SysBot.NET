@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -12,6 +12,8 @@ namespace SysBot.Pokemon.Bilibili
     {
         // private readonly BilibiliSettings Settings;
         private static PokeTradeHub<T> Hub = default!;
+        private static System.Collections.Generic.List<pictocodes> lgcode;
+
         internal static TradeQueueInfo<T> Info => Hub.Queues.Info;
 
         private static readonly string DefaultUserName = "b站用户";
@@ -146,7 +148,7 @@ namespace SysBot.Pokemon.Bilibili
             var notifier = new BilibiliTradeNotifier<T>(pk, trainer, code, name);
             var tt = type == PokeRoutineType.SeedCheck ? PokeTradeType.Seed : PokeTradeType.Specific;
             var detail =
-                new PokeTradeDetail<T>(pk, trainer, notifier, tt, code, sig == RequestSignificance.Favored);
+                new PokeTradeDetail<T>(pk, trainer, notifier, tt, code,lgcode, sig == RequestSignificance.Favored);
             var trade = new TradeEntry<T>(detail, userId, type, name);
 
             var added = Info.AddToTradeQueue(trade, userId, sig == RequestSignificance.Owner);
