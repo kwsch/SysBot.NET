@@ -2,7 +2,7 @@
 For support and suggestions, join my Discord Hangout - https://notpaldea.net
 
 # This sysBot offers all of the features you could ever want <3
-# Shoutout to all the amazing devs of SysBot!  Thanks Kurt, Lusamine, SantaCrab2, and others that contributed <3
+# Shoutout to all the amazing devs of SysBot!  Thanks Kurt, Lusamine, Archit, Koi, Zyro, Easyworld, SantaCrab2, and others that contributed <3
 
 ### Supports The Following Games:  SV/BDSP/PLA/SWSH
 **__Please don't charge people to use this free program. Be nice <3__**
