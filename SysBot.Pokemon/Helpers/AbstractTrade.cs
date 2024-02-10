@@ -484,7 +484,7 @@ namespace SysBot.Pokemon.Helpers
                 ? PokeTradeType.Seed
                 : (type == PokeRoutineType.Dump ? PokeTradeType.Dump : PokeTradeType.Specific);
             var detail =
-                new PokeTradeDetail<T>(pk, trainer, notifier, tt, code, lgcode, true);
+                new PokeTradeDetail<T>(pk, trainer, notifier, tt, code, true);
             detail.Context.Add("skipAutoOTList", skipAutoOTList);
             if (pks.Count > 0)
             {

@@ -110,7 +110,7 @@ public class QueueTests
 
     private static TradeEntry<T> GetTestTrade<T>(int tag, bool favor) where T : PKM, new()
     {
-        var d3 = new PokeTradeDetail<T>(new T { Species = (ushort)tag }, new PokeTradeTrainerInfo($"{(favor ? "*" : "")}Test {tag}"), new PokeTradeLogNotifier<T>(), PokeTradeType.Specific, tag,lgcode, favor);
+        var d3 = new PokeTradeDetail<T>(new T { Species = (ushort)tag }, new PokeTradeTrainerInfo($"{(favor ? "*" : "")}Test {tag}"), new PokeTradeLogNotifier<T>(), PokeTradeType.Specific, tag, favor);
         return new TradeEntry<T>(d3, (ulong)tag, PokeRoutineType.LinkTrade, $"Test Trade {tag}");
     }
 

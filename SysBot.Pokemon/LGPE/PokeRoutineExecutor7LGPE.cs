@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,15 +28,15 @@ namespace SysBot.Pokemon
             return new PB7(data);
         }
 
-        public async Task WriteBoxPokemon(PB7 pk,int box, int slot, CancellationToken token)
+        public async Task WriteBoxPokemon(PB7 pk, int box, int slot, CancellationToken token)
         {
             var slotofs = GetSlotOffset(box, slot);
             var StoredLength = SlotSize - 0x1c;
             await Connection.WriteBytesAsync(pk.EncryptedPartyData.AsSpan(0, StoredLength).ToArray(), (uint)slotofs, token);
-            await Connection.WriteBytesAsync(pk.EncryptedPartyData.AsSpan(StoredLength).ToArray(), (uint)(slotofs + (ulong)StoredLength + 0x70),token);
+            await Connection.WriteBytesAsync(pk.EncryptedPartyData.AsSpan(StoredLength).ToArray(), (uint)(slotofs + (ulong)StoredLength + 0x70), token);
 
         }
-       
+
         public override async Task<PB7> ReadBoxPokemon(int box, int slot, CancellationToken token)
         {
             await Task.CompletedTask.ConfigureAwait(false);
@@ -197,20 +197,20 @@ namespace SysBot.Pokemon
             }
         }
 
-       /// public async Task ActivateCatchCombo(PokeTradeHub<PB7> hub, bool activate, CancellationToken token)
-      ///  {
-       ///     var msg = activate ? "Activating" : "Deactivating";
+        /// public async Task ActivateCatchCombo(PokeTradeHub<PB7> hub, bool activate, CancellationToken token)
+        ///  {
+        ///     var msg = activate ? "Activating" : "Deactivating";
         //    var msgspecies = $" for {hub.Config.EncounterLGPE.CatchComboSpecies}";
-       //     Log($"{msg} Catch Combo{msgspecies}.");
+        //     Log($"{msg} Catch Combo{msgspecies}.");
 
-      //      var species = activate ? (int)hub.Config.EncounterLGPE.CatchComboSpecies : 0;
-      //      var data = BitConverter.GetBytes(species);
-      //      await Connection.WriteBytesAsync(data, LGPECatchComboPokemon, token).ConfigureAwait(false);
+        //      var species = activate ? (int)hub.Config.EncounterLGPE.CatchComboSpecies : 0;
+        //      var data = BitConverter.GetBytes(species);
+        //      await Connection.WriteBytesAsync(data, LGPECatchComboPokemon, token).ConfigureAwait(false);
 
-       //     var combo = activate ? hub.Config.EncounterLGPE.CatchComboLength : 0;
-      //      data = BitConverter.GetBytes(combo);
+        //     var combo = activate ? hub.Config.EncounterLGPE.CatchComboLength : 0;
+        //      data = BitConverter.GetBytes(combo);
         //    await Connection.WriteBytesAsync(data, LGPECatchComboCounter, token).ConfigureAwait(false);
-      //  }
+        //  }
 
         public async Task SetLure(bool activate, CancellationToken token)
         {
@@ -226,44 +226,44 @@ namespace SysBot.Pokemon
             await Connection.WriteBytesAsync(data, LGPELureCounter, token).ConfigureAwait(false);
         }
 
-       // public async Task SetFortuneTeller(PokeTradeHub<PB7> hub, bool activate, CancellationToken token)
-       // {
-       //     var msg = activate ? "Activating" : "Deactivating";
-       //     Log($"{msg} Fortune Teller.");
+        // public async Task SetFortuneTeller(PokeTradeHub<PB7> hub, bool activate, CancellationToken token)
+        // {
+        //     var msg = activate ? "Activating" : "Deactivating";
+        //     Log($"{msg} Fortune Teller.");
 
-       //     var bytedata = activate ? (byte)0x4 : (byte)0x0;
-       //     var data = new byte[] { bytedata };
+        //     var bytedata = activate ? (byte)0x4 : (byte)0x0;
+        //     var data = new byte[] { bytedata };
         //    await Connection.WriteBytesAsync(data, FortuneTellerEnabled, token).ConfigureAwait(false);
 
         //    if (!activate)
-       //         return;
+        //         return;
 
-         //   Log($"Setting Fortune Teller nature to {hub.Config.EncounterLGPE.FortuneTellerNature}.");
+        //   Log($"Setting Fortune Teller nature to {hub.Config.EncounterLGPE.FortuneTellerNature}.");
         //    data = BitConverter.GetBytes((int)hub.Config.EncounterLGPE.FortuneTellerNature);
-         //   await Connection.WriteBytesAsync(data, FortuneTellerNature, token).ConfigureAwait(false);
-       // }
+        //   await Connection.WriteBytesAsync(data, FortuneTellerNature, token).ConfigureAwait(false);
+        // }
 
-      //  public async Task RefreshEncounterSettings(PokeTradeHub<PB7> hub, bool catch_combo, bool lure, bool fortune_teller, CancellationToken token)
-       // {
+        //  public async Task RefreshEncounterSettings(PokeTradeHub<PB7> hub, bool catch_combo, bool lure, bool fortune_teller, CancellationToken token)
+        // {
         //    var encounter_settings = hub.Config.EncounterLGPE;
 
         //    if (catch_combo && encounter_settings.CatchComboSpecies != Species.None)
         //    {
-                /// Initialize Catch Combo settings once. Can turn it on or off.
-         //       var activate = encounter_settings.CatchComboLength > 0;
-         //       await ActivateCatchCombo(hub, activate, token).ConfigureAwait(false);
+        /// Initialize Catch Combo settings once. Can turn it on or off.
+        //       var activate = encounter_settings.CatchComboLength > 0;
+        //       await ActivateCatchCombo(hub, activate, token).ConfigureAwait(false);
         //    }
 
-            // Initialize lure state. We can pass in different variables for whether we do this or not.
+        // Initialize lure state. We can pass in different variables for whether we do this or not.
         //    await SetLure(lure, token).ConfigureAwait(false);
 
         //    if (fortune_teller)
         //    {
-                /// Initialize Fortune Teller state. Will need to be renewed every day or so for long-running bots.
-         //       var activate = encounter_settings.FortuneTellerNature != Nature.Random;
-            //    await SetFortuneTeller(hub, activate, token).ConfigureAwait(false);
-          //  }
-      //  }
+        /// Initialize Fortune Teller state. Will need to be renewed every day or so for long-running bots.
+        //       var activate = encounter_settings.FortuneTellerNature != Nature.Random;
+        //    await SetFortuneTeller(hub, activate, token).ConfigureAwait(false);
+        //  }
+        //  }
 
         public async Task<(int species, int form)> GetLastSpawnedSpecies(CancellationToken token)
         {

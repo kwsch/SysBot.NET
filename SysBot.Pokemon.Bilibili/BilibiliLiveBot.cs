@@ -148,7 +148,7 @@ namespace SysBot.Pokemon.Bilibili
             var notifier = new BilibiliTradeNotifier<T>(pk, trainer, code, name);
             var tt = type == PokeRoutineType.SeedCheck ? PokeTradeType.Seed : PokeTradeType.Specific;
             var detail =
-                new PokeTradeDetail<T>(pk, trainer, notifier, tt, code,lgcode, sig == RequestSignificance.Favored);
+                new PokeTradeDetail<T>(pk, trainer, notifier, tt, code, sig == RequestSignificance.Favored);
             var trade = new TradeEntry<T>(detail, userId, type, name);
 
             var added = Info.AddToTradeQueue(trade, userId, sig == RequestSignificance.Owner);

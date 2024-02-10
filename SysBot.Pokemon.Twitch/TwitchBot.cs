@@ -111,7 +111,7 @@ namespace SysBot.Pokemon.Twitch
             var trainer = new PokeTradeTrainerInfo(name, ulong.Parse(e.WhisperMessage.UserId));
             var notifier = new TwitchTradeNotifier<T>(pk, trainer, code, e.WhisperMessage.Username, client, Channel, Hub.Config.Twitch);
             var tt = type == PokeRoutineType.SeedCheck ? PokeTradeType.Seed : PokeTradeType.Specific;
-            var detail = new PokeTradeDetail<T>(pk, trainer, notifier, tt, code,lgcode, sig == RequestSignificance.Favored);
+            var detail = new PokeTradeDetail<T>(pk, trainer, notifier, tt, code, sig == RequestSignificance.Favored);
             var trade = new TradeEntry<T>(detail, userID, type, name);
 
             var added = Info.AddToTradeQueue(trade, userID, sig == RequestSignificance.Owner);

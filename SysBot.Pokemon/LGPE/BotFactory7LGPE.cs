@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using PKHeX.Core;
 
 namespace SysBot.Pokemon
@@ -12,8 +12,6 @@ namespace SysBot.Pokemon
                 or PokeRoutineType.Clone
                 or PokeRoutineType.Dump
                 => new PokeTradeBotLGPE(Hub, cfg),
-
-           
 
             _ => throw new ArgumentException(nameof(cfg.NextRoutineType)),
         };
