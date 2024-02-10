@@ -40,6 +40,9 @@ Example:
 Shiny: Yes
 ```
 
+![image](https://github.com/bdawg1989/MergeBot/assets/80122551/cd7158f9-3d05-4306-8ad9-5d7e97d28c5d)
+
+
 - __Server Blacklisting & Management__
 Do you share your bot in several servers?  Is your bot a public bot where you allow anyone to add your bot?
 Our advanced Server Management features allow you to easily blacklist any server.
