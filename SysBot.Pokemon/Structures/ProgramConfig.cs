@@ -15,5 +15,4 @@ public enum ProgramMode
     BDSP = 2,
     LA = 3,
     SV = 4,
-    LGPE = 5,
 }

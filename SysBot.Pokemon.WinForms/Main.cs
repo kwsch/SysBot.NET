@@ -22,11 +22,13 @@ public sealed partial class Main : Form
     private ProgramConfig Config { get; set; }
     public static bool IsUpdating { get; set; } = false;
 
+    private bool _isFormLoading = true;
     public Main()
     {
         InitializeComponent();
+        comboBox1.SelectedIndexChanged += new EventHandler(comboBox1_SelectedIndexChanged);
         this.Load += async (sender, e) => await InitializeAsync();
-        
+
     }
 
     private async Task InitializeAsync()
@@ -43,7 +45,7 @@ public sealed partial class Main : Form
             Config = JsonSerializer.Deserialize(lines, ProgramConfigContext.Default.ProgramConfig) ?? new ProgramConfig();
             LogConfig.MaxArchiveFiles = Config.Hub.MaxArchiveFiles;
             LogConfig.LoggingEnabled = Config.Hub.LoggingEnabled;
-
+            comboBox1.SelectedValue = (int)Config.Mode;
             RunningEnvironment = GetRunner(Config);
             foreach (var bot in Config.Bots)
             {
@@ -63,6 +65,7 @@ public sealed partial class Main : Form
         Text = $"{(string.IsNullOrEmpty(Config.Hub.BotName) ? "NotPaldea.net" : Config.Hub.BotName)} {TradeBot.Version} ({Config.Mode})";
         Task.Run(BotMonitor);
         InitUtil.InitializeStubs(Config.Mode);
+        _isFormLoading = false;
     }
 
     private static IPokeBotRunner GetRunner(ProgramConfig cfg) => cfg.Mode switch
@@ -111,6 +114,19 @@ public sealed partial class Main : Form
         CB_Protocol.ValueMember = nameof(ComboItem.Value);
         CB_Protocol.DataSource = listP;
         CB_Protocol.SelectedIndex = (int)SwitchProtocol.WiFi; // default option
+                                                              // Populate the game mode dropdown
+        var gameModes = Enum.GetValues(typeof(ProgramMode))
+            .Cast<ProgramMode>()
+            .Where(m => m != ProgramMode.None) // Exclude the 'None' value
+            .Select(mode => new { Text = mode.ToString(), Value = (int)mode })
+            .ToList();
+
+        comboBox1.DisplayMember = "Text";
+        comboBox1.ValueMember = "Value";
+        comboBox1.DataSource = gameModes;
+
+        // Set the current mode as selected in the dropdown
+        comboBox1.SelectedValue = (int)Config.Mode;
 
         LogUtil.Forwarders.Add(new TextBoxForwarder(RTB_Logs));
     }
@@ -159,7 +175,21 @@ public sealed partial class Main : Form
     [JsonSerializable(typeof(ProgramConfig))]
     [JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
     public sealed partial class ProgramConfigContext : JsonSerializerContext;
-
+    private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (_isFormLoading) return;
+        if (comboBox1.SelectedValue is int selectedValue)
+        {
+            Config.Mode = (ProgramMode)selectedValue;
+            SaveCurrentConfig();
+            UpdateRunnerAndUI(); 
+        }
+    }
+    private void UpdateRunnerAndUI()
+    {
+        RunningEnvironment = GetRunner(Config);
+        Text = $"{(string.IsNullOrEmpty(Config.Hub.BotName) ? "NotPaldea.net" : Config.Hub.BotName)} {TradeBot.Version} ({Config.Mode})";
+    }
     private void B_Start_Click(object sender, EventArgs e)
     {
         SaveCurrentConfig();
@@ -299,4 +329,5 @@ public sealed partial class Main : Form
     {
         TB_IP.Visible = CB_Protocol.SelectedIndex == 0;
     }
+
 }
