@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.ComponentModel;
@@ -311,7 +311,7 @@ public class StreamSettings
 
     private void GenerateCompletedTrades<T>(PokeTradeHub<T> hub) where T : PKM, new()
     {
-        var msg = string.Format(CompletedTradesFormat, hub.Config.Trade.CompletedTrades);
+        var msg = string.Format(CompletedTradesFormat, hub.Config.Trade.CountStatsSettings.CompletedTrades);
         File.WriteAllText("completed.txt", msg);
     }
 }

@@ -60,7 +60,7 @@ public sealed partial class Main : Form
 
         RTB_Logs.MaxLength = 32_767; // character length
         LoadControls();
-        Text = $"MergeBot {TradeBot.Version} ({Config.Mode})";
+        Text = $"{(string.IsNullOrEmpty(Config.Hub.BotName) ? "NotPaldea.net" : Config.Hub.BotName)} {TradeBot.Version} ({Config.Mode})";
         Task.Run(BotMonitor);
         InitUtil.InitializeStubs(Config.Mode);
     }

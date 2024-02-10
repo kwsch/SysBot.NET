@@ -391,11 +391,11 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             // Set default held item only if it's not from "Legends: Arceus"
             if (!isLegendsArceus && pkm.HeldItem == 0 && !pkm.IsEgg)
             {
-                pkm.HeldItem = (int)SysCord<T>.Runner.Config.Trade.DefaultHeldItem;
+                pkm.HeldItem = (int)SysCord<T>.Runner.Config.Trade.TradeConfiguration.DefaultHeldItem;
             }
             else if (isLegendsArceus)
             {
-                pkm.HeldItem = (int)HeldItem.None; // Set to None for "Legends: Arceus" Pokémon
+                pkm.HeldItem = (int)TradeSettingsCategory.HeldItem.None; // Set to None for "Legends: Arceus" Pokémon
             }
 
             var la = new LegalityAnalysis(pkm);
@@ -478,7 +478,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public async Task BatchTradeAsync([Summary("List of Showdown Sets separated by '---'")][Remainder] string content)
     {
         // First, check if batch trades are allowed
-        if (!SysCord<T>.Runner.Config.Trade.AllowBatchTrades)
+        if (!SysCord<T>.Runner.Config.Trade.TradeConfiguration.AllowBatchTrades)
         {
             await ReplyAsync("Batch trades are currently disabled.").ConfigureAwait(false);
             return;
@@ -492,7 +492,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         }
 
         var trades = ParseBatchTradeContent(content);
-        var maxTradesAllowed = SysCord<T>.Runner.Config.Trade.MaxPkmsPerTrade;
+        var maxTradesAllowed = SysCord<T>.Runner.Config.Trade.TradeConfiguration.MaxPkmsPerTrade;
 
         // Check if batch mode is allowed and if the number of trades exceeds the limit
         if (maxTradesAllowed < 1 || trades.Count > maxTradesAllowed)
@@ -601,7 +601,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public async Task ListEventsAsync([Remainder] string args = "")
     {
         const int itemsPerPage = 20; // Number of items per page
-        var eventsFolderPath = SysCord<T>.Runner.Config.Trade.EventsFolder;
+        var eventsFolderPath = SysCord<T>.Runner.Config.Trade.RequestFolderSettings.EventsFolder;
         var botPrefix = SysCord<T>.Runner.Config.Discord.CommandPrefix;
 
         // Parsing the arguments to separate filter and page number
@@ -694,7 +694,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     {
         try
         {
-            var eventsFolderPath = SysCord<T>.Runner.Config.Trade.EventsFolder;
+            var eventsFolderPath = SysCord<T>.Runner.Config.Trade.RequestFolderSettings.EventsFolder;
             var eventFiles = Directory.GetFiles(eventsFolderPath)
                                       .Select(Path.GetFileName)
                                       .OrderBy(x => x)
@@ -746,7 +746,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public async Task BattleReadyListAsync([Remainder] string args = "")
     {
         const int itemsPerPage = 20; // Number of items per page
-        var battleReadyFolderPath = SysCord<T>.Runner.Config.Trade.BattleReadyPKMFolder;
+        var battleReadyFolderPath = SysCord<T>.Runner.Config.Trade.RequestFolderSettings.BattleReadyPKMFolder;
         var botPrefix = SysCord<T>.Runner.Config.Discord.CommandPrefix;
 
         // Parsing the arguments to separate filter and page number
@@ -839,7 +839,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     {
         try
         {
-            var battleReadyFolderPath = SysCord<T>.Runner.Config.Trade.BattleReadyPKMFolder;
+            var battleReadyFolderPath = SysCord<T>.Runner.Config.Trade.RequestFolderSettings.BattleReadyPKMFolder;
             var battleReadyFiles = Directory.GetFiles(battleReadyFolderPath)
                                             .Select(Path.GetFileName)
                                             .OrderBy(x => x)
@@ -959,13 +959,24 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await reply.DeleteAsync().ConfigureAwait(false);
             return;
         }
-
+        var homeLegalityCfg = Info.Hub.Config.Trade.HomeLegalitySettings;
         var la = new LegalityAnalysis(pk);
         if (!la.Valid)
         {
             string responseMessage = pk.IsEgg ? "Invalid Showdown Set for this Egg. Please review your information and try again." :
                 $"{typeof(T).Name} attachment is not legal, and cannot be traded!";
-
+            if (homeLegalityCfg.DisallowNonNatives && (la.EncounterOriginal.Context != pk.Context || pk.GO))
+            {
+                // Allow the owner to prevent trading entities that require a HOME Tracker even if the file has one already.
+                await ReplyAsync($"{typeof(T).Name} attachment is not native, and cannot be traded!").ConfigureAwait(false);
+                return;
+            }
+            if (homeLegalityCfg.DisallowTracked && pk is IHomeTrack { HasTracker: true })
+            {
+                // Allow the owner to prevent trading entities that already have a HOME Tracker.
+                await ReplyAsync($"{typeof(T).Name} attachment is tracked by HOME, and cannot be traded!").ConfigureAwait(false);
+                return;
+            }
             var reply = await ReplyAsync(responseMessage).ConfigureAwait(false);
             await Task.Delay(6000); // Delay for 6 seconds
             await reply.DeleteAsync().ConfigureAwait(false);

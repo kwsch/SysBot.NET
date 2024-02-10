@@ -406,20 +406,20 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
     protected virtual Task<bool> WaitForTradePartnerOffer(CancellationToken token)
     {
         Log("Waiting for trainer...");
-        return WaitForPokemonChanged(LinkTradePartnerPokemonOffset, hub.Config.Trade.TradeWaitTime * 1_000, 0_200, token);
+        return WaitForPokemonChanged(LinkTradePartnerPokemonOffset, hub.Config.Trade.TradeConfiguration.TradeWaitTime * 1_000, 0_200, token);
     }
 
     private void UpdateCountsAndExport(PokeTradeDetail<PK8> poke, PK8 received, PK8 toSend)
     {
         var counts = TradeSettings;
         if (poke.Type == PokeTradeType.Random)
-            counts.AddCompletedDistribution();
+            counts.CountStatsSettings.AddCompletedDistribution();
         else if (poke.Type == PokeTradeType.FixOT)
-            counts.AddCompletedFixOTs();
+            counts.CountStatsSettings.AddCompletedFixOTs();
         else if (poke.Type == PokeTradeType.Clone)
-            counts.AddCompletedClones();
+            counts.CountStatsSettings.AddCompletedClones();
         else
-            counts.AddCompletedTrade();
+            counts.CountStatsSettings.AddCompletedTrade();
 
         if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
         {
@@ -436,7 +436,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         var oldEC = await Connection.ReadBytesAsync(BoxStartOffset, 8, token).ConfigureAwait(false);
 
         await Click(A, 3_000, token).ConfigureAwait(false);
-        for (int i = 0; i < hub.Config.Trade.MaxTradeConfirmTime; i++)
+        for (int i = 0; i < hub.Config.Trade.TradeConfiguration.MaxTradeConfirmTime; i++)
         {
             // If we are in a Trade Evolution/Pokédex Entry and the Trade Partner quits, we land on the Overworld
             if (await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
@@ -588,11 +588,11 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
     private async Task<PokeTradeResult> ProcessDumpTradeAsync(PokeTradeDetail<PK8> detail, CancellationToken token)
     {
         int ctr = 0;
-        var time = TimeSpan.FromSeconds(hub.Config.Trade.MaxDumpTradeTime);
+        var time = TimeSpan.FromSeconds(hub.Config.Trade.TradeConfiguration.MaxDumpTradeTime);
         var start = DateTime.Now;
         var pkprev = new PK8();
         var bctr = 0;
-        while (ctr < hub.Config.Trade.MaxDumpsPerTrade && DateTime.Now - start < time)
+        while (ctr < hub.Config.Trade.TradeConfiguration.MaxDumpsPerTrade && DateTime.Now - start < time)
         {
             if (await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
                 break;
@@ -618,7 +618,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
             Log($"Shown Pokémon is: {(la.Valid ? "Valid" : "Invalid")}.");
 
             ctr++;
-            var msg = hub.Config.Trade.DumpTradeLegalityCheck ? verbose : $"File {ctr}";
+            var msg = hub.Config.Trade.TradeConfiguration.DumpTradeLegalityCheck ? verbose : $"File {ctr}";
 
             // Extra information about trainer data for people requesting with their own trainer data.
             var ot = pk.OT_Name;
@@ -638,7 +638,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         if (ctr == 0)
             return PokeTradeResult.TrainerTooSlow;
 
-        TradeSettings.AddCompletedDumps();
+        TradeSettings.CountStatsSettings.AddCompletedDumps();
         detail.Notifier.SendNotification(this, detail, $"Dumped {ctr} Pokémon.");
         detail.Notifier.TradeFinished(this, detail, detail.TradeData); // blank pk8
         return PokeTradeResult.Success;
@@ -720,7 +720,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
 
         // Wait for an offer...
         var oldEC = await Connection.ReadBytesAsync(SurpriseTradeSearchOffset, 4, token).ConfigureAwait(false);
-        var partnerFound = await ReadUntilChanged(SurpriseTradeSearchOffset, oldEC, hub.Config.Trade.TradeWaitTime * 1_000, 0_200, false, token).ConfigureAwait(false);
+        var partnerFound = await ReadUntilChanged(SurpriseTradeSearchOffset, oldEC, hub.Config.Trade.TradeConfiguration.TradeWaitTime * 1_000, 0_200, false, token).ConfigureAwait(false);
 
         if (token.IsCancellationRequested)
             return PokeTradeResult.RoutineCancel;
@@ -764,7 +764,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
 
         if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
             DumpPokemon(DumpSetting.DumpFolder, "surprise", SurprisePoke);
-        TradeSettings.AddCompletedSurprise();
+        TradeSettings.CountStatsSettings.AddCompletedSurprise();
 
         return PokeTradeResult.Success;
     }
@@ -793,7 +793,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         }, token);
 #pragma warning restore 4014
 
-        TradeSettings.AddCompletedSeedCheck();
+        TradeSettings.CountStatsSettings.AddCompletedSeedCheck();
 
         return PokeTradeResult.Success;
     }

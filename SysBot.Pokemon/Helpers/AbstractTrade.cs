@@ -323,7 +323,7 @@ namespace SysBot.Pokemon.Helpers
         /// <returns></returns>
         private bool JudgeMultiNum(int multiNum)
         {
-            var maxPkmsPerTrade = queueInfo.Hub.Config.Trade.MaxPkmsPerTrade;
+            var maxPkmsPerTrade = queueInfo.Hub.Config.Trade.TradeConfiguration.MaxPkmsPerTrade;
             if (maxPkmsPerTrade <= 1)
             {
                 SendMessage("Please contact the bot owner to change the trade/MaxPkmsPerTrade configuration to greater than 1.");

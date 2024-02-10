@@ -455,13 +455,13 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
     {
         var counts = TradeSettings;
         if (poke.Type == PokeTradeType.Random)
-            counts.AddCompletedDistribution();
+            counts.CountStatsSettings.AddCompletedDistribution();
         else if (poke.Type == PokeTradeType.Clone)
-            counts.AddCompletedClones();
+            counts.CountStatsSettings.AddCompletedClones();
         else if (poke.Type == PokeTradeType.FixOT)
-            counts.AddCompletedFixOTs();
+            counts.CountStatsSettings.AddCompletedFixOTs();
         else
-            counts.AddCompletedTrade();
+            counts.CountStatsSettings.AddCompletedTrade();
 
         if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
         {
@@ -478,7 +478,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         var oldEC = await SwitchConnection.ReadBytesAbsoluteAsync(BoxStartOffset, 8, token).ConfigureAwait(false);
 
         await Click(A, 3_000, token).ConfigureAwait(false);
-        for (int i = 0; i < Hub.Config.Trade.MaxTradeConfirmTime; i++)
+        for (int i = 0; i < Hub.Config.Trade.TradeConfiguration.MaxTradeConfirmTime; i++)
         {
             if (await IsUserBeingShifty(detail, token).ConfigureAwait(false))
                 return PokeTradeResult.SuspiciousActivity;
@@ -505,7 +505,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
     protected virtual async Task<bool> WaitForTradePartner(CancellationToken token)
     {
         Log("Waiting for trainer...");
-        int ctr = (Hub.Config.Trade.TradeWaitTime * 1_000) - 2_000;
+        int ctr = (Hub.Config.Trade.TradeConfiguration.TradeWaitTime * 1_000) - 2_000;
         await Task.Delay(2_000, token).ConfigureAwait(false);
         while (ctr > 0)
         {
@@ -775,12 +775,12 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
     private async Task<PokeTradeResult> ProcessDumpTradeAsync(PokeTradeDetail<PK9> detail, CancellationToken token)
     {
         int ctr = 0;
-        var time = TimeSpan.FromSeconds(Hub.Config.Trade.MaxDumpTradeTime);
+        var time = TimeSpan.FromSeconds(Hub.Config.Trade.TradeConfiguration.MaxDumpTradeTime);
         var start = DateTime.Now;
 
         var pkprev = new PK9();
         var bctr = 0;
-        while (ctr < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.Now - start < time)
+        while (ctr < Hub.Config.Trade.TradeConfiguration.MaxDumpsPerTrade && DateTime.Now - start < time)
         {
             if (!await IsInBox(PortalOffset, token).ConfigureAwait(false))
                 break;
@@ -807,7 +807,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             Log($"Shown Pokémon is: {(la.Valid ? "Valid" : "Invalid")}.");
 
             ctr++;
-            var msg = Hub.Config.Trade.DumpTradeLegalityCheck ? verbose : $"File {ctr}";
+            var msg = Hub.Config.Trade.TradeConfiguration.DumpTradeLegalityCheck ? verbose : $"File {ctr}";
 
             // Extra information about trainer data for people requesting with their own trainer data.
             var ot = pk.OT_Name;
@@ -826,7 +826,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         if (ctr == 0)
             return PokeTradeResult.TrainerTooSlow;
 
-        TradeSettings.AddCompletedDumps();
+        TradeSettings.CountStatsSettings.AddCompletedDumps();
         detail.Notifier.SendNotification(this, detail, $"Dumped {ctr} Pokémon.");
         detail.Notifier.TradeFinished(this, detail, detail.TradeData); // blank PK9
         return PokeTradeResult.Success;

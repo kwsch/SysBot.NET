@@ -23,6 +23,9 @@ public sealed class PokeTradeHubConfig : BaseConfig
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public TimingSettings Timings { get; set; } = new();
 
+    [Category(BotTrade), Description("Name of the Discord Bot the Program is Running. This will Title the window for easier recognition. Requires program restart.")]
+    public string BotName { get; set; } = string.Empty;
+
     // Trade Bots
 
     [Category(BotTrade)]
