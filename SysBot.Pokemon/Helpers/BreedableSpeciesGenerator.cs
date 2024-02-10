@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 public static class BreedableSpeciesGenerator
 {
+    // Note this is for SV only right now - Mystery Eggs Command
     private static readonly List<string> BreedableSpeciesNames = new List<string>
     {
         "Applin","Arrokuda","Axew","Azurill","Bagon","Basculin","Beldum","Bellsprout","Bergmite","Bidoof","Blitzle","Bounsweet","Bramblin",
@@ -34,7 +35,7 @@ public static class BreedableSpeciesGenerator
         foreach (var name in BreedableSpeciesNames)
         {
             ushort speciesId = ConvertNameToSpeciesId(name);
-            if (speciesId != 0) // Assuming 0 is an invalid species ID
+            if (speciesId != 0) 
                 breedableSpecies.Add(speciesId);
         }
 
@@ -47,9 +48,7 @@ public static class BreedableSpeciesGenerator
         {
             return (ushort)result;
         }
-        // Handle the case where the name is not found in the enum
-        // You might want to log this case or handle it as per your application's needs
         Console.WriteLine($"Warning: Species name '{name}' not found in Species enum.");
-        return 0; // Assuming 0 is an invalid species ID
+        return 0; 
     }
 }

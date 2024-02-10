@@ -164,7 +164,7 @@ public static class QueueHelper<T> where T : PKM, new()
         }
         else if (isCloneRequest)
         {
-            tradeTitle = "Clone Request";
+            tradeTitle = "Clone Pod Activated!";
         }
         else if (isDumpRequest)
         {
@@ -189,7 +189,7 @@ public static class QueueHelper<T> where T : PKM, new()
         }
         else if (isCloneRequest)
         {
-            embedImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/AltBallImg/128x128/cloneball.png"; // URL for clone request
+            embedImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/clonepod.png"; // URL for clone request
         }
         else if (FixOT)
         {
@@ -265,7 +265,12 @@ public static class QueueHelper<T> where T : PKM, new()
             embedBuilder.AddField("\u200B", specialDescription, inline: false);
         }
 
-        if (!string.IsNullOrEmpty(heldItemUrl))
+        // Set thumbnail images
+        if (isCloneRequest)
+        {
+            embedBuilder.WithThumbnailUrl("https://raw.githubusercontent.com/bdawg1989/sprites/main/profoak.png");
+        }
+        else if (!string.IsNullOrEmpty(heldItemUrl))
         {
             embedBuilder.WithThumbnailUrl(heldItemUrl);
         }
