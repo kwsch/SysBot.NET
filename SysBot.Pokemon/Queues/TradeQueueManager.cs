@@ -55,10 +55,16 @@ public class TradeQueueManager<T> where T : PKM, new()
         var random = Hub.Ledy.Pool.GetRandomPoke();
         var code = cfg.RandomCode ? Hub.Config.Trade.GetRandomTradeCode() : cfg.TradeCode;
         var lgcode = Hub.Config.Trade.GetRandomLGTradeCode(true);
+        if (lgcode == null || lgcode.Count == 0)
+        {
+            lgcode = new List<Pictocodes> { Pictocodes.Pikachu, Pictocodes.Pikachu, Pictocodes.Pikachu };
+        }
         var trainer = new PokeTradeTrainerInfo("Random Distribution");
-        detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random, code, false);
+        // Include lgcode in the creation of PokeTradeDetail
+        detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random, code, false, lgcode);
         return true;
     }
+
 
     public bool TryDequeue(PokeRoutineType type, out PokeTradeDetail<T> detail, out uint priority)
     {

@@ -7,14 +7,12 @@ using SysBot.Base;
 using static SysBot.Pokemon.PokeDataOffsetsLGPE;
 using static SysBot.Base.SwitchButton;
 
-namespace SysBot.Pokemon
+namespace SysBot.Pokemon;
+
+public abstract class PokeRoutineExecutor7LGPE : PokeRoutineExecutor<PB7>
 {
-    public abstract class PokeRoutineExecutor7LGPE : PokeRoutineExecutor<PB7>
-    {
-        protected PokeRoutineExecutor7LGPE(PokeBotState cfg) : base(cfg)
-        {
-        }
-        public ulong BoxStart = 0x533675B0;
+    protected PokeRoutineExecutor7LGPE(PokeBotState cfg) : base(cfg) { }
+    public ulong BoxStart = 0x533675B0;
         public readonly int SlotSize = 260;
         public int SlotCount = 25;
         public int GapSize = 380;
@@ -298,4 +296,4 @@ namespace SysBot.Pokemon
             await StartGame(config, token);
         }
     }
-}
+

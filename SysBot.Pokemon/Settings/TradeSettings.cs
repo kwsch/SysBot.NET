@@ -86,13 +86,13 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     public int GetRandomTradeCode() => Util.Rand.Next(MinTradeCode, MaxTradeCode + 1);
     public List<Pictocodes> GetRandomLGTradeCode(bool randomtrade = false)
     {
-        var code = new List<Pictocodes>();
+        var lgcode = new List<Pictocodes>();
         if (randomtrade)
         {
             for (int i = 0; i <= 2; i++)
             {
-                //code.Add((pictocodes)Util.Rand.Next(10));
-                code.Add(Pictocodes.Pikachu);
+                // code.Add((pictocodes)Util.Rand.Next(10));
+                lgcode.Add(Pictocodes.Pikachu);
 
             }
         }
@@ -100,12 +100,12 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         {
             for (int i = 0; i <= 2; i++)
             {
-                code.Add((Pictocodes)Util.Rand.Next(10));
-                //code.Add(pictocodes.Pikachu);
+                lgcode.Add((Pictocodes)Util.Rand.Next(10));
+                // code.Add(pictocodes.Pikachu);
 
             }
         }
-        return code;
+        return lgcode;
     }
 
 
