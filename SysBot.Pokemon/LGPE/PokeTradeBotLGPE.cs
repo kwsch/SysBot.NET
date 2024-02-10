@@ -576,8 +576,12 @@ namespace SysBot.Pokemon
         }
         private async Task EnterLinkCodeLG(PokeTradeDetail<PB7> poke, CancellationToken token)
         {
+            if (poke.LGPETradeCode == null || !poke.LGPETradeCode.Any())
+            {
+                poke.LGPETradeCode = new List<Pictocodes> { Pictocodes.Pikachu, Pictocodes.Pikachu, Pictocodes.Pikachu };
+            }
             Hub.Config.Stream.StartEnterCode(this);
-            foreach (pictocodes pc in poke.LGPETradeCode)
+            foreach (Pictocodes pc in poke.LGPETradeCode)
             {
                 if ((int)pc > 4)
                 {

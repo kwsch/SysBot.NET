@@ -84,15 +84,15 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     /// Gets a random trade code based on the range settings.
     /// </summary>
     public int GetRandomTradeCode() => Util.Rand.Next(MinTradeCode, MaxTradeCode + 1);
-    public List<pictocodes> GetRandomLGTradeCode(bool randomtrade = false)
+    public List<Pictocodes> GetRandomLGTradeCode(bool randomtrade = false)
     {
-        var code = new List<pictocodes>();
+        var code = new List<Pictocodes>();
         if (randomtrade)
         {
             for (int i = 0; i <= 2; i++)
             {
                 //code.Add((pictocodes)Util.Rand.Next(10));
-                code.Add(pictocodes.Pikachu);
+                code.Add(Pictocodes.Pikachu);
 
             }
         }
@@ -100,7 +100,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         {
             for (int i = 0; i <= 2; i++)
             {
-                code.Add((pictocodes)Util.Rand.Next(10));
+                code.Add((Pictocodes)Util.Rand.Next(10));
                 //code.Add(pictocodes.Pikachu);
 
             }

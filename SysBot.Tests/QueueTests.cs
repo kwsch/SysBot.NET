@@ -11,7 +11,7 @@ namespace SysBot.Tests;
 
 public class QueueTests
 {
-    private static List<pictocodes> lgcode;
+    private static List<Pictocodes> lgcode;
 
     [Fact]
     public void TestEnqueuePK8() => EnqueueTest<PK8>();

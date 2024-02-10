@@ -12,7 +12,7 @@ namespace SysBot.Pokemon.Bilibili
     {
         // private readonly BilibiliSettings Settings;
         private static PokeTradeHub<T> Hub = default!;
-        private static System.Collections.Generic.List<pictocodes> lgcode;
+        private static System.Collections.Generic.List<Pictocodes> lgcode;
 
         internal static TradeQueueInfo<T> Info => Hub.Queues.Info;
 

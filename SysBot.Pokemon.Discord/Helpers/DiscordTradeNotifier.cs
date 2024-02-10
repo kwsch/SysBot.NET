@@ -18,13 +18,13 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
     private T Data { get; }
     private PokeTradeTrainerInfo Info { get; }
     private int Code { get; }
-    private List<pictocodes> LGCode { get; }
+    private List<Pictocodes> LGCode { get; }
     private SocketUser Trader { get; }
     private int BatchTradeNumber { get; }
     private int TotalBatchTrades { get; }
     private bool IsMysteryEgg { get; } 
 
-    public DiscordTradeNotifier(T data, PokeTradeTrainerInfo info, int code, SocketUser trader, int batchTradeNumber, int totalBatchTrades, bool isMysteryEgg, List<pictocodes> lgcode)
+    public DiscordTradeNotifier(T data, PokeTradeTrainerInfo info, int code, SocketUser trader, int batchTradeNumber, int totalBatchTrades, bool isMysteryEgg, List<Pictocodes> lgcode)
     {
         Data = data;
         Info = info;
@@ -122,11 +122,11 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
         Trader.SendMessageAsync(msg, embed: embed.Build()).ConfigureAwait(false);
     }
 
-    public static (string, Embed) CreateLGLinkCodeSpriteEmbed(List<pictocodes> lgcode)
+    public static (string, Embed) CreateLGLinkCodeSpriteEmbed(List<Pictocodes> lgcode)
     {
         int codecount = 0;
         List<System.Drawing.Image> spritearray = new();
-        foreach (pictocodes cd in lgcode)
+        foreach (Pictocodes cd in lgcode)
         {
             var showdown = new ShowdownSet(cd.ToString());
             var sav = SaveUtil.GetBlankSAV(EntityContext.Gen7b, "pip");

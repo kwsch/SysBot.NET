@@ -10,9 +10,9 @@ namespace SysBot.Pokemon.Discord.Commands.Bots
     public class TradeQueueResult
     {
         public bool Success { get; set; }
-        public List<pictocodes> LGCode { get; set; }
+        public List<Pictocodes> LGCode { get; set; }
 
-        public TradeQueueResult(bool success, List<pictocodes> lgcode = null)
+        public TradeQueueResult(bool success, List<Pictocodes> lgcode = null)
         {
             Success = success;
             LGCode = lgcode;

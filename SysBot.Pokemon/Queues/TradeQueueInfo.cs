@@ -210,13 +210,13 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
     }
 
     public int GetRandomTradeCode() => Hub.Config.Trade.GetRandomTradeCode();
-    public List<pictocodes> GetRandomLGTradeCode()
+    public List<Pictocodes> GetRandomLGTradeCode()
     {
-        var code = new List<pictocodes>();
+        var code = new List<Pictocodes>();
         for (int i = 0; i <= 2; i++)
         {
-            code.Add((pictocodes)Util.Rand.Next(10));
-            //code.Add(pictocodes.Pikachu);
+            code.Add((Pictocodes)Util.Rand.Next(10));
+            code.Add(Pictocodes.Pikachu);
 
         }
         return code;

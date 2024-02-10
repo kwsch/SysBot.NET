@@ -44,9 +44,9 @@ namespace SysBot.Pokemon
 
         /// <summary> Indicates if the trade data is currently being traded. </summary>
         public bool IsProcessing;
-        public List<pictocodes> LGPETradeCode;
+        public List<Pictocodes> LGPETradeCode;
 
-        public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code, bool favored = false, List<pictocodes> lgcode = null)
+        public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code, bool favored = false, List<Pictocodes> lgcode = null)
         {
             ID = Interlocked.Increment(ref CreatedCount) % 3000;
             Code = code;
@@ -98,7 +98,7 @@ namespace SysBot.Pokemon
         }
 
     }
-    public enum pictocodes
+    public enum Pictocodes
     {
         Pikachu,
         Eevee,

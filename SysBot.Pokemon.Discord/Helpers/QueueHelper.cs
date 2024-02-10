@@ -27,7 +27,7 @@ public static class QueueHelper<T> where T : PKM, new()
     private static Dictionary<int, List<string>> batchTradeFiles = new Dictionary<int, List<string>>();
     private static Dictionary<ulong, int> userBatchTradeMaxDetailId = new Dictionary<ulong, int>();
 
-    public static async Task AddToQueueAsync(SocketCommandContext context, int code, string trainer, RequestSignificance sig, T trade, PokeRoutineType routine, PokeTradeType type, SocketUser trader, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, int formArgument = 0, bool isMysteryEgg = false, List<pictocodes> lgcode = null)
+    public static async Task AddToQueueAsync(SocketCommandContext context, int code, string trainer, RequestSignificance sig, T trade, PokeRoutineType routine, PokeTradeType type, SocketUser trader, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, int formArgument = 0, bool isMysteryEgg = false, List<Pictocodes> lgcode = null)
     {
         if ((uint)code > MaxTradeCode)
         {
@@ -66,7 +66,7 @@ public static class QueueHelper<T> where T : PKM, new()
         return AddToQueueAsync(context, code, trainer, sig, trade, routine, type, context.User);
     }
 
-    private static async Task<TradeQueueResult> AddToTradeQueue(SocketCommandContext context, T pk, int code, string trainerName, RequestSignificance sig, PokeRoutineType type, PokeTradeType t, SocketUser trader, bool isBatchTrade, int batchTradeNumber, int totalBatchTrades, int formArgument = 0, bool isMysteryEgg = false, List<pictocodes> lgcode = null)
+    private static async Task<TradeQueueResult> AddToTradeQueue(SocketCommandContext context, T pk, int code, string trainerName, RequestSignificance sig, PokeRoutineType type, PokeTradeType t, SocketUser trader, bool isBatchTrade, int batchTradeNumber, int totalBatchTrades, int formArgument = 0, bool isMysteryEgg = false, List<Pictocodes> lgcode = null)
     {
         var user = trader;
         var userID = user.Id;
@@ -709,11 +709,11 @@ public static class QueueHelper<T> where T : PKM, new()
         }
         await context.Channel.SendMessageAsync(message).ConfigureAwait(false);
     }
-    public static (string, Embed) CreateLGLinkCodeSpriteEmbed(List<pictocodes> lgcode)
+    public static (string, Embed) CreateLGLinkCodeSpriteEmbed(List<Pictocodes> lgcode)
     {
         int codecount = 0;
         List<System.Drawing.Image> spritearray = new();
-        foreach (pictocodes cd in lgcode)
+        foreach (Pictocodes cd in lgcode)
         {
 
 
