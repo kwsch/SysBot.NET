@@ -14,8 +14,6 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.IO;
 using SysBot.Pokemon.Helpers;
-using PKHeX.Core.AutoMod;
-using PKHeX.Drawing.PokeSprite;
 
 namespace SysBot.Pokemon.Discord;
 
@@ -27,7 +25,7 @@ public static class QueueHelper<T> where T : PKM, new()
     private static Dictionary<int, List<string>> batchTradeFiles = new Dictionary<int, List<string>>();
     private static Dictionary<ulong, int> userBatchTradeMaxDetailId = new Dictionary<ulong, int>();
 
-    public static async Task AddToQueueAsync(SocketCommandContext context, int code, string trainer, RequestSignificance sig, T trade, PokeRoutineType routine, PokeTradeType type, SocketUser trader, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, int formArgument = 0, bool isMysteryEgg = false, List<Pictocodes> lgcode = null)
+    public static async Task AddToQueueAsync(SocketCommandContext context, int code, string trainer, RequestSignificance sig, T trade, PokeRoutineType routine, PokeTradeType type, SocketUser trader, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, int formArgument = 0, bool isMysteryEgg = false)
     {
         if ((uint)code > MaxTradeCode)
         {
@@ -40,19 +38,15 @@ public static class QueueHelper<T> where T : PKM, new()
             // Send helper message only for the first trade in a batch or for single trades
             if (!isBatchTrade || batchTradeNumber == 1)
             {
-                if (trade is PB7 && lgcode != null) // Assuming PB7 is a specific type of trade and lgcode is used with it
-                {
-                    var (thefile, lgcodeembed) = CreateLGLinkCodeSpriteEmbed(lgcode);
-                    await trader.SendFileAsync(thefile, $"Your trade code will be.", embed: lgcodeembed).ConfigureAwait(false);
-                }
-                else
-                {
-                    await trader.SendMessageAsync($"Your trade code will be: {code:0000 0000}").ConfigureAwait(false);
-                }
+                const string helper = "I've added you to the queue! I'll message you here when your trade is starting.";
+                IUserMessage test = await trader.SendMessageAsync(helper).ConfigureAwait(false);
+
+                // Notify in PM only once for the first trade in a batch or for single trades
+                await trader.SendMessageAsync($"Your trade code will be **{code:0000 0000}**.").ConfigureAwait(false);
             }
 
             // Add to trade queue and get the result
-            var result = await AddToTradeQueue(context, trade, code, trainer, sig, routine, type, trader, isBatchTrade, batchTradeNumber, totalBatchTrades, formArgument, isMysteryEgg, lgcode).ConfigureAwait(false);
+            var result = await AddToTradeQueue(context, trade, code, trainer, sig, routine, type, trader, isBatchTrade, batchTradeNumber, totalBatchTrades, formArgument, isMysteryEgg);
 
         }
         catch (HttpException ex)
@@ -66,15 +60,15 @@ public static class QueueHelper<T> where T : PKM, new()
         return AddToQueueAsync(context, code, trainer, sig, trade, routine, type, context.User);
     }
 
-    private static async Task<TradeQueueResult> AddToTradeQueue(SocketCommandContext context, T pk, int code, string trainerName, RequestSignificance sig, PokeRoutineType type, PokeTradeType t, SocketUser trader, bool isBatchTrade, int batchTradeNumber, int totalBatchTrades, int formArgument = 0, bool isMysteryEgg = false, List<Pictocodes> lgcode = null)
+    private static async Task<TradeQueueResult> AddToTradeQueue(SocketCommandContext context, T pk, int code, string trainerName, RequestSignificance sig, PokeRoutineType type, PokeTradeType t, SocketUser trader, bool isBatchTrade, int batchTradeNumber, int totalBatchTrades, int formArgument = 0, bool isMysteryEgg = false)
     {
         var user = trader;
         var userID = user.Id;
         var name = user.Username;
 
         var trainer = new PokeTradeTrainerInfo(trainerName, userID);
-        var notifier = new DiscordTradeNotifier<T>(pk, trainer, code, trader, batchTradeNumber, totalBatchTrades, isMysteryEgg, lgcode);
-        var detail = new PokeTradeDetail<T>(pk, trainer, notifier, t, code, sig == RequestSignificance.Favored, lgcode);
+        var notifier = new DiscordTradeNotifier<T>(pk, trainer, code, trader, batchTradeNumber, totalBatchTrades, isMysteryEgg);
+        var detail = new PokeTradeDetail<T>(pk, trainer, notifier, t, code, sig == RequestSignificance.Favored);
         var trade = new TradeEntry<T>(detail, userID, type, name);
         var strings = GameInfo.GetStrings(1);
         var hub = SysCord<T>.Runner.Hub;
@@ -708,58 +702,5 @@ public static class QueueHelper<T> where T : PKM, new()
                 break;
         }
         await context.Channel.SendMessageAsync(message).ConfigureAwait(false);
-    }
-    public static (string, Embed) CreateLGLinkCodeSpriteEmbed(List<Pictocodes> lgcode)
-    {
-        int codecount = 0;
-        List<System.Drawing.Image> spritearray = new();
-        foreach (Pictocodes cd in lgcode)
-        {
-
-
-            var showdown = new ShowdownSet(cd.ToString());
-            var sav = SaveUtil.GetBlankSAV(EntityContext.Gen7b, "pip");
-            PKM pk = sav.GetLegalFromSet(showdown).Created;
-            System.Drawing.Image png = pk.Sprite();
-            var destRect = new Rectangle(-40, -65, 137, 130);
-            var destImage = new Bitmap(137, 130);
-
-            destImage.SetResolution(png.HorizontalResolution, png.VerticalResolution);
-
-            using (var graphics = Graphics.FromImage(destImage))
-            {
-                graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
-                graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
-                graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-                graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-                graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
-                graphics.DrawImage(png, destRect, 0, 0, png.Width, png.Height, GraphicsUnit.Pixel);
-
-            }
-            png = destImage;
-            spritearray.Add(png);
-            codecount++;
-        }
-        int outputImageWidth = spritearray[0].Width + 20;
-
-        int outputImageHeight = spritearray[0].Height - 65;
-
-        Bitmap outputImage = new Bitmap(outputImageWidth, outputImageHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
-        using (Graphics graphics = Graphics.FromImage(outputImage))
-        {
-            graphics.DrawImage(spritearray[0], new Rectangle(0, 0, spritearray[0].Width, spritearray[0].Height),
-                new Rectangle(new Point(), spritearray[0].Size), GraphicsUnit.Pixel);
-            graphics.DrawImage(spritearray[1], new Rectangle(50, 0, spritearray[1].Width, spritearray[1].Height),
-                new Rectangle(new Point(), spritearray[1].Size), GraphicsUnit.Pixel);
-            graphics.DrawImage(spritearray[2], new Rectangle(100, 0, spritearray[2].Width, spritearray[2].Height),
-                new Rectangle(new Point(), spritearray[2].Size), GraphicsUnit.Pixel);
-        }
-        System.Drawing.Image finalembedpic = outputImage;
-        var filename = $"{System.IO.Directory.GetCurrentDirectory()}//finalcode.png";
-        finalembedpic.Save(filename);
-        filename = System.IO.Path.GetFileName($"{System.IO.Directory.GetCurrentDirectory()}//finalcode.png");
-        Embed returnembed = new EmbedBuilder().WithTitle($"{lgcode[0]}, {lgcode[1]}, {lgcode[2]}").WithImageUrl($"attachment://{filename}").Build();
-        return (filename, returnembed);
     }
 }

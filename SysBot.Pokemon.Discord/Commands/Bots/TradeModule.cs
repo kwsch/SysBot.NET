@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static SysBot.Pokemon.TradeSettings;
@@ -348,17 +347,17 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [Alias("t")]
     [Summary("Makes the bot trade you the provided Pokémon file.")]
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-    public Task TradeAsyncAttach([Summary("Trade Code")] int code, List<Pictocodes> lgcode)
+    public Task TradeAsyncAttach([Summary("Trade Code")] int code)
     {
         var sig = Context.User.GetFavor();
-        return TradeAsyncAttach(code, sig, Context.User, lgcode);
+        return TradeAsyncAttach(code, sig, Context.User);
     }
 
     [Command("trade")]
     [Alias("t")]
     [Summary("Makes the bot trade you a Pokémon converted from the provided Showdown Set.")]
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-    public async Task TradeAsync(int code, List<Pictocodes> lgcode, string content)
+    public async Task TradeAsync([Summary("Trade Code")] int code, [Summary("Showdown Set")][Remainder] string content)
     {
         // Check if the user is already in the queue
         var userID = Context.User.Id;
@@ -417,7 +416,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             pk.ResetPartyStats();
 
             var sig = Context.User.GetFavor();
-            await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, isBatchTrade: false, batchTradeNumber: 1, totalBatchTrades: 1, formArgument: formArgument, lgcode: lgcode).ConfigureAwait(false);
+            await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, isBatchTrade: false, batchTradeNumber: 1, totalBatchTrades: 1, formArgument: formArgument).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -448,8 +447,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public Task TradeAsync([Summary("Showdown Set")][Remainder] string content)
     {
         var code = Info.GetRandomTradeCode();
-        var lgcode = Info.GetRandomLGTradeCode();
-        return TradeAsync(code, lgcode, content);
+        return TradeAsync(code, content);
     }
 
     [Command("trade")]
@@ -459,9 +457,9 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public async Task TradeAsyncAttach()
     {
         var code = Info.GetRandomTradeCode();
-        var lgcode = Info.GetRandomLGTradeCode();
+
         // Call TradeAsyncAttach with the generated code
-        await TradeAsyncAttach(code, lgcode);
+        await TradeAsyncAttach(code);
 
         // Delay for 2 seconds
         await Task.Delay(2000);
@@ -586,11 +584,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
             // Use a predefined or random trade code
             var code = Info.GetRandomTradeCode();
-            var lgcode = Info.GetRandomLGTradeCode();
 
             // Add the trade to the queue
             var sig = Context.User.GetFavor();
-            await AddTradeToQueueAsync(batchTradeCode, Context.User.Username, pk, sig, Context.User, isBatchTrade, batchTradeNumber, totalBatchTrades, lgcode: lgcode).ConfigureAwait(false);
+            await AddTradeToQueueAsync(batchTradeCode, Context.User.Username, pk, sig, Context.User, isBatchTrade, batchTradeNumber, totalBatchTrades).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -908,12 +905,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
         var usr = Context.Message.MentionedUsers.ElementAt(0);
         var sig = usr.GetFavor();
-
-        // Generate or retrieve lgcode here. Example:
-        var lgcode = Info.GetRandomLGTradeCode(); // Assuming this method exists and is appropriate for your use case
-
-        // Now pass lgcode to the method
-        await TradeAsyncAttach(code, sig, usr, lgcode).ConfigureAwait(false);
+        await TradeAsyncAttach(code, sig, usr).ConfigureAwait(false);
     }
 
     [Command("tradeUser")]
@@ -926,7 +918,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         return TradeAsyncAttachUser(code, _);
     }
 
-    private async Task TradeAsyncAttach(int code, RequestSignificance sig, SocketUser usr, List<Pictocodes> lgcode)
+    private async Task TradeAsyncAttach(int code, RequestSignificance sig, SocketUser usr)
     {
         var attachment = Context.Message.Attachments.FirstOrDefault();
         if (attachment == default)
@@ -943,7 +935,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
 
-        await AddTradeToQueueAsync(code, usr.Username, pk, sig, usr, false, 1, 1, 0, false, lgcode).ConfigureAwait(false);
+        await AddTradeToQueueAsync(code, usr.Username, pk, sig, usr).ConfigureAwait(false);
     }
 
     private static T? GetRequest(Download<PKM> dl)
@@ -958,12 +950,8 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         };
     }
 
-    private async Task AddTradeToQueueAsync(int code, string trainerName, T pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, int formArgument = 0, bool isMysteryEgg = false, List<Pictocodes> lgcode = null)
+    private async Task AddTradeToQueueAsync(int code, string trainerName, T pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, int formArgument = 0, bool isMysteryEgg = false)
     {
-        if (lgcode == null)
-        {
-            lgcode = new List<Pictocodes> { Pictocodes.Pikachu, Pictocodes.Pikachu, Pictocodes.Pikachu };
-        }
         if (!pk.CanBeTraded())
         {
             var reply = await ReplyAsync("Provided Pokémon content is blocked from trading!").ConfigureAwait(false);
@@ -971,24 +959,13 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await reply.DeleteAsync().ConfigureAwait(false);
             return;
         }
-        var cfg = Info.Hub.Config.Trade;
+
         var la = new LegalityAnalysis(pk);
         if (!la.Valid)
         {
             string responseMessage = pk.IsEgg ? "Invalid Showdown Set for this Egg. Please review your information and try again." :
                 $"{typeof(T).Name} attachment is not legal, and cannot be traded!";
-            if (cfg.DisallowNonNatives && (la.EncounterOriginal.Context != pk.Context || pk.GO))
-            {
-                // Allow the owner to prevent trading entities that require a HOME Tracker even if the file has one already.
-                await ReplyAsync($"{typeof(T).Name} attachment is not native, and cannot be traded!").ConfigureAwait(false);
-                return;
-            }
-            if (cfg.DisallowTracked && pk is IHomeTrack { HasTracker: true })
-            {
-                // Allow the owner to prevent trading entities that already have a HOME Tracker.
-                await ReplyAsync($"{typeof(T).Name} attachment is tracked by HOME, and cannot be traded!").ConfigureAwait(false);
-                return;
-            }
+
             var reply = await ReplyAsync(responseMessage).ConfigureAwait(false);
             await Task.Delay(6000); // Delay for 6 seconds
             await reply.DeleteAsync().ConfigureAwait(false);
@@ -996,7 +973,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         }
 
         // Pass all the necessary flags to the QueueHelper's AddToQueueAsync method
-        await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk, PokeRoutineType.LinkTrade, PokeTradeType.Specific, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, formArgument, isMysteryEgg, lgcode).ConfigureAwait(false);
+        await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk, PokeRoutineType.LinkTrade, PokeTradeType.Specific, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, formArgument, isMysteryEgg).ConfigureAwait(false);
     }
 
 }

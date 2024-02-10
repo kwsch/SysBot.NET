@@ -69,7 +69,6 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public Task CloneAsync()
     {
         var code = Info.GetRandomTradeCode();
-        var lgcode = Info.GetRandomLGTradeCode();
         return CloneAsync(code);
 
     }
