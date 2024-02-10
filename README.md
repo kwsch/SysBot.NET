@@ -1,12 +1,14 @@
 # Welcome to MergeBot!
 For support and suggestions, join my Discord Hangout - https://notpaldea.net
 
-## This sysBot offers all of the features you could ever want <3
+# This sysBot offers all of the features you could ever want <3
+# Shoutout to all the amazing devs of SysBot!  Thanks Kurt, Lusamine, Archit, Koi, Zyro, Easyworld, SantaCrab2, and others that contributed <3
+
 ### Supports The Following Games:  SV/BDSP/PLA/SWSH
 **__Please don't charge people to use this free program. Be nice <3__**
 
 - __Beautiful Embeds__
-- 
+  
 ![image](https://github.com/bdawg1989/MergeBot/assets/80122551/022e5f6a-5771-448f-a816-981782fefa55)
 
 - __Additional Embed Text__
@@ -39,6 +41,9 @@ Example:
 .Egg Charmander
 Shiny: Yes
 ```
+
+![image](https://github.com/bdawg1989/MergeBot/assets/80122551/cd7158f9-3d05-4306-8ad9-5d7e97d28c5d)
+
 
 - __Server Blacklisting & Management__
 Do you share your bot in several servers?  Is your bot a public bot where you allow anyone to add your bot?
