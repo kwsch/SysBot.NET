@@ -555,6 +555,13 @@ namespace SysBot.Pokemon.Helpers
                 pk.IsNicknamed = true;
                 pk.Nickname = pk.Language switch
                 {
+                    1 => "タマゴ",
+                    3 => "Œuf",
+                    4 => "Uovo",
+                    5 => "Ei",
+                    7 => "Huevo",
+                    8 => "알",
+                    9 or 10 => "蛋",
                     _ => "Egg",
                 };
             }
