@@ -45,6 +45,9 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         [Category(TradeConfig), Description("Max amount of time in seconds pressing A to wait for a trade to process.")]
         public int MaxTradeConfirmTime { get; set; } = 25;
 
+        [Category(TradeConfig), Description("Select default species for \"ItemTrade\", if configured.")]
+        public Species ItemTradeSpecies { get; set; } = Species.None;
+
         [Category(TradeConfig), Description("Default held item to send if none is specified.")]
         public HeldItem DefaultHeldItem { get; set; } = HeldItem.AbilityPatch;
 
