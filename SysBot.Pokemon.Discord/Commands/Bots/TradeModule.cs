@@ -692,6 +692,13 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var eventsFolderPath = SysCord<T>.Runner.Config.Trade.RequestFolderSettings.EventsFolder;
         var botPrefix = SysCord<T>.Runner.Config.Discord.CommandPrefix;
 
+        // Check if the events folder path is not set or empty
+        if (string.IsNullOrEmpty(eventsFolderPath))
+        {
+            await ReplyAsync("This bot does not have this feature set up.");
+            return;
+        }
+
         // Parsing the arguments to separate filter and page number
         string filter = "";
         int page = 1;
@@ -788,6 +795,13 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                                       .OrderBy(x => x)
                                       .ToList();
 
+            // Check if the events folder path is not set or empty
+            if (string.IsNullOrEmpty(eventsFolderPath))
+            {
+                await ReplyAsync("This bot does not have this feature set up.");
+                return;
+            }
+
             if (index < 1 || index > eventFiles.Count)
             {
                 await ReplyAsync("Invalid event index. Please use a valid event number from the `.le` command.").ConfigureAwait(false);
@@ -836,6 +850,13 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         const int itemsPerPage = 20; // Number of items per page
         var battleReadyFolderPath = SysCord<T>.Runner.Config.Trade.RequestFolderSettings.BattleReadyPKMFolder;
         var botPrefix = SysCord<T>.Runner.Config.Discord.CommandPrefix;
+
+        // Check if the battleready folder path is not set or empty
+        if (string.IsNullOrEmpty(battleReadyFolderPath))
+        {
+            await ReplyAsync("This bot does not have this feature set up.");
+            return;
+        }
 
         // Parsing the arguments to separate filter and page number
         string filter = "";
@@ -932,6 +953,13 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                                             .Select(Path.GetFileName)
                                             .OrderBy(x => x)
                                             .ToList();
+
+            // Check if the battleready folder path is not set or empty
+            if (string.IsNullOrEmpty(battleReadyFolderPath))
+            {
+                await ReplyAsync("This bot does not have this feature set up.");
+                return;
+            }
 
             if (index < 1 || index > battleReadyFiles.Count)
             {
