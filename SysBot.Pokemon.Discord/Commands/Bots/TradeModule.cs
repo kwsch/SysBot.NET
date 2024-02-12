@@ -289,6 +289,12 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
         var sig = Context.User.GetFavor();
         await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, pk, PokeRoutineType.LinkTrade, PokeTradeType.Specific).ConfigureAwait(false);
+        // Delete the command message after 2 seconds
+        if (Context.Message is IUserMessage userMessage)
+        {
+            await Task.Delay(2000); // Wait for 2 seconds
+            await userMessage.DeleteAsync().ConfigureAwait(false);
+        }
     }
 
     [Command("tradeList")]
