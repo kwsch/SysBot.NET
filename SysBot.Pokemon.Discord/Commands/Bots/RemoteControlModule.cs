@@ -10,6 +10,23 @@ namespace SysBot.Pokemon.Discord;
 [Summary("Remotely controls a bot.")]
 public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
 {
+    private string GetRunningBotIP()
+    {
+        var r = SysCord<T>.Runner;
+        var runningBot = r.Bots.Find(x => x.IsRunning);
+
+        // Check if a running bot is found
+        if (runningBot != null)
+        {
+            return runningBot.Bot.Config.Connection.IP;
+        }
+        else
+        {
+            // Default IP address or logic if no running bot is found
+            return "192.168.1.1";
+        }
+    }
+
     [Command("click")]
     [Summary("Clicks the specified button.")]
     [RequireRoleAccess(nameof(DiscordManager.RolesRemoteControl))]
@@ -74,22 +91,23 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
     [Alias("screenOn", "scrOn")]
     [Summary("Turns the screen on")]
     [RequireSudo]
-    public Task SetScreenOnAsync([Remainder] string ip)
+    public async Task SetScreenOnAsync()
     {
-        return SetScreen(true, ip);
+        await SetScreen(true).ConfigureAwait(false);
     }
 
     [Command("setScreenOff")]
     [Alias("screenOff", "scrOff")]
     [Summary("Turns the screen off")]
     [RequireSudo]
-    public Task SetScreenOffAsync([Remainder] string ip)
+    public async Task SetScreenOffAsync()
     {
-        return SetScreen(false, ip);
+        await SetScreen(false).ConfigureAwait(false);
     }
 
-    private async Task SetScreen(bool on, string ip)
+    private async Task SetScreen(bool on)
     {
+        string ip = GetRunningBotIP();
         var bot = GetBot(ip);
         if (bot == null)
         {
