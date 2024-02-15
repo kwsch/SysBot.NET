@@ -49,7 +49,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         public Species ItemTradeSpecies { get; set; } = Species.None;
 
         [Category(TradeConfig), Description("Default held item to send if none is specified.")]
-        public HeldItem DefaultHeldItem { get; set; } = HeldItem.AbilityPatch;
+        public HeldItem DefaultHeldItem { get; set; } = HeldItem.None;
 
         [Category(TradeConfig), Description("Toggle to allow or disallow batch trades.")]
         public bool AllowBatchTrades { get; set; } = true;
