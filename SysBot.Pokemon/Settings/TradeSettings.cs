@@ -66,6 +66,9 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         [Category(TradeConfig), Description("Dump Trade: If enabled, Dumping routine will output legality check information to the user.")]
         public bool DumpTradeLegalityCheck { get; set; } = true;
 
+        [Category(TradeConfig), Description("LGPE Setting.")]
+        public int TradeAnimationMaxDelaySeconds = 25;
+
         public enum HeldItem
         {
             None = 0,

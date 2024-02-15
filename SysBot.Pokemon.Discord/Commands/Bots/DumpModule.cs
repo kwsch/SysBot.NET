@@ -17,7 +17,22 @@ public class DumpModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
     public async Task DumpAsync(int code)
     {
         var sig = Context.User.GetFavor();
-        await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.Dump, PokeTradeType.Dump);
+        var lgcode = Info.GetRandomLGTradeCode();
+        await QueueHelper<T>.AddToQueueAsync(
+            Context,
+            code,
+            Context.User.Username,
+            sig,
+            new T(),
+            PokeRoutineType.Dump,
+            PokeTradeType.Dump,
+            Context.User,
+            isBatchTrade: false,
+            batchTradeNumber: 1,
+            totalBatchTrades: 1,
+            formArgument: 0,
+            isMysteryEgg: false,
+            lgcode: lgcode);
 
         // Delete the command message after 2 seconds
         await Task.Delay(2000);
@@ -33,10 +48,6 @@ public class DumpModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
         int tradeCode = Util.ToInt32(code);
         var sig = Context.User.GetFavor();
         await QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.Dump, PokeTradeType.Dump);
-
-        // Delete the command message after 2 seconds
-        await Task.Delay(2000);
-        await Context.Message.DeleteAsync();
     }
 
     [Command("dump")]
@@ -47,10 +58,6 @@ public class DumpModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
     {
         var code = Info.GetRandomTradeCode();
         await DumpAsync(code);
-
-        // Delete the command message after 2 seconds
-        await Task.Delay(2000);
-        await Context.Message.DeleteAsync();
     }
 
     [Command("dumpList")]

@@ -4,7 +4,7 @@ namespace SysBot.Pokemon;
 
 public class ProgramConfig : BotList<PokeBotState>
 {
-    public ProgramMode Mode { get; set; } = ProgramMode.SV;
+    public ProgramMode Mode { get; set; } = ProgramMode.None;
     public PokeTradeHubConfig Hub { get; set; } = new();
 }
 
@@ -15,4 +15,5 @@ public enum ProgramMode
     BDSP = 2,
     LA = 3,
     SV = 4,
+    LGPE = 5,
 }

@@ -12,7 +12,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using static SysBot.Pokemon.TradeSettings;
+using static SysBot.Pokemon.TradeSettings.TradeSettingsCategory;
 
 namespace SysBot.Pokemon.Discord;
 
@@ -30,7 +30,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         const int guildsPerPage = 25; // Discord limit for fields in an embed
         int guildCount = Context.Client.Guilds.Count;
         int totalPages = (int)Math.Ceiling(guildCount / (double)guildsPerPage);
-        page = Math.Max(1, Math.Min(page, totalPages)); // Ensure page is within range
+        page = Math.Max(1, Math.Min(page, totalPages));
 
         var guilds = Context.Client.Guilds
             .Skip((page - 1) * guildsPerPage)
@@ -39,23 +39,20 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var embedBuilder = new EmbedBuilder()
             .WithTitle($"List of Guilds - Page {page}/{totalPages}")
             .WithDescription("Here are the guilds I'm currently in:")
-            .WithColor(Color.Blue); // Choose an appropriate color
+            .WithColor(Color.Blue); 
 
         foreach (var guild in guilds)
         {
             embedBuilder.AddField(guild.Name, $"ID: {guild.Id}", inline: true);
         }
-
-        // Send the embed via DM
         var dmChannel = await Context.User.CreateDMChannelAsync();
         await dmChannel.SendMessageAsync(embed: embedBuilder.Build());
 
-        // Optionally, confirm to the user in the channel that the DM has been sent
         await ReplyAsync($"{Context.User.Mention}, I've sent you a DM with the list of guilds (Page {page}).");
 
         if (Context.Message is IUserMessage userMessage)
         {
-            await Task.Delay(2000); // Wait for 2 seconds
+            await Task.Delay(2000); 
             await userMessage.DeleteAsync().ConfigureAwait(false);
         }
     }
@@ -129,12 +126,13 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
         var code = Info.GetRandomTradeCode();
+        var trainerName = Context.User.Username;
+        var lgcode = Info.GetRandomLGTradeCode();
         var sig = Context.User.GetFavor();
-        await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.FixOT, PokeTradeType.FixOT).ConfigureAwait(false);
-        // Delete the command message after 2 seconds
+        await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, new T(), PokeRoutineType.FixOT, PokeTradeType.FixOT, Context.User, false, 1, 1, 0, false, lgcode).ConfigureAwait(false);
         if (Context.Message is IUserMessage userMessage)
         {
-            await Task.Delay(2000); // Wait for 2 seconds
+            await Task.Delay(2000); 
             await userMessage.DeleteAsync().ConfigureAwait(false);
         }
     }
@@ -152,12 +150,15 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
             return;
         }
+        var trainerName = Context.User.Username;
         var sig = Context.User.GetFavor();
-        await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.FixOT, PokeTradeType.FixOT).ConfigureAwait(false);
-        // Delete the command message after 2 seconds
+        var lgcode = Info.GetRandomLGTradeCode(); 
+
+        await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, new T(), PokeRoutineType.FixOT, PokeTradeType.FixOT, Context.User, false, 1, 1, 0, false, lgcode).ConfigureAwait(false);
+
         if (Context.Message is IUserMessage userMessage)
         {
-            await Task.Delay(2000); // Wait for 2 seconds
+            await Task.Delay(2000);
             await userMessage.DeleteAsync().ConfigureAwait(false);
         }
     }
@@ -186,10 +187,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     {
         var code = Info.GetRandomTradeCode();
         await DittoTrade(code, keyword, language, nature).ConfigureAwait(false);
-        // Delete the command message after 2 seconds
+
         if (Context.Message is IUserMessage userMessage)
         {
-            await Task.Delay(2000); // Wait for 2 seconds
+            await Task.Delay(2000); 
             await userMessage.DeleteAsync().ConfigureAwait(false);
         }
     }
@@ -235,10 +236,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         pk.ResetPartyStats();
         var sig = Context.User.GetFavor();
         await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, pk, PokeRoutineType.LinkTrade, PokeTradeType.Specific).ConfigureAwait(false);
-        // Delete the command message after 2 seconds
+
         if (Context.Message is IUserMessage userMessage)
         {
-            await Task.Delay(2000); // Wait for 2 seconds
+            await Task.Delay(2000);
             await userMessage.DeleteAsync().ConfigureAwait(false);
         }
     }
@@ -289,10 +290,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
         var sig = Context.User.GetFavor();
         await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, pk, PokeRoutineType.LinkTrade, PokeTradeType.Specific).ConfigureAwait(false);
-        // Delete the command message after 2 seconds
+
         if (Context.Message is IUserMessage userMessage)
         {
-            await Task.Delay(2000); // Wait for 2 seconds
+            await Task.Delay(2000); 
             await userMessage.DeleteAsync().ConfigureAwait(false);
         }
     }
@@ -351,10 +352,9 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             var sig = Context.User.GetFavor();
             await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User).ConfigureAwait(false);
 
-            // Delete the command message after 2 seconds
             if (Context.Message is IUserMessage userMessage)
             {
-                await Task.Delay(2000); // Wait for 2 seconds
+                await Task.Delay(2000);
                 await userMessage.DeleteAsync().ConfigureAwait(false);
             }
         }
@@ -382,15 +382,12 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         {
             var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
             var speciesList = BreedableSpeciesGenerator.GetBreedableSpeciesForSV();
-            var randomIndex = new Random().Next(speciesList.Count); // Standard way to pick a random index
+            var randomIndex = new Random().Next(speciesList.Count); 
             ushort speciesId = speciesList[randomIndex];
-
             var context = new EntityContext(); 
             var eggEncounter = new EncounterEgg(speciesId, 0, 1, 9, GameVersion.SV, context);
-
             var pk = eggEncounter.ConvertToPKM(sav);
-
-            SetPerfectIVsAndShiny(pk); // Method to set IVs and shiny status
+            SetPerfectIVsAndShiny(pk);
 
             if (pk is not T pkT)
             {
@@ -398,16 +395,15 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 return;
             }
 
-            AbstractTrade<T>.EggTrade(pkT, null); // Adjust as needed
+            AbstractTrade<T>.EggTrade(pkT, null);
 
             var code = Info.GetRandomTradeCode();
             var sig = Context.User.GetFavor();
             await AddTradeToQueueAsync(code, Context.User.Username, pkT, sig, Context.User, isMysteryEgg: true).ConfigureAwait(false);
 
-            // Delete the command message after 2 seconds
             if (Context.Message is IUserMessage userMessage)
             {
-                await Task.Delay(2000); // Wait for 2 seconds
+                await Task.Delay(2000); 
                 await userMessage.DeleteAsync().ConfigureAwait(false);
             }
         }
@@ -421,15 +417,12 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     private void SetPerfectIVsAndShiny(PKM pk)
     {
         // Set IVs to perfect
-        pk.IVs = new int[] { 31, 31, 31, 31, 31, 31 };
-
+        pk.IVs = [31, 31, 31, 31, 31, 31];
         // Set as shiny
         pk.SetShiny();
-
         // Set hidden ability
         pk.RefreshAbility(2);
     }
-
 
     [Command("trade")]
     [Alias("t")]
@@ -441,12 +434,14 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         return TradeAsyncAttach(code, sig, Context.User);
     }
 
+
     [Command("trade")]
     [Alias("t")]
     [Summary("Makes the bot trade you a Pokémon converted from the provided Showdown Set.")]
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-    public async Task TradeAsync([Summary("Trade Code")] int code, [Summary("Showdown Set")][Remainder] string content)
+    public async Task TradeAsync(int code, string content)
     {
+        var lgcode = Info.GetRandomLGTradeCode();
         // Check if the user is already in the queue
         var userID = Context.User.Id;
         if (Info.IsUserInQueue(userID))
@@ -454,6 +449,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
             return;
         }
+
         content = ReusableActions.StripCodeBlock(content);
         var set = new ShowdownSet(content);
         var template = AutoLegalityWrapper.GetTemplate(set);
@@ -462,9 +458,8 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         {
             var msg = $"Unable to parse Showdown Set:\n{string.Join("\n", set.InvalidLines)}";
             await ReplyAsync(msg).ConfigureAwait(false);
-            // Delete the user's message after sending the reply
-            await Task.Delay(2000); // Delay for 2 seconds
-            await Context.Message.DeleteAsync(); // Delete the message
+            await Task.Delay(2000); 
+            await Context.Message.DeleteAsync();
             return;
         }
 
@@ -476,16 +471,25 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             // Check if the Pokémon is from "Legends: Arceus"
             bool isLegendsArceus = pkm.Version == (int)GameVersion.PLA;
 
-            // Set default held item only if it's not from "Legends: Arceus"
             if (!isLegendsArceus && pkm.HeldItem == 0 && !pkm.IsEgg)
             {
                 pkm.HeldItem = (int)SysCord<T>.Runner.Config.Trade.TradeConfiguration.DefaultHeldItem;
             }
             else if (isLegendsArceus)
             {
-                pkm.HeldItem = (int)TradeSettingsCategory.HeldItem.None; // Set to None for "Legends: Arceus" Pokémon
+                pkm.HeldItem = (int)HeldItem.None; // Set to None for "Legends: Arceus" Pokémon
             }
-
+            if (pkm is PB7)
+            {
+                if (pkm.Species == (int)Species.Mew)
+                {
+                    if (pkm.IsShiny)
+                    {
+                        await ReplyAsync("Mew can **not** be Shiny in LGPE. PoGo Mew does not transfer and Pokeball Plus Mew is shiny locked.");
+                        return;
+                    }
+                }
+            }
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
             pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
@@ -496,36 +500,24 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 if (result == "Failed")
                     imsg += $"\n{AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm)}";
                 await ReplyAsync(imsg).ConfigureAwait(false);
-                // Delete the user's message after sending the reply
-                await Task.Delay(2000); // Delay for 2 seconds
-                await Context.Message.DeleteAsync(); // Delete the message
+                await Task.Delay(2000); 
+                await Context.Message.DeleteAsync();
                 return;
             }
             pk.ResetPartyStats();
 
             var sig = Context.User.GetFavor();
-            await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, isBatchTrade: false, batchTradeNumber: 1, totalBatchTrades: 1, formArgument: formArgument).ConfigureAwait(false);
+            await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, isBatchTrade: false, batchTradeNumber: 1, totalBatchTrades: 1, formArgument: formArgument, lgcode: lgcode).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             LogUtil.LogSafe(ex, nameof(TradeModule<T>));
-            // Delete the user's message if there's an exception
-            await Task.Delay(2000); // Delay for 2 seconds
-            await Context.Message.DeleteAsync(); // Delete the message
-        }
+            var msg = $"Oops! An unexpected problem happened with this Showdown Set:\n```{string.Join("\n", set.GetSetLines())}```";
 
-        // Schedule the deletion of the user's command message after 2 seconds
+            await Task.Delay(2000); 
+            await Context.Message.DeleteAsync(); 
+        }
         _ = Task.Delay(2000).ContinueWith(async _ => await Context.Message.DeleteAsync());
-    }
-
-    private static int ExtractFormArgument(string content)
-    {
-        var match = Regex.Match(content, @"\.FormArgument=(\d+)");
-        if (match.Success)
-        {
-            return int.Parse(match.Groups[1].Value);
-        }
-        return 0; // Default or fallback value
     }
 
     [Command("trade")]
@@ -545,18 +537,26 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public async Task TradeAsyncAttach()
     {
         var code = Info.GetRandomTradeCode();
+        var sig = Context.User.GetFavor();
 
-        // Call TradeAsyncAttach with the generated code
-        await TradeAsyncAttach(code);
+        await TradeAsyncAttach(code, sig, Context.User);
 
-        // Delay for 2 seconds
         await Task.Delay(2000);
 
-        // Delete the user's command message
         if (Context.Message is IUserMessage userMessage)
         {
             await userMessage.DeleteAsync().ConfigureAwait(false);
         }
+    }
+
+    private static int ExtractFormArgument(string content)
+    {
+        var match = Regex.Match(content, @"\.FormArgument=(\d+)");
+        if (match.Success)
+        {
+            return int.Parse(match.Groups[1].Value);
+        }
+        return 0;
     }
 
     [Command("batchTrade")]
@@ -586,25 +586,23 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         if (maxTradesAllowed < 1 || trades.Count > maxTradesAllowed)
         {
             await ReplyAsync($"You can only process up to {maxTradesAllowed} trades at a time. Please reduce the number of trades in your batch.").ConfigureAwait(false);
-            // Delete the user's message after sending the reply
-            await Task.Delay(5000); // Delay for 5 seconds
-            await Context.Message.DeleteAsync(); // Delete the message
+
+            await Task.Delay(5000); 
+            await Context.Message.DeleteAsync(); 
             return;
         }
         // Check if the number of trades exceeds the limit
         if (trades.Count > 3)
         {
             await ReplyAsync("You can only process up to 3 trades at a time. Please reduce the number of trades in your batch.").ConfigureAwait(false);
-            // Delete the user's message after sending the reply
-            await Task.Delay(2000); // Delay for 2 seconds
-            await Context.Message.DeleteAsync(); // Delete the message
+
+            await Task.Delay(2000); 
+            await Context.Message.DeleteAsync(); 
             return;
         }
 
         var batchTradeCode = Info.GetRandomTradeCode();
         int batchTradeNumber = 1;
-
-        // Delete the user's command message after 2 seconds
         _ = Task.Delay(2000).ContinueWith(async _ => await Context.Message.DeleteAsync());
 
         foreach (var trade in trades)
@@ -618,7 +616,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     {
         var delimiters = new[] { "---", "—-" }; // Includes both three hyphens and an em dash followed by a hyphen
         var trades = content.Split(delimiters, StringSplitOptions.RemoveEmptyEntries)
-                            .Select(trade => trade.Trim()) // Trims any whitespace from each trade string
+                            .Select(trade => trade.Trim()) 
                             .ToList();
         return trades;
     }
@@ -672,10 +670,11 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
             // Use a predefined or random trade code
             var code = Info.GetRandomTradeCode();
+            var lgcode = Info.GetRandomLGTradeCode();
 
             // Add the trade to the queue
             var sig = Context.User.GetFavor();
-            await AddTradeToQueueAsync(batchTradeCode, Context.User.Username, pk, sig, Context.User, isBatchTrade, batchTradeNumber, totalBatchTrades).ConfigureAwait(false);
+            await AddTradeToQueueAsync(batchTradeCode, Context.User.Username, pk, sig, Context.User, isBatchTrade, batchTradeNumber, totalBatchTrades, lgcode: lgcode).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -772,7 +771,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             }
         }
 
-        // Auto-deletion of messages
         await Task.Delay(10_000);
         if (Context.Message is IUserMessage userMessage)
         {
@@ -825,9 +823,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             }
 
             var code = Info.GetRandomTradeCode();
+            var lgcode = Info.GetRandomLGTradeCode();
             var sig = Context.User.GetFavor();
             await ReplyAsync($"Event request added to queue.").ConfigureAwait(false);
-            await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User).ConfigureAwait(false);
+            await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, lgcode: lgcode).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -931,7 +930,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             }
         }
 
-        // Auto-deletion of messages
         await Task.Delay(10_000);
         if (Context.Message is IUserMessage userMessage)
         {
@@ -967,7 +965,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 return;
             }
 
-            var selectedFile = battleReadyFiles[index - 1]; // Adjust for zero-based indexing
+            var selectedFile = battleReadyFiles[index - 1]; 
             var fileData = await File.ReadAllBytesAsync(Path.Combine(battleReadyFolderPath, selectedFile));
 
             var download = new Download<PKM>
@@ -984,9 +982,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             }
 
             var code = Info.GetRandomTradeCode();
+            var lgcode = Info.GetRandomLGTradeCode();
             var sig = Context.User.GetFavor();
             await ReplyAsync($"Battle-ready request added to queue.").ConfigureAwait(false);
-            await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User).ConfigureAwait(false);
+            await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, lgcode: lgcode).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -1066,8 +1065,12 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         };
     }
 
-    private async Task AddTradeToQueueAsync(int code, string trainerName, T pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, int formArgument = 0, bool isMysteryEgg = false)
+    private async Task AddTradeToQueueAsync(int code, string trainerName, T pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, int formArgument = 0, bool isMysteryEgg = false, List<Pictocodes> lgcode = null)
     {
+        if (lgcode == null)
+        {
+            lgcode = new List<Pictocodes> { Pictocodes.Pikachu, Pictocodes.Pikachu, Pictocodes.Pikachu };
+        }
         if (!pk.CanBeTraded())
         {
             var reply = await ReplyAsync("Provided Pokémon content is blocked from trading!").ConfigureAwait(false);
@@ -1094,13 +1097,12 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 return;
             }
             var reply = await ReplyAsync(responseMessage).ConfigureAwait(false);
-            await Task.Delay(6000); // Delay for 6 seconds
+            await Task.Delay(6000);
             await reply.DeleteAsync().ConfigureAwait(false);
             return;
         }
 
-        // Pass all the necessary flags to the QueueHelper's AddToQueueAsync method
-        await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk, PokeRoutineType.LinkTrade, PokeTradeType.Specific, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, formArgument, isMysteryEgg).ConfigureAwait(false);
+        await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk, PokeRoutineType.LinkTrade, PokeTradeType.Specific, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, formArgument, isMysteryEgg, lgcode).ConfigureAwait(false);
     }
 
 }

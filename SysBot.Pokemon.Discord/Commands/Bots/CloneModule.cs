@@ -17,20 +17,17 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public async Task CloneAsync(int code)
     {
         var sig = Context.User.GetFavor();
-        // Execute the queue addition without capturing response
-        QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone);
+        var lgcode = Info.GetRandomLGTradeCode();
 
-        // Optional: Send a confirmation message if needed
+        await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone, Context.User, false, 1, 1, 0, false, lgcode);
+
         var confirmationMessage = await ReplyAsync("Processing your clone request...").ConfigureAwait(false);
 
-        // Delay for 5 seconds
-        await Task.Delay(5000).ConfigureAwait(false);
+        await Task.Delay(2000).ConfigureAwait(false);
 
-        // Delete user message
         if (Context.Message is IUserMessage userMessage)
             await userMessage.DeleteAsync().ConfigureAwait(false);
 
-        // Delete bot confirmation message
         if (confirmationMessage != null)
             await confirmationMessage.DeleteAsync().ConfigureAwait(false);
     }
@@ -43,21 +40,17 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     {
         int tradeCode = Util.ToInt32(code);
         var sig = Context.User.GetFavor();
+        var lgcode = Info.GetRandomLGTradeCode();
 
-        // Execute the queue addition without capturing response
-        QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone);
+        await QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone, Context.User, false, 1, 1, 0, false, lgcode);
 
-        // Optional: Send a confirmation message if needed
         var confirmationMessage = await ReplyAsync("Processing your clone request...").ConfigureAwait(false);
 
-        // Delay for 5 seconds
-        await Task.Delay(5000).ConfigureAwait(false);
+        await Task.Delay(2000).ConfigureAwait(false);
 
-        // Delete user message
         if (Context.Message is IUserMessage userMessage)
             await userMessage.DeleteAsync().ConfigureAwait(false);
 
-        // Delete bot confirmation message
         if (confirmationMessage != null)
             await confirmationMessage.DeleteAsync().ConfigureAwait(false);
     }
