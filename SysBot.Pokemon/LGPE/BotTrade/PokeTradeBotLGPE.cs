@@ -202,13 +202,13 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
             return PokeTradeResult.RecoverStart;
         }
         await Click(X, 2000, token).ConfigureAwait(false);
-        Log("opening menu");
+        Log("Opening Menu...");
         while (BitConverter.ToUInt16(await SwitchConnection.ReadBytesMainAsync(ScreenOff, 4, token), 0) != menuscreen)
         {
             await Click(B, 2000, token);
             await Click(X, 2000, token);
         }
-        Log("selecting communicate");
+        Log("Selecting Communicate......");
         await SetStick(SwitchStick.RIGHT, 30000, 0, 0, token).ConfigureAwait(false);
         await SetStick(SwitchStick.RIGHT, 0, 0, 0, token).ConfigureAwait(false);
         while (BitConverter.ToUInt16(await SwitchConnection.ReadBytesMainAsync(ScreenOff, 2, token), 0) == menuscreen || BitConverter.ToUInt16(await SwitchConnection.ReadBytesMainAsync(ScreenOff, 4, token), 0) == waitingtotradescreen)
@@ -225,13 +225,13 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
 
                 }
                 await Click(X, 2000, token).ConfigureAwait(false);
-                Log("opening menu");
+                Log("Opening Menu......");
                 while (BitConverter.ToUInt16(await SwitchConnection.ReadBytesMainAsync(ScreenOff, 4, token), 0) != menuscreen)
                 {
                     await Click(B, 2000, token);
                     await Click(X, 2000, token);
                 }
-                Log("selecting communicate");
+                Log("Selecting Communicate......");
                 await SetStick(SwitchStick.RIGHT, 30000, 0, 0, token).ConfigureAwait(false);
                 await SetStick(SwitchStick.RIGHT, 0, 0, 0, token).ConfigureAwait(false);
             }
@@ -239,7 +239,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
 
         }
         await Task.Delay(2000);
-        Log("selecting faraway connection");
+        Log("Selecting Faraway Connection......");
 
         await SetStick(SwitchStick.RIGHT, 0, -30000, 0, token).ConfigureAwait(false);
         await SetStick(SwitchStick.RIGHT, 0, 0, 0, token).ConfigureAwait(false);
@@ -315,7 +315,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
             await Click(A, 1000, token);
         }
         poke.SendNotification(this, "You have 15 seconds to select your trade pokemon");
-        Log("waiting on trade screen");
+        Log("Waiting on Trade Screen...");
 
         await Task.Delay(15_000).ConfigureAwait(false);
         var tradeResult = await ConfirmAndStartTrading(poke, 0, token);
@@ -359,7 +359,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
     {
         // We'll keep watching B1S1 for a change to indicate a trade started -> should try quitting at that point.
         var oldEC = await Connection.ReadBytesAsync((uint)GetSlotOffset(0, slot), 8, token).ConfigureAwait(false);
-        Log("confirming and initiating trade");
+        Log("Confirming and initiating trade...");
         await Click(A, 3_000, token).ConfigureAwait(false);
         for (int i = 0; i < 10; i++)
         {
@@ -387,7 +387,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
             if (tradeCounter >= Hub.Config.Trade.TradeConfiguration.TradeAnimationMaxDelaySeconds)
             {
                 // If we don't detect a B1S1 change, the trade didn't go through in that time.
-                Log("did not detect a change in slot 1");
+                Log("Did not detect a change in slot 1.");
                 return PokeTradeResult.TrainerTooSlow;
             }
 
@@ -436,13 +436,13 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
             await Task.Delay(1000);
         }
         await Click(X, 2000, token).ConfigureAwait(false);
-        Log("opening menu");
+        Log("Opening Menu...");
         while (BitConverter.ToUInt16(await SwitchConnection.ReadBytesMainAsync(ScreenOff, 4, token), 0) != menuscreen)
         {
             await Click(B, 2000, token);
             await Click(X, 2000, token);
         }
-        Log("selecting communicate");
+        Log("Selecting Communicate...");
         await SetStick(SwitchStick.RIGHT, 30000, 0, 0, token).ConfigureAwait(false);
         await SetStick(SwitchStick.RIGHT, 0, 0, 0, token).ConfigureAwait(false);
         while (BitConverter.ToUInt16(await SwitchConnection.ReadBytesMainAsync(ScreenOff, 2, token), 0) == menuscreen || BitConverter.ToUInt16(await SwitchConnection.ReadBytesMainAsync(ScreenOff, 4, token), 0) == waitingtotradescreen)
@@ -459,13 +459,13 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
 
                 }
                 await Click(X, 2000, token).ConfigureAwait(false);
-                Log("opening menu");
+                Log("Opening Menu...");
                 while (BitConverter.ToUInt16(await SwitchConnection.ReadBytesMainAsync(ScreenOff, 4, token), 0) != menuscreen)
                 {
                     await Click(B, 2000, token);
                     await Click(X, 2000, token);
                 }
-                Log("selecting communicate");
+                Log("Selecting Communicate...");
                 await SetStick(SwitchStick.RIGHT, 30000, 0, 0, token).ConfigureAwait(false);
                 await SetStick(SwitchStick.RIGHT, 0, 0, 0, token).ConfigureAwait(false);
             }
@@ -473,7 +473,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
 
         }
         await Task.Delay(2000);
-        Log("selecting faraway connection");
+        Log("Selecting Faraway Connection...");
 
         await SetStick(SwitchStick.RIGHT, 0, -30000, 0, token).ConfigureAwait(false);
         await SetStick(SwitchStick.RIGHT, 0, 0, 0, token).ConfigureAwait(false);
@@ -528,7 +528,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
                 await Click(A, 1000, token);
             }
             detail.SendNotification(this, $"Sending {(Species)t.Species}. You have 15 seconds to select your trade pokemon");
-            Log("waiting on trade screen");
+            Log("Waiting on trade screen...");
 
             await Task.Delay(10_000).ConfigureAwait(false);
             detail.SendNotification(this, "You have 5 seconds left to get to the trade screen to not break the trade");
@@ -558,7 +558,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
         var offereddata = await SwitchConnection.ReadBytesAsync(OfferedPokemon, 0x104, token);
         var offeredpbm = new PB7(offereddata);
 
-        detail.SendNotification(this, offeredpbm, "here is the pokemon you showed me");
+        detail.SendNotification(this, offeredpbm, "Here is the pokemon you showed me.");
 
 
         var quicktime = new Stopwatch();
@@ -571,7 +571,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
             {
 
 
-                detail.SendNotification(this, newofferedpbm, "here is the pokemon you showed me");
+                detail.SendNotification(this, newofferedpbm, "Here is the pokemon you showed me.");
 
                 offeredpbm = newofferedpbm;
             }
