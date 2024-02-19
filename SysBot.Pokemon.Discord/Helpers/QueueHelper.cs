@@ -118,18 +118,18 @@ public static class QueueHelper<T> where T : PKM, new()
             string moveName = GameInfo.MoveDataSource.FirstOrDefault(m => m.Value == moveId)?.Text ?? "Unknown Move";
             moveNames.Add($"- {moveName} ({movePPs[i]}pp)");
         }
-
         string movesDisplay = string.Join("\n", moveNames);
         string abilityName = GameInfo.AbilityDataSource.FirstOrDefault(a => a.Value == pk.Ability)?.Text ?? "Unknown Ability";
         string natureName = GameInfo.NatureDataSource.FirstOrDefault(n => n.Value == pk.Nature)?.Text ?? "Unknown Nature";
-        string teraTypeString;
+        string teraTypeString = "Unknown";
+        string scaleText = "Not Applicable"; 
+        byte scaleNumber = 0; 
+
         if (pk is PK9 pk9)
         {
             teraTypeString = pk9.TeraTypeOverride == (MoveType)99 ? "Stellar" : pk9.TeraType.ToString();
-        }
-        else
-        {
-            teraTypeString = "Unknown"; // or another default value as needed
+            scaleText = $"{PokeSizeDetailedUtil.GetSizeRating(pk9.Scale)}"; 
+            scaleNumber = pk9.Scale; 
         }
         int level = pk.CurrentLevel;
         string speciesName = GameInfo.GetStrings(1).Species[pk.Species];
@@ -213,8 +213,6 @@ public static class QueueHelper<T> where T : PKM, new()
         string isPkmShiny = pk.IsShiny ? "✨" : "";
         // Build the embed with the author title image
         string authorName;
-
-        // Determine the author's name based on trade type
         if (isMysteryEgg || FixOT || isCloneRequest || isDumpRequest || isBatchTrade)
         {
             authorName = $"{userName}'s {tradeTitle}";
@@ -236,10 +234,9 @@ public static class QueueHelper<T> where T : PKM, new()
         string additionalText = string.Join("\n", SysCordSettings.Settings.AdditionalEmbedText);
         if (!string.IsNullOrEmpty(additionalText))
         {
-            embedBuilder.AddField("\u200B", additionalText, inline: false); // '\u200B' is a zero-width space to create an empty title
+            embedBuilder.AddField("\u200B", additionalText, inline: false); 
         }
 
-        // Conditionally add the 'Trainer' and 'Moves' fields based on trade type
         if (!isMysteryEgg && !isCloneRequest && !isDumpRequest && !FixOT)
         {
             // Prepare the left side content
@@ -248,28 +245,24 @@ public static class QueueHelper<T> where T : PKM, new()
             GameVersion gameVersion = (GameVersion)pk.Version;
             if (gameVersion == GameVersion.SL || gameVersion == GameVersion.VL)
             {
-                leftSideContent += $"**TeraType**: {teraTypeString}\n";
+                leftSideContent += $"**TeraType**: {teraTypeString}\n" +
+                    $"**Scale**: {scaleText} ({scaleNumber})\n";
             }
             leftSideContent += $"**Level**: {level}\n" +
                                $"**Ability**: {abilityName}\n" +
                                $"**Nature**: {natureName}\n" +
                                $"**IVs**: {ivsDisplay}";
-            // Add the field to the embed
             embedBuilder.AddField("**__Info__**", leftSideContent, inline: true);
-            // Add a blank field to align with the 'Trainer' field on the left
-            embedBuilder.AddField("\u200B", "\u200B", inline: true); // First empty field for spacing
-            // 'Moves' as another inline field, ensuring it's aligned with the content on the left
+            embedBuilder.AddField("\u200B", "\u200B", inline: true); 
             embedBuilder.AddField("**__Moves__**", movesDisplay, inline: true);
         }
         else
         {
-            // For special cases, add only the special description
             string specialDescription = $"**Trainer**: {user.Mention}\n" +
                                         (isMysteryEgg ? "Mystery Egg" : isCloneRequest ? "Clone Request" : FixOT ? "FixOT Request" : "Dump Request");
             embedBuilder.AddField("\u200B", specialDescription, inline: false);
         }
 
-        // Set thumbnail images
         if (isCloneRequest)
         {
             embedBuilder.WithThumbnailUrl("https://raw.githubusercontent.com/bdawg1989/sprites/main/profoak.png");
@@ -278,8 +271,6 @@ public static class QueueHelper<T> where T : PKM, new()
         {
             embedBuilder.WithThumbnailUrl(heldItemUrl);
         }
-
-        // If the image is a local file, set the image URL to the attachment reference
         if (isLocalFile)
         {
             embedBuilder.WithImageUrl($"attachment://{Path.GetFileName(embedImageUrl)}");
@@ -295,21 +286,15 @@ public static class QueueHelper<T> where T : PKM, new()
 
         if (isLocalFile)
         {
-            // Send the message with the file and embed, referencing the file in the embed
             await context.Channel.SendFileAsync(embedImageUrl, embed: embed);
 
             if (isBatchTrade)
             {
-                // Update the highest detail.ID for this user's batch trades
                 if (!userBatchTradeMaxDetailId.ContainsKey(userID) || userBatchTradeMaxDetailId[userID] < detail.ID)
                 {
                     userBatchTradeMaxDetailId[userID] = detail.ID;
                 }
-
-                // Schedule file deletion for batch trade
                 await ScheduleFileDeletion(embedImageUrl, 0, detail.ID);
-
-                // Check if this is the last trade in the batch for the user
                 if (detail.ID == userBatchTradeMaxDetailId[userID] && batchTradeNumber == totalBatchTrades)
                 {
                     DeleteBatchTradeFiles(detail.ID);
@@ -317,7 +302,6 @@ public static class QueueHelper<T> where T : PKM, new()
             }
             else
             {
-                // For non-batch trades, just schedule file deletion normally
                 await ScheduleFileDeletion(embedImageUrl, 0);
             }
         }
