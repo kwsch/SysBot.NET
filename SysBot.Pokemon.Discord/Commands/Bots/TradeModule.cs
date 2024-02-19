@@ -1069,7 +1069,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     {
         if (lgcode == null)
         {
-            lgcode = new List<Pictocodes> { Pictocodes.Pikachu, Pictocodes.Pikachu, Pictocodes.Pikachu };
+            lgcode = GenerateRandomPictocodes(3);
         }
         if (!pk.CanBeTraded())
         {
@@ -1104,5 +1104,18 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
         await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk, PokeRoutineType.LinkTrade, PokeTradeType.Specific, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, formArgument, isMysteryEgg, lgcode).ConfigureAwait(false);
     }
+    private List<Pictocodes> GenerateRandomPictocodes(int count)
+    {
+        Random rnd = new Random();
+        List<Pictocodes> randomPictocodes = new List<Pictocodes>();
+        Array pictocodeValues = Enum.GetValues(typeof(Pictocodes));
 
+        for (int i = 0; i < count; i++)
+        {
+            Pictocodes randomPictocode = (Pictocodes)pictocodeValues.GetValue(rnd.Next(pictocodeValues.Length));
+            randomPictocodes.Add(randomPictocode);
+        }
+
+        return randomPictocodes;
+    }
 }
