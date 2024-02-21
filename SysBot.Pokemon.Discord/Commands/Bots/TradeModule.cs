@@ -592,9 +592,9 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
         // Check if the number of trades exceeds the limit
-        if (trades.Count > 3)
+        if (trades.Count > maxTradesAllowed)
         {
-            await ReplyAsync("You can only process up to 3 trades at a time. Please reduce the number of trades in your batch.").ConfigureAwait(false);
+            await ReplyAsync($"You can only process up to {maxTradesAllowed} trades at a time. Please reduce the number of trades in your batch.").ConfigureAwait(false);
 
             await Task.Delay(2000); 
             await Context.Message.DeleteAsync(); 
