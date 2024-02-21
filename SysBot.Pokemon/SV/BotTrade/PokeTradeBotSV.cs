@@ -357,25 +357,25 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             await ExitTradeToPortal(false, token).ConfigureAwait(false);
             return result;
         }
-        List<PK9> batchPK9s = (List<PK9>)poke.Context.GetValueOrDefault("batch", new List<PK9> { toSend });
-        List<bool> skipAutoOTList = (List<bool>)poke.Context.GetValueOrDefault("skipAutoOTList", new List<bool> { false });
+        bool isInBatchTrade = poke.TotalBatchTrades > 1;
+        bool skipAutoOT = (bool)poke.Context.GetValueOrDefault("skipAutoOT", false);
         PK9 received = default!;
-        for (var i = 0; i < batchPK9s.Count; i++)
+        if (isInBatchTrade)
         {
-            var pk9 = batchPK9s[i];
-            if (i > 0 && pk9.Species != 0)
-            {
-                await SetBoxPokemonAbsolute(BoxStartOffset, pk9, token, sav).ConfigureAwait(false);
-            }
-            if (batchPK9s.Count > 1) poke.SendNotification(this, $"批量:等待交换第{i + 1}只宝可梦{ShowdownTranslator<PK9>.GameStringsZh.Species[pk9.Species]}");
+            poke.SendNotification(this, $"Batch Trade: Waiting to trade Pokémon {poke.BatchTradeNumber} of {poke.TotalBatchTrades} [{ShowdownTranslator<PK9>.GameStringsEn.Species[toSend.Species]}].");
 
-            var needUseTradePartnerInfo = !skipAutoOTList[i];
+            if (poke.BatchTradeNumber > 1 && toSend.Species != 0)
+            {
+                await SetBoxPokemonAbsolute(BoxStartOffset, toSend, token, sav).ConfigureAwait(false);
+            }
+
+            var needUseTradePartnerInfo = !skipAutoOT;
             if (Hub.Config.Legality.UseTradePartnerInfo && needUseTradePartnerInfo)
             {
-                await SetBoxPkmWithSwappedIDDetailsSV(pk9, tradePartnerFullInfo, sav, token);
+                await SetBoxPkmWithSwappedIDDetailsSV(toSend, tradePartnerFullInfo, sav, token);
             }
 
-            if (i > 0)
+            if (poke.BatchTradeNumber > 1)
             {
                 tradeOffered = await ReadUntilChanged(TradePartnerOfferedOffset, lastOffered, 25_000, 0_500, false, true, token).ConfigureAwait(false);
                 if (!tradeOffered)
@@ -383,7 +383,6 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                     await ExitTradeToPortal(false, token).ConfigureAwait(false);
                     return PokeTradeResult.TrainerTooSlow;
                 }
-
             }
 
             // Wait for user input...
@@ -411,7 +410,10 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                 await ExitTradeToPortal(false, token).ConfigureAwait(false);
                 return tradeResult;
             }
-            if (batchPK9s.Count > 1) poke.SendNotification(this, $"批量:第{i + 1}只宝可梦{ShowdownTranslator<PK9>.GameStringsZh.Species[pk9.Species]}交换完成");
+            if (poke.TotalBatchTrades > 1)
+            {
+                poke.SendNotification(this, $"Batch Trade: Pokémon {poke.BatchTradeNumber} of {poke.TotalBatchTrades} [{ShowdownTranslator<PK9>.GameStringsEn.Species[poke.TradeData.Species]}] trade completed!");
+            }
 
             if (token.IsCancellationRequested)
             {
@@ -424,7 +426,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             // Trade was Successful!
             received = await ReadPokemon(BoxStartOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
             // Pokémon in b1s1 is same as the one they were supposed to receive (was never sent).
-            if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(pk9) && received.Checksum == pk9.Checksum)
+            if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(poke.TradeData) && received.Checksum == poke.TradeData.Checksum)
             {
                 Log("User did not complete the trade.");
                 await ExitTradeToPortal(false, token).ConfigureAwait(false);
@@ -432,12 +434,12 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             }
 
             // Only log if we completed the trade.
-            UpdateCountsAndExport(poke, received, pk9);
+            UpdateCountsAndExport(poke, received, poke.TradeData);
             lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(TradePartnerOfferedOffset, 8, token).ConfigureAwait(false);
         }
 
-        // As long as we got rid of our inject in b1s1, assume the trade went through.
-        Log("User completed the trade.");
+            // As long as we got rid of our inject in b1s1, assume the trade went through.
+            Log("User completed the trade.");
         poke.TradeFinished(this, received);
 
 

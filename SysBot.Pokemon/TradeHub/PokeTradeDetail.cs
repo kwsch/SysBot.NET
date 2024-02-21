@@ -46,7 +46,10 @@ namespace SysBot.Pokemon
         public bool IsProcessing;
         public List<Pictocodes> LGPETradeCode;
 
-        public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code, bool favored = false, List<Pictocodes> lgcode = null)
+        public readonly int BatchTradeNumber;
+        public readonly int TotalBatchTrades;
+
+        public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code, bool favored = false, List<Pictocodes> lgcode = null, int batchTradeNumber = 0, int totalBatchTrades = 0)
         {
             ID = Interlocked.Increment(ref CreatedCount) % 3000;
             Code = code;
@@ -57,6 +60,8 @@ namespace SysBot.Pokemon
             Time = DateTime.Now;
             IsFavored = favored;
             LGPETradeCode = lgcode;
+            BatchTradeNumber = batchTradeNumber;
+            TotalBatchTrades = totalBatchTrades;
         }
 
         public void TradeInitialize(PokeRoutineExecutor<TPoke> routine) => Notifier.TradeInitialize(routine, this);
