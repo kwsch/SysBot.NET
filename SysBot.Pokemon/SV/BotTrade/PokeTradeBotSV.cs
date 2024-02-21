@@ -1092,7 +1092,8 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         }
         cln.Version = (int)version;
 
-        cln.ClearNickname();
+        if (!toSend.IsNicknamed)
+            cln.ClearNickname();
 
         // thanks @Wanghaoran86
         if (toSend.Met_Location == Locations.TeraCavern9 && toSend.IsShiny)

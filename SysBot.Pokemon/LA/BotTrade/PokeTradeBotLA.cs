@@ -806,7 +806,9 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         cln.TrainerSID7 = uint.Parse(tradePartner.SID7);
         cln.Language = tradePartner.Language;
         cln.OT_Name = tradePartner.TrainerName;
-        cln.ClearNickname();
+
+        if (!toSend.IsNicknamed)
+            cln.ClearNickname();
 
         if (toSend.IsShiny)
             cln.SetShiny();
