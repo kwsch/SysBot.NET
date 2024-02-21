@@ -132,7 +132,30 @@ namespace SysBot.Pokemon.Helpers
             return formString[form].Contains('-') ? formString[form] : formString[form] == "" ? "" : $"-{formString[form]}";
         }
 
-        public static PKM TrashBytes(PKM pkm, LegalityAnalysis? la = null)
+        public static bool HasMark(IRibbonIndex pk, out RibbonIndex result)
+        {
+            result = default;
+            for (var mark = RibbonIndex.MarkLunchtime; mark <= RibbonIndex.MarkSlump; mark++)
+            {
+                if (pk.GetRibbon((int)mark))
+                {
+                    result = mark;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static readonly string[] MarkTitle =
+        [
+            " the Peckish"," the Sleepy"," the Dozy"," the Early Riser"," the Cloud Watcher"," the Sodden"," the Thunderstruck"," the Snow Frolicker"," the Shivering"," the Parched"," the Sandswept"," the Mist Drifter",
+        " the Chosen One"," the Catch of the Day"," the Curry Connoisseur"," the Sociable"," the Recluse"," the Rowdy"," the Spacey"," the Anxious"," the Giddy"," the Radiant"," the Serene"," the Feisty"," the Daydreamer",
+        " the Joyful"," the Furious"," the Beaming"," the Teary-Eyed"," the Chipper"," the Grumpy"," the Scholar"," the Rampaging"," the Opportunist"," the Stern"," the Kindhearted"," the Easily Flustered"," the Driven",
+        " the Apathetic"," the Arrogant"," the Reluctant"," the Humble"," the Pompous"," the Lively"," the Worn-Out", " of the Distant Past", " the Twinkling Star", " the Paldea Champion", " the Great", " the Teeny", " the Treasure Hunter",
+        " the Reliable Partner", " the Gourmet", " the One-in-a-Million", " the Former Alpha", " the Unrivaled", " the Former Titan",
+        ];
+    
+    public static PKM TrashBytes(PKM pkm, LegalityAnalysis? la = null)
         {
             var pkMet = (T)pkm.Clone();
             if (pkMet.Version is not (int)GameVersion.GO)
@@ -579,6 +602,8 @@ namespace SysBot.Pokemon.Helpers
                 _ => 60002, //PK8
             };
 
+            pk.MetDate = DateOnly.FromDateTime(DateTime.Now);
+            pk.EggMetDate = pk.MetDate;
             pk.HeldItem = 0;
             pk.CurrentLevel = 1;
             pk.EXP = 0;

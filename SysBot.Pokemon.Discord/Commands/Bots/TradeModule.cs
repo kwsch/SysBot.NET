@@ -1042,7 +1042,16 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
 
-        var att = await NetUtil.DownloadPKMAsync(attachment).ConfigureAwait(false);
+        var settings = SysCord<T>.Runner.Hub.Config.Legality;
+        var defTrainer = new SimpleTrainerInfo()
+        {
+            OT = settings.GenerateOT,
+            TID16 = settings.GenerateTID16,
+            SID16 = settings.GenerateSID16,
+            Language = (int)settings.GenerateLanguage,
+        };
+
+        var att = await NetUtil.DownloadPKMAsync(attachment, defTrainer).ConfigureAwait(false);
         var pk = GetRequest(att);
         if (pk == null)
         {
@@ -1080,6 +1089,26 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         }
         var homeLegalityCfg = Info.Hub.Config.Trade.HomeLegalitySettings;
         var la = new LegalityAnalysis(pk);
+
+        // handle past gen file requests
+        // thanks manu https://github.com/Manu098vm/SysBot.NET/commit/d8c4b65b94f0300096704390cce998940413cc0d
+        if (!la.Valid && la.Results.Any(m => m.Identifier is CheckIdentifier.Memory))
+        {
+            var clone = (T)pk.Clone();
+
+            clone.HT_Name = pk.OT_Name;
+            clone.HT_Gender = pk.OT_Gender;
+
+            if (clone is PK8 or PA8 or PB8 or PK9)
+                ((dynamic)clone).HT_Language = (byte)pk.Language;
+
+            clone.CurrentHandler = 1;
+
+            la = new LegalityAnalysis(clone);
+
+            if (la.Valid) pk = clone;
+        }
+
         if (!la.Valid)
         {
             string responseMessage = pk.IsEgg ? "Invalid Showdown Set for this Egg. Please review your information and try again." :

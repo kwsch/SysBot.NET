@@ -115,14 +115,14 @@ public static class QueueHelper<T> where T : PKM, new()
         {
             ushort moveId = moves[i];
             if (moveId == 0) continue; // Skip if no move is assigned to this slot
-            string moveName = GameInfo.MoveDataSource.FirstOrDefault(m => m.Value == moveId)?.Text ?? "Unknown Move";
+            string moveName = GameInfo.MoveDataSource.FirstOrDefault(m => m.Value == moveId)?.Text ?? "";
             moveNames.Add($"- {moveName} ({movePPs[i]}pp)");
         }
         string movesDisplay = string.Join("\n", moveNames);
-        string abilityName = GameInfo.AbilityDataSource.FirstOrDefault(a => a.Value == pk.Ability)?.Text ?? "Unknown Ability";
-        string natureName = GameInfo.NatureDataSource.FirstOrDefault(n => n.Value == pk.Nature)?.Text ?? "Unknown Nature";
-        string teraTypeString = "Unknown";
-        string scaleText = "Not Applicable"; 
+        string abilityName = GameInfo.AbilityDataSource.FirstOrDefault(a => a.Value == pk.Ability)?.Text ?? "";
+        string natureName = GameInfo.NatureDataSource.FirstOrDefault(n => n.Value == pk.Nature)?.Text ?? "";
+        string teraTypeString = "";
+        string scaleText = ""; 
         byte scaleNumber = 0; 
 
         if (pk is PK9 pk9)
