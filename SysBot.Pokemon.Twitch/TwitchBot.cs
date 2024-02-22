@@ -1,3 +1,4 @@
+using NLog;
 using PKHeX.Core;
 using SysBot.Base;
 using System;
@@ -15,8 +16,6 @@ namespace SysBot.Pokemon.Twitch
     public class TwitchBot<T> where T : PKM, new()
     {
         private static PokeTradeHub<T> Hub = default!;
-        private List<Pictocodes> lgcode;
-
         internal static TradeQueueInfo<T> Info => Hub.Queues.Info;
 
         internal static readonly List<TwitchQueue<T>> QueuePool = new();
@@ -144,11 +143,14 @@ namespace SysBot.Pokemon.Twitch
             LogUtil.LogText($"[{client.TwitchUsername}] - Connected {e.AutoJoinChannel} as {e.BotUsername}");
         }
 
-        private void Client_OnDisconnected(object? sender, OnDisconnectedEventArgs e)
+        private async void Client_OnDisconnected(object? sender, OnDisconnectedEventArgs e)
         {
             LogUtil.LogText($"[{client.TwitchUsername}] - Disconnected.");
             while (!client.IsConnected)
+            {
                 client.Reconnect();
+                await Task.Delay(5000).ConfigureAwait(false);
+            }
         }
 
         private void Client_OnJoinedChannel(object? sender, OnJoinedChannelArgs e)
@@ -209,12 +211,26 @@ namespace SysBot.Pokemon.Twitch
             switch (c)
             {
                 // User Usable Commands
+                case "donate":
+                    return Settings.DonationLink.Length > 0 ? $"Here's the donation link! Thank you for your support :3 {Settings.DonationLink}" : string.Empty;
+                case "discord":
+                    return Settings.DiscordLink.Length > 0 ? $"Here's the Discord Server Link, have a nice stay :3 {Settings.DiscordLink}" : string.Empty;
+                case "tutorial":
+                case "help":
+                    return $"{Settings.TutorialText} {Settings.TutorialLink}";
                 case "trade":
+                case "t":
                     var _ = TwitchCommandsHelper<T>.AddToWaitingList(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg);
+                    if (msg.Contains("Please read what you are supposed to type") && Settings.TutorialLink.Length > 0)
+                        msg += $"\nUsage Tutorial: {Settings.TutorialLink}";
                     return msg;
                 case "ts":
+                case "queue":
+                case "position":
                     return $"@{m.Username}: {Info.GetPositionString(ulong.Parse(m.UserId))}";
                 case "tc":
+                case "cancel":
+                case "remove":
                     return $"@{m.Username}: {TwitchCommandsHelper<T>.ClearTrade(ulong.Parse(m.UserId))}";
 
                 case "code" when whisper:

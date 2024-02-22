@@ -3,6 +3,7 @@ using PKHeX.Core.Searching;
 using SysBot.Base;
 using SysBot.Pokemon.Helpers;
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
@@ -381,9 +382,11 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
         {
             var subfolder = poke.Type.ToString().ToLower();
+            var service = poke.Notifier.GetType().ToString().ToLower();
+            var tradedFolder = service.Contains("twitch") ? Path.Combine("traded", "twitch") : service.Contains("discord") ? Path.Combine("traded", "discord") : "traded";
             DumpPokemon(DumpSetting.DumpFolder, subfolder, received); // received by bot
             if (poke.Type is PokeTradeType.Specific or PokeTradeType.Clone or PokeTradeType.FixOT)
-                DumpPokemon(DumpSetting.DumpFolder, "traded", toSend); // sent to partner
+                DumpPokemon(DumpSetting.DumpFolder, tradedFolder, toSend); // sent to partner
         }
     }
 

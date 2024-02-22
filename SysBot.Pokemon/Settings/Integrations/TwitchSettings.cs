@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Linq;
 
@@ -27,6 +27,18 @@ public class TwitchSettings
 
     [Category(Operation), Description("Message sent when the Barrier is released.")]
     public string MessageStart { get; set; } = string.Empty;
+
+        [Category(Operation), Description("Discord Server Link.")]
+        public string DiscordLink { get; set; } = string.Empty;
+
+        [Category(Operation), Description("Donation Link.")]
+        public string DonationLink { get; set; } = string.Empty;
+
+        [Category(Operation), Description("Bot usage tutorial text.")]
+        public string TutorialText { get; set; } = string.Empty;
+
+        [Category(Operation), Description("Bot usage tutorial Link.")]
+        public string TutorialLink { get; set; } = string.Empty;
 
     // Messaging
 
@@ -78,7 +90,7 @@ public class TwitchSettings
 
     public bool IsSudo(string username)
     {
-        var sudos = SudoList.Split([ ",", ", ", " " ], StringSplitOptions.RemoveEmptyEntries);
+        var sudos = SudoList.Split([",", ", ", " "], StringSplitOptions.RemoveEmptyEntries);
         return sudos.Contains(username);
     }
 }
