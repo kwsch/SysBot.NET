@@ -141,13 +141,14 @@ public static class QueueHelper<T> where T : PKM, new()
         string formDecoration = "";
         if (pk.Species == (int)Species.Alcremie && formArgument != 0)
         {
-            formDecoration = $"{((AlcremieDecoration)formArgument).ToString()}";
+            formDecoration = $"{(AlcremieDecoration)formArgument}";
         }
 
         // Determine if this is a clone or dump request
         bool isCloneRequest = type == PokeRoutineType.Clone;
         bool isDumpRequest = type == PokeRoutineType.Dump;
         bool FixOT = type == PokeRoutineType.FixOT;
+        bool isSpecialRequest = type == PokeRoutineType.SeedCheck;
 
         // Check if the Pokémon is shiny and prepend the shiny emoji
         string shinyEmoji = pk.IsShiny ? "✨ " : "";
@@ -165,6 +166,10 @@ public static class QueueHelper<T> where T : PKM, new()
         else if (FixOT)
         {
             tradeTitle = $"FixOT Request";
+        }
+        else if (isSpecialRequest)
+        {
+            tradeTitle = $"Special Request";
         }
         else if (isCloneRequest)
         {
@@ -195,6 +200,10 @@ public static class QueueHelper<T> where T : PKM, new()
         {
             embedImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/clonepod.png"; // URL for clone request
         }
+        else if (isSpecialRequest)
+        {
+            embedImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/clonepod.png"; // URL for clone request
+        }
         else if (FixOT)
         {
             embedImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/AltBallImg/128x128/rocketball.png"; // URL for fixot request
@@ -213,7 +222,7 @@ public static class QueueHelper<T> where T : PKM, new()
         string isPkmShiny = pk.IsShiny ? "✨" : "";
         // Build the embed with the author title image
         string authorName;
-        if (isMysteryEgg || FixOT || isCloneRequest || isDumpRequest || isBatchTrade)
+        if (isMysteryEgg || FixOT || isCloneRequest || isDumpRequest || isSpecialRequest || isBatchTrade)
         {
             authorName = $"{userName}'s {tradeTitle}";
         }
@@ -237,7 +246,7 @@ public static class QueueHelper<T> where T : PKM, new()
             embedBuilder.AddField("\u200B", additionalText, inline: false); 
         }
 
-        if (!isMysteryEgg && !isCloneRequest && !isDumpRequest && !FixOT)
+        if (!isMysteryEgg && !isCloneRequest && !isDumpRequest && !FixOT && !isSpecialRequest)
         {
             // Prepare the left side content
             string leftSideContent = $"**Trainer**: {user.Mention}\n" +
@@ -259,11 +268,11 @@ public static class QueueHelper<T> where T : PKM, new()
         else
         {
             string specialDescription = $"**Trainer**: {user.Mention}\n" +
-                                        (isMysteryEgg ? "Mystery Egg" : isCloneRequest ? "Clone Request" : FixOT ? "FixOT Request" : "Dump Request");
+                                        (isMysteryEgg ? "Mystery Egg" : isSpecialRequest ? "Special Request" : isCloneRequest ? "Clone Request" : FixOT ? "FixOT Request" : "Dump Request");
             embedBuilder.AddField("\u200B", specialDescription, inline: false);
         }
 
-        if (isCloneRequest)
+        if (isCloneRequest || isSpecialRequest)
         {
             embedBuilder.WithThumbnailUrl("https://raw.githubusercontent.com/bdawg1989/sprites/main/profoak.png");
         }

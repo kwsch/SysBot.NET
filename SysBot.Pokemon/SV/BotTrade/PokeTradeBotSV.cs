@@ -8,9 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Pokemon.PokeDataOffsetsSV;
-using System.Collections.Generic;
 using SysBot.Pokemon.Helpers;
 using System.IO;
+using static SysBot.Pokemon.SpecialRequests;
 
 namespace SysBot.Pokemon;
 
@@ -372,13 +372,38 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             return PokeTradeResult.TrainerTooSlow;
         }
 
+        SpecialTradeType itemReq = SpecialTradeType.None;
+        if (poke.Type == PokeTradeType.Seed)
+            itemReq = CheckItemRequest(ref offered, this, poke, tradePartner.TrainerName, sav);
+        if (itemReq == SpecialTradeType.FailReturn)
+            return PokeTradeResult.IllegalTrade;
+
+        if (poke.Type == PokeTradeType.Seed && itemReq == SpecialTradeType.None)
+        {
+            // Immediately exit, we aren't trading anything.
+            poke.SendNotification(this, "No held item or valid request!");
+            await ExitTradeToPortal(false, token).ConfigureAwait(false);
+        }
+
         var trainer = new PartnerDataHolder(0, tradePartner.TrainerName, tradePartner.TID7);
-        (toSend, PokeTradeResult update) = await GetEntityToSend(sav, poke, offered, oldEC, toSend, trainer, token).ConfigureAwait(false);
+        PokeTradeResult update;
+        (toSend, update) = await GetEntityToSend(sav, poke, offered, oldEC, toSend, trainer, poke.Type == PokeTradeType.Seed ? itemReq : null, token).ConfigureAwait(false);
         if (update != PokeTradeResult.Success)
         {
-            await ExitTradeToPortal(false, token).ConfigureAwait(false);
+            if (itemReq != SpecialTradeType.None)
+            {
+                poke.SendNotification(this, "Your request isn't legal. Please try a different Pokémon or request.");
+            }
+
             return update;
         }
+
+        if (itemReq == SpecialTradeType.WonderCard)
+            poke.SendNotification(this, "Distribution success!");
+        else if (itemReq != SpecialTradeType.None && itemReq != SpecialTradeType.Shinify)
+            poke.SendNotification(this, "Special request successful!");
+        else if (itemReq == SpecialTradeType.Shinify)
+            poke.SendNotification(this, "Shinify success!  Thanks for being part of the community!");
 
         Log("Confirming trade.");
         var tradeResult = await ConfirmAndStartTrading(poke, token).ConfigureAwait(false);
@@ -820,15 +845,28 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         return trader_info;
     }
 
-    protected virtual async Task<(PK9 toSend, PokeTradeResult check)> GetEntityToSend(SAV9SV sav, PokeTradeDetail<PK9> poke, PK9 offered, byte[] oldEC, PK9 toSend, PartnerDataHolder partnerID, CancellationToken token)
+    protected virtual async Task<(PK9 toSend, PokeTradeResult check)> GetEntityToSend(SAV9SV sav, PokeTradeDetail<PK9> poke, PK9 offered, byte[] oldEC, PK9 toSend, PartnerDataHolder partnerID, SpecialTradeType? stt, CancellationToken token)
     {
         return poke.Type switch
         {
             PokeTradeType.Random => await HandleRandomLedy(sav, poke, offered, toSend, partnerID, token).ConfigureAwait(false),
             PokeTradeType.Clone => await HandleClone(sav, poke, offered, oldEC, token).ConfigureAwait(false),
             PokeTradeType.FixOT => await HandleFixOT(sav, poke, offered, partnerID, token).ConfigureAwait(false),
+            PokeTradeType.Seed when stt is not SpecialTradeType.WonderCard => await HandleClone(sav, poke, offered, oldEC, token).ConfigureAwait(false),
+            PokeTradeType.Seed when stt is SpecialTradeType.WonderCard => await JustInject(sav, offered, token).ConfigureAwait(false),
             _ => (toSend, PokeTradeResult.Success),
         };
+    }
+
+    private async Task<(PK9 toSend, PokeTradeResult check)> JustInject(SAV9SV sav, PK9 offered, CancellationToken token)
+    {
+        await Click(A, 0_800, token).ConfigureAwait(false);
+        await SetBoxPokemonAbsolute(BoxStartOffset, offered, token, sav).ConfigureAwait(false);
+
+        for (int i = 0; i < 5; i++)
+            await Click(A, 0_500, token).ConfigureAwait(false);
+
+        return (offered, PokeTradeResult.Success);
     }
 
     private async Task<(PK9 toSend, PokeTradeResult check)> HandleClone(SAV9SV sav, PokeTradeDetail<PK9> poke, PK9 offered, byte[] oldEC, CancellationToken token)
@@ -1007,7 +1045,10 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                 clone = AbstractTrade<PK9>.CherishHandler(mg.First(), info);
             else clone = (PK9)sav.GetLegal(AutoLegalityWrapper.GetTemplate(new ShowdownSet(string.Join("\n", set))), out _);
         }
-        else clone = (PK9)sav.GetLegal(AutoLegalityWrapper.GetTemplate(new ShowdownSet(string.Join("\n", set))), out _);
+        else
+        {
+            clone = (PK9)sav.GetLegal(AutoLegalityWrapper.GetTemplate(new ShowdownSet(string.Join("\n", set))), out _);
+        }
 
         clone = (PK9)AbstractTrade<PK9>.TrashBytes(clone, new LegalityAnalysis(clone));
         clone.ResetPartyStats();

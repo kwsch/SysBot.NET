@@ -11,34 +11,34 @@ public class SeedCheckModule<T> : ModuleBase<SocketCommandContext> where T : PKM
     private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
 
     [Command("seedCheck")]
-    [Alias("checkMySeed", "checkSeed", "seed", "s", "sc")]
+    [Alias("checkMySeed", "checkSeed", "seed", "s", "sc", "specialrequest", "sr")]
     [Summary("Checks the seed for a Pokémon.")]
     [RequireQueueRole(nameof(DiscordManager.RolesSeed))]
-    public Task SeedCheckAsync(int code)
+    public async Task SeedCheckAsync(int code)
     {
         var sig = Context.User.GetFavor();
-        return QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed);
+        await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed).ConfigureAwait(false);
     }
 
     [Command("seedCheck")]
-    [Alias("checkMySeed", "checkSeed", "seed", "s", "sc")]
+    [Alias("checkMySeed", "checkSeed", "seed", "s", "sc", "specialrequest", "sr")]
     [Summary("Checks the seed for a Pokémon.")]
     [RequireQueueRole(nameof(DiscordManager.RolesSeed))]
-    public Task SeedCheckAsync([Summary("Trade Code")][Remainder] string code)
+    public async Task SeedCheckAsync([Summary("Trade Code")][Remainder] string code)
     {
         int tradeCode = Util.ToInt32(code);
         var sig = Context.User.GetFavor();
-        return QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed);
+        await QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed).ConfigureAwait(false);
     }
 
     [Command("seedCheck")]
-    [Alias("checkMySeed", "checkSeed", "seed", "s", "sc")]
+    [Alias("checkMySeed", "checkSeed", "seed", "s", "sc", "specialrequest", "sr")]
     [Summary("Checks the seed for a Pokémon.")]
     [RequireQueueRole(nameof(DiscordManager.RolesSeed))]
-    public Task SeedCheckAsync()
+    public async Task SeedCheckAsync()
     {
         var code = Info.GetRandomTradeCode();
-        return SeedCheckAsync(code);
+        await SeedCheckAsync(code).ConfigureAwait(false);
     }
 
     [Command("seedList")]
