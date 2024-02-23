@@ -122,7 +122,7 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
         }
 
         // Anti-spam: Same trainer names.
-        if (Files.Count != 1 && Files.Select(z => z.Value.RequestInfo.OT_Name).Distinct().Count() == 1)
+        if (Files.Count != 1 && Files.Select(z => z.Value.RequestInfo.OriginalTrainerName).Distinct().Count() == 1)
         {
             LogUtil.LogInfo("Provided pool to distribute has the same OT for all loaded. Pool is not valid; please distribute from a variety of trainers.", nameof(PokemonPool<T>));
             surpriseBlocked = Count;
@@ -144,7 +144,7 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
         // Anti-spam
         if (pk.IsNicknamed && StringsUtil.IsSpammyString(pk.Nickname))
             return true;
-        if (StringsUtil.IsSpammyString(pk.OT_Name) && !AutoLegalityWrapper.IsFixedOT(enc, pk))
+        if (StringsUtil.IsSpammyString(pk.OriginalTrainerName) && !AutoLegalityWrapper.IsFixedOT(enc, pk))
             return true;
         return DisallowRandomRecipientTrade(pk);
     }
