@@ -167,7 +167,7 @@ namespace SysBot.Pokemon
 
                 sst = SpecialTradeType.StatChange;
             }
-            else if ((pk.HeldItem >= 1862 && pk.HeldItem <= 1879 || pk.HeldItem == 2549) && pk is PK9 pk9)
+            else if ((pk.HeldItem >= 1862 && pk.HeldItem <= 1879 || pk.HeldItem == 2549) && pk is PK9 pk9) // Change TeraType
             {
                 MoveType teraTypeOverride = MoveType.Normal;
 
@@ -228,11 +228,13 @@ namespace SysBot.Pokemon
                         teraTypeOverride = MoveType.Fairy;
                         break;
                     case 2549:
-                        teraTypeOverride = (MoveType)TeraTypeUtil.Stellar; // illegal for some reason...
+                        teraTypeOverride = (MoveType)TeraTypeUtil.Stellar; 
                         break;
                 }
 
                 pk9.TeraTypeOverride = teraTypeOverride;
+
+                LegalizeIfNotLegal(ref pk, caller, detail, TrainerName);
 
                 pk9.SetRecordFlags(Array.Empty<ushort>());
                 pk9.HeldItem = heldItemNew; // Free master

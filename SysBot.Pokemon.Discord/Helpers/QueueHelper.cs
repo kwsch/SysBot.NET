@@ -202,7 +202,7 @@ public static class QueueHelper<T> where T : PKM, new()
         }
         else if (isSpecialRequest)
         {
-            embedImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/clonepod.png"; // URL for clone request
+            embedImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/specialrequest.png"; // URL for special request
         }
         else if (FixOT)
         {
