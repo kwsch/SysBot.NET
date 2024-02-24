@@ -381,8 +381,9 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         if (poke.Type == PokeTradeType.Seed && itemReq == SpecialTradeType.None)
         {
             // Immediately exit, we aren't trading anything.
-            poke.SendNotification(this, "No held item or valid request!");
-            await ExitTradeToPortal(false, token).ConfigureAwait(false);
+            poke.SendNotification(this, "No held item or valid request!  Cancelling this trade.");
+            await ExitTradeToPortal(true, token).ConfigureAwait(false);
+            return PokeTradeResult.TrainerRequestBad;
         }
 
         var trainer = new PartnerDataHolder(0, tradePartner.TrainerName, tradePartner.TID7);
