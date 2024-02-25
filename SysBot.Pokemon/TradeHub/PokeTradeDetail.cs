@@ -48,8 +48,9 @@ namespace SysBot.Pokemon
 
         public readonly int BatchTradeNumber;
         public readonly int TotalBatchTrades;
+        public bool IsMysteryEgg { get; }
 
-        public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code, bool favored = false, List<Pictocodes> lgcode = null, int batchTradeNumber = 0, int totalBatchTrades = 0)
+        public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code, bool favored = false, List<Pictocodes> lgcode = null, int batchTradeNumber = 0, int totalBatchTrades = 0, bool isMysteryEgg = false) // Modify constructor to include isMysteryEgg
         {
             ID = Interlocked.Increment(ref CreatedCount) % 3000;
             Code = code;
@@ -62,6 +63,7 @@ namespace SysBot.Pokemon
             LGPETradeCode = lgcode;
             BatchTradeNumber = batchTradeNumber;
             TotalBatchTrades = totalBatchTrades;
+            IsMysteryEgg = isMysteryEgg;
         }
 
         public void TradeInitialize(PokeRoutineExecutor<TPoke> routine) => Notifier.TradeInitialize(routine, this);
