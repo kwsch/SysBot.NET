@@ -117,7 +117,7 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
                         embedImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/specialrequest.png";
                         break;
                     default:
-                        tradeTitle = $"- {speciesName}";
+                        tradeTitle = $"{speciesName}";
                         embedImageUrl = "";
                         break;
                 }
