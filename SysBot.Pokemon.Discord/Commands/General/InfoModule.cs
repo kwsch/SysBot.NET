@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.Commands;
 using System;
 using System.Diagnostics;
@@ -16,12 +16,17 @@ namespace SysBot.Pokemon.Discord;
 public class InfoModule : ModuleBase<SocketCommandContext>
 {
     private const string detail = "I am an open-source Discord bot powered by PKHeX.Core and other open-source software.";
-    private const string repo = "https://github.com/kwsch/SysBot.NET";
-
+    private const string repo = "https://github.com/bdawg1989/MergeBot";
+    private const ulong DisallowedUserId = 195756980873199618;
     [Command("info")]
     [Alias("about", "whoami", "owner")]
     public async Task InfoAsync()
     {
+        if (Context.User.Id == DisallowedUserId)
+        {
+            await ReplyAsync("We don't let shady people use this command.").ConfigureAwait(false);
+            return;
+        }
         var app = await Context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
 
         var builder = new EmbedBuilder
@@ -31,7 +36,7 @@ public class InfoModule : ModuleBase<SocketCommandContext>
         };
 
         builder.AddField("Info",
-            $"- [Source Code]({repo})\n" +
+            $"- [Source Code]({repo})\n- [Join Our Discord!](https://notpaldea.net)\n" +
             $"- {Format.Bold("Owner")}: {app.Owner} ({app.Owner.Id})\n" +
             $"- {Format.Bold("Library")}: Discord.Net ({DiscordConfig.Version})\n" +
             $"- {Format.Bold("Uptime")}: {GetUptime()}\n" +
