@@ -85,7 +85,11 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
                 Console.WriteLine($"User not found for ID {detail.Trainer.ID}.");
                 return;
             }
-
+            string speciesName = "";
+            if (detail.TradeData != null)
+            {
+                speciesName = GameInfo.Strings.Species[detail.TradeData.Species];
+            }
             string tradeTitle, embedImageUrl;
             if (detail.IsMysteryEgg)
             {
@@ -113,7 +117,7 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
                         embedImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/specialrequest.png";
                         break;
                     default:
-                        tradeTitle = "Trading";
+                        tradeTitle = $"- {speciesName}";
                         embedImageUrl = "";
                         break;
                 }
