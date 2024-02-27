@@ -20,7 +20,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
 {
     private readonly TradeSettings TradeSettings = Hub.Config.Trade;
     private readonly TradeAbuseSettings AbuseSettings = Hub.Config.TradeAbuse;
-    private readonly Dictionary<int, int> batchProcessingState = [];
 
     public ICountSettings Counts => TradeSettings;
 
@@ -198,24 +197,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
 
         HandleAbortedTrade(detail, type, priority, result);
     }
-    private void UpdateBatchProcessingState(PokeTradeDetail<PB8> detail)
-    {
-        if (detail.TotalBatchTrades > 1)
-        {
-            if (detail.BatchTradeNumber == detail.TotalBatchTrades)
-            {
-                batchProcessingState.Remove(detail.Code);
-            }
-            else
-            {
-                batchProcessingState[detail.Code] = detail.BatchTradeNumber + 1;
-            }
-        }
-        else if (detail.TotalBatchTrades == 1)
-        {
-            batchProcessingState.Remove(detail.Code);
-        }
-    }
     private void HandleAbortedTrade(PokeTradeDetail<PB8> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
     {
         detail.IsProcessing = false;
@@ -228,7 +209,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         else
         {
             detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
-            UpdateBatchProcessingState(detail);
             detail.TradeCanceled(this, result);
         }
     }
@@ -279,7 +259,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
 
             if (--waitPartner <= 0)
             {
-                UpdateBatchProcessingState(poke);
                 return PokeTradeResult.NoTrainerFound;
             }
         }
@@ -296,7 +275,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
                 break;
             if (--waitPartner <= 0)
             {
-                UpdateBatchProcessingState(poke);
                 return PokeTradeResult.TrainerTooSlow;
             }
         }
@@ -308,7 +286,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         // Can happen if they quit out of talking to us.
         if (!await IsPartnerParamLoaded(token).ConfigureAwait(false))
         {
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.TrainerTooSlow;
         }
 
@@ -331,7 +308,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
                 if (!await EnsureOutsideOfUnionRoom(token).ConfigureAwait(false))
                     return PokeTradeResult.RecoverReturnOverworld;
             }
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.SuspiciousActivity;
         }
 
@@ -356,7 +332,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         var tradeOffered = await ReadUntilChanged(LinkTradePokemonOffset, lastOffered, 25_000, 1_000, false, true, token).ConfigureAwait(false);
         if (!tradeOffered)
         {
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.TrainerTooSlow;
         }
 
@@ -378,7 +353,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
             offered = await ReadPokemon(LinkTradePokemonOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
             if (offered.Species == 0 || !offered.ChecksumValid)
             {
-                UpdateBatchProcessingState(poke);
                 return PokeTradeResult.TrainerTooSlow;
             }
             //lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
@@ -398,7 +372,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
 
             if (token.IsCancellationRequested)
             {
-                UpdateBatchProcessingState(poke);
                 return PokeTradeResult.RoutineCancel;
             }
         }
@@ -408,7 +381,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend) && received.Checksum == toSend.Checksum)
         {
             Log("User did not complete the trade.");
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.TrainerTooSlow;
         }
 
@@ -436,7 +408,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
 
         // Sometimes they offered another mon, so store that immediately upon leaving Union Room.
         lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
-        UpdateBatchProcessingState(poke);
         return PokeTradeResult.Success;
     }
     private static ulong GetFakeNID(string trainerName, uint trainerID)

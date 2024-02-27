@@ -19,7 +19,6 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 {
     private readonly TradeSettings TradeSettings = Hub.Config.Trade;
     private readonly TradeAbuseSettings AbuseSettings = Hub.Config.TradeAbuse;
-    private readonly Dictionary<int, int> batchProcessingState = [];
 
     public ICountSettings Counts => TradeSettings;
 
@@ -192,24 +191,6 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 
         HandleAbortedTrade(detail, type, priority, result);
     }
-    private void UpdateBatchProcessingState(PokeTradeDetail<PA8> detail)
-    {
-        if (detail.TotalBatchTrades > 1)
-        {
-            if (detail.BatchTradeNumber == detail.TotalBatchTrades)
-            {
-                batchProcessingState.Remove(detail.Code);
-            }
-            else
-            {
-                batchProcessingState[detail.Code] = detail.BatchTradeNumber + 1;
-            }
-        }
-        else if (detail.TotalBatchTrades == 1)
-        {
-            batchProcessingState.Remove(detail.Code);
-        }
-    }
     private void HandleAbortedTrade(PokeTradeDetail<PA8> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
     {
         detail.IsProcessing = false;
@@ -222,7 +203,6 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         else
         {
             detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
-            UpdateBatchProcessingState(detail);
             detail.TradeCanceled(this, result);
         }
     }
@@ -279,13 +259,11 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         if (token.IsCancellationRequested)
         {
             await ExitTrade(false, token).ConfigureAwait(false);
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.RoutineCancel;
         }
         if (!partnerFound)
         {
             await ExitTrade(false, token).ConfigureAwait(false);
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.NoTrainerFound;
         }
 
@@ -321,7 +299,6 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         if (!offering)
         {
             await ExitTrade(false, token).ConfigureAwait(false);
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.TrainerTooSlow;
         }
 
@@ -334,7 +311,6 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         {
             Log("Trade ended because trainer offer was rescinded too quickly.");
             await ExitTrade(false, token).ConfigureAwait(false);
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.TrainerOfferCanceledQuick;
         }
 
@@ -364,7 +340,6 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         if (token.IsCancellationRequested)
         {
             await ExitTrade(false, token).ConfigureAwait(false);
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.RoutineCancel;
         }
 
@@ -375,7 +350,6 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         {
             Log("User did not complete the trade.");
             await ExitTrade(false, token).ConfigureAwait(false);
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.TrainerTooSlow;
         }
 
@@ -390,7 +364,6 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         LogSuccessfulTrades(poke, trainerNID, tradePartner.TrainerName);
 
         await ExitTrade(false, token).ConfigureAwait(false);
-        UpdateBatchProcessingState(poke);
         return PokeTradeResult.Success;
     }
 

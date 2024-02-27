@@ -9,7 +9,6 @@ public class PokeTradeQueue<TPoke>(PokeTradeType Type)
     where TPoke : PKM, new()
 {
     internal readonly FavoredCPQ<uint, PokeTradeDetail<TPoke>> Queue = new(new FavoredPrioritySettings());
-    private readonly Dictionary<int, int> batchProcessingState = [];
     public readonly PokeTradeType Type = Type;
 
     public PokeTradeDetail<TPoke> Find(Func<PokeTradeDetail<TPoke>, bool> match) => Queue.Find(match).Value;
@@ -18,36 +17,12 @@ public class PokeTradeQueue<TPoke>(PokeTradeType Type)
 
     public void Enqueue(PokeTradeDetail<TPoke> detail, uint priority = PokeTradePriorities.TierFree) => Queue.Add(priority, detail);
 
-    public bool TryDequeue(out PokeTradeDetail<TPoke>? detail, out uint priority)
+    public bool TryDequeue(out PokeTradeDetail<TPoke> detail, out uint priority)
     {
-        while (Queue.TryPeek(out var kvp)) // Peek to check if the trade is processable
-        {
-            var nextTrade = kvp.Value;
-            if (nextTrade.TotalBatchTrades > 1) 
-            {
-                if (!batchProcessingState.TryGetValue(nextTrade.Code, out _))
-                {
-                    batchProcessingState[nextTrade.Code] = nextTrade.BatchTradeNumber;
-                }
-
-                if (nextTrade.BatchTradeNumber != batchProcessingState[nextTrade.Code])
-                {
-                    Queue.TryDequeue(out _); 
-                    continue; 
-                }
-            }
-            var result = Queue.TryDequeue(out kvp);
-            detail = kvp.Value;
-            priority = kvp.Key;
-            if (detail.TotalBatchTrades > 1)
-            {
-                batchProcessingState[detail.Code] = batchProcessingState[detail.Code] + 1;
-            }
-            return result;
-        }
-        detail = default;
-        priority = default;
-        return false;
+        var result = Queue.TryDequeue(out var kvp);
+        detail = kvp.Value;
+        priority = kvp.Key;
+        return result;
     }
 
     public bool TryPeek(out PokeTradeDetail<TPoke> detail, out uint priority)

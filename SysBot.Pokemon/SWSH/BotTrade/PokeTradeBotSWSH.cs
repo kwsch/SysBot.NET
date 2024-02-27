@@ -21,7 +21,6 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
     private readonly TradeSettings TradeSettings = hub.Config.Trade;
     private readonly PokeTradeHub<PK8> Hub;
     private readonly TradeAbuseSettings AbuseSettings = hub.Config.TradeAbuse;
-    private readonly Dictionary<int, int> batchProcessingState = [];
 
     public ICountSettings Counts => TradeSettings;
 
@@ -189,24 +188,6 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
 
         HandleAbortedTrade(detail, type, priority, result);
     }
-    private void UpdateBatchProcessingState(PokeTradeDetail<PK8> detail)
-    {
-        if (detail.TotalBatchTrades > 1)
-        {
-            if (detail.BatchTradeNumber == detail.TotalBatchTrades)
-            {
-                batchProcessingState.Remove(detail.Code);
-            }
-            else
-            {
-                batchProcessingState[detail.Code] = detail.BatchTradeNumber + 1;
-            }
-        }
-        else if (detail.TotalBatchTrades == 1)
-        {
-            batchProcessingState.Remove(detail.Code);
-        }
-    }
     private void HandleAbortedTrade(PokeTradeDetail<PK8> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
     {
         detail.IsProcessing = false;
@@ -219,7 +200,6 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         else
         {
             detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
-            UpdateBatchProcessingState(detail);
             detail.TradeCanceled(this, result);
         }
     }
@@ -316,13 +296,11 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
 
         if (token.IsCancellationRequested)
         {
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.RoutineCancel;
         }
         if (!partnerFound)
         {
             await ResetTradePosition(token).ConfigureAwait(false);
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.NoTrainerFound;
         }
 
@@ -372,7 +350,6 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         if (offered is null)
         {
             await ExitSeedCheckTrade(token).ConfigureAwait(false);
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.TrainerTooSlow;
         }
 
@@ -400,7 +377,6 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         if (token.IsCancellationRequested)
         {
             await ExitTrade(false, token).ConfigureAwait(false);
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.RoutineCancel;
         }
 
@@ -412,7 +388,6 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
             Log("User did not complete the trade.");
             RecordUtil<PokeTradeBotSWSH>.Record($"Cancelled\t{trainerNID:X16}\t{trainerName}\t{poke.Trainer.TrainerName}\\t{poke.ID}\t{toSend.EncryptionConstant:X8}\t{offered.EncryptionConstant:X8}");
             await ExitTrade(false, token).ConfigureAwait(false);
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.TrainerTooSlow;
         }
 
@@ -429,7 +404,6 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         LogSuccessfulTrades(poke, trainerNID, trainerName);
 
         await ExitTrade(false, token).ConfigureAwait(false);
-        UpdateBatchProcessingState(poke);
         return PokeTradeResult.Success;
     }
 

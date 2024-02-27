@@ -16,6 +16,13 @@ public class SeedCheckModule<T> : ModuleBase<SocketCommandContext> where T : PKM
     [RequireQueueRole(nameof(DiscordManager.RolesSeed))]
     public async Task SeedCheckAsync(int code)
     {
+        // Check if the user is already in the queue
+        var userID = Context.User.Id;
+        if (Info.IsUserInQueue(userID))
+        {
+            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            return;
+        }
         var sig = Context.User.GetFavor();
         await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed).ConfigureAwait(false);
     }
@@ -26,6 +33,13 @@ public class SeedCheckModule<T> : ModuleBase<SocketCommandContext> where T : PKM
     [RequireQueueRole(nameof(DiscordManager.RolesSeed))]
     public async Task SeedCheckAsync([Summary("Trade Code")][Remainder] string code)
     {
+        // Check if the user is already in the queue
+        var userID = Context.User.Id;
+        if (Info.IsUserInQueue(userID))
+        {
+            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            return;
+        }
         int tradeCode = Util.ToInt32(code);
         var sig = Context.User.GetFavor();
         await QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed).ConfigureAwait(false);
@@ -37,6 +51,13 @@ public class SeedCheckModule<T> : ModuleBase<SocketCommandContext> where T : PKM
     [RequireQueueRole(nameof(DiscordManager.RolesSeed))]
     public async Task SeedCheckAsync()
     {
+        // Check if the user is already in the queue
+        var userID = Context.User.Id;
+        if (Info.IsUserInQueue(userID))
+        {
+            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            return;
+        }
         var code = Info.GetRandomTradeCode();
         await SeedCheckAsync(code).ConfigureAwait(false);
     }

@@ -20,7 +20,6 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
 {
     private readonly TradeSettings TradeSettings = Hub.Config.Trade;
     public readonly TradeAbuseSettings AbuseSettings = Hub.Config.TradeAbuse;
-    private readonly Dictionary<int, int> batchProcessingState = [];
 
     public ICountSettings Counts => TradeSettings;
 
@@ -201,24 +200,6 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
 
         HandleAbortedTrade(detail, type, priority, result);
     }
-    private void UpdateBatchProcessingState(PokeTradeDetail<PK9> detail)
-    {
-        if (detail.TotalBatchTrades > 1) 
-        {
-            if (detail.BatchTradeNumber == detail.TotalBatchTrades)
-            {
-                batchProcessingState.Remove(detail.Code);
-            }
-            else
-            {
-                batchProcessingState[detail.Code] = detail.BatchTradeNumber + 1;
-            }
-        }
-        else if (detail.TotalBatchTrades == 1) 
-        {
-            batchProcessingState.Remove(detail.Code);
-        }
-    }
     private void HandleAbortedTrade(PokeTradeDetail<PK9> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
     {
         detail.IsProcessing = false;
@@ -231,7 +212,6 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         else
         {
             detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
-            UpdateBatchProcessingState(detail);
             detail.TradeCanceled(this, result);
         }
     }
@@ -324,7 +304,6 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                 Log("Failed to recover to portal.");
                 await RecoverToOverworld(token).ConfigureAwait(false);
             }
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.NoTrainerFound;
         }
 
@@ -368,7 +347,6 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         if (!tradeOffered)
         {
             await ExitTradeToPortal(false, token).ConfigureAwait(false);
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.TrainerTooSlow;
         }
 
@@ -391,7 +369,6 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         {
             Log("Trade ended because a valid Pokémon was not offered.");
             await ExitTradeToPortal(false, token).ConfigureAwait(false);
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.TrainerTooSlow;
         }
 
@@ -406,7 +383,6 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             // Immediately exit, we aren't trading anything.
             poke.SendNotification(this, "No held item or valid request!  Cancelling this trade.");
             await ExitTradeToPortal(true, token).ConfigureAwait(false);
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.TrainerRequestBad;
         }
 
@@ -470,7 +446,6 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(TradePartnerOfferedOffset, 8, token).ConfigureAwait(false);
 
         await ExitTradeToPortal(false, token).ConfigureAwait(false);
-        UpdateBatchProcessingState(poke);
         return PokeTradeResult.Success;
     }
 

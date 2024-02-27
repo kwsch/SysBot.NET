@@ -18,7 +18,6 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
 {
     private readonly TradeSettings TradeSettings = Hub.Config.Trade;
     public readonly TradeAbuseSettings AbuseSettings = Hub.Config.TradeAbuse;
-    private readonly Dictionary<int, int> batchProcessingState = [];
 
     public ICountSettings Counts => TradeSettings;
 
@@ -173,24 +172,6 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
 
         HandleAbortedTrade(detail, type, priority, result);
     }
-    private void UpdateBatchProcessingState(PokeTradeDetail<PB7> detail)
-    {
-        if (detail.TotalBatchTrades > 1)
-        {
-            if (detail.BatchTradeNumber == detail.TotalBatchTrades)
-            {
-                batchProcessingState.Remove(detail.Code);
-            }
-            else
-            {
-                batchProcessingState[detail.Code] = detail.BatchTradeNumber + 1;
-            }
-        }
-        else if (detail.TotalBatchTrades == 1)
-        {
-            batchProcessingState.Remove(detail.Code);
-        }
-    }
     private void HandleAbortedTrade(PokeTradeDetail<PB7> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
     {
         detail.IsProcessing = false;
@@ -203,7 +184,6 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
         else
         {
             detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
-            UpdateBatchProcessingState(detail);
             detail.TradeCanceled(this, result);
         }
     }
@@ -283,7 +263,6 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
 
                 await ExitTrade(false, token);
                 Hub.Config.Stream.EndEnterCode(this);
-                UpdateBatchProcessingState(poke);
                 return PokeTradeResult.NoTrainerFound;
             }
         }
@@ -350,7 +329,6 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
         if (token.IsCancellationRequested)
         {
             await ExitTrade(false, token).ConfigureAwait(false);
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.ExceptionInternal;
         }
         //trade was successful
@@ -360,7 +338,6 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
         {
             Log("User did not complete the trade.");
             await ExitTrade(false, token).ConfigureAwait(false);
-            UpdateBatchProcessingState(poke);
             return PokeTradeResult.TrainerTooSlow;
         }
 
@@ -375,7 +352,6 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
             await Click(B, 0_500, token).ConfigureAwait(false);
 
         await ExitTrade(false, token).ConfigureAwait(false);
-        UpdateBatchProcessingState(poke);
         return PokeTradeResult.Success;
     }
     private async Task<PokeTradeResult> ConfirmAndStartTrading(PokeTradeDetail<PB7> detail, int slot, CancellationToken token)
