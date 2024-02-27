@@ -181,7 +181,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         {
             result = await PerformLinkCodeTrade(sav, detail, token).ConfigureAwait(false);
             if (result == PokeTradeResult.Success)
-                UpdateBatchProcessingState(detail);
             return;
         }
         catch (SocketException socket)
@@ -201,7 +200,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
     }
     private void UpdateBatchProcessingState(PokeTradeDetail<PB8> detail)
     {
-        if (detail.TotalBatchTrades > 0)
+        if (detail.TotalBatchTrades > 1)
         {
             if (detail.BatchTradeNumber == detail.TotalBatchTrades)
             {
@@ -211,6 +210,10 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
             {
                 batchProcessingState[detail.Code] = detail.BatchTradeNumber + 1;
             }
+        }
+        else if (detail.TotalBatchTrades == 1)
+        {
+            batchProcessingState.Remove(detail.Code);
         }
     }
     private void HandleAbortedTrade(PokeTradeDetail<PB8> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
@@ -225,6 +228,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         else
         {
             detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
+            UpdateBatchProcessingState(detail);
             detail.TradeCanceled(this, result);
         }
     }
@@ -274,7 +278,10 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
                 await Click(A, 0_450, token).ConfigureAwait(false);
 
             if (--waitPartner <= 0)
+            {
+                UpdateBatchProcessingState(poke);
                 return PokeTradeResult.NoTrainerFound;
+            }
         }
         Log("Found a user talking to us!");
 
@@ -288,7 +295,10 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
             if (!await IsUnionWork(UnionTalkingOffset, token).ConfigureAwait(false))
                 break;
             if (--waitPartner <= 0)
+            {
+                UpdateBatchProcessingState(poke);
                 return PokeTradeResult.TrainerTooSlow;
+            }
         }
         Log("Entering the box...");
 
@@ -297,7 +307,10 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
 
         // Can happen if they quit out of talking to us.
         if (!await IsPartnerParamLoaded(token).ConfigureAwait(false))
+        {
+            UpdateBatchProcessingState(poke);
             return PokeTradeResult.TrainerTooSlow;
+        }
 
         var tradePartner = await GetTradePartnerInfo(token).ConfigureAwait(false);
         var trainerNID = GetFakeNID(tradePartner.TrainerName, tradePartner.TrainerID);
@@ -318,6 +331,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
                 if (!await EnsureOutsideOfUnionRoom(token).ConfigureAwait(false))
                     return PokeTradeResult.RecoverReturnOverworld;
             }
+            UpdateBatchProcessingState(poke);
             return PokeTradeResult.SuspiciousActivity;
         }
 
@@ -341,8 +355,10 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         // Wait for user input... Needs to be different from the previously offered Pokémon.
         var tradeOffered = await ReadUntilChanged(LinkTradePokemonOffset, lastOffered, 25_000, 1_000, false, true, token).ConfigureAwait(false);
         if (!tradeOffered)
+        {
+            UpdateBatchProcessingState(poke);
             return PokeTradeResult.TrainerTooSlow;
-
+        }
 
         List<PB8> ls = new List<PB8>();
             ls.Add(poke.TradeData);
@@ -361,7 +377,10 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
             // If we detected a change, they offered something.
             offered = await ReadPokemon(LinkTradePokemonOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
             if (offered.Species == 0 || !offered.ChecksumValid)
+            {
+                UpdateBatchProcessingState(poke);
                 return PokeTradeResult.TrainerTooSlow;
+            }
             //lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
             if (Hub.Config.Legality.UseTradePartnerInfo)
             {
@@ -378,7 +397,10 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
                 return tradeResult;
 
             if (token.IsCancellationRequested)
+            {
+                UpdateBatchProcessingState(poke);
                 return PokeTradeResult.RoutineCancel;
+            }
         }
         // Trade was Successful!
         var received = await ReadPokemon(BoxStartOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
@@ -386,6 +408,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend) && received.Checksum == toSend.Checksum)
         {
             Log("User did not complete the trade.");
+            UpdateBatchProcessingState(poke);
             return PokeTradeResult.TrainerTooSlow;
         }
 
@@ -413,7 +436,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
 
         // Sometimes they offered another mon, so store that immediately upon leaving Union Room.
         lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
-
+        UpdateBatchProcessingState(poke);
         return PokeTradeResult.Success;
     }
     private static ulong GetFakeNID(string trainerName, uint trainerID)
