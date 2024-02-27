@@ -15,15 +15,23 @@ namespace SysBot.Pokemon.Discord
         [RequireOwner]
         public async Task SetAvatarAsync()
         {
-            if (Context.Message.Attachments.Count == 0)
+            var userMessage = Context.Message;
+
+            if (userMessage.Attachments.Count == 0)
             {
-                await ReplyAsync("Please attach a GIF image to set as the avatar."); // standard (boring) images can be set via dashboard
+                var reply = await ReplyAsync("Please attach a GIF image to set as the avatar."); // standard (boring) images can be set via dashboard
+                await Task.Delay(60000); 
+                await userMessage.DeleteAsync(); 
+                await reply.DeleteAsync(); 
                 return;
             }
-            var attachment = Context.Message.Attachments.First();
+            var attachment = userMessage.Attachments.First();
             if (!attachment.Filename.EndsWith(".gif"))
             {
-                await ReplyAsync("Please provide a GIF image.");
+                var reply = await ReplyAsync("Please provide a GIF image.");
+                await Task.Delay(60000);
+                await userMessage.DeleteAsync();
+                await reply.DeleteAsync();
                 return;
             }
 
@@ -34,7 +42,10 @@ namespace SysBot.Pokemon.Discord
             var image = new Image(ms);
             await Context.Client.CurrentUser.ModifyAsync(user => user.Avatar = image);
 
-            await ReplyAsync("Avatar updated successfully!");
+            var successReply = await ReplyAsync("Avatar updated successfully!");
+            await Task.Delay(60000);
+            await userMessage.DeleteAsync();
+            await successReply.DeleteAsync();
         }
     }
 }

@@ -45,8 +45,8 @@ public class DiscordSettings
     [Category(Roles), Description("Users with this role are allowed to enter the Trade queue.")]
     public RemoteControlAccessList RoleCanTrade { get; set; } = new() { AllowIfEmpty = false };
 
-    [Category(Roles), Description("Users with this role are allowed to enter the Seed Check queue.")]
-    public RemoteControlAccessList RoleCanSeedCheck { get; set; } = new() { AllowIfEmpty = false };
+    [Category(Roles), Description("Users with this role are allowed to enter the Seed Check/Special Request queue.")]
+    public RemoteControlAccessList RoleCanSeedCheckorSpecialRequest { get; set; } = new() { AllowIfEmpty = false };
 
     [Category(Roles), Description("Users with this role are allowed to enter the Clone queue.")]
     public RemoteControlAccessList RoleCanClone { get; set; } = new() { AllowIfEmpty = false };

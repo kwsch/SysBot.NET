@@ -19,7 +19,7 @@ public class DiscordManager(DiscordSettings Config)
 
     public RemoteControlAccessList RolesClone => Config.RoleCanClone;
     public RemoteControlAccessList RolesTrade => Config.RoleCanTrade;
-    public RemoteControlAccessList RolesSeed => Config.RoleCanSeedCheck;
+    public RemoteControlAccessList RolesSeed => Config.RoleCanSeedCheckorSpecialRequest;
     public RemoteControlAccessList RolesDump => Config.RoleCanDump;
     public RemoteControlAccessList RolesFixOT => Config.RoleCanFixOT;
     public RemoteControlAccessList RolesRemoteControl => Config.RoleRemoteControl;

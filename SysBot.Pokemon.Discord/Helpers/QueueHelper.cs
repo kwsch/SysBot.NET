@@ -24,8 +24,8 @@ public static class QueueHelper<T> where T : PKM, new()
     private const uint MaxTradeCode = 9999_9999;
 
     // A dictionary to hold batch trade file paths and their deletion status
-    private static Dictionary<int, List<string>> batchTradeFiles = new Dictionary<int, List<string>>();
-    private static Dictionary<ulong, int> userBatchTradeMaxDetailId = new Dictionary<ulong, int>();
+    private static readonly Dictionary<int, List<string>> batchTradeFiles = [];
+    private static readonly Dictionary<ulong, int> userBatchTradeMaxDetailId = [];
 
     public static async Task AddToQueueAsync(SocketCommandContext context, int code, string trainer, RequestSignificance sig, T trade, PokeRoutineType routine, PokeTradeType type, SocketUser trader, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, int formArgument = 0, bool isMysteryEgg = false, List<Pictocodes> lgcode = null)
     {
@@ -46,7 +46,7 @@ public static class QueueHelper<T> where T : PKM, new()
                 }
                 else
                 {
-                    await trader.SendMessageAsync($"Your trade code will be: {code:0000 0000}").ConfigureAwait(false);
+                    await trader.SendMessageAsync($"Your trade code will be: **{code:0000 0000}**.\nI will DM you when your trade is about to start.").ConfigureAwait(false);
                 }
             }
 
@@ -109,7 +109,7 @@ public static class QueueHelper<T> where T : PKM, new()
         ushort[] moves = new ushort[4];
         pk.GetMoves(moves.AsSpan());
         int[] movePPs = { pk.Move1_PP, pk.Move2_PP, pk.Move3_PP, pk.Move4_PP };
-        List<string> moveNames = new List<string> { "" };
+        List<string> moveNames = [""];
 
         for (int i = 0; i < moves.Length; i++)
         {

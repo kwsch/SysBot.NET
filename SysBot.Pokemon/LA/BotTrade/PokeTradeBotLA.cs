@@ -3,6 +3,7 @@ using PKHeX.Core.Searching;
 using SysBot.Base;
 using SysBot.Pokemon.Helpers;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -18,6 +19,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 {
     private readonly TradeSettings TradeSettings = Hub.Config.Trade;
     private readonly TradeAbuseSettings AbuseSettings = Hub.Config.TradeAbuse;
+    private readonly Dictionary<int, int> batchProcessingState = [];
 
     public ICountSettings Counts => TradeSettings;
 
@@ -173,7 +175,8 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         {
             result = await PerformLinkCodeTrade(sav, detail, token).ConfigureAwait(false);
             if (result == PokeTradeResult.Success)
-                return;
+                UpdateBatchProcessingState(detail);
+            return;
         }
         catch (SocketException socket)
         {
@@ -190,7 +193,20 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 
         HandleAbortedTrade(detail, type, priority, result);
     }
-
+    private void UpdateBatchProcessingState(PokeTradeDetail<PA8> detail)
+    {
+        if (detail.TotalBatchTrades > 0)
+        {
+            if (detail.BatchTradeNumber == detail.TotalBatchTrades)
+            {
+                batchProcessingState.Remove(detail.Code);
+            }
+            else
+            {
+                batchProcessingState[detail.Code] = detail.BatchTradeNumber + 1;
+            }
+        }
+    }
     private void HandleAbortedTrade(PokeTradeDetail<PA8> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
     {
         detail.IsProcessing = false;

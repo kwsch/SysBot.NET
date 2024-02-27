@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PKHeX.Core;
 using SysBot.Base;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -208,12 +209,40 @@ public sealed class SysCord<T> where T : PKM, new()
             var cfg = mgr.Config;
             if (cfg.ConvertPKMToShowdownSet && (cfg.ConvertPKMReplyAnyChannel || mgr.CanUseCommandChannel(msg.Channel.Id)))
             {
-                if (msg is SocketUserMessage userMessage) // Cast to SocketUserMessage
+                if (msg is SocketUserMessage userMessage) 
                 {
                     foreach (var att in msg.Attachments)
-                        await msg.Channel.RepostPKMAsShowdownAsync(att, userMessage).ConfigureAwait(false); // Pass userMessage
+                        await msg.Channel.RepostPKMAsShowdownAsync(att, userMessage).ConfigureAwait(false);
                 }
             }
+        }
+        // fun little trick for users that like to thank the bot after a trade
+        string thanksText = msg.Content.ToLower();
+        if (thanksText.Contains("thank") || thanksText.Contains("thx"))
+        {
+            var channel = msg.Channel;
+            await channel.TriggerTypingAsync();
+            await Task.Delay(1_500);
+
+            var responses = new List<string>
+        {
+            "You're welcome! ❤️",
+            "No problem at all!",
+            "Anytime, glad to help!",
+            "It's my pleasure! ❤️",
+            "Not a problem! You're welcome!",
+            "Always here to help!",
+            "Glad I could assist!",
+            "Happy to serve!",
+            "Of course! You're welcome!",
+            "Sure thing!"
+        };
+
+            var randomResponse = responses[new Random().Next(responses.Count)];
+            var finalResponse = $"{randomResponse}";
+
+            await msg.Channel.SendMessageAsync(finalResponse).ConfigureAwait(false);
+            return;
         }
     }
 

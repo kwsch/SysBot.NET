@@ -18,6 +18,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
 {
     private readonly TradeSettings TradeSettings = Hub.Config.Trade;
     public readonly TradeAbuseSettings AbuseSettings = Hub.Config.TradeAbuse;
+    private readonly Dictionary<int, int> batchProcessingState = [];
 
     public ICountSettings Counts => TradeSettings;
 
@@ -155,7 +156,8 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
         {
             result = await PerformLinkCodeTrade(sav, detail, token).ConfigureAwait(false);
             if (result == PokeTradeResult.Success)
-                return;
+                UpdateBatchProcessingState(detail);
+            return;
         }
         catch (SocketException socket)
         {
@@ -172,7 +174,20 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
 
         HandleAbortedTrade(detail, type, priority, result);
     }
-
+    private void UpdateBatchProcessingState(PokeTradeDetail<PB7> detail)
+    {
+        if (detail.TotalBatchTrades > 0)
+        {
+            if (detail.BatchTradeNumber == detail.TotalBatchTrades)
+            {
+                batchProcessingState.Remove(detail.Code);
+            }
+            else
+            {
+                batchProcessingState[detail.Code] = detail.BatchTradeNumber + 1;
+            }
+        }
+    }
     private void HandleAbortedTrade(PokeTradeDetail<PB7> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
     {
         detail.IsProcessing = false;
