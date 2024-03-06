@@ -7,7 +7,7 @@ For support and suggestions, join my Discord Hangout - https://notpaldea.net
 
 [@kwsch](https://github.com/kwsch), [@Lusamine](https://github.com/Lusamine), [@Koi-3088](https://github.com/Koi-3088), [@easyworld](https://github.com/easyworld), [@santacrab2](https://github.com/santacrab2), [@zyro670](https://github.com/zyro670), [@xiaolong11123](https://github.com/xiaolong11123), and everyone else that contributed, thank you for your hard work <3
 
-### Supports The Following Games:  SV/BDSP/PLA/SWSH
+### Supports The Following Games:  SV/BDSP/PLA/SWSH/LGPE
 **__Please don't charge people to use this free program. Be nice <3__**
 
 - __Beautiful Embeds__
