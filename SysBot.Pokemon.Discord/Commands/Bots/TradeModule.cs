@@ -492,6 +492,11 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 }
             }
             var la = new LegalityAnalysis(pkm);
+            if (la.Valid && SysCord<T>.Runner.Config.Trade.TradeConfiguration.SuggestRelearnMoves)
+            {
+                // Apply suggested relearn moves
+                MoveSetApplicator.SetRelearnMoves(pkm, la);
+            }
             var spec = GameInfo.Strings.Species[template.Species];
             pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
             if (pkm is not T pk || !la.Valid)
@@ -1043,16 +1048,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
 
-        var settings = SysCord<T>.Runner.Hub.Config.Legality;
-        var defTrainer = new SimpleTrainerInfo()
-        {
-            OT = settings.GenerateOT,
-            TID16 = settings.GenerateTID16,
-            SID16 = settings.GenerateSID16,
-            Language = (int)settings.GenerateLanguage,
-        };
-
-        var att = await NetUtil.DownloadPKMAsync(attachment, defTrainer).ConfigureAwait(false);
+        var att = await NetUtil.DownloadPKMAsync(attachment).ConfigureAwait(false);
         var pk = GetRequest(att);
         if (pk == null)
         {

@@ -51,6 +51,9 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         [Category(TradeConfig), Description("Default held item to send if none is specified.")]
         public HeldItem DefaultHeldItem { get; set; } = HeldItem.None;
 
+        [Category(TradeConfig), Description("If set to True, each valid Pokemon will come with all suggested Relearnable Moves without the need for a batch command.")]
+        public bool SuggestRelearnMoves { get; set; } = true;
+
         [Category(TradeConfig), Description("Toggle to allow or disallow batch trades.")]
         public bool AllowBatchTrades { get; set; } = true;
 
