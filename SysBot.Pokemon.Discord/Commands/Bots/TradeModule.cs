@@ -450,10 +450,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
             return;
         }
-        if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.SuggestRelearnMoves)
-        {
-            content += "\n.RelearnMoves=$suggestAll";
-        }
+
         content = ReusableActions.StripCodeBlock(content);
         var set = new ShowdownSet(content);
         var template = AutoLegalityWrapper.GetTemplate(set);
@@ -471,7 +468,11 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         {
             var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
             var pkm = sav.GetLegal(template, out var result);
-
+            if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.SuggestRelearnMoves)
+            {
+                if (pkm is ITechRecord tr)
+                    tr.SetRecordFlagsAll();
+            }
             // Check if the Pokémon is from "Legends: Arceus"
             bool isLegendsArceus = pkm.Version == (int)GameVersion.PLA;
 
