@@ -450,7 +450,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
             return;
         }
-
+        if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.SuggestRelearnMoves)
+        {
+            content += "\n.RelearnMoves=$suggestAll";
+        }
         content = ReusableActions.StripCodeBlock(content);
         var set = new ShowdownSet(content);
         var template = AutoLegalityWrapper.GetTemplate(set);
@@ -492,11 +495,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 }
             }
             var la = new LegalityAnalysis(pkm);
-            if (la.Valid && SysCord<T>.Runner.Config.Trade.TradeConfiguration.SuggestRelearnMoves)
-            {
-                // Apply suggested relearn moves
-                MoveSetApplicator.SetRelearnMoves(pkm, la);
-            }
             var spec = GameInfo.Strings.Species[template.Species];
             pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
             if (pkm is not T pk || !la.Valid)
