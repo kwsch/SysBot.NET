@@ -648,7 +648,11 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             // Get the trainer information and generate the Pokémon
             var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
             var pkm = sav.GetLegal(template, out var result);
-
+            if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.SuggestRelearnMoves)
+            {
+                if (pkm is ITechRecord tr)
+                    tr.SetRecordFlagsAll();
+            }
             // Perform legality analysis
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
