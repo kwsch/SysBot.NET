@@ -70,22 +70,33 @@ public static class AutoLegalityExtensionsDiscord
         }
 
         var pkm = download.Data!;
+        var embed = new EmbedBuilder();
+        embed.Title = $"Legalization Report for {download.SanitizedFileName}";
+        embed.Description = $"{download.SanitizedFileName} analysis and legalization attempt.";
+
         if (new LegalityAnalysis(pkm).Valid)
         {
-            await channel.SendMessageAsync($"{download.SanitizedFileName}: Already legal.").ConfigureAwait(false);
-            return;
+            embed.Color = Color.Green;
+            embed.AddField("Status", "Already legal.");
         }
-
-        var legal = pkm.LegalizePokemon();
-        if (!new LegalityAnalysis(legal).Valid)
+        else
         {
-            await channel.SendMessageAsync($"{download.SanitizedFileName}: Unable to legalize.").ConfigureAwait(false);
-            return;
+            var legal = pkm.LegalizePokemon();
+            if (!new LegalityAnalysis(legal).Valid)
+            {
+                embed.Color = Color.Red;
+                embed.AddField("Status", "Unable to legalize.");
+            }
+            else
+            {
+                legal.RefreshChecksum();
+                embed.Color = Color.Green;
+                var msg = $"Here's your legalized PKM for {download.SanitizedFileName}!\n{ReusableActions.GetFormattedShowdownText(legal)}";
+                embed.AddField("Status", "Successfully legalized.");
+                embed.AddField("Details", msg);
+            }
         }
 
-        legal.RefreshChecksum();
-
-        var msg = $"Here's your legalized PKM for {download.SanitizedFileName}!\n{ReusableActions.GetFormattedShowdownText(legal)}";
-        await channel.SendPKMAsync(legal, msg).ConfigureAwait(false);
+        await channel.SendMessageAsync(embed: embed.Build()).ConfigureAwait(false);
     }
 }

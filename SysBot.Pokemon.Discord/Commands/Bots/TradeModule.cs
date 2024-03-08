@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.Net;
 using Discord.WebSocket;
 using PKHeX.Core;
+using PKHeX.Core.AutoMod;
 using SysBot.Base;
 using SysBot.Pokemon.Helpers;
 using System;
@@ -471,7 +472,9 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.SuggestRelearnMoves)
             {
                 if (pkm is ITechRecord tr)
+                {
                     tr.SetRecordFlagsAll();
+                }
             }
             // Check if the Pokémon is from "Legends: Arceus"
             bool isLegendsArceus = pkm.Version == (int)GameVersion.PLA;
@@ -500,13 +503,34 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
             if (pkm is not T pk || !la.Valid)
             {
-                var reason = result == "Timeout" ? $"That {spec} set took too long to generate." : result == "VersionMismatch" ? "Request refused: PKHeX and Auto-Legality Mod version mismatch." : $"I wasn't able to create a {spec} from that set.";
-                var imsg = $"Oops! {reason}";
+                var reason = result == "Timeout" ? $"That {spec} set took too long to generate." :
+                             result == "VersionMismatch" ? "Request refused: PKHeX and Auto-Legality Mod version mismatch." :
+                             $"I wasn't able to create a {spec} from that set.";
+
+                var embedBuilder = new EmbedBuilder()
+                    .WithTitle("Trade Creation Failed.")
+                    .WithColor(Color.Red)
+                    .AddField("Status", $"Failed to create {spec}.")
+                    .AddField("Reason", reason);
+
                 if (result == "Failed")
-                    imsg += $"\n{AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm)}";
-                await ReplyAsync(imsg).ConfigureAwait(false);
-                await Task.Delay(2000); 
-                await Context.Message.DeleteAsync();
+                {
+                    var hint = AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm);
+                    if (hint.Contains("Requested shiny value (ShinyType."))
+                    {
+                        hint = $"{spec} **cannot** be shiny. Please try again.";
+                    }
+                    embedBuilder.AddField("Hint", hint);
+                }
+
+                string userMention = Context.User.Mention;
+                string messageContent = $"{userMention}, here's the report for your request:";
+
+                var message = await Context.Channel.SendMessageAsync(text: messageContent, embed: embedBuilder.Build()).ConfigureAwait(false);
+                await Task.Delay(10_000);
+                await message.DeleteAsync().ConfigureAwait(false);
+                await Context.Message.DeleteAsync().ConfigureAwait(false);
+
                 return;
             }
             pk.ResetPartyStats();

@@ -85,193 +85,144 @@ public static class QueueHelper<T> where T : PKM, new()
             return new TradeQueueResult(false);
         }
 
-        var position = Info.CheckPosition(userID, type);
-        var botct = Info.Hub.Bots.Count;
-        var etaMessage = "";
-        if (position.Position > botct)
-        {
-            var baseEta = Info.Hub.Config.Queues.EstimateDelay(position.Position, botct);
-            // Increment ETA by 1 minute for each batch trade
-            var adjustedEta = baseEta + (batchTradeNumber - 1);
-            etaMessage = $"Estimated: {adjustedEta:F1} min(s) for trade {batchTradeNumber}/{totalBatchTrades}.";
-        }
-        else
-        {
-            var adjustedEta = (batchTradeNumber - 1); // Add 1 minute for each subsequent batch trade
-            etaMessage = $"Estimated: {adjustedEta:F1} min(s) for trade {batchTradeNumber}/{totalBatchTrades}.";
-        }
-
-        // Format IVs for display
+        // Basic Pokémon details
         int[] ivs = pk.IVs;
-        string ivsDisplay = $"{ivs[0]}/{ivs[1]}/{ivs[2]}/{ivs[3]}/{ivs[4]}/{ivs[5]}";
-
-        // Fetch the Pokémon's moves and their PP
         ushort[] moves = new ushort[4];
         pk.GetMoves(moves.AsSpan());
         int[] movePPs = { pk.Move1_PP, pk.Move2_PP, pk.Move3_PP, pk.Move4_PP };
         List<string> moveNames = new List<string> { "" };
-
         for (int i = 0; i < moves.Length; i++)
         {
-            ushort moveId = moves[i];
-            if (moveId == 0) continue; // Skip if no move is assigned to this slot
-            string moveName = GameInfo.MoveDataSource.FirstOrDefault(m => m.Value == moveId)?.Text ?? "";
-            moveNames.Add($"- {moveName} ({movePPs[i]}pp)");
+            if (moves[i] == 0) continue; // Skip if no move is assigned
+            string moveName = GameInfo.MoveDataSource.FirstOrDefault(m => m.Value == moves[i])?.Text ?? "";
+            moveNames.Add($"\u200B- {moveName} ({movePPs[i]}pp)");
         }
-        string movesDisplay = string.Join("\n", moveNames);
-        string abilityName = GameInfo.AbilityDataSource.FirstOrDefault(a => a.Value == pk.Ability)?.Text ?? "";
-        string natureName = GameInfo.NatureDataSource.FirstOrDefault(n => n.Value == pk.Nature)?.Text ?? "";
-        string teraTypeString = "";
-        string scaleText = ""; 
-        byte scaleNumber = 0; 
+        int level = pk.CurrentLevel;
 
+        // Pokémon appearance and type details
+        string teraTypeString = "", scaleText = "", abilityName, natureName, speciesName, formName, speciesAndForm, heldItemName, ballName, formDecoration = "";
+        byte scaleNumber = 0;
         if (pk is PK9 pk9)
         {
             teraTypeString = pk9.TeraTypeOverride == (MoveType)99 ? "Stellar" : pk9.TeraType.ToString();
-            scaleText = $"{PokeSizeDetailedUtil.GetSizeRating(pk9.Scale)}"; 
-            scaleNumber = pk9.Scale; 
+            scaleText = $"{PokeSizeDetailedUtil.GetSizeRating(pk9.Scale)}";
+            scaleNumber = pk9.Scale;
         }
-        int level = pk.CurrentLevel;
-        string speciesName = GameInfo.GetStrings(1).Species[pk.Species];
-        string formName = ShowdownParsing.GetStringFromForm(pk.Form, strings, pk.Species, pk.Context);
-        string speciesAndForm = $"{speciesName}{(string.IsNullOrEmpty(formName) ? "" : $"-{formName}")}";
-        string heldItemName = strings.itemlist[pk.HeldItem];
-        string ballName = strings.balllist[pk.Ball];
 
-        string formDecoration = "";
+        // Pokémon identity and special attributes
+        abilityName = GameInfo.AbilityDataSource.FirstOrDefault(a => a.Value == pk.Ability)?.Text ?? "";
+        natureName = GameInfo.NatureDataSource.FirstOrDefault(n => n.Value == pk.Nature)?.Text ?? "";
+        speciesName = GameInfo.GetStrings(1).Species[pk.Species];
+        string shinySymbol = pk.ShinyXor == 0 ? "◼ " : pk.IsShiny ? "★ " : string.Empty;
+        string genderSymbol = GameInfo.GenderSymbolASCII[pk.Gender];
+        string displayGender = genderSymbol == "M" || genderSymbol == "F" ? $" ({genderSymbol})" : "";
+        formName = ShowdownParsing.GetStringFromForm(pk.Form, strings, pk.Species, pk.Context);
+        speciesAndForm = $"**{shinySymbol}{speciesName}{(string.IsNullOrEmpty(formName) ? "" : $"-{formName}")}{displayGender}**";
+        heldItemName = strings.itemlist[pk.HeldItem];
+        ballName = strings.balllist[pk.Ball];
         if (pk.Species == (int)Species.Alcremie && formArgument != 0)
         {
             formDecoration = $"{(AlcremieDecoration)formArgument}";
         }
 
-        // Determine if this is a clone or dump request
+        // Request type flags
         bool isCloneRequest = type == PokeRoutineType.Clone;
         bool isDumpRequest = type == PokeRoutineType.Dump;
         bool FixOT = type == PokeRoutineType.FixOT;
         bool isSpecialRequest = type == PokeRoutineType.SeedCheck;
 
-        // Check if the Pokémon is shiny and prepend the shiny emoji
+        // Display elements
+        string ivsDisplay = $"{ivs[0]}/{ivs[1]}/{ivs[2]}/{ivs[3]}/{ivs[4]}/{ivs[5]}";
+        string movesDisplay = string.Join("\n", moveNames);
         string shinyEmoji = pk.IsShiny ? "✨ " : "";
         string pokemonDisplayName = pk.IsNicknamed ? pk.Nickname : GameInfo.GetStrings(1).Species[pk.Species];
+
+        // Queue position and ETA calculation
+        var position = Info.CheckPosition(userID, type);
+        var botct = Info.Hub.Bots.Count;
+        var baseEta = position.Position > botct ? Info.Hub.Config.Queues.EstimateDelay(position.Position, botct) : 0;
+        var adjustedEta = baseEta + (batchTradeNumber - 1); // Increment ETA by 1 minute for each batch trade
+        var etaMessage = $"Estimated: {adjustedEta:F1} min(s) for trade {batchTradeNumber}/{totalBatchTrades}.";
+
+        // Determining trade title based on trade type
         string tradeTitle;
+        tradeTitle = isMysteryEgg ? "✨ Shiny Mystery Egg ✨" :
+                     isBatchTrade ? $"Batch Trade #{batchTradeNumber} - {shinyEmoji}{pokemonDisplayName}" :
+                     FixOT ? "FixOT Request" :
+                     isSpecialRequest ? "Special Request" :
+                     isCloneRequest ? "Clone Pod Activated!" :
+                     isDumpRequest ? "Pokémon Dump" :
+                     "";
 
-        if (isMysteryEgg)
-        {
-            tradeTitle = "✨ Shiny Mystery Egg ✨";
-        }
-        else if (isBatchTrade)
-        {
-            tradeTitle = $"Batch Trade #{batchTradeNumber} - {shinyEmoji}{pokemonDisplayName}";
-        }
-        else if (FixOT)
-        {
-            tradeTitle = $"FixOT Request";
-        }
-        else if (isSpecialRequest)
-        {
-            tradeTitle = $"Special Request";
-        }
-        else if (isCloneRequest)
-        {
-            tradeTitle = "Clone Pod Activated!";
-        }
-        else if (isDumpRequest)
-        {
-            tradeTitle = "Pokémon Dump";
-        }
-        else
-        {
-            tradeTitle = $"";
-        }
-
-        // Get the Pokémon's image URL and dominant color
+        // Prepare embed details for Discord message
         (string embedImageUrl, DiscordColor embedColor) = await PrepareEmbedDetails(context, pk, isCloneRequest || isDumpRequest, formName, formArgument);
 
-        // Adjust the image URL for dump request
-        if (isMysteryEgg)
-        {
-            embedImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/mysteryegg2.png"; // URL for mystery egg
-        }
-        else if (isDumpRequest)
-        {
-            embedImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/AltBallImg/128x128/dumpball.png"; // URL for dump request
-        }
-        else if (isCloneRequest)
-        {
-            embedImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/clonepod.png"; // URL for clone request
-        }
-        else if (isSpecialRequest)
-        {
-            embedImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/specialrequest.png"; // URL for special request
-        }
-        else if (FixOT)
-        {
-            embedImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/AltBallImg/128x128/rocketball.png"; // URL for fixot request
-        }
-        string heldItemUrl = string.Empty;
+        // Adjust image URL based on request type
+        embedImageUrl = isMysteryEgg ? "https://raw.githubusercontent.com/bdawg1989/sprites/main/mysteryegg2.png" :
+                        isDumpRequest ? "https://raw.githubusercontent.com/bdawg1989/sprites/main/AltBallImg/128x128/dumpball.png" :
+                        isCloneRequest ? "https://raw.githubusercontent.com/bdawg1989/sprites/main/clonepod.png" :
+                        isSpecialRequest ? "https://raw.githubusercontent.com/bdawg1989/sprites/main/specialrequest.png" :
+                        FixOT ? "https://raw.githubusercontent.com/bdawg1989/sprites/main/AltBallImg/128x128/rocketball.png" :
+                        embedImageUrl; // Keep original if none of the above
 
+        // Prepare held item image URL if available
+        string heldItemUrl = string.Empty;
         if (!string.IsNullOrWhiteSpace(heldItemName))
         {
-            // Convert to lowercase and remove spaces
             heldItemName = heldItemName.ToLower().Replace(" ", "");
             heldItemUrl = $"https://serebii.net/itemdex/sprites/{heldItemName}.png";
         }
-        // Check if the image URL is a local file path
+
+        // Checking if the image URL points to a local file
         bool isLocalFile = File.Exists(embedImageUrl);
         string userName = user.Username;
-        string isPkmShiny = pk.IsShiny ? "✨" : "";
-        // Build the embed with the author title image
-        string authorName;
-        if (isMysteryEgg || FixOT || isCloneRequest || isDumpRequest || isSpecialRequest || isBatchTrade)
-        {
-            authorName = $"{userName}'s {tradeTitle}";
-        }
-        else // Normal trade
-        {
-            authorName = $"{userName}'s {isPkmShiny} {pokemonDisplayName}";
-        }
+        string isPkmShiny = pk.IsShiny ? "Shiny" : "";
+
+        // Building the embed author name based on the type of trade
+        string authorName = isMysteryEgg || FixOT || isCloneRequest || isDumpRequest || isSpecialRequest || isBatchTrade ?
+                            $"{userName}'s {tradeTitle}" :
+                            $"{userName}'s {isPkmShiny} {pokemonDisplayName}";
+
+        // Initializing the embed builder with general settings
         var embedBuilder = new EmbedBuilder()
             .WithColor(embedColor)
-            .WithImageUrl(embedImageUrl)
+            .WithImageUrl(isLocalFile ? $"attachment://{Path.GetFileName(embedImageUrl)}" : embedImageUrl)
             .WithFooter($"Current Position: {position.Position}\n{etaMessage}")
             .WithAuthor(new EmbedAuthorBuilder()
                 .WithName(authorName)
                 .WithIconUrl(user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl())
                 .WithUrl("https://genpkm.com"));
 
-        // Add the additional text at the top as its own field
+        // Adding additional text to the embed, if any
         string additionalText = string.Join("\n", SysCordSettings.Settings.AdditionalEmbedText);
         if (!string.IsNullOrEmpty(additionalText))
         {
-            embedBuilder.AddField("\u200B", additionalText, inline: false); 
+            embedBuilder.AddField("\u200B", additionalText, inline: false);
         }
 
+        // Constructing the content of the embed based on the trade type
         if (!isMysteryEgg && !isCloneRequest && !isDumpRequest && !FixOT && !isSpecialRequest)
         {
-            // Prepare the left side content
-            string leftSideContent = $"**Trainer**: {user.Mention}\n" +
-                                     $"**Species**: {speciesAndForm}\n";
-            GameVersion gameVersion = (GameVersion)pk.Version;
-            if (gameVersion == GameVersion.SL || gameVersion == GameVersion.VL)
+            // Preparing content for normal trades
+            string leftSideContent = $"Trainer: {user.Mention}\n";
+            if ((GameVersion)pk.Version is GameVersion.SL or GameVersion.VL)
             {
-                leftSideContent += $"**TeraType**: {teraTypeString}\n" +
-                    $"**Scale**: {scaleText} ({scaleNumber})\n";
+                leftSideContent += $"Tera Type: {teraTypeString}\nScale: {scaleText} ({scaleNumber})\n";
             }
-            leftSideContent += $"**Level**: {level}\n" +
-                               $"**Ability**: {abilityName}\n" +
-                               $"**Nature**: {natureName}\n" +
-                               $"**IVs**: {ivsDisplay}";
-            embedBuilder.AddField("**__Info__**", leftSideContent, inline: true);
-            embedBuilder.AddField("\u200B", "\u200B", inline: true); 
-            embedBuilder.AddField("**__Moves__**", movesDisplay, inline: true);
+            leftSideContent += $"Level: {level}\nAbility: {abilityName}\nNature: {natureName}\nIVs: {ivsDisplay}";
+            embedBuilder.AddField($"{speciesAndForm}", leftSideContent, inline: true);
+            embedBuilder.AddField("\u200B", "\u200B", inline: true); // Spacer
+            embedBuilder.AddField("**Moves:**", movesDisplay, inline: true);
         }
         else
         {
-            string specialDescription = $"**Trainer**: {user.Mention}\n" +
+            // Preparing content for special types of trades
+            string specialDescription = $"Trainer: {user.Mention}\n" +
                                         (isMysteryEgg ? "Mystery Egg" : isSpecialRequest ? "Special Request" : isCloneRequest ? "Clone Request" : FixOT ? "FixOT Request" : "Dump Request");
             embedBuilder.AddField("\u200B", specialDescription, inline: false);
         }
 
+        // Adding thumbnails for clone and special requests, or held items
         if (isCloneRequest || isSpecialRequest)
         {
             embedBuilder.WithThumbnailUrl("https://raw.githubusercontent.com/bdawg1989/sprites/main/profoak.png");
@@ -280,11 +231,8 @@ public static class QueueHelper<T> where T : PKM, new()
         {
             embedBuilder.WithThumbnailUrl(heldItemUrl);
         }
-        if (isLocalFile)
-        {
-            embedBuilder.WithImageUrl($"attachment://{Path.GetFileName(embedImageUrl)}");
-        }
 
+        // Building and sending the embed message
         var embed = embedBuilder.Build();
         if (embed == null)
         {
@@ -293,16 +241,13 @@ public static class QueueHelper<T> where T : PKM, new()
             return new TradeQueueResult(false);
         }
 
+        // Handling file operations for batch trades and sending messages
         if (isLocalFile)
         {
             await context.Channel.SendFileAsync(embedImageUrl, embed: embed);
-
             if (isBatchTrade)
             {
-                if (!userBatchTradeMaxDetailId.ContainsKey(userID) || userBatchTradeMaxDetailId[userID] < detail.ID)
-                {
-                    userBatchTradeMaxDetailId[userID] = detail.ID;
-                }
+                userBatchTradeMaxDetailId[userID] = Math.Max(userBatchTradeMaxDetailId.GetValueOrDefault(userID), detail.ID);
                 await ScheduleFileDeletion(embedImageUrl, 0, detail.ID);
                 if (detail.ID == userBatchTradeMaxDetailId[userID] && batchTradeNumber == totalBatchTrades)
                 {
