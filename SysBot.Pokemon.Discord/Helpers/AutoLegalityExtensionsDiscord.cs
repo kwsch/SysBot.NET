@@ -94,6 +94,7 @@ public static class AutoLegalityExtensionsDiscord
                 var msg = $"Here's your legalized PKM for {download.SanitizedFileName}!\n{ReusableActions.GetFormattedShowdownText(legal)}";
                 embed.AddField("Status", "Successfully legalized.");
                 embed.AddField("Details", msg);
+                await channel.SendPKMAsync(legal).ConfigureAwait(false);
             }
         }
 
