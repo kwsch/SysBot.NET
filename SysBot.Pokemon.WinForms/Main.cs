@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using SysBot.Pokemon.Helpers;
 using System.Drawing;
+using SysBot.Pokemon.WinForms.Properties;
 
 namespace SysBot.Pokemon.WinForms;
 
@@ -67,6 +68,7 @@ public sealed partial class Main : Form
         Task.Run(BotMonitor);
         InitUtil.InitializeStubs(Config.Mode);
         _isFormLoading = false;
+        UpdateBackgroundImage(Config.Mode);
     }
 
     private static IPokeBotRunner GetRunner(ProgramConfig cfg) => cfg.Mode switch
@@ -217,19 +219,26 @@ public sealed partial class Main : Form
     public sealed partial class ProgramConfigContext : JsonSerializerContext;
     private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
     {
-        if (_isFormLoading) return;
+        if (_isFormLoading) return; // Check to avoid processing during form loading
+
         if (comboBox1.SelectedValue is int selectedValue)
         {
-            Config.Mode = (ProgramMode)selectedValue;
+            ProgramMode newMode = (ProgramMode)selectedValue;
+            Config.Mode = newMode; 
+
             SaveCurrentConfig();
-            UpdateRunnerAndUI();
+            UpdateRunnerAndUI(); 
+
+            UpdateBackgroundImage(newMode);
         }
     }
+
     private void UpdateRunnerAndUI()
     {
         RunningEnvironment = GetRunner(Config);
         Text = $"{(string.IsNullOrEmpty(Config.Hub.BotName) ? "NotPaldea.net" : Config.Hub.BotName)} {TradeBot.Version} ({Config.Mode})";
     }
+
     private void B_Start_Click(object sender, EventArgs e)
     {
         SaveCurrentConfig();
@@ -241,6 +250,32 @@ public sealed partial class Main : Form
 
         if (Bots.Count == 0)
             WinFormsUtil.Alert("No bots configured, but all supporting services have been started.");
+    }
+
+    private void UpdateBackgroundImage(ProgramMode mode)
+    {
+        switch (mode)
+        {
+            case ProgramMode.SV:
+                FLP_Bots.BackgroundImage = Resources.sv_mode_image;
+                break;
+            case ProgramMode.SWSH:
+                FLP_Bots.BackgroundImage = Resources.swsh_mode_image;
+                break;
+            case ProgramMode.BDSP:
+                FLP_Bots.BackgroundImage = Resources.bdsp_mode_image;
+                break;
+            case ProgramMode.LA:
+                FLP_Bots.BackgroundImage = Resources.pla_mode_image;
+                break;
+            case ProgramMode.LGPE:
+                FLP_Bots.BackgroundImage = Resources.lgpe_mode_image;
+                break;
+            default:
+                FLP_Bots.BackgroundImage = null;
+                break;
+        }
+        FLP_Bots.BackgroundImageLayout = ImageLayout.Center;
     }
 
     private void SendAll(BotControlCommand cmd)
