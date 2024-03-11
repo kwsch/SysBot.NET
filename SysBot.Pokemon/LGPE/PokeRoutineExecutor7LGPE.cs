@@ -83,7 +83,7 @@ public abstract class PokeRoutineExecutor7LGPE : PokeRoutineExecutor<PB7>
             var sav = new SAV7b();
             var info = sav.Blocks.Status;
             var read = await Connection.ReadBytesAsync(TrainerDataOffset, TrainerDataLength, token).ConfigureAwait(false);
-            read.CopyTo(info.Data, info.Offset);
+            read.CopyTo(info.Data);
             return sav;
         }
 

@@ -77,10 +77,10 @@ namespace SysBot.Pokemon
                 {
                     case 2: //ultra
                         pk.ClearNickname();
-                        pk.OT_Name = TrainerName;
+                        pk.OriginalTrainerName = TrainerName;
                         break;
                     case 3: //great
-                        pk.OT_Name = TrainerName;
+                        pk.OriginalTrainerName = TrainerName;
                         break;
                     case 4: //poke
                         pk.ClearNickname();
@@ -288,7 +288,7 @@ namespace SysBot.Pokemon
                 var natureEnum = Enum.TryParse(natureName, out Nature result);
                 if (natureEnum)
                 {
-                    pk.Nature = pk.StatNature = (int)result;
+                    pk.Nature = pk.StatNature = result;
                 }
                 else
                 {
@@ -336,7 +336,7 @@ namespace SysBot.Pokemon
                     return sst;
                 }
 
-                pk.Ball = item;
+                pk.Ball = (byte)item;
 
                 LegalizeIfNotLegal(ref pk, caller, detail, TrainerName);
 
@@ -443,7 +443,7 @@ namespace SysBot.Pokemon
                 return;
             }
 
-            pkm.OT_Name = tempPk.OT_Name;
+            pkm.OriginalTrainerName = tempPk.OriginalTrainerName;
 
             la = new LegalityAnalysis(pkm);
             if (!la.Valid)

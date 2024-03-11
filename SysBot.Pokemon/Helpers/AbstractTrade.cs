@@ -40,9 +40,9 @@ namespace SysBot.Pokemon.Helpers
         public static bool HasAdName(T pk, out string ad)
         {
             string pattern = @"(YT$)|(YT\w*$)|(Lab$)|(\.\w*$|\.\w*\/)|(TV$)|(PKHeX)|(FB:)|(AuSLove)|(ShinyMart)|(Blainette)|(\ com)|(\ org)|(\ net)|(2DOS3)|(PPorg)|(Tik\wok$)|(YouTube)|(IG:)|(TTV\ )|(Tools)|(JokersWrath)|(bot$)|(PKMGen)|(TheHighTable)";
-            bool ot = Regex.IsMatch(pk.OT_Name, pattern, RegexOptions.IgnoreCase);
+            bool ot = Regex.IsMatch(pk.OriginalTrainerName, pattern, RegexOptions.IgnoreCase);
             bool nick = Regex.IsMatch(pk.Nickname, pattern, RegexOptions.IgnoreCase);
-            ad = ot ? pk.OT_Name : nick ? pk.Nickname : "";
+            ad = ot ? pk.OriginalTrainerName : nick ? pk.Nickname : "";
             return ot || nick;
         }
 
@@ -158,7 +158,7 @@ namespace SysBot.Pokemon.Helpers
     public static PKM TrashBytes(PKM pkm, LegalityAnalysis? la = null)
         {
             var pkMet = (T)pkm.Clone();
-            if (pkMet.Version is not (int)GameVersion.GO)
+            if (pkMet.Version is not GameVersion.GO)
                 pkMet.MetDate = DateOnly.Parse("2020/10/20");
 
             var analysis = new LegalityAnalysis(pkMet);
@@ -543,23 +543,23 @@ namespace SysBot.Pokemon.Helpers
             var dittoStats = new string[] { "atk", "spe", "spa" };
             var nickname = pkm.Nickname.ToLower();
             pkm.StatNature = pkm.Nature;
-            pkm.Met_Location = pkm switch
+            pkm.MetLocation = pkm switch
             {
                 PB8 => 400,
                 PK9 => 28,
                 _ => 162, // PK8
             };
 
-            pkm.Met_Level = pkm switch
+            pkm.MetLevel = pkm switch
             {
                 PB8 => 29,
                 PK9 => 34,
-                _ => pkm.Met_Level,
+                _ => pkm.MetLevel,
             };
 
             if (pkm is PK9 pk9)
             {
-                pk9.Obedience_Level = (byte)pk9.Met_Level;
+                pk9.Obedience_Level = (byte)pk9.MetLevel;
                 pk9.TeraTypeOriginal = MoveType.Normal;
                 pk9.TeraTypeOverride = (MoveType)19;
             }
@@ -595,7 +595,7 @@ namespace SysBot.Pokemon.Helpers
             }
 
             pk.IsEgg = true;
-            pk.Egg_Location = pk switch
+            pk.EggLocation = pk switch
             {
                 PB8 => 60010,
                 PK9 => 30023,
@@ -607,8 +607,8 @@ namespace SysBot.Pokemon.Helpers
             pk.HeldItem = 0;
             pk.CurrentLevel = 1;
             pk.EXP = 0;
-            pk.Met_Level = 1;
-            pk.Met_Location = pk switch
+            pk.MetLevel = 1;
+            pk.MetLocation = pk switch
             {
                 PB8 => 65535,
                 PK9 => 0,
@@ -616,9 +616,9 @@ namespace SysBot.Pokemon.Helpers
             };
 
             pk.CurrentHandler = 0;
-            pk.OT_Friendship = 1;
-            pk.HT_Name = "";
-            pk.HT_Friendship = 0;
+            pk.OriginalTrainerFriendship = 1;
+            pk.HandlingTrainerName = "";
+            pk.HandlingTrainerFriendship = 0;
             pk.ClearMemories();
             pk.StatNature = pk.Nature;
             pk.SetEVs(new int[] { 0, 0, 0, 0, 0, 0 });
@@ -629,29 +629,29 @@ namespace SysBot.Pokemon.Helpers
 
             if (pk is PK8 pk8)
             {
-                pk8.HT_Language = 0;
-                pk8.HT_Gender = 0;
-                pk8.HT_Memory = 0;
-                pk8.HT_Feeling = 0;
-                pk8.HT_Intensity = 0;
+                pk8.HandlingTrainerLanguage = 0;
+                pk8.HandlingTrainerGender = 0;
+                pk8.HandlingTrainerMemory = 0;
+                pk8.HandlingTrainerMemoryFeeling = 0;
+                pk8.HandlingTrainerMemoryIntensity = 0;
                 pk8.DynamaxLevel = pk8.GetSuggestedDynamaxLevel(pk8, 0);
             }
             else if (pk is PB8 pb8)
             {
-                pb8.HT_Language = 0;
-                pb8.HT_Gender = 0;
-                pb8.HT_Memory = 0;
-                pb8.HT_Feeling = 0;
-                pb8.HT_Intensity = 0;
+                pb8.HandlingTrainerLanguage = 0;
+                pb8.HandlingTrainerGender = 0;
+                pb8.HandlingTrainerMemory = 0;
+                pb8.HandlingTrainerMemoryFeeling = 0;
+                pb8.HandlingTrainerMemoryIntensity = 0;
                 pb8.DynamaxLevel = pb8.GetSuggestedDynamaxLevel(pb8, 0);
             }
             else if (pk is PK9 pk9)
             {
-                pk9.HT_Language = 0;
-                pk9.HT_Gender = 0;
-                pk9.HT_Memory = 0;
-                pk9.HT_Feeling = 0;
-                pk9.HT_Intensity = 0;
+                pk9.HandlingTrainerLanguage = 0;
+                pk9.HandlingTrainerGender = 0;
+                pk9.HandlingTrainerMemory = 0;
+                pk9.HandlingTrainerMemoryFeeling = 0;
+                pk9.HandlingTrainerMemoryIntensity = 0;
                 pk9.Obedience_Level = 1;
                 pk9.Version = 0;
                 pk9.BattleVersion = 0;

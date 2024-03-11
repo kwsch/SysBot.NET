@@ -810,8 +810,8 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             var msg = Hub.Config.Trade.TradeConfiguration.DumpTradeLegalityCheck ? verbose : $"File {ctr}";
 
             // Extra information about trainer data for people requesting with their own trainer data.
-            var ot = pk.OT_Name;
-            var ot_gender = pk.OT_Gender == 0 ? "Male" : "Female";
+            var ot = pk.OriginalTrainerName;
+            var ot_gender = pk.OriginalTrainerGender == 0 ? "Male" : "Female";
             var tid = pk.GetDisplayTID().ToString(pk.GetTrainerIDFormat().GetTrainerIDFormatStringTID());
             var sid = pk.GetDisplaySID().ToString(pk.GetTrainerIDFormat().GetTrainerIDFormatStringSID());
             msg += $"\n**Trainer Data**\n```OT: {ot}\nOTGender: {ot_gender}\nTID: {tid}\nSID: {sid}```";
@@ -1040,8 +1040,8 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         if (clone.FatefulEncounter)
         {
             clone.SetDefaultNickname(laInit);
-            var info = new SimpleTrainerInfo { Gender = clone.OT_Gender, Language = clone.Language, OT = name, TID16 = clone.TID16, SID16 = clone.SID16, Generation = 9 };
-            var mg = EncounterEvent.GetAllEvents().Where(x => x.Species == clone.Species && x.Form == clone.Form && x.IsShiny == clone.IsShiny && x.OT_Name == clone.OT_Name).ToList();
+            var info = new SimpleTrainerInfo { Gender = clone.OriginalTrainerGender, Language = clone.Language, OT = name, TID16 = clone.TID16, SID16 = clone.SID16, Generation = 9 };
+            var mg = EncounterEvent.GetAllEvents().Where(x => x.Species == clone.Species && x.Form == clone.Form && x.IsShiny == clone.IsShiny && x.OriginalTrainerName == clone.OriginalTrainerName).ToList();
             if (mg.Count > 0)
                 clone = AbstractTrade<PK9>.CherishHandler(mg.First(), info);
             else clone = (PK9)sav.GetLegal(AutoLegalityWrapper.GetTemplate(new ShowdownSet(string.Join("\n", set))), out _);
@@ -1068,7 +1068,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         await Task.Delay(2_000, token).ConfigureAwait(false);
 
         var pk2 = await ReadUntilPresent(TradePartnerOfferedOffset, 15_000, 0_200, BoxFormatSlotSize, token).ConfigureAwait(false);
-        bool changed = pk2 is null || pk2.Species != offered.Species || offered.OT_Name != pk2.OT_Name;
+        bool changed = pk2 is null || pk2.Species != offered.Species || offered.OriginalTrainerName != pk2.OriginalTrainerName;
         if (changed)
         {
             // They get one more chance.
@@ -1078,7 +1078,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             while (changed)
             {
                 pk2 = await ReadUntilPresent(TradePartnerOfferedOffset, 2_000, 0_500, BoxFormatSlotSize, token).ConfigureAwait(false);
-                changed = pk2 == null || clone.Species != pk2.Species || offered.OT_Name != pk2.OT_Name;
+                changed = pk2 == null || clone.Species != pk2.Species || offered.OriginalTrainerName != pk2.OriginalTrainerName;
                 await Task.Delay(1_000, token).ConfigureAwait(false);
                 timer -= 1_000;
 
@@ -1108,11 +1108,11 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             return false;
         }
         var cln = toSend.Clone();
-        cln.OT_Gender = tradePartner.Gender;
+        cln.OriginalTrainerGender = (byte)tradePartner.Gender;
         cln.TrainerTID7 = (uint)Math.Abs(tradePartner.DisplayTID);
         cln.TrainerSID7 = (uint)Math.Abs(tradePartner.DisplaySID);
         cln.Language = tradePartner.Language;
-        cln.OT_Name = tradePartner.OT;
+        cln.OriginalTrainerName = tradePartner.OT;
 
         // copied from https://github.com/Wanghaoran86/TransFireBot/commit/f7c5b39ce2952818177a97babb8b3df027e673fb
         ushort species = toSend.Species;
@@ -1135,13 +1135,13 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                 version = (GameVersion)tradePartner.Game;
                 break;
         }
-        cln.Version = (int)version;
+        cln.Version = version;
 
         if (!toSend.IsNicknamed)
             cln.ClearNickname();
 
         // thanks @Wanghaoran86
-        if (toSend.Met_Location == Locations.TeraCavern9 && toSend.IsShiny)
+        if (toSend.MetLocation == Locations.TeraCavern9 && toSend.IsShiny)
         {
             cln.PID = (((uint)(cln.TID16 ^ cln.SID16) ^ (cln.PID & 0xFFFF) ^ 1u) << 16) | (cln.PID & 0xFFFF);
         }

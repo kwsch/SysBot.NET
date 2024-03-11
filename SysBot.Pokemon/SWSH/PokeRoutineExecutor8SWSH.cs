@@ -45,9 +45,7 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
     {
         if (sav != null)
         {
-            // Update PKM to the current save's handler data
-            DateTime Date = DateTime.Now;
-            pkm.Trade(sav, Date.Day, Date.Month, Date.Year);
+            pkm.UpdateHandler(sav);
             pkm.RefreshChecksum();
         }
         var ofs = GetBoxSlotOffset(box, slot);
@@ -135,9 +133,14 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
         var sav = new SAV8SWSH();
         var info = sav.MyStatus;
         var read = await Connection.ReadBytesAsync(TrainerDataOffset, TrainerDataLength, token).ConfigureAwait(false);
-        read.CopyTo(info.Data, 0);
+
+        byte[] dataBytes = new byte[info.Data.Length];
+        Array.Copy(read, dataBytes, info.Data.Length);
+        dataBytes.CopyTo(info.Data);
+
         return sav;
     }
+
 
     protected virtual async Task EnterLinkCode(int code, PokeTradeHubConfig config, CancellationToken token)
     {

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
-		<PackageReference Include="DoDo.Open.Sdk" Version="1.7.0" />
+		<PackageReference Include="DoDo.Open.Sdk" Version="1.8.7" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />

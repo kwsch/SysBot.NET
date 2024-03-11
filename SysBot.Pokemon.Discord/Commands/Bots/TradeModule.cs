@@ -477,7 +477,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 }
             }
             // Check if the Pokémon is from "Legends: Arceus"
-            bool isLegendsArceus = pkm.Version == (int)GameVersion.PLA;
+            bool isLegendsArceus = pkm.Version == GameVersion.PLA;
 
             if (!isLegendsArceus && pkm.HeldItem == 0 && !pkm.IsEgg)
             {
@@ -1120,8 +1120,8 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         {
             var clone = (T)pk.Clone();
 
-            clone.HT_Name = pk.OT_Name;
-            clone.HT_Gender = pk.OT_Gender;
+            clone.HandlingTrainerName = pk.OriginalTrainerName;
+            clone.HandlingTrainerGender = pk.OriginalTrainerGender;
 
             if (clone is PK8 or PA8 or PB8 or PK9)
                 ((dynamic)clone).HT_Language = (byte)pk.Language;

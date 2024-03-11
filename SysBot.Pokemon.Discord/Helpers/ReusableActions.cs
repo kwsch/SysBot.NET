@@ -103,7 +103,7 @@ public static class ReusableActions
             else newShowdown[index] = "Shiny: Star\r";
         }
 
-        newShowdown.InsertRange(1, new string[] { $"OT: {pkm.OT_Name}", $"TID: {pkm.DisplayTID}", $"SID: {pkm.DisplaySID}", $"OTGender: {(Gender)pkm.OT_Gender}", $"Language: {(LanguageID)pkm.Language}" });
+        newShowdown.InsertRange(1, new string[] { $"OT: {pkm.OriginalTrainerName}", $"TID: {pkm.DisplayTID}", $"SID: {pkm.DisplaySID}", $"OTGender: {(Gender)pkm.OriginalTrainerGender}", $"Language: {(LanguageID)pkm.Language}" });
         return Format.Code(string.Join("\n", newShowdown).TrimEnd());
     }
 
