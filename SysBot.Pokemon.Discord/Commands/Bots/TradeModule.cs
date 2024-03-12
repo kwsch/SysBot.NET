@@ -1229,7 +1229,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             clone.HandlingTrainerGender = pk.OriginalTrainerGender;
 
             if (clone is PK8 or PA8 or PB8 or PK9)
-                ((dynamic)clone).HT_Language = (byte)pk.Language;
+                ((dynamic)clone).HandlingTrainerLanguage = (byte)pk.Language;
 
             clone.CurrentHandler = 1;
 
