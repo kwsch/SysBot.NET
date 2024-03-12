@@ -44,7 +44,7 @@ public static class AutoLegalityExtensionsDiscord
         }
     }
 
-    public static Task ReplyWithLegalizedSetAsync(this ISocketMessageChannel channel, string content, int gen)
+    public static Task ReplyWithLegalizedSetAsync(this ISocketMessageChannel channel, string content, byte gen)
     {
         content = ReusableActions.StripCodeBlock(content);
         var set = new ShowdownSet(content);

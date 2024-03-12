@@ -18,7 +18,7 @@ public class LegalizerModule<T> : ModuleBase<SocketCommandContext> where T : PKM
     [Command("convert"), Alias("showdown")]
     [Summary("Tries to convert the Showdown Set to pkm data.")]
     [Priority(1)]
-    public Task ConvertShowdown([Summary("Generation/Format")] int gen, [Remainder][Summary("Showdown Set")] string content)
+    public Task ConvertShowdown([Summary("Generation/Format")] byte gen, [Remainder][Summary("Showdown Set")] string content)
     {
         return Context.Channel.ReplyWithLegalizedSetAsync(content, gen);
     }
