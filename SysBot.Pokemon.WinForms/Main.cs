@@ -175,10 +175,6 @@ public sealed partial class Main : Form
 
     private ProgramConfig GetCurrentConfiguration()
     {
-        if (Config == null)
-        {
-            throw new InvalidOperationException("Config has not been initialized because a valid license was not entered.");
-        }
         Config.Bots = Bots.ToArray();
         return Config;
     }
