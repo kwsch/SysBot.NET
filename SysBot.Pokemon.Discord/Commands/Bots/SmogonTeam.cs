@@ -207,9 +207,42 @@ namespace SysBot.Pokemon.Discord
 
             if (species != default)
             {
+                // Check if the Pokémon requires a Home Tracker
+                var pk = GetPKM(gameVersion, (int)species);
+                if (pk == null)
+                {
+                    return -1;
+                }
+
+                var current = GetEntityContext(gameVersion);
+
+                if (RequiresHomeTracker(pk, current))
+                {
+                    // Pokémon requires a Home Tracker
+                    return -1;
+                }
+
                 return (int)species;
             }
+
             return -1;
+        }
+
+        private static EntityContext GetEntityContext(string gameVersion)
+        {
+            return gameVersion.ToLowerInvariant() switch
+            {
+                "bdsp" => EntityContext.Gen8b,
+                "swsh" => EntityContext.Gen8,
+                "sv" => EntityContext.Gen9,
+                _ => EntityContext.None,
+            };
+        }
+
+        private static bool RequiresHomeTracker(PKM pk, EntityContext current)
+        {
+            var context = pk.Context;
+            return HomeTrackerUtil.IsRequired(context, current);
         }
 
         private static List<ShowdownSet> GenerateSmogonTeam(string gameVersion, string type)
