@@ -180,6 +180,38 @@ namespace SysBot.Pokemon.Discord
             }
         }
 
+        private static int GetRandomSpecies(string gameVersion, string type, HashSet<int> addedSpecies)
+        {
+            var speciesNames = GameInfo.GetStrings(gameVersion).Species;
+            var filteredSpecies = string.IsNullOrEmpty(type)
+                ? speciesNames.Skip(1).ToArray()
+                : speciesNames.Skip(1).Where(s => IsPokemonOfType(gameVersion, Array.IndexOf((Array)speciesNames, s), type)).ToArray();
+
+            var availableSpecies = filteredSpecies
+                .Where(s => !addedSpecies.Contains(Array.IndexOf((Array)speciesNames, s)))
+                .ToArray();
+
+            if (availableSpecies.Length == 0)
+            {
+                throw new Exception("No more unique species available.");
+            }
+
+            var random = new Random();
+            var randomIndex = random.Next(0, availableSpecies.Length);
+            var speciesName = availableSpecies[randomIndex];
+
+            var sanitizedSpeciesName = speciesName.Replace(" ", "").Replace("-", "").Replace(".", "");
+            var species = Enum.GetValues(typeof(Species))
+                .Cast<Species>()
+                .FirstOrDefault(s => string.Equals(s.ToString(), sanitizedSpeciesName, StringComparison.OrdinalIgnoreCase));
+
+            if (species != default)
+            {
+                return (int)species;
+            }
+            return -1;
+        }
+
         private static List<ShowdownSet> GenerateSmogonTeam(string gameVersion, string type)
         {
             var random = new Random();
@@ -189,6 +221,12 @@ namespace SysBot.Pokemon.Discord
             while (team.Count < 6)
             {
                 var species = GetRandomSpecies(gameVersion, type, addedSpecies);
+
+                if (species == -1)
+                {
+                    continue;
+                }
+
                 var pk = GetPKM(gameVersion, species);
 
                 if (pk == null)
@@ -227,39 +265,6 @@ namespace SysBot.Pokemon.Discord
                 "sv" => new PK9 { Species = (ushort)species },
                 _ => null,
             };
-        }
-
-        private static int GetRandomSpecies(string gameVersion, string type, HashSet<int> addedSpecies)
-        {
-            var speciesNames = GameInfo.GetStrings(gameVersion).Species;
-            var filteredSpecies = string.IsNullOrEmpty(type)
-                ? speciesNames.Skip(1).ToArray()
-                : speciesNames.Skip(1).Where(s => IsPokemonOfType(gameVersion, Array.IndexOf((Array)speciesNames, s), type)).ToArray();
-
-            var availableSpecies = filteredSpecies
-                .Where(s => !addedSpecies.Contains(Array.IndexOf((Array)speciesNames, s)))
-                .ToArray();
-
-            if (availableSpecies.Length == 0)
-            {
-                throw new Exception("No more unique species available.");
-            }
-
-            var random = new Random();
-            var randomIndex = random.Next(0, availableSpecies.Length);
-            var speciesName = availableSpecies[randomIndex];
-
-            var sanitizedSpeciesName = speciesName.Replace(" ", "").Replace("-", "").Replace(".", "");
-            var species = Enum.GetValues(typeof(Species))
-                .Cast<Species>()
-                .FirstOrDefault(s => string.Equals(s.ToString(), sanitizedSpeciesName, StringComparison.OrdinalIgnoreCase));
-
-            if (species != default)
-            {
-                return (int)species;
-            }
-
-            throw new Exception($"Invalid species: {speciesName}");
         }
 
         private static bool IsPokemonOfType(string gameVersion, int species, string type)
