@@ -38,7 +38,7 @@ namespace SysBot.Pokemon.Discord
         }
 
         [Command("vgcteam")]
-        [Alias("vt", "Vt", "VGCTeam", "victoryroadteam")]
+        [Alias("vt", "Vt", "VGCTeam")]
         [Summary("Generates a random VGC team from VictoryRoad and sends it as files via DM.")]
         public async Task GenerateVGCTeamAsync([Remainder] string trainerName = "")
         {
@@ -52,8 +52,6 @@ namespace SysBot.Pokemon.Discord
                     await ReplyAsync($"No pokepaste found for trainer: {trainerName}");
                     return;
                 }
-
-                var format = 9; // Scarlet/Violet format
 
                 var namer = new GengarNamer();
                 var pokemonImages = new List<System.Drawing.Image>();
@@ -145,7 +143,7 @@ namespace SysBot.Pokemon.Discord
                         .WithCurrentTimestamp()
                         .AddField("Regulation Set", regulationSet)
                         .AddField("Player", player)
-                        .AddField("Championship Title", title);
+                        .AddField("Title", title);
 
                     var embed = embedBuilder.Build();
 
