@@ -38,21 +38,28 @@ namespace SysBot.Pokemon.Discord
             return data;
         }
 
-        private static List<(string TrainerName, string PokePasteUrl, string TeamDescription, string DateShared, string RentalCode)> ParsePokePasteData(List<List<string>> data)
+        private static List<(string TrainerName, string PokePasteUrl, string TeamDescription, string DateShared, string RentalCode)> ParsePokePasteData(List<List<string>> data, string pokemonName = null)
         {
             var pokePasteData = new List<(string TrainerName, string PokePasteUrl, string TeamDescription, string DateShared, string RentalCode)>();
-            // Skip the header row (first three rows in this case)
-            for (int i = 3; i < data.Count; i++) // starts from the fourth row
+            for (int i = 3; i < data.Count; i++)
             {
                 var row = data[i];
-                if (row.Count > 30) // Checks if there are enough columns
+                if (row.Count > 40) 
                 {
-                    // Info we are going to use in our Embeds when the user requests a team
-                    var trainerName = row[3].Trim('"'); // Trainer Name is in column D (index 3)
-                    var pokePasteUrl = row[24].Trim('"'); // PokePaste URL is in column Y (index 24)
-                    var teamDescription = row[1].Trim('"'); // Team Description is in column B (index 1)
-                    var dateShared = row[29].Trim('"'); // Date Shared is in column AD (index 29)
-                    var rentalCode = row[28].Trim('"'); // Rental Code is in column AC (index 28)
+                    // Check if a specific Pokémon is requested and if it is present in columns AL-AQ
+                    if (pokemonName != null)
+                    {
+                        var pokemonColumns = row.GetRange(37, 5); // Columns AL-AQ are at indexes 37-41
+                        if (!pokemonColumns.Any(cell => cell.Equals(pokemonName, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            continue; // Skip this row if the specified Pokémon is not found
+                        }
+                    }
+                    var trainerName = row[3].Trim('"');
+                    var pokePasteUrl = row[24].Trim('"');
+                    var teamDescription = row[1].Trim('"');
+                    var dateShared = row[29].Trim('"');
+                    var rentalCode = row[28].Trim('"');
                     pokePasteData.Add((trainerName, pokePasteUrl, teamDescription, dateShared, rentalCode));
                 }
             }
@@ -69,7 +76,7 @@ namespace SysBot.Pokemon.Discord
         [Command("randomteam")]
         [Alias("rt", "RandomTeam", "Rt")]
         [Summary("Generates a random VGC team from the specified Google Spreadsheet and sends it as files via DM.")]
-        public async Task GenerateSpreadsheetTeamAsync()
+        public async Task GenerateSpreadsheetTeamAsync(string pokemonName = null)
         {
             // First, check if AllowRequests is true
             if (!SysCord<T>.Runner.Config.Trade.VGCPastesConfiguration.AllowRequests)
@@ -83,8 +90,8 @@ namespace SysBot.Pokemon.Discord
                 // Fetch data from the local CSV file or download it if not available
                 var spreadsheetData = await FetchSpreadsheetData();
 
-                // Parse the fetched data to extract pokepaste URLs and trainer names
-                var pokePasteData = ParsePokePasteData(spreadsheetData);
+                // Parse the fetched data
+                var pokePasteData = ParsePokePasteData(spreadsheetData, pokemonName);
 
                 // Randomly select a team from the parsed data
                 var (TrainerName, PokePasteUrl, TeamDescription, DateShared, RentalCode) = SelectRandomTeam(pokePasteData);
