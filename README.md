@@ -79,6 +79,19 @@ The user will be DM'd a list and given the correct command with your bots prefix
 
 ![image](https://github.com/bdawg1989/MergeBot/assets/80122551/107d3f4b-0f6a-4145-aaff-deebead6a09c)
 
+# Team Generation
+
+1.  Generate a random Smogon Team
+ - Use command `rt sv` to generate a random team.  Use `rt sv fire` to generate a random fire-type team.  The user will be sent a .zip file containing all legalized .pk files for them to trade the bot.
+ 
+2. Generate VGC Teams
+ - Use command `vgcteam` to generate a random vgcteam pulled from [Victory Road VGC](https://victoryroadvgc.com/sv-rental-teams/).  For a specific team, use the persons name in the command.  Example:  `vgcteam Nikhil Reddy` for the team that won the [Utrecht Special Event](https://victoryroadvgc.com/2024-utrecht/).  
+ 
+![image](https://github.com/bdawg1989/MergeBot/assets/80122551/6024824f-7276-409c-b84a-fc583e2c702b)
+
+3. Batch Trade Smogon/VGC Generated teams
+If the bot host has **AllowBatchTrades** set to true, users will be allowed to upload the .zip file they receive from the bot and have it batch trade all 6 files to them.  The user needs to attach the file and send with the `btz` command.
+
 # All of my Projects
 
 ## Showdown Alternative Website
