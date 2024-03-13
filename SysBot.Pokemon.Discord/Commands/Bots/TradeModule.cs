@@ -390,7 +390,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             var context = new EntityContext(); 
             var eggEncounter = new EncounterEgg(speciesId, 0, 1, 9, GameVersion.SV, context);
             var pk = eggEncounter.ConvertToPKM(sav);
-            SetPerfectIVsAndShiny(pk);
+            TradeModule<T>.SetPerfectIVsAndShiny(pk);
 
             if (pk is not T pkT)
             {
@@ -417,7 +417,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         }
     }
 
-    private void SetPerfectIVsAndShiny(PKM pk)
+    private static void SetPerfectIVsAndShiny(PKM pk)
     {
         // Set IVs to perfect
         pk.IVs = [31, 31, 31, 31, 31, 31];

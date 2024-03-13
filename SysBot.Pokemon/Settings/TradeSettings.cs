@@ -12,11 +12,15 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     private const string CountStats = nameof(CountStats);
     private const string HOMELegality = nameof(HOMELegality);
     private const string TradeConfig = nameof(TradeConfig);
+    private const string VGCPastesConfig = nameof(VGCPastesConfig);
     private const string Miscellaneous = nameof(Miscellaneous);
     private const string RequestFolders = nameof(RequestFolders);
 
     [Category(TradeConfig), Description("Settings related to Trade Configuration."), Browsable(true)]
     public TradeSettingsCategory TradeConfiguration { get; set; } = new();
+
+    [Category(VGCPastesConfig), Description("Settings related to VGCPastes Configuration."), Browsable(true)]
+    public VGCPastesCategory VGCPastesConfiguration { get; set; } = new();
 
     [Category(HOMELegality), Description("Settings related to HOME Legality."), Browsable(true)]
     public HOMELegalitySettingsCategory HomeLegalitySettings { get; set; } = new();
@@ -90,6 +94,20 @@ public class TradeSettings : IBotStateSettings, ICountSettings
             FreshStartMochi = 2479,
         }
     }
+
+    [Category(VGCPastesConfig), TypeConverter(typeof(CategoryConverter<VGCPastesCategory>))]
+    public class VGCPastesCategory
+    {
+        public override string ToString() => "VGCPastes Configuration Settings";
+
+        [Category(VGCPastesConfig), Description("Allow users to request and generate teams using the VGCPastes Spreadsheet.")]
+        public bool AllowRequests { get; set; } = true;
+
+        [Category(VGCPastesConfig), Description("GID of Spreadsheet tab you would like to pull from.  Hint: https://docs.google.com/spreadsheets/d/ID/gid=1837599752")]
+        public int GID { get; set; } = 1837599752; // Reg F Tab
+
+    }
+
 
     [Category(HOMELegality), TypeConverter(typeof(CategoryConverter<HOMELegalitySettingsCategory>))]
     public class HOMELegalitySettingsCategory
