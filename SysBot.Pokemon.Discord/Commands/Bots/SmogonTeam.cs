@@ -70,13 +70,7 @@ namespace SysBot.Pokemon.Discord
 
                     // Get the Pokémon image
                     bool canGmax = pk is PK8 pk8 && pk8.CanGigantamax;
-                    string speciesImageUrl = gameVersion.ToLowerInvariant() switch
-                    {
-                        "bdsp" => AbstractTrade<PB8>.PokeImg(pk, canGmax, false),
-                        "swsh" => AbstractTrade<PK8>.PokeImg(pk, canGmax, false),
-                        "sv" => AbstractTrade<PK9>.PokeImg(pk, canGmax, false),
-                        _ => throw new Exception("Invalid game version."),
-                    };
+                    string speciesImageUrl = GetNonShinyImageUrl(gameVersion, pk);
                     var speciesImage = System.Drawing.Image.FromStream(await new HttpClient().GetStreamAsync(speciesImageUrl));
                     pokemonImages.Add(speciesImage);
                 }
@@ -307,6 +301,23 @@ namespace SysBot.Pokemon.Discord
 
             return string.Equals(types[personalInfo.Type1], type, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(types[personalInfo.Type2], type, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string GetNonShinyImageUrl(string gameVersion, PKM pk)
+        {
+            bool canGmax = pk is PK8 pk8 && pk8.CanGigantamax;
+            string shinyImageUrl = gameVersion.ToLowerInvariant() switch
+            {
+                "bdsp" => AbstractTrade<PB8>.PokeImg(pk, false, false),
+                "swsh" => AbstractTrade<PK8>.PokeImg(pk, canGmax, false),
+                "sv" => AbstractTrade<PK9>.PokeImg(pk, false, false),
+                _ => throw new Exception("Invalid game version."),
+            };
+
+            // Replace the shiny indicator in the URL with the non-shiny indicator
+            string nonShinyImageUrl = shinyImageUrl.Replace("_r.png", "_n.png");
+
+            return nonShinyImageUrl;
         }
 
         private static DiscordColor GetTypeColor(string typeName)

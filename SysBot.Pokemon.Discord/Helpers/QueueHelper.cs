@@ -176,12 +176,12 @@ public static class QueueHelper<T> where T : PKM, new()
         // Checking if the image URL points to a local file
         bool isLocalFile = File.Exists(embedImageUrl);
         string userName = user.Username;
-        string isPkmShiny = pk.IsShiny ? "Shiny" : "";
+        string isPkmShiny = pk.IsShiny ? "Shiny " : "";
 
         // Building the embed author name based on the type of trade
         string authorName = isMysteryEgg || FixOT || isCloneRequest || isDumpRequest || isSpecialRequest || isBatchTrade ?
                             $"{userName}'s {tradeTitle}" :
-                            $"{userName}'s {isPkmShiny} {pokemonDisplayName}";
+                            $"{userName}'s {isPkmShiny}{pokemonDisplayName}";
 
         // Initializing the embed builder with general settings
         var embedBuilder = new EmbedBuilder()
