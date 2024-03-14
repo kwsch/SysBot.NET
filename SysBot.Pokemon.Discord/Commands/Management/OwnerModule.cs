@@ -115,13 +115,61 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
         Environment.Exit(0);
     }
 
+    [Command("dm")]
+    [Summary("Sends a direct message to a specified user.")]
+    [RequireOwner]
+    public async Task DMUserAsync(IUser user, [Remainder] string message)
+    {
+        var attachments = Context.Message.Attachments;
+        var hasAttachments = attachments.Count != 0;
+
+        var embed = new EmbedBuilder
+        {
+            Title = "Private Message from the Bot Owner",
+            Description = message,
+            Color = Color.Gold,
+            Timestamp = DateTimeOffset.Now,
+            ThumbnailUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/pikamail.png"
+        };
+
+        try
+        {
+            var dmChannel = await user.CreateDMChannelAsync();
+
+            if (hasAttachments)
+            {
+                foreach (var attachment in attachments)
+                {
+                    using var httpClient = new HttpClient();
+                    var stream = await httpClient.GetStreamAsync(attachment.Url);
+                    var file = new FileAttachment(stream, attachment.Filename);
+                    await dmChannel.SendFileAsync(file, embed: embed.Build());
+                }
+            }
+            else
+            {
+                await dmChannel.SendMessageAsync(embed: embed.Build());
+            }
+
+            var confirmationMessage = await ReplyAsync($"Message successfully sent to {user.Username}.");
+
+            await Context.Message.DeleteAsync();
+            await Task.Delay(TimeSpan.FromSeconds(10));
+            await confirmationMessage.DeleteAsync();
+        }
+        catch (Exception ex)
+        {
+            await ReplyAsync($"Failed to send message to {user.Username}. Error: {ex.Message}");
+        }
+    }
+
     [Command("say")]
     [Summary("Sends a message to a specified channel.")]
     [RequireSudo]
     public async Task SayAsync([Remainder] string message)
     {
         var attachments = Context.Message.Attachments;
-        var hasAttachments = attachments.Any();
+        var hasAttachments = attachments.Count != 0;
 
         var indexOfChannelMentionStart = message.LastIndexOf('<');
         var indexOfChannelMentionEnd = message.LastIndexOf('>');
@@ -142,7 +190,7 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
             return;
         }
 
-        if (!(channel is IMessageChannel messageChannel))
+        if (channel is not IMessageChannel messageChannel)
         {
             await ReplyAsync("The mentioned channel is not a text channel.");
             return;
@@ -153,12 +201,10 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
         {
             foreach (var attachment in attachments)
             {
-                using (var httpClient = new HttpClient())
-                {
-                    var stream = await httpClient.GetStreamAsync(attachment.Url);
-                    var file = new FileAttachment(stream, attachment.Filename);
-                    await messageChannel.SendFileAsync(file, actualMessage);
-                }
+                using var httpClient = new HttpClient();
+                var stream = await httpClient.GetStreamAsync(attachment.Url);
+                var file = new FileAttachment(stream, attachment.Filename);
+                await messageChannel.SendFileAsync(file, actualMessage);
             }
         }
         else
