@@ -126,7 +126,7 @@ public static class QueueHelper<T> where T : PKM, new()
                 string typeEmoji = typeEmojis.TryGetValue(moveType, out var moveEmoji) ? moveEmoji : string.Empty;
                 formattedMove = $"{typeEmoji} {formattedMove}";
             }
-            moveNames.Add($"\u200B- {formattedMove}");
+            moveNames.Add($"\u200B{formattedMove}");
         }
         int level = pk.CurrentLevel;
 
@@ -148,8 +148,8 @@ public static class QueueHelper<T> where T : PKM, new()
         string genderSymbol = GameInfo.GenderSymbolASCII[pk.Gender];
         string displayGender = genderSymbol switch
         {
-            "M" => useGenderIcons ? ":male_sign:" : "M",
-            "F" => useGenderIcons ? ":female_sign:" : "F",
+            "M" => useGenderIcons ? ":male_sign:" : "(M)",
+            "F" => useGenderIcons ? ":female_sign:" : "(F)",
             _ => ""
         };
         formName = ShowdownParsing.GetStringFromForm(pk.Form, strings, pk.Species, pk.Context);
