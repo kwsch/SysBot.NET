@@ -44,57 +44,95 @@ namespace SysBot.Pokemon.Discord
             for (int i = 3; i < data.Count; i++)
             {
                 var row = data[i];
-                if (row.Count > 40) 
+                if (row.Count > 40) // Ensure row has a sufficient number of columns to avoid index out of range errors
                 {
-                    // Check if a specific Pokémon is requested and if it is present in columns AL-AQ
+                    // Additional check for PokePaste URL validation
+                    var pokePasteUrl = row[24]?.Trim('"');
+                    if (string.IsNullOrWhiteSpace(pokePasteUrl) || !Uri.IsWellFormedUriString(pokePasteUrl, UriKind.Absolute))
+                    {
+                        continue; 
+                    }
+
                     if (pokemonName != null)
                     {
-                        var pokemonColumns = row.GetRange(37, 5); // Columns AL-AQ are at indexes 37-41
+                        var pokemonColumns = row.GetRange(37, 5); 
                         if (!pokemonColumns.Any(cell => cell.Equals(pokemonName, StringComparison.OrdinalIgnoreCase)))
                         {
-                            continue; // Skip this row if the specified Pokémon is not found
+                            continue; 
                         }
                     }
-                    var trainerName = row[3].Trim('"');
-                    var pokePasteUrl = row[24].Trim('"');
-                    var teamDescription = row[1].Trim('"');
-                    var dateShared = row[29].Trim('"');
-                    var rentalCode = row[28].Trim('"');
-                    pokePasteData.Add((trainerName, pokePasteUrl, teamDescription, dateShared, rentalCode));
+
+                    // Extract other essential fields
+                    var trainerName = row[3]?.Trim('"');
+                    var teamDescription = row[1]?.Trim('"');
+                    var dateShared = row[29]?.Trim('"');
+                    var rentalCode = row[28]?.Trim('"');
+
+                    if (!string.IsNullOrEmpty(trainerName) && !string.IsNullOrEmpty(teamDescription) && !string.IsNullOrEmpty(dateShared) && !string.IsNullOrEmpty(rentalCode))
+                    {
+                        pokePasteData.Add((trainerName, pokePasteUrl, teamDescription, dateShared, rentalCode));
+                    }
                 }
             }
             return pokePasteData;
         }
 
-        private static (string TrainerName, string PokePasteUrl, string TeamDescription, string DateShared, string RentalCode) SelectRandomTeam(List<(string TrainerName, string PokePasteUrl, string TeamDescription, string DateShared, string RentalCode)> pokePasteData)
+        private (string PokePasteUrl, List<string> RowData) SelectRandomPokePasteUrl(List<List<string>> data, string pokemonName = null)
         {
+            var filteredData = data.Where(row => row.Count > 40 && Uri.IsWellFormedUriString(row[24]?.Trim('"'), UriKind.Absolute));
+
+            // If a Pokémon name is provided, further filter the rows to those containing the Pokémon name
+            if (!string.IsNullOrWhiteSpace(pokemonName))
+            {
+                filteredData = filteredData.Where(row =>
+                    row.GetRange(37, 5).Any(cell => cell.Equals(pokemonName, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            var validPokePastes = filteredData.ToList();
+
+            if (validPokePastes.Count == 0) return (null, null);
+
             var random = new Random();
-            var randomIndex = random.Next(0, pokePasteData.Count);
-            return pokePasteData[randomIndex];
+            var randomIndex = random.Next(validPokePastes.Count);
+            var selectedRow = validPokePastes[randomIndex];
+            var pokePasteUrl = selectedRow[24]?.Trim('"');
+
+            return (pokePasteUrl, selectedRow);
         }
 
+        // Adjusted command method to use the new selection logic with Pokémon name filtering
         [Command("randomteam")]
         [Alias("rt", "RandomTeam", "Rt")]
         [Summary("Generates a random VGC team from the specified Google Spreadsheet and sends it as files via DM.")]
         public async Task GenerateSpreadsheetTeamAsync(string pokemonName = null)
         {
-            // First, check if AllowRequests is true
             if (!SysCord<T>.Runner.Config.Trade.VGCPastesConfiguration.AllowRequests)
             {
                 await ReplyAsync("This module is currently disabled.").ConfigureAwait(false);
                 return;
             }
             var generatingMessage = await ReplyAsync("Generating and sending your VGC team from VGCPastes. Please wait...");
+
             try
             {
-                // Fetch data from the local CSV file or download it if not available
                 var spreadsheetData = await FetchSpreadsheetData();
+
+                // Use the adjusted method to select a random PokePaste URL (and row data) based on the Pokémon name
+                var (PokePasteUrl, selectedRow) = SelectRandomPokePasteUrl(spreadsheetData, pokemonName);
+                if (PokePasteUrl == null)
+                {
+                    await ReplyAsync("Failed to find a valid PokePaste URL with the specified Pokémon.");
+                    return;
+                }
+
+                // Extract the associated data from the selected row
+                var trainerName = selectedRow[3]?.Trim('"');
+                var teamDescription = selectedRow[1]?.Trim('"');
+                var dateShared = selectedRow[29]?.Trim('"');
+                var rentalCode = selectedRow[28]?.Trim('"');
 
                 // Parse the fetched data
                 var pokePasteData = ParsePokePasteData(spreadsheetData, pokemonName);
-
-                // Randomly select a team from the parsed data
-                var (TrainerName, PokePasteUrl, TeamDescription, DateShared, RentalCode) = SelectRandomTeam(pokePasteData);
 
                 // Generate and send the team using the existing code from the VGCTeam command
                 var showdownSets = await GetShowdownSetsFromPokePasteUrl(PokePasteUrl);
@@ -107,7 +145,6 @@ namespace SysBot.Pokemon.Discord
 
                 var namer = new GengarNamer();
                 var pokemonImages = new List<System.Drawing.Image>();
-                var (trainerName, pokePasteUrl, teamDescription, dateShared, rentalCode) = SelectRandomTeam(pokePasteData);
 
                 var sanitizedTeamDescription = SanitizeFileName(teamDescription);
                 using var memoryStream = new MemoryStream();
