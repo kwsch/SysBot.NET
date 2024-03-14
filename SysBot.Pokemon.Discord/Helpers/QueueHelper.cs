@@ -79,23 +79,54 @@ public static class QueueHelper<T> where T : PKM, new()
         var Info = hub.Queues.Info;
         var canAddMultiple = isBatchTrade || sig == RequestSignificance.Owner;
         var added = Info.AddToTradeQueue(trade, userID, canAddMultiple);
-
+        bool useTypeEmojis = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.MoveTypeEmojis;
+        bool useGenderIcons = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.GenderEmojis;
         if (added == QueueResultAdd.AlreadyInQueue)
         {
             return new TradeQueueResult(false);
         }
 
+        var typeEmojis = new Dictionary<MoveType, string>
+        {
+            [MoveType.Bug] = "<:bug:1217966986542452877>",
+            [MoveType.Fire] = "<:fire:1217966987838230608>",
+            [MoveType.Flying] = "<:flying:1217966988937396284>",
+            [MoveType.Ground] = "<:ground:1217966989985714238>",
+            [MoveType.Water] = "<:water:1217966991231418480>",
+            [MoveType.Grass] = "<:grass:1217966992233988127>",
+            [MoveType.Ice] = "<:ice:1217966993089757236>",
+            [MoveType.Rock] = "<:rock:1217967113889648687>",
+            [MoveType.Ghost] = "<:ghost:1217966996046483527>",
+            [MoveType.Steel] = "<:steel:1217967110987452446>",
+            [MoveType.Fighting] = "<:fighting:1217966999406383235>",
+            [MoveType.Electric] = "<:electric:1217967112140882020>",
+            [MoveType.Dragon] = "<:dragon:1217967003327926513>",
+            [MoveType.Psychic] = "<:psychic:1217967113063366706>",
+            [MoveType.Dark] = "<:dark:1217967006402351155>",
+            [MoveType.Normal] = "<:normal:1217968403130748998>",
+            [MoveType.Poison] = "<:poison:1217967009933820025>",
+            [MoveType.Fairy] = "<:fairy:1217966985292546180>",
+        };
+
         // Basic Pokémon details
         int[] ivs = pk.IVs;
         ushort[] moves = new ushort[4];
         pk.GetMoves(moves.AsSpan());
-        int[] movePPs = { pk.Move1_PP, pk.Move2_PP, pk.Move3_PP, pk.Move4_PP };
+        int[] movePPs = [pk.Move1_PP, pk.Move2_PP, pk.Move3_PP, pk.Move4_PP];
         List<string> moveNames = new List<string> { "" };
         for (int i = 0; i < moves.Length; i++)
         {
-            if (moves[i] == 0) continue; // Skip if no move is assigned
+            if (moves[i] == 0) continue;
             string moveName = GameInfo.MoveDataSource.FirstOrDefault(m => m.Value == moves[i])?.Text ?? "";
-            moveNames.Add($"\u200B- {moveName} ({movePPs[i]}pp)");
+            byte moveTypeId = MoveInfo.GetType(moves[i], default);
+            MoveType moveType = (MoveType)moveTypeId;
+            string formattedMove = $"{moveName} ({movePPs[i]}pp)";
+            if (useTypeEmojis)
+            {
+                string typeEmoji = typeEmojis.TryGetValue(moveType, out var moveEmoji) ? moveEmoji : string.Empty;
+                formattedMove = $"{typeEmoji} {formattedMove}";
+            }
+            moveNames.Add($"\u200B- {formattedMove}");
         }
         int level = pk.CurrentLevel;
 
@@ -115,9 +146,14 @@ public static class QueueHelper<T> where T : PKM, new()
         speciesName = GameInfo.GetStrings(1).Species[pk.Species];
         string shinySymbol = pk.ShinyXor == 0 ? "◼ " : pk.IsShiny ? "★ " : string.Empty;
         string genderSymbol = GameInfo.GenderSymbolASCII[pk.Gender];
-        string displayGender = genderSymbol == "M" || genderSymbol == "F" ? $" ({genderSymbol})" : "";
+        string displayGender = genderSymbol switch
+        {
+            "M" => useGenderIcons ? ":male_sign:" : "M",
+            "F" => useGenderIcons ? ":female_sign:" : "F",
+            _ => ""
+        };
         formName = ShowdownParsing.GetStringFromForm(pk.Form, strings, pk.Species, pk.Context);
-        speciesAndForm = $"**{shinySymbol}{speciesName}{(string.IsNullOrEmpty(formName) ? "" : $"-{formName}")}{displayGender}**";
+        speciesAndForm = $"**{shinySymbol}{speciesName}{(string.IsNullOrEmpty(formName) ? "" : $"-{formName}")} {displayGender}**";
         heldItemName = strings.itemlist[pk.HeldItem];
         ballName = strings.balllist[pk.Ball];
         if (pk.Species == (int)Species.Alcremie && formArgument != 0)
@@ -204,12 +240,12 @@ public static class QueueHelper<T> where T : PKM, new()
         if (!isMysteryEgg && !isCloneRequest && !isDumpRequest && !FixOT && !isSpecialRequest)
         {
             // Preparing content for normal trades
-            string leftSideContent = $"Trainer: {user.Mention}\n";
-            if ((GameVersion)pk.Version is GameVersion.SL or GameVersion.VL)
+            string leftSideContent = $"**Trainer:** {user.Mention}\n";
+            if (pk.Version is GameVersion.SL or GameVersion.VL)
             {
-                leftSideContent += $"Tera Type: {teraTypeString}\nScale: {scaleText} ({scaleNumber})\n";
+                leftSideContent += $"**Tera Type:** {teraTypeString}\n**Scale:** {scaleText} ({scaleNumber})\n";
             }
-            leftSideContent += $"Level: {level}\nAbility: {abilityName}\nNature: {natureName}\nIVs: {ivsDisplay}";
+            leftSideContent += $"**Level:** {level}\n**Ability:** {abilityName}\n**Nature**: {natureName}\n**IVs**: {ivsDisplay}";
             embedBuilder.AddField($"{speciesAndForm}", leftSideContent, inline: true);
             embedBuilder.AddField("\u200B", "\u200B", inline: true); // Spacer
             embedBuilder.AddField("**Moves:**", movesDisplay, inline: true);
@@ -217,7 +253,7 @@ public static class QueueHelper<T> where T : PKM, new()
         else
         {
             // Preparing content for special types of trades
-            string specialDescription = $"Trainer: {user.Mention}\n" +
+            string specialDescription = $"**Trainer:** {user.Mention}\n" +
                                         (isMysteryEgg ? "Mystery Egg" : isSpecialRequest ? "Special Request" : isCloneRequest ? "Clone Request" : FixOT ? "FixOT Request" : "Dump Request");
             embedBuilder.AddField("\u200B", specialDescription, inline: false);
         }

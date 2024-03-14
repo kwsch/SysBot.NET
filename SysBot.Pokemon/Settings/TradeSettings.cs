@@ -15,12 +15,16 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     private const string VGCPastesConfig = nameof(VGCPastesConfig);
     private const string Miscellaneous = nameof(Miscellaneous);
     private const string RequestFolders = nameof(RequestFolders);
+    private const string EmbedSettings = nameof(EmbedSettings);
 
     [Category(TradeConfig), Description("Settings related to Trade Configuration."), Browsable(true)]
     public TradeSettingsCategory TradeConfiguration { get; set; } = new();
 
     [Category(VGCPastesConfig), Description("Settings related to VGCPastes Configuration."), Browsable(true)]
     public VGCPastesCategory VGCPastesConfiguration { get; set; } = new();
+
+    [Category(EmbedSettings), Description("Settings related to the Trade Embed in Discord."), Browsable(true)]
+    public TradeEmbedSettingsCategory TradeEmbedSettings { get; set; } = new();
 
     [Category(HOMELegality), Description("Settings related to HOME Legality."), Browsable(true)]
     public HOMELegalitySettingsCategory HomeLegalitySettings { get; set; } = new();
@@ -95,6 +99,18 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
     }
 
+    [Category(EmbedSettings), TypeConverter(typeof(CategoryConverter<TradeEmbedSettingsCategory>))]
+    public class TradeEmbedSettingsCategory
+    {
+        public override string ToString() => "Trade Embed Configuration Settings";
+
+        [Category(EmbedSettings), Description("Will show Move Type Icons next to moves in trade embed (Discord only).")]
+        public bool MoveTypeEmojis { get; set; } = true;
+
+        [Category(EmbedSettings), Description("Will show Gender Icons in trade embed (Discord only).")]
+        public bool GenderEmojis { get; set; } = true;
+    }
+
     [Category(VGCPastesConfig), TypeConverter(typeof(CategoryConverter<VGCPastesCategory>))]
     public class VGCPastesCategory
     {
@@ -135,6 +151,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
 
     [Category(Miscellaneous), Description("Miscellaneous Settings")]
     public bool ScreenOff { get; set; } = false;
+
 
     /// <summary>
     /// Gets a random trade code based on the range settings.
