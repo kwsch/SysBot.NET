@@ -79,18 +79,47 @@ The user will be DM'd a list and given the correct command with your bots prefix
 
 ![image](https://github.com/bdawg1989/MergeBot/assets/80122551/107d3f4b-0f6a-4145-aaff-deebead6a09c)
 
-# Team Generation
+# Utilizing VGCPastes Bot Commands
 
-1.  Generate a random Smogon Team
- - Use command `rt sv` to generate a random team.  Use `rt sv fire` to generate a random fire-type team.  The user will be sent a .zip file containing all legalized .pk files for them to trade the bot.
- 
-2. Generate VGC Teams
- - Use command `vgcteam` to generate a random vgcteam pulled from [Victory Road VGC](https://victoryroadvgc.com/sv-rental-teams/).  For a specific team, use the persons name in the command.  Example:  `vgcteam Nikhil Reddy` for the team that won the [Utrecht Special Event](https://victoryroadvgc.com/2024-utrecht/).  
- 
-![image](https://github.com/bdawg1989/MergeBot/assets/80122551/6024824f-7276-409c-b84a-fc583e2c702b)
+This guide is designed to help users efficiently utilize the commands introduced in our latest release. With these commands, users can generate Random VGC Teams directly from VGCPastes, enhancing their Pokémon battling experience.
 
-3. Batch Trade Smogon/VGC Generated teams
-If the bot host has **AllowBatchTrades** set to true, users will be allowed to upload the .zip file they receive from the bot and have it batch trade all 6 files to them.  The user needs to attach the file and send with the `btz` command.
+# Generating a Random VGC Team
+
+## Command:
+- `.randomteam` or `.rt`
+
+## Description:
+Generates a random VGC team from the [VGCPastes spreadsheet](https://docs.google.com/spreadsheets/d/1axlwmzPA49rYkqXh7zHvAtSP-TKbM0ijGYBPRflLSWw/edit#gid=1837599752). The bot will create an embed with detailed information about the team, including the Team Description, Trainer Name, Date Shared, and a conditional display of the Rental Code—if available.
+
+## Embed Display Features:
+- **Team Description**: Offers an overview of the team's theme or strategy.
+- **Trainer Name**: Indicates who created the team.
+- **Date Shared**: Shows the recency of the team's share date.
+- **Rental Code**: Provides a direct in-game access code, displayed only if available.
+
+# Generating Full Teams from PokePaste URLs
+
+## Command:
+- `.pp` or `.Pokepaste`
+
+## Description:
+Allows users to generate full Pokémon VGC teams directly from PokePaste URLs. This feature streamlines the process of sharing and using teams.
+
+## How to Use:
+Type the command followed by the PokePaste URL containing the team you wish to use. For example:
+```
+.pp <PokePaste URL>
+```
+
+This command simplifies team sharing within your community or for personal exploration of new team builds.  Users can upload the .zip file to the trade channel with command `btz` (if **AllowBatchTrades** is on) and the bot will batch trade the full team.
+
+## Support and Feedback
+
+If you encounter any issues or have suggestions for improvement, please don't hesitate to reach out to us through our support channels. Your feedback is invaluable as we strive to enhance your experience with the bot.
+
+**Happy Battling!**
+
+
 
 # All of my Projects
 
