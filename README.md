@@ -47,6 +47,23 @@ Shiny: Yes
 
 ![image](https://github.com/bdawg1989/MergeBot/assets/80122551/cd7158f9-3d05-4306-8ad9-5d7e97d28c5d)
 
+- __Announcements__
+Announcements allow the bot owner to broadcast a single announcement to every server the bot is in, allowing you to turn the bot off and on without having to worry about letting every server you share your bot in know what's going on.
+
+![image](https://github.com/bdawg1989/MergeBot/assets/80122551/2367d387-0642-4691-ab55-02be03535742)
+
+![image](https://github.com/bdawg1989/MergeBot/assets/80122551/367d78c5-5e9b-4df7-b1b4-8562b6e3044b)
+
+There are many different settings that allows you to customize your Announcement embed the way **You** want!  You can choose from premade thumbnail images of cute Pokémon holding megaphones, pick your own embed color, or completely use your own custom thumbnail images via settings.
+
+![image](https://github.com/bdawg1989/MergeBot/assets/80122551/83266efa-0449-4f9d-8212-4d197cad119c)
+
+## Set up
+First, let's sync your whitelist channels with the announcechannels.  Run the `sch` command and all of the channels in your ChannelWhitelist settings will be copied over.
+
+If you don't have any whitelist channels set up, you will need to run the `aec` command in the discord channel that you want the announcements to show up in..
+
+Then, run the `announce` command along with your chosen message, and it will send that announcement to all of your defined channels at once.
 
 - __Server Blacklisting & Management__
 Do you share your bot in several servers?  Is your bot a public bot where you allow anyone to add your bot?
