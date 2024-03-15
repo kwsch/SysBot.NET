@@ -152,8 +152,8 @@ public static class QueueHelper<T> where T : PKM, new()
         speciesName = GameInfo.GetStrings(1).Species[pk.Species];
         string shinySymbol = pk.ShinyXor == 0 ? "◼ " : pk.IsShiny ? "★ " : string.Empty;
         string genderSymbol = GameInfo.GenderSymbolASCII[pk.Gender];
-        string displayGender = genderSymbol == "M" ? (useGenderIcons ? ":male_sign:" : "(M)") :
-                               genderSymbol == "F" ? (useGenderIcons ? ":female_sign:" : "(F)") : "";
+        string displayGender = genderSymbol == "M" ? (useGenderIcons ? "<:male:1218184594189193326>" : "(M)") :
+                               genderSymbol == "F" ? (useGenderIcons ? "<:female:1218184592847142954>" : "(F)") : "";
         formName = ShowdownParsing.GetStringFromForm(pk.Form, strings, pk.Species, pk.Context);
         speciesAndForm = $"**{shinySymbol}{speciesName}{(string.IsNullOrEmpty(formName) ? "" : $"-{formName}")} {displayGender}**";
         heldItemName = strings.itemlist[pk.HeldItem];
