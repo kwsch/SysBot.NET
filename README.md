@@ -1,26 +1,26 @@
 # Welcome to MergeBot!
 For support and suggestions, join my Discord Hangout - https://notpaldea.net
 
-# This sysBot offers all of the features you could ever want <3
+## This sysBot offers all of the features you could ever want <3
 
-## Shoutout to all the amazing devs of SysBot!  
+### Shoutout to all the amazing devs of SysBot!  
 
 [@kwsch](https://github.com/kwsch), [@Lusamine](https://github.com/Lusamine), [@Koi-3088](https://github.com/Koi-3088), [@easyworld](https://github.com/easyworld), [@santacrab2](https://github.com/santacrab2), [@zyro670](https://github.com/zyro670), [@xiaolong11123](https://github.com/xiaolong11123), and everyone else that contributed, thank you for your hard work <3
 
 ### Supports The Following Games:  SV/BDSP/PLA/SWSH/LGPE
 **__Please don't charge people to use this free program. Be nice <3__**
 
-- __Beautiful Embeds__
+## __Beautiful Embeds__
   
 ![image](https://github.com/bdawg1989/MergeBot/assets/80122551/022e5f6a-5771-448f-a816-981782fefa55)
 
-- __Additional Embed Text__
+## __Additional Embed Text__
   
 You can add any text you want for your embeds that will show above the pokemon info.
 
 ![image](https://github.com/bdawg1989/MergeBot/assets/80122551/6b45b883-427c-410b-9dc0-2edeb9c83efe)
 
-- __Batch Trading__
+## __Batch Trading__
 This feature allows your users to batch trade pokemon.  You can set how many you'd like to allow in the settings, or turn it off completely.
 ```
 .bt
@@ -31,12 +31,12 @@ This feature allows your users to batch trade pokemon.  You can set how many you
 [Showdown Template]
 ```
 
-- __Mystery Eggs__
+## __Mystery Eggs__
 Who doesn't like a good mystery?
 All of the Mystery Eggs are always Shiny, Perfect IVs, and have the Hidden Ability.  What Egg will you hatch?
 Command:  `me` or `mysteryegg`.
 
-- __Egg Trades__
+## __Egg Trades__
 Thanks to Koi, I have implemented Egg Trades in this as well.
 To request an egg, you will type `egg <species>` instead of `trade`.
 Example:  
@@ -47,7 +47,7 @@ Shiny: Yes
 
 ![image](https://github.com/bdawg1989/MergeBot/assets/80122551/cd7158f9-3d05-4306-8ad9-5d7e97d28c5d)
 
-- __Announcements__
+## __Announcements__
 Announcements allow the bot owner to broadcast a single announcement to every server the bot is in, allowing you to turn the bot off and on without having to worry about letting every server you share your bot in know what's going on.
 
 ![image](https://github.com/bdawg1989/MergeBot/assets/80122551/2367d387-0642-4691-ab55-02be03535742)
@@ -58,23 +58,23 @@ There are many different settings that allows you to customize your Announcement
 
 ![image](https://github.com/bdawg1989/MergeBot/assets/80122551/83266efa-0449-4f9d-8212-4d197cad119c)
 
-## Set up
+### Set up
 First, let's sync your whitelist channels with the announcechannels.  Run the `sch` command and all of the channels in your ChannelWhitelist settings will be copied over.
 
 If you don't have any whitelist channels set up, you will need to run the `aec` command in the discord channel that you want the announcements to show up in..
 
 Then, run the `announce` command along with your chosen message, and it will send that announcement to all of your defined channels at once.
 
-- __Server Blacklisting & Management__
+## __Server Blacklisting & Management__
 Do you share your bot in several servers?  Is your bot a public bot where you allow anyone to add your bot?
 Our advanced Server Management features allow you to easily blacklist any server.
 Command `bls <serverid>` and `ubls <serverid>` to unblacklist them.
 When you blacklist a server, this bot will automatically leave the server.  Adios!
 
-- __Default Held Items__
+## __Default Held Items__
 Choose a popular default held item if the user doesn't provide one.  Choose from popular items like Ability Patch, Rare Candy, Fresh-Start Mochi, and more!
 
-- __Events & BattleReady Folder__
+## __Events & BattleReady Folder__
 If you would like to provide your amazing members with Home Tracked Battle-Ready Legendaries and Event Pokemon, just add the files to a folder on your local machine, and provide the path in the settings under **Trade > EventsFolder/BattleReadyPKMFolder**
 You can download Home Tracked and Battle Ready Pokemon from my website that are ready to go!  (all .pk9 files)  Also, Thanks to all my discord users that contributed to these!  (Maddison, Marnie, Fly, Reedy, Newfie, Joseph11024)
 
@@ -96,33 +96,33 @@ The user will be DM'd a list and given the correct command with your bots prefix
 
 ![image](https://github.com/bdawg1989/MergeBot/assets/80122551/107d3f4b-0f6a-4145-aaff-deebead6a09c)
 
-# Utilizing VGCPastes Bot Commands
+## Utilizing VGCPastes Bot Commands
 
 This guide is designed to help users efficiently utilize the commands introduced in our latest release. With these commands, users can generate Random VGC Teams directly from VGCPastes, enhancing their Pokémon battling experience.
 
 # Generating a Random VGC Team
 
-## Command:
+### Command:
 - `.randomteam` or `.rt`
 
-## Description:
+### Description:
 Generates a random VGC team from the [VGCPastes spreadsheet](https://docs.google.com/spreadsheets/d/1axlwmzPA49rYkqXh7zHvAtSP-TKbM0ijGYBPRflLSWw/edit#gid=1837599752). The bot will create an embed with detailed information about the team, including the Team Description, Trainer Name, Date Shared, and a conditional display of the Rental Code—if available.
 
-## Embed Display Features:
+### Embed Display Features:
 - **Team Description**: Offers an overview of the team's theme or strategy.
 - **Trainer Name**: Indicates who created the team.
 - **Date Shared**: Shows the recency of the team's share date.
 - **Rental Code**: Provides a direct in-game access code, displayed only if available.
 
-# Generating Full Teams from PokePaste URLs
+## Generating Full Teams from PokePaste URLs
 
-## Command:
+### Command:
 - `.pp` or `.Pokepaste`
 
-## Description:
+### Description:
 Allows users to generate full Pokémon VGC teams directly from PokePaste URLs. This feature streamlines the process of sharing and using teams.
 
-## How to Use:
+### How to Use:
 Type the command followed by the PokePaste URL containing the team you wish to use. For example:
 ```
 .pp <PokePaste URL>
@@ -130,7 +130,7 @@ Type the command followed by the PokePaste URL containing the team you wish to u
 
 This command simplifies team sharing within your community or for personal exploration of new team builds.  Users can upload the .zip file to the trade channel with command `btz` (if **AllowBatchTrades** is on) and the bot will batch trade the full team.
 
-## Support and Feedback
+### Support and Feedback
 
 If you encounter any issues or have suggestions for improvement, please don't hesitate to reach out to us through our support channels. Your feedback is invaluable as we strive to enhance your experience with the bot.
 
