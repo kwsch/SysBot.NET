@@ -34,7 +34,7 @@ namespace SysBot.Pokemon.Discord
 
     public class EchoModule : ModuleBase<SocketCommandContext>
     {
-        private static DiscordSettings Settings { get; set; }
+        private static DiscordSettings? Settings { get; set; }
         private class EchoChannel(ulong channelId, string channelName, Action<string> action, Action<byte[], string, EmbedBuilder> raidAction)
         {
             public readonly ulong ChannelID = channelId;
@@ -52,8 +52,8 @@ namespace SysBot.Pokemon.Discord
             public string EmbedResult = string.Empty;
         }
 
-        private static readonly Dictionary<ulong, EchoChannel> Channels = new();
-        private static readonly Dictionary<ulong, EncounterEchoChannel> EncounterChannels = new();
+        private static readonly Dictionary<ulong, EchoChannel> Channels = [];
+        private static readonly Dictionary<ulong, EncounterEchoChannel> EncounterChannels = [];
 
         public static void RestoreChannels(DiscordSocketClient discord, DiscordSettings cfg)
         {
@@ -230,7 +230,6 @@ namespace SysBot.Pokemon.Discord
             }
             return false;
         }
-
 
         private static void AddEchoChannel(ISocketMessageChannel c, ulong cid)
         {
