@@ -119,7 +119,7 @@ public static class QueueHelper<T> where T : PKM, new()
         ushort[] moves = new ushort[4];
         pk.GetMoves(moves.AsSpan());
         int[] movePPs = [pk.Move1_PP, pk.Move2_PP, pk.Move3_PP, pk.Move4_PP];
-        List<string> moveNames = new List<string> { "" };
+        List<string> moveNames = [""];
         for (int i = 0; i < moves.Length; i++)
         {
             if (moves[i] == 0) continue;
@@ -150,18 +150,18 @@ public static class QueueHelper<T> where T : PKM, new()
         abilityName = GameInfo.AbilityDataSource.FirstOrDefault(a => a.Value == pk.Ability)?.Text ?? "";
         natureName = GameInfo.NatureDataSource.FirstOrDefault(n => n.Value == (int)pk.Nature)?.Text ?? "";
         speciesName = GameInfo.GetStrings(1).Species[pk.Species];
+        string mightyMarkSymbol = pk is IRibbonSetMark9 mark && mark.RibbonMarkMightiest ? "<:MightiestMark:1218302509333090352> " : string.Empty;
+        string alphaSymbol = pk is IAlpha alpha && alpha.IsAlpha ? "<:alpha:1218294078756749312> " : string.Empty;
         string shinySymbol = pk.ShinyXor == 0 ? "◼ " : pk.IsShiny ? "★ " : string.Empty;
         string genderSymbol = GameInfo.GenderSymbolASCII[pk.Gender];
         string displayGender = genderSymbol == "M" ? (useGenderIcons ? "<:male:1218184594189193326>" : "(M)") :
                                genderSymbol == "F" ? (useGenderIcons ? "<:female:1218184592847142954>" : "(F)") : "";
+        displayGender += alphaSymbol;
+        displayGender += mightyMarkSymbol;
         formName = ShowdownParsing.GetStringFromForm(pk.Form, strings, pk.Species, pk.Context);
         speciesAndForm = $"**{shinySymbol}{speciesName}{(string.IsNullOrEmpty(formName) ? "" : $"-{formName}")} {displayGender}**";
         heldItemName = strings.itemlist[pk.HeldItem];
         ballName = strings.balllist[pk.Ball];
-        if (pk.Species == (int)Species.Alcremie && formArgument != 0)
-        {
-            formDecoration = $"{(AlcremieDecoration)formArgument}";
-        }
 
         // Request type flags
         bool isCloneRequest = type == PokeRoutineType.Clone;
