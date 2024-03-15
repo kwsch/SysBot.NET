@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System;
+using static SysBot.Pokemon.TradeSettings;
 
 namespace SysBot.Pokemon;
 
@@ -89,8 +90,27 @@ public class DiscordSettings
     [Category(Channels), Description("Logger channels that will log trade start messages.")]
     public RemoteControlAccessList TradeStartingChannels { get; set; } = new();
 
-    [Category(Channels), Description("Echo channels that will log special messages.")]
-    public RemoteControlAccessList EchoChannels { get; set; } = new();
+    [Category(Channels), Description("Channels that will log special messages, like announcements.")]
+    public RemoteControlAccessList AnnouncementChannels { get; set; } = new();
+
+    public AnnouncementSettingsCategory AnnouncementSettings { get; set; } = new();
+
+    [Category(Operation), TypeConverter(typeof(CategoryConverter<AnnouncementSettingsCategory>))]
+    public class AnnouncementSettingsCategory
+    {
+        public override string ToString() => "Announcement Settings";
+        [Category("Embed Settings"), Description("Thumbnail option for announcements.")]
+        public ThumbnailOption AnnouncementThumbnailOption { get; set; } = ThumbnailOption.Gengar;
+
+        [Category("Embed Settings"), Description("Custom thumbnail URL for announcements.")]
+        public string CustomAnnouncementThumbnailUrl { get; set; } = string.Empty;
+        public EmbedColorOption AnnouncementEmbedColor { get; set; } = EmbedColorOption.Purple;
+        [Category("Embed Settings"), Description("Enable random thumbnail selection for announcements.")]
+        public bool RandomAnnouncementThumbnail { get; set; } = false;
+
+        [Category("Embed Settings"), Description("Enable random color selection for announcements.")]
+        public bool RandomAnnouncementColor { get; set; } = false;
+    }
 
     [Category(Operation), Description("Returns PKMs of Pokémon shown in the trade to the user.")]
     public bool ReturnPKMs { get; set; } = true;
@@ -103,4 +123,29 @@ public class DiscordSettings
 
     [Category(Operation), Description("Bot can reply with a ShowdownSet in Any channel the bot can see, instead of only channels the bot has been whitelisted to run in. Only make this true if you want the bot to serve more utility in non-bot channels.")]
     public bool ConvertPKMReplyAnyChannel { get; set; }
+    public enum EmbedColorOption
+    {
+        Blue,
+        Green,
+        Red,
+        Gold,
+        Purple,
+        Teal,
+        Orange,
+        Magenta,
+        LightGrey,
+        DarkGrey
+    }
+
+    public enum ThumbnailOption
+    {
+        Gengar,
+        Pikachu,
+        Umbreon,
+        Sylveon,
+        Charmander,
+        Jigglypuff,
+        Flareon,
+        Custom
+    }
 }
