@@ -81,6 +81,12 @@ public static class QueueHelper<T> where T : PKM, new()
         var added = Info.AddToTradeQueue(trade, userID, canAddMultiple);
         bool useTypeEmojis = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.MoveTypeEmojis;
         bool useGenderIcons = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.GenderEmojis;
+        bool showScale = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowScale;
+        bool showTeraType = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowTeraType;
+        bool showLevel = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowLevel;
+        bool showAbility = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowAbility;
+        bool showNature = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowNature;
+        bool showIVs = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowIVs;
         if (added == QueueResultAdd.AlreadyInQueue)
         {
             return new TradeQueueResult(false);
@@ -146,12 +152,8 @@ public static class QueueHelper<T> where T : PKM, new()
         speciesName = GameInfo.GetStrings(1).Species[pk.Species];
         string shinySymbol = pk.ShinyXor == 0 ? "◼ " : pk.IsShiny ? "★ " : string.Empty;
         string genderSymbol = GameInfo.GenderSymbolASCII[pk.Gender];
-        string displayGender = genderSymbol switch
-        {
-            "M" => useGenderIcons ? ":male_sign:" : "(M)",
-            "F" => useGenderIcons ? ":female_sign:" : "(F)",
-            _ => ""
-        };
+        string displayGender = genderSymbol == "M" ? (useGenderIcons ? ":male_sign:" : "(M)") :
+                               genderSymbol == "F" ? (useGenderIcons ? ":female_sign:" : "(F)") : "";
         formName = ShowdownParsing.GetStringFromForm(pk.Form, strings, pk.Species, pk.Context);
         speciesAndForm = $"**{shinySymbol}{speciesName}{(string.IsNullOrEmpty(formName) ? "" : $"-{formName}")} {displayGender}**";
         heldItemName = strings.itemlist[pk.HeldItem];
@@ -241,11 +243,15 @@ public static class QueueHelper<T> where T : PKM, new()
         {
             // Preparing content for normal trades
             string leftSideContent = $"**Trainer:** {user.Mention}\n";
-            if (pk.Version is GameVersion.SL or GameVersion.VL)
-            {
-                leftSideContent += $"**Tera Type:** {teraTypeString}\n**Scale:** {scaleText} ({scaleNumber})\n";
-            }
-            leftSideContent += $"**Level:** {level}\n**Ability:** {abilityName}\n**Nature**: {natureName}\n**IVs**: {ivsDisplay}";
+            leftSideContent +=
+                (pk.Version is GameVersion.SL or GameVersion.VL && showTeraType ? $"**Tera Type:** {teraTypeString}\n" : "") +
+                (pk.Version is GameVersion.SL or GameVersion.VL && showScale ? $"**Scale:** {scaleText} ({scaleNumber})\n" : "") +
+                (showLevel ? $"**Level:** {level}\n" : "") +
+                (showAbility ? $"**Ability:** {abilityName}\n" : "") +
+                (showNature ? $"**Nature**: {natureName}\n" : "") +
+                (showIVs ? $"**IVs**: {ivsDisplay}\n" : "");
+
+            leftSideContent = leftSideContent.TrimEnd('\n');
             embedBuilder.AddField($"{speciesAndForm}", leftSideContent, inline: true);
             embedBuilder.AddField("\u200B", "\u200B", inline: true); // Spacer
             embedBuilder.AddField("**Moves:**", movesDisplay, inline: true);
