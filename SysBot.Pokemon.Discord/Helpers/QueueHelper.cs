@@ -150,14 +150,14 @@ public static class QueueHelper<T> where T : PKM, new()
         abilityName = GameInfo.AbilityDataSource.FirstOrDefault(a => a.Value == pk.Ability)?.Text ?? "";
         natureName = GameInfo.NatureDataSource.FirstOrDefault(n => n.Value == (int)pk.Nature)?.Text ?? "";
         speciesName = GameInfo.GetStrings(1).Species[pk.Species];
-        string mightyMarkSymbol = pk is IRibbonSetMark9 mark && mark.RibbonMarkMightiest ? "<:MightiestMark:1218302509333090352> " : string.Empty;
+        string alphaMarkSymbol = pk is IRibbonSetMark9 && (pk as IRibbonSetMark9).RibbonMarkAlpha ? "<:alpha_mark:1218321340164214956> " : string.Empty;
+        string mightyMarkSymbol = pk is IRibbonSetMark9 && (pk as IRibbonSetMark9).RibbonMarkMightiest ? "<:MightiestMark:1218302509333090352> " : string.Empty;
         string alphaSymbol = pk is IAlpha alpha && alpha.IsAlpha ? "<:alpha:1218294078756749312> " : string.Empty;
         string shinySymbol = pk.ShinyXor == 0 ? "◼ " : pk.IsShiny ? "★ " : string.Empty;
         string genderSymbol = GameInfo.GenderSymbolASCII[pk.Gender];
-        string displayGender = genderSymbol == "M" ? (useGenderIcons ? "<:male:1218184594189193326>" : "(M)") :
-                               genderSymbol == "F" ? (useGenderIcons ? "<:female:1218184592847142954>" : "(F)") : "";
-        displayGender += alphaSymbol;
-        displayGender += mightyMarkSymbol;
+        string displayGender = (genderSymbol == "M" ? (useGenderIcons ? "<:male:1218184594189193326>" : "M") :
+                                genderSymbol == "F" ? (useGenderIcons ? "<:female:1218184592847142954>" : "F") : "") +
+                               alphaSymbol + mightyMarkSymbol + alphaMarkSymbol;
         formName = ShowdownParsing.GetStringFromForm(pk.Form, strings, pk.Species, pk.Context);
         speciesAndForm = $"**{shinySymbol}{speciesName}{(string.IsNullOrEmpty(formName) ? "" : $"-{formName}")} {displayGender}**";
         heldItemName = strings.itemlist[pk.HeldItem];
