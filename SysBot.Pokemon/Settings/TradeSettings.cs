@@ -110,6 +110,15 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         [Category(EmbedSettings), Description("Will show Gender Icons in trade embed (Discord only).")]
         public bool GenderEmojis { get; set; } = true;
 
+        [Category(EmbedSettings), Description("Will show Mystery Gift Emoji in trade embed if in Cherish Ball (Discord only).")]
+        public bool MysteryGiftEmoji { get; set; } = true;
+
+        [Category(EmbedSettings), Description("Will show Alpha Mark Emoji in trade embed (Discord only).")]
+        public bool AlphaMarkEmoji { get; set; } = true;
+
+        [Category(EmbedSettings), Description("Will show Mightiest Mark Emoji in trade embed (Discord only).")]
+        public bool MightiesMarkEmoji { get; set; } = true;
+
         [Category(EmbedSettings), Description("Will show Scale in trade embed (SV & Discord only).")]
         public bool ShowScale { get; set; } = true;
 

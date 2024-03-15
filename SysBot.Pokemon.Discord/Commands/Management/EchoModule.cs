@@ -180,7 +180,7 @@ namespace SysBot.Pokemon.Discord
             AddEchoChannel(c, cid);
 
             SysCordSettings.Settings.AnnouncementChannels.AddIfNew([GetReference(Context.Channel)]);
-            await ReplyAsync("Added Raid Embed output to this channel!").ConfigureAwait(false);
+            await ReplyAsync("Added Trade Embed output to this channel!").ConfigureAwait(false);
         }
 
         private static async Task<bool> SendMessageWithRetry(ISocketMessageChannel c, string message, int maxRetries = 3)
