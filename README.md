@@ -12,7 +12,7 @@ For support and suggestions, join my Discord Hangout - https://notpaldea.net
 
 ## __Beautiful Embeds__
   
-![image](https://github.com/bdawg1989/MergeBot/assets/80122551/022e5f6a-5771-448f-a816-981782fefa55)
+![image](https://github.com/bdawg1989/MergeBot/assets/80122551/561fc354-aa6b-47ac-aec0-4b788ec7a650)
 
 ## __Additional Embed Text__
   
