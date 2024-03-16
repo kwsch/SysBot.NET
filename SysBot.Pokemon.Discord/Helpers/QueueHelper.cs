@@ -158,7 +158,7 @@ public static class QueueHelper<T> where T : PKM, new()
         string alphaSymbol = pk is IAlpha alpha && alpha.IsAlpha ? "<:alpha:1218294078756749312> " : string.Empty;
         string shinySymbol = pk.ShinyXor == 0 ? "◼ " : pk.IsShiny ? "★ " : string.Empty;
         string genderSymbol = GameInfo.GenderSymbolASCII[pk.Gender];
-        string mysteryGiftEmoji = pk.Ball == (int)Ball.Cherish && showMysteryGift ? "<:Mystery_Gift:1218325375034069133> " : "";
+        string mysteryGiftEmoji = pk.FatefulEncounter && showMysteryGift ? "<:Mystery_Gift:1218325375034069133> " : "";
         string displayGender = (genderSymbol == "M" ? (useGenderIcons ? "<:male:1218184594189193326>" : "(M)") :
             genderSymbol == "F" ? (useGenderIcons ? "<:female:1218184592847142954>" : "(F)") : "") +
             alphaSymbol + mightyMarkSymbol + alphaMarkSymbol + mysteryGiftEmoji;
