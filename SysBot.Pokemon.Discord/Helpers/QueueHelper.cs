@@ -80,49 +80,31 @@ public static class QueueHelper<T> where T : PKM, new()
         var canAddMultiple = isBatchTrade || sig == RequestSignificance.Owner;
         var added = Info.AddToTradeQueue(trade, userID, canAddMultiple);
         bool useTypeEmojis = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.MoveTypeEmojis;
-        bool useGenderIcons = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.GenderEmojis;
+        string maleEmojiString = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.MaleEmoji.EmojiString;
+        string femaleEmojiString = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.FemaleEmoji.EmojiString;
         bool showScale = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowScale;
         bool showTeraType = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowTeraType;
         bool showLevel = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowLevel;
         bool showAbility = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowAbility;
         bool showNature = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowNature;
         bool showIVs = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowIVs;
-        bool showAlphaMark = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.AlphaMarkEmoji;
-        bool showMightiesMark = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.MightiesMarkEmoji;
-        bool showMysteryGift = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.MysteryGiftEmoji;
         if (added == QueueResultAdd.AlreadyInQueue)
         {
             return new TradeQueueResult(false);
         }
-
-        var typeEmojis = new Dictionary<MoveType, string>
-        {
-            [MoveType.Bug] = "<:bug_type:1218980342434889769>",
-            [MoveType.Fire] = "<:fire_type:1218980266140241991>",
-            [MoveType.Flying] = "<:flying_type:1218980265142259762>",
-            [MoveType.Ground] = "<:ground_type:1218981428038205610>",
-            [MoveType.Water] = "<:water_type:1218980204156817438>",
-            [MoveType.Grass] = "<:grass_type:1218980262545850388>",
-            [MoveType.Ice] = "<:ice_type:1218980218899791903>",
-            [MoveType.Rock] = "<:rock_type:1218980206140854382>",
-            [MoveType.Ghost] = "<:ghost_type:1218980264034828438>",
-            [MoveType.Steel] = "<:steel_type:1218980205121507378>",
-            [MoveType.Fighting] = "<:fighting_type:1218980267373498550>",
-            [MoveType.Electric] = "<:electric_type:1218980271085322412>",
-            [MoveType.Dragon] = "<:dragon_type:1218980273509630073>",
-            [MoveType.Psychic] = "<:psychic_type:1218980207499808880>",
-            [MoveType.Dark] = "<:dark_type:1218980341734314004>",
-            [MoveType.Normal] = "<:normal_type:1218980209773121688>",
-            [MoveType.Poison] = "<:poison_type:1218980208753901739>",
-            [MoveType.Fairy] = "<:fairy_type:1218980269974093965>",
-        };
+        var typeEmojis = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.CustomTypeEmojis
+                             .Where(e => !string.IsNullOrEmpty(e.EmojiName) && !string.IsNullOrEmpty(e.ID))
+                             .ToDictionary(
+                                 e => e.MoveType,
+                                 e => $"<:{e.EmojiName}:{e.ID}>"
+                             );
 
         // Basic Pokémon details
         int[] ivs = pk.IVs;
         ushort[] moves = new ushort[4];
         pk.GetMoves(moves.AsSpan());
-        int[] movePPs = [pk.Move1_PP, pk.Move2_PP, pk.Move3_PP, pk.Move4_PP];
-        List<string> moveNames = [""];
+        List<int> movePPs = [pk.Move1_PP, pk.Move2_PP, pk.Move3_PP, pk.Move4_PP];
+        List<string> moveNames = [];
         for (int i = 0; i < moves.Length; i++)
         {
             if (moves[i] == 0) continue;
@@ -130,12 +112,11 @@ public static class QueueHelper<T> where T : PKM, new()
             byte moveTypeId = MoveInfo.GetType(moves[i], default);
             MoveType moveType = (MoveType)moveTypeId;
             string formattedMove = $"{moveName} ({movePPs[i]}pp)";
-            if (useTypeEmojis)
+            if (useTypeEmojis && typeEmojis.TryGetValue(moveType, out var moveEmoji))
             {
-                string typeEmoji = typeEmojis.TryGetValue(moveType, out var moveEmoji) ? moveEmoji : string.Empty;
-                formattedMove = $"{typeEmoji} {formattedMove}";
+                formattedMove = $"{moveEmoji} {formattedMove}";
             }
-            moveNames.Add($"\u200B{formattedMove}");
+            moveNames.Add($"\u200B{formattedMove}"); // Adding a zero-width space for formatting purposes if needed
         }
         int level = pk.CurrentLevel;
 
@@ -153,19 +134,29 @@ public static class QueueHelper<T> where T : PKM, new()
         abilityName = GameInfo.AbilityDataSource.FirstOrDefault(a => a.Value == pk.Ability)?.Text ?? "";
         natureName = GameInfo.NatureDataSource.FirstOrDefault(n => n.Value == (int)pk.Nature)?.Text ?? "";
         speciesName = GameInfo.GetStrings(1).Species[pk.Species];
-        string alphaMarkSymbol = pk is IRibbonSetMark9 && (pk as IRibbonSetMark9).RibbonMarkAlpha && showAlphaMark ? "<:alpha_mark:1218980343965548667> " : string.Empty;
-        string mightyMarkSymbol = pk is IRibbonSetMark9 && (pk as IRibbonSetMark9).RibbonMarkMightiest && showMightiesMark ? "<:mightiestmark:1218980216181887006> " : string.Empty;
-        string alphaSymbol = pk is IAlpha alpha && alpha.IsAlpha ? "<:alpha:1218980345895190650> " : string.Empty;
+        string alphaMarkSymbol = string.Empty;
+        string mightyMarkSymbol = string.Empty;
+        if (pk is IRibbonSetMark9 ribbonSetMark)
+        {
+            alphaMarkSymbol = ribbonSetMark.RibbonMarkAlpha ? SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.AlphaMarkEmojiInfo.EmojiString : string.Empty;
+            mightyMarkSymbol = ribbonSetMark.RibbonMarkMightiest ? SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.MightiestMarkEmojiInfo.EmojiString : string.Empty;
+        }
+        string alphaSymbol = (pk is IAlpha alpha && alpha.IsAlpha) ? SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.AlphaPLAEmojiInfo.EmojiString : string.Empty;
         string shinySymbol = pk.ShinyXor == 0 ? "◼ " : pk.IsShiny ? "★ " : string.Empty;
         string genderSymbol = GameInfo.GenderSymbolASCII[pk.Gender];
-        string mysteryGiftEmoji = pk.FatefulEncounter && showMysteryGift ? "<:Mystery_Gift:1218980211182403605> " : "";
-        string displayGender = (genderSymbol == "M" ? (useGenderIcons ? "<:male_emoj:1218980217452888237>" : "(M)") :
-            genderSymbol == "F" ? (useGenderIcons ? "<:female_emoj:1218980268803883099>" : "(F)") : "") +
-            alphaSymbol + mightyMarkSymbol + alphaMarkSymbol + mysteryGiftEmoji;
+        string displayGender = genderSymbol switch
+        {
+            "M" => !string.IsNullOrEmpty(maleEmojiString) ? maleEmojiString : "(M) ",
+            "F" => !string.IsNullOrEmpty(femaleEmojiString) ? femaleEmojiString : "(F) ",
+            _ => ""
+        };
+        string mysteryGiftEmoji = pk.FatefulEncounter ? SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.MysteryGiftEmojiInfo.EmojiString : "";
+        displayGender += alphaSymbol + mightyMarkSymbol + alphaMarkSymbol + mysteryGiftEmoji;
         formName = ShowdownParsing.GetStringFromForm(pk.Form, strings, pk.Species, pk.Context);
         speciesAndForm = $"**{shinySymbol}{speciesName}{(string.IsNullOrEmpty(formName) ? "" : $"-{formName}")} {displayGender}**";
         heldItemName = strings.itemlist[pk.HeldItem];
         ballName = strings.balllist[pk.Ball];
+
 
         // Request type flags
         bool isCloneRequest = type == PokeRoutineType.Clone;

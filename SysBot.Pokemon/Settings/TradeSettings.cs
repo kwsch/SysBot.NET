@@ -3,6 +3,7 @@ using SysBot.Base;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 using System.Threading;
 
 namespace SysBot.Pokemon;
@@ -16,6 +17,46 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     private const string Miscellaneous = nameof(Miscellaneous);
     private const string RequestFolders = nameof(RequestFolders);
     private const string EmbedSettings = nameof(EmbedSettings);
+
+    public class MoveTypeEmojiInfo
+    {
+        [Description("The type of move.")]
+        public MoveType MoveType { get; set; }
+
+        [Description("The Discord name for the emoji.")]
+        public string EmojiName { get; set; }
+
+        [Description("The unique Discord ID for the emoji.")]
+        public string ID { get; set; }
+
+        public MoveTypeEmojiInfo() { }
+
+        public MoveTypeEmojiInfo(MoveType moveType)
+        {
+            MoveType = moveType;
+            EmojiName = moveType.ToString(); 
+        }
+
+        public override string ToString()
+        {
+            if (string.IsNullOrEmpty(ID))
+                return MoveType.ToString();
+
+            return $"<:{EmojiName}:{ID}>";
+        }
+    }
+
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class EmojiInfo
+    {
+        [Description("The full string for the emoji.")]
+        public string EmojiString { get; set; } = string.Empty;
+
+        public override string ToString()
+        {
+            return string.IsNullOrEmpty(EmojiString) ? "Not Set" : EmojiString;
+        }
+    }
 
     [Category(TradeConfig), Description("Settings related to Trade Configuration."), Browsable(true)]
     public TradeSettingsCategory TradeConfiguration { get; set; } = new();
@@ -104,25 +145,55 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     {
         public override string ToString() => "Trade Embed Configuration Settings";
 
-        [Category(EmbedSettings), Description("Will show Move Type Icons next to moves in trade embed (Discord only).")]
+        [Category(EmbedSettings), Description("Will show Move Type Icons next to moves in trade embed (Discord only).  Requires user to upload the emojis to their server.")]
         public bool MoveTypeEmojis { get; set; } = true;
 
-        [Category(EmbedSettings), Description("Will show Gender Icons in trade embed (Discord only).")]
-        public bool GenderEmojis { get; set; } = true;
+        [Category(EmbedSettings), Description("Custom Emoji information for the move types.")]
+        public List<MoveTypeEmojiInfo> CustomTypeEmojis { get; set; } = new List<MoveTypeEmojiInfo>
+        {
+            new(MoveType.Bug),
+            new(MoveType.Fire),
+            new(MoveType.Flying),
+            new(MoveType.Ground),
+            new(MoveType.Water),
+            new(MoveType.Grass),
+            new(MoveType.Ice),
+            new(MoveType.Rock),
+            new(MoveType.Ghost),
+            new(MoveType.Steel),
+            new(MoveType.Fighting),
+            new(MoveType.Electric),
+            new(MoveType.Dragon),
+            new(MoveType.Psychic),
+            new(MoveType.Dark),
+            new(MoveType.Normal),
+            new(MoveType.Poison),
+            new(MoveType.Fairy),
+        };
 
-        [Category(EmbedSettings), Description("Will show Mystery Gift Emoji in trade embed if in Cherish Ball (Discord only).")]
-        public bool MysteryGiftEmoji { get; set; } = true;
+        [Category(EmbedSettings), Description("The full string for the male gender emoji.")]
+        public EmojiInfo MaleEmoji { get; set; } = new EmojiInfo();
 
-        [Category(EmbedSettings), Description("Will show Alpha Mark Emoji in trade embed (Discord only).")]
-        public bool AlphaMarkEmoji { get; set; } = true;
+        [Category(EmbedSettings), Description("The full string for the female gender emoji.")]
+        public EmojiInfo FemaleEmoji { get; set; } = new EmojiInfo();
 
-        [Category(EmbedSettings), Description("Will show Mightiest Mark Emoji in trade embed (Discord only).")]
-        public bool MightiesMarkEmoji { get; set; } = true;
+        [Category(EmbedSettings), Description("The emoji information for displaying mystery gift status.")]
+        public EmojiInfo MysteryGiftEmojiInfo { get; set; } = new EmojiInfo();
 
-        [Category(EmbedSettings), Description("Will show Scale in trade embed (SV & Discord only).")]
+
+        [Category(EmbedSettings), Description("The emoji information for displaying the alpha mark.")]
+        public EmojiInfo AlphaMarkEmojiInfo { get; set; } = new EmojiInfo();
+
+        [Category(EmbedSettings), Description("The emoji information for displaying the mightiest mark.")]
+        public EmojiInfo MightiestMarkEmojiInfo { get; set; } = new EmojiInfo();
+
+        [Category(EmbedSettings), Description("The emoji information for displaying the alpha emoji in Legends: Arceus.")]
+        public EmojiInfo AlphaPLAEmojiInfo { get; set; } = new EmojiInfo();
+
+        [Category(EmbedSettings), Description("Will show Scale in trade embed (SV & Discord only). Requires user to upload the emojis to their server.")]
         public bool ShowScale { get; set; } = true;
 
-        [Category(EmbedSettings), Description("Will show Tera Type in trade embed (SV & Discord only).")]
+        [Category(EmbedSettings), Description("Will show Tera Type in trade embed (SV & Discord only). Requires user to upload the emojis to their server.")]
         public bool ShowTeraType { get; set; } = true;
 
         [Category(EmbedSettings), Description("Will show Level in trade embed (Discord only).")]
