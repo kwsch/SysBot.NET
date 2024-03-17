@@ -97,24 +97,24 @@ public static class QueueHelper<T> where T : PKM, new()
 
         var typeEmojis = new Dictionary<MoveType, string>
         {
-            [MoveType.Bug] = "<:bug:1217966986542452877>",
-            [MoveType.Fire] = "<:fire:1217966987838230608>",
-            [MoveType.Flying] = "<:flying:1217966988937396284>",
-            [MoveType.Ground] = "<:ground:1217966989985714238>",
-            [MoveType.Water] = "<:water:1217966991231418480>",
-            [MoveType.Grass] = "<:grass:1217966992233988127>",
-            [MoveType.Ice] = "<:ice:1217966993089757236>",
-            [MoveType.Rock] = "<:rock:1217967113889648687>",
-            [MoveType.Ghost] = "<:ghost:1217966996046483527>",
-            [MoveType.Steel] = "<:steel:1217967110987452446>",
-            [MoveType.Fighting] = "<:fighting:1217966999406383235>",
-            [MoveType.Electric] = "<:electric:1217967112140882020>",
-            [MoveType.Dragon] = "<:dragon:1217967003327926513>",
-            [MoveType.Psychic] = "<:psychic:1217967113063366706>",
-            [MoveType.Dark] = "<:dark:1217967006402351155>",
-            [MoveType.Normal] = "<:normal:1217968403130748998>",
-            [MoveType.Poison] = "<:poison:1217967009933820025>",
-            [MoveType.Fairy] = "<:fairy:1217966985292546180>",
+            [MoveType.Bug] = "<:bug_type:1218980342434889769>",
+            [MoveType.Fire] = "<:fire_type:1218980266140241991>",
+            [MoveType.Flying] = "<:flying_type:1218980265142259762>",
+            [MoveType.Ground] = "<:ground_type:1218981428038205610>",
+            [MoveType.Water] = "<:water_type:1218980204156817438>",
+            [MoveType.Grass] = "<:grass_type:1218980262545850388>",
+            [MoveType.Ice] = "<:ice_type:1218980218899791903>",
+            [MoveType.Rock] = "<:rock_type:1218980206140854382>",
+            [MoveType.Ghost] = "<:ghost_type:1218980264034828438>",
+            [MoveType.Steel] = "<:steel_type:1218980205121507378>",
+            [MoveType.Fighting] = "<:fighting_type:1218980267373498550>",
+            [MoveType.Electric] = "<:electric_type:1218980271085322412>",
+            [MoveType.Dragon] = "<:dragon_type:1218980273509630073>",
+            [MoveType.Psychic] = "<:psychic_type:1218980207499808880>",
+            [MoveType.Dark] = "<:dark_type:1218980341734314004>",
+            [MoveType.Normal] = "<:normal_type:1218980209773121688>",
+            [MoveType.Poison] = "<:poison_type:1218980208753901739>",
+            [MoveType.Fairy] = "<:fairy_type:1218980269974093965>",
         };
 
         // Basic Pokémon details
@@ -153,14 +153,14 @@ public static class QueueHelper<T> where T : PKM, new()
         abilityName = GameInfo.AbilityDataSource.FirstOrDefault(a => a.Value == pk.Ability)?.Text ?? "";
         natureName = GameInfo.NatureDataSource.FirstOrDefault(n => n.Value == (int)pk.Nature)?.Text ?? "";
         speciesName = GameInfo.GetStrings(1).Species[pk.Species];
-        string alphaMarkSymbol = pk is IRibbonSetMark9 && (pk as IRibbonSetMark9).RibbonMarkAlpha && showAlphaMark ? "<:alpha_mark:1218321340164214956> " : string.Empty;
-        string mightyMarkSymbol = pk is IRibbonSetMark9 && (pk as IRibbonSetMark9).RibbonMarkMightiest && showMightiesMark ? "<:MightiestMark:1218302509333090352> " : string.Empty;
-        string alphaSymbol = pk is IAlpha alpha && alpha.IsAlpha ? "<:alpha:1218294078756749312> " : string.Empty;
+        string alphaMarkSymbol = pk is IRibbonSetMark9 && (pk as IRibbonSetMark9).RibbonMarkAlpha && showAlphaMark ? "<:alpha_mark:1218980343965548667> " : string.Empty;
+        string mightyMarkSymbol = pk is IRibbonSetMark9 && (pk as IRibbonSetMark9).RibbonMarkMightiest && showMightiesMark ? "<:mightiestmark:1218980216181887006> " : string.Empty;
+        string alphaSymbol = pk is IAlpha alpha && alpha.IsAlpha ? "<:alpha:1218980345895190650> " : string.Empty;
         string shinySymbol = pk.ShinyXor == 0 ? "◼ " : pk.IsShiny ? "★ " : string.Empty;
         string genderSymbol = GameInfo.GenderSymbolASCII[pk.Gender];
-        string mysteryGiftEmoji = pk.FatefulEncounter && showMysteryGift ? "<:Mystery_Gift:1218325375034069133> " : "";
-        string displayGender = (genderSymbol == "M" ? (useGenderIcons ? "<:male:1218184594189193326>" : "(M)") :
-            genderSymbol == "F" ? (useGenderIcons ? "<:female:1218184592847142954>" : "(F)") : "") +
+        string mysteryGiftEmoji = pk.FatefulEncounter && showMysteryGift ? "<:Mystery_Gift:1218980211182403605> " : "";
+        string displayGender = (genderSymbol == "M" ? (useGenderIcons ? "<:male_emoj:1218980217452888237>" : "(M)") :
+            genderSymbol == "F" ? (useGenderIcons ? "<:female_emoj:1218980268803883099>" : "(F)") : "") +
             alphaSymbol + mightyMarkSymbol + alphaMarkSymbol + mysteryGiftEmoji;
         formName = ShowdownParsing.GetStringFromForm(pk.Form, strings, pk.Species, pk.Context);
         speciesAndForm = $"**{shinySymbol}{speciesName}{(string.IsNullOrEmpty(formName) ? "" : $"-{formName}")} {displayGender}**";
