@@ -193,7 +193,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         [Category(EmbedSettings), Description("Will show Scale in trade embed (SV & Discord only). Requires user to upload the emojis to their server.")]
         public bool ShowScale { get; set; } = true;
 
-        [Category(EmbedSettings), Description("Will show Tera Type in trade embed (SV & Discord only). Requires user to upload the emojis to their server.")]
+        [Category(EmbedSettings), Description("Will show Tera Type in trade embed (SV & Discord only).")]
         public bool ShowTeraType { get; set; } = true;
 
         [Category(EmbedSettings), Description("Will show Level in trade embed (Discord only).")]
