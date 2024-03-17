@@ -178,17 +178,16 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         public EmojiInfo FemaleEmoji { get; set; } = new EmojiInfo();
 
         [Category(EmbedSettings), Description("The emoji information for displaying mystery gift status.")]
-        public EmojiInfo MysteryGiftEmojiInfo { get; set; } = new EmojiInfo();
-
+        public EmojiInfo MysteryGiftEmoji { get; set; } = new EmojiInfo();
 
         [Category(EmbedSettings), Description("The emoji information for displaying the alpha mark.")]
-        public EmojiInfo AlphaMarkEmojiInfo { get; set; } = new EmojiInfo();
+        public EmojiInfo AlphaMarkEmoji { get; set; } = new EmojiInfo();
 
         [Category(EmbedSettings), Description("The emoji information for displaying the mightiest mark.")]
-        public EmojiInfo MightiestMarkEmojiInfo { get; set; } = new EmojiInfo();
+        public EmojiInfo MightiestMarkEmoji { get; set; } = new EmojiInfo();
 
         [Category(EmbedSettings), Description("The emoji information for displaying the alpha emoji in Legends: Arceus.")]
-        public EmojiInfo AlphaPLAEmojiInfo { get; set; } = new EmojiInfo();
+        public EmojiInfo AlphaPLAEmoji { get; set; } = new EmojiInfo();
 
         [Category(EmbedSettings), Description("Will show Scale in trade embed (SV & Discord only). Requires user to upload the emojis to their server.")]
         public bool ShowScale { get; set; } = true;
