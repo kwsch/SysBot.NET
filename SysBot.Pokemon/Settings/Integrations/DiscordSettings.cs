@@ -23,6 +23,9 @@ public class DiscordSettings
     [Category(Startup), Description("Bot command prefix.")]
     public string CommandPrefix { get; set; } = "$";
 
+    [Category(Startup), Description("Will send a status Embed for Online/Offline to all Whitelisted Channels.")]
+    public bool BotEmbedStatus { get; set; } = true;
+
     [Category(Startup), Description("List of modules that will not be loaded when the bot is started (comma separated).")]
     public string ModuleBlacklist { get; set; } = string.Empty;
 

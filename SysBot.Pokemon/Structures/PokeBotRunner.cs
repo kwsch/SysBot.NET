@@ -1,5 +1,6 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,12 +23,15 @@ public interface IPokeBotRunner
     BotSource<PokeBotState>? GetBot(PokeBotState state);
     PokeRoutineExecutorBase CreateBotFromConfig(PokeBotState cfg);
     bool SupportsRoutine(PokeRoutineType pokeRoutineType);
+
+    event EventHandler BotStopped;
 }
 
 public abstract class PokeBotRunner<T> : BotRunner<PokeBotState>, IPokeBotRunner where T : PKM, new()
 {
     public readonly PokeTradeHub<T> Hub;
     private readonly BotFactory<T> Factory;
+    public event EventHandler BotStopped;
 
     public PokeTradeHubConfig Config => Hub.Config;
 
@@ -87,9 +91,13 @@ public abstract class PokeBotRunner<T> : BotRunner<PokeBotState>, IPokeBotRunner
 
         // bots currently don't de-register
         Thread.Sleep(100);
+
         int count = Hub.BotSync.Barrier.ParticipantCount;
         if (count != 0)
             Hub.BotSync.Barrier.RemoveParticipants(count);
+
+        // Raise the BotStopped event
+        BotStopped?.Invoke(this, EventArgs.Empty);
     }
 
     public override void PauseAll()

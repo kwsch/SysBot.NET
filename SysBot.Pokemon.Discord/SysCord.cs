@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using static Discord.GatewayIntents;
+using static SysBot.Pokemon.DiscordSettings;
 
 namespace SysBot.Pokemon.Discord;
 
@@ -77,6 +78,85 @@ public sealed class SysCord<T> where T : PKM, new()
 
         // Setup your DI container.
         _services = ConfigureServices();
+
+        // Subscribe to the BotStopped event
+        runner.BotStopped += async (sender, e) => await HandleBotStop();
+    }
+
+    public void SetupEventListeners(DiscordSocketClient client)
+    {
+        client.Connected += Client_Connected;
+        client.Disconnected += Client_Disconnected;
+    }
+
+    private async Task Client_Connected()
+    {
+        LogUtil.LogText("Client_Connected: Bot is connecting...");
+        await AnnounceBotStatus("Online", EmbedColorOption.Green);
+        LogUtil.LogText("Client_Connected: Connection handling completed.");
+    }
+
+    private async Task Client_Disconnected(Exception arg)
+    {
+        LogUtil.LogText($"Client_Disconnected: Bot is disconnecting... Exception: {arg.Message}");
+        await AnnounceBotStatus("Offline", EmbedColorOption.Red);
+        LogUtil.LogText("Client_Disconnected: Disconnection handling completed.");
+    }
+
+    public async Task HandleBotStop()
+    {
+        await AnnounceBotStatus("Offline", EmbedColorOption.Red);
+    }
+
+    public async Task AnnounceBotStatus(string status, EmbedColorOption color)
+    {
+        // Check the BotEmbedStatus setting before proceeding
+        if (!SysCordSettings.Settings.BotEmbedStatus)
+            return;
+
+        var botName = SysCordSettings.HubConfig.BotName;
+        if (string.IsNullOrEmpty(botName))
+            botName = "Bot";
+
+        var fullStatusMessage = $"# {botName} is {status}!";
+
+        var thumbnailUrl = status == "Online"
+            ? "https://raw.githubusercontent.com/bdawg1989/sprites/main/botgo.png"
+            : "https://raw.githubusercontent.com/bdawg1989/sprites/main/botstop.png";
+
+        var embed = new EmbedBuilder()
+            .WithTitle($"{botName} Status")
+            .WithDescription(fullStatusMessage)
+            .WithColor(EmbedColorConverter.ToDiscordColor(color))
+            .WithThumbnailUrl(thumbnailUrl)
+            .WithTimestamp(DateTimeOffset.Now)
+            .Build();
+
+        // Iterate over whitelisted channels and send the announcement
+        foreach (var channelId in SysCordSettings.Manager.WhitelistedChannels.List.Select(channel => channel.ID))
+        {
+            IMessageChannel? channel = _client.GetChannel(channelId) as IMessageChannel;
+            if (channel == null)
+            {
+                // If not found in cache, try fetching directly
+                channel = await _client.Rest.GetChannelAsync(channelId) as IMessageChannel;
+                if (channel == null)
+                {
+                    LogUtil.LogText($"AnnounceBotStatus: Failed to find channel with ID {channelId} even after direct fetch.");
+                    continue;
+                }
+            }
+
+            try
+            {
+                await channel.SendMessageAsync(embed: embed);
+                LogUtil.LogText($"AnnounceBotStatus: {fullStatusMessage} announced in channel {channelId}.");
+            }
+            catch (Exception ex)
+            {
+                LogUtil.LogText($"AnnounceBotStatus: Exception when sending message to channel {channelId}: {ex.Message}");
+            }
+        }
     }
 
     // If any services require the client, or the CommandService, or something else you keep on hand,
@@ -125,6 +205,9 @@ public sealed class SysCord<T> where T : PKM, new()
         // Centralize the logic for commands into a separate method.
         await InitCommands().ConfigureAwait(false);
 
+        // Setup event listeners for the Discord client.
+        SetupEventListeners(_client);
+
         // Login and connect.
         await _client.LoginAsync(TokenType.Bot, apiToken).ConfigureAwait(false);
         await _client.StartAsync().ConfigureAwait(false);
@@ -132,8 +215,23 @@ public sealed class SysCord<T> where T : PKM, new()
         var app = await _client.GetApplicationInfoAsync().ConfigureAwait(false);
         Manager.Owner = app.Owner.Id;
 
-        // Wait infinitely so your bot actually stays connected.
-        await MonitorStatusAsync(token).ConfigureAwait(false);
+        try
+        {
+            // Wait infinitely so your bot actually stays connected.
+            await MonitorStatusAsync(token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Handle the cancellation and perform cleanup tasks
+            LogUtil.LogText("MainAsync: Bot is disconnecting due to cancellation...");
+            await AnnounceBotStatus("Offline", EmbedColorOption.Red);
+            LogUtil.LogText("MainAsync: Cleanup tasks completed.");
+        }
+        finally
+        {
+            // Disconnect the bot
+            await _client.StopAsync();
+        }
     }
 
     public async Task InitCommands()
@@ -181,7 +279,7 @@ public sealed class SysCord<T> where T : PKM, new()
             if (Manager.BlacklistedServers.Contains(guildChannel.Guild.Id))
             {
                 await guildChannel.Guild.LeaveAsync();
-                return; 
+                return;
             }
         }
 
@@ -209,7 +307,7 @@ public sealed class SysCord<T> where T : PKM, new()
             var cfg = mgr.Config;
             if (cfg.ConvertPKMToShowdownSet && (cfg.ConvertPKMReplyAnyChannel || mgr.CanUseCommandChannel(msg.Channel.Id)))
             {
-                if (msg is SocketUserMessage userMessage) 
+                if (msg is SocketUserMessage userMessage)
                 {
                     foreach (var att in msg.Attachments)
                         await msg.Channel.RepostPKMAsShowdownAsync(att, userMessage).ConfigureAwait(false);
