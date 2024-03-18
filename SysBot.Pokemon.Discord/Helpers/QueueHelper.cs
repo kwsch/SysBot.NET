@@ -125,7 +125,7 @@ public static class QueueHelper<T> where T : PKM, new()
         byte scaleNumber = 0;
         if (pk is PK9 pk9)
         {
-            teraTypeString = pk9.TeraTypeOverride == (MoveType)99 ? "Stellar" : pk9.TeraType.ToString();
+            teraTypeString = GetTeraTypeString(pk9);
             scaleText = $"{PokeSizeDetailedUtil.GetSizeRating(pk9.Scale)}";
             scaleNumber = pk9.Scale;
         }
@@ -302,6 +302,11 @@ public static class QueueHelper<T> where T : PKM, new()
         }
 
         return new TradeQueueResult(true);
+    }
+
+    private static string GetTeraTypeString(PK9 pk9)
+    {
+        return pk9.TeraTypeOverride == (MoveType)TeraTypeUtil.Stellar ? "Stellar" : pk9.TeraType.ToString();
     }
 
     private static string GetImageFolderPath()
