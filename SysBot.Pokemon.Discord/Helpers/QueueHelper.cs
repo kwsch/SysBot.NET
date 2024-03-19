@@ -24,8 +24,8 @@ public static class QueueHelper<T> where T : PKM, new()
     private const uint MaxTradeCode = 9999_9999;
 
     // A dictionary to hold batch trade file paths and their deletion status
-    private static Dictionary<int, List<string>> batchTradeFiles = new Dictionary<int, List<string>>();
-    private static Dictionary<ulong, int> userBatchTradeMaxDetailId = new Dictionary<ulong, int>();
+    private static Dictionary<int, List<string>> batchTradeFiles = [];
+    private static Dictionary<ulong, int> userBatchTradeMaxDetailId = [];
 
     public static async Task AddToQueueAsync(SocketCommandContext context, int code, string trainer, RequestSignificance sig, T trade, PokeRoutineType routine, PokeTradeType type, SocketUser trader, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, bool isMysteryEgg = false, List<Pictocodes> lgcode = null)
     {
@@ -553,7 +553,7 @@ public static class QueueHelper<T> where T : PKM, new()
             // If this is part of a batch trade, add the file path to the dictionary
             if (!batchTradeFiles.ContainsKey(batchTradeId))
             {
-                batchTradeFiles[batchTradeId] = new List<string>();
+                batchTradeFiles[batchTradeId] = [];
             }
 
             batchTradeFiles[batchTradeId].Add(filePath);
@@ -715,7 +715,7 @@ public static class QueueHelper<T> where T : PKM, new()
     public static (string, Embed) CreateLGLinkCodeSpriteEmbed(List<Pictocodes> lgcode)
     {
         int codecount = 0;
-        List<System.Drawing.Image> spritearray = new();
+        List<System.Drawing.Image> spritearray = [];
         foreach (Pictocodes cd in lgcode)
         {
 

@@ -1213,10 +1213,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     private async Task AddTradeToQueueAsync(int code, string trainerName, T pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, int formArgument = 0, bool isMysteryEgg = false, List<Pictocodes> lgcode = null)
     {
-        if (lgcode == null)
-        {
-            lgcode = GenerateRandomPictocodes(3);
-        }
+        lgcode ??= TradeModule<T>.GenerateRandomPictocodes(3);
         if (!pk.CanBeTraded())
         {
             var reply = await ReplyAsync("Provided Pokémon content is blocked from trading!").ConfigureAwait(false);
@@ -1226,7 +1223,27 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         }
         var homeLegalityCfg = Info.Hub.Config.Trade.HomeLegalitySettings;
         var la = new LegalityAnalysis(pk);
-
+        if (!la.Valid)
+        {
+            string responseMessage = pk.IsEgg ? "Invalid Showdown Set for this Egg. Please review your information and try again." :
+                $"{typeof(T).Name} attachment is not legal, and cannot be traded!";
+            var reply = await ReplyAsync(responseMessage).ConfigureAwait(false);
+            await Task.Delay(6000);
+            await reply.DeleteAsync().ConfigureAwait(false);
+            return;
+        }
+        if (homeLegalityCfg.DisallowNonNatives && (la.EncounterOriginal.Context != pk.Context || pk.GO))
+        {
+            // Allow the owner to prevent trading entities that require a HOME Tracker even if the file has one already.
+            await ReplyAsync($"{typeof(T).Name} attachment is not native, and cannot be traded!").ConfigureAwait(false);
+            return;
+        }
+        if (homeLegalityCfg.DisallowTracked && pk is IHomeTrack { HasTracker: true })
+        {
+            // Allow the owner to prevent trading entities that already have a HOME Tracker.
+            await ReplyAsync($"{typeof(T).Name} attachment is tracked by HOME, and cannot be traded!").ConfigureAwait(false);
+            return;
+        }
         // handle past gen file requests
         // thanks manu https://github.com/Manu098vm/SysBot.NET/commit/d8c4b65b94f0300096704390cce998940413cc0d
         if (!la.Valid && la.Results.Any(m => m.Identifier is CheckIdentifier.Memory))
@@ -1246,34 +1263,13 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             if (la.Valid) pk = clone;
         }
 
-        if (!la.Valid)
-        {
-            string responseMessage = pk.IsEgg ? "Invalid Showdown Set for this Egg. Please review your information and try again." :
-                $"{typeof(T).Name} attachment is not legal, and cannot be traded!";
-            if (homeLegalityCfg.DisallowNonNatives && (la.EncounterOriginal.Context != pk.Context || pk.GO))
-            {
-                // Allow the owner to prevent trading entities that require a HOME Tracker even if the file has one already.
-                await ReplyAsync($"{typeof(T).Name} attachment is not native, and cannot be traded!").ConfigureAwait(false);
-                return;
-            }
-            if (homeLegalityCfg.DisallowTracked && pk is IHomeTrack { HasTracker: true })
-            {
-                // Allow the owner to prevent trading entities that already have a HOME Tracker.
-                await ReplyAsync($"{typeof(T).Name} attachment is tracked by HOME, and cannot be traded!").ConfigureAwait(false);
-                return;
-            }
-            var reply = await ReplyAsync(responseMessage).ConfigureAwait(false);
-            await Task.Delay(6000);
-            await reply.DeleteAsync().ConfigureAwait(false);
-            return;
-        }
-
         await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk, PokeRoutineType.LinkTrade, PokeTradeType.Specific, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, isMysteryEgg, lgcode).ConfigureAwait(false);
     }
-    private List<Pictocodes> GenerateRandomPictocodes(int count)
+
+    private static List<Pictocodes> GenerateRandomPictocodes(int count)
     {
-        Random rnd = new Random();
-        List<Pictocodes> randomPictocodes = new List<Pictocodes>();
+        Random rnd = new();
+        List<Pictocodes> randomPictocodes = [];
         Array pictocodeValues = Enum.GetValues(typeof(Pictocodes));
 
         for (int i = 0; i < count; i++)

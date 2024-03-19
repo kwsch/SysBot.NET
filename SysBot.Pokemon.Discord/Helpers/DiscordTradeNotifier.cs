@@ -134,7 +134,7 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
     public static (string, Embed) CreateLGLinkCodeSpriteEmbed(List<Pictocodes> lgcode)
     {
         int codecount = 0;
-        List<System.Drawing.Image> spritearray = new();
+        List<System.Drawing.Image> spritearray = [];
         foreach (Pictocodes cd in lgcode)
         {
             var showdown = new ShowdownSet(cd.ToString());
