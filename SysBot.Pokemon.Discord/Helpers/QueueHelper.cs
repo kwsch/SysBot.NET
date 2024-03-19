@@ -306,7 +306,19 @@ public static class QueueHelper<T> where T : PKM, new()
 
     private static string GetTeraTypeString(PK9 pk9)
     {
-        return pk9.TeraTypeOverride == (MoveType)TeraTypeUtil.Stellar ? "Stellar" : pk9.TeraType.ToString();
+        if (pk9.TeraTypeOverride == (MoveType)TeraTypeUtil.Stellar)
+        {
+            return "Stellar";
+        }
+        else if ((int)pk9.TeraType == 99) // Terapagos
+        {
+            return "Stellar";
+        }
+        // Fallback to default TeraType string representation if not Stellar
+        else
+        {
+            return pk9.TeraType.ToString();
+        }
     }
 
     private static string GetImageFolderPath()
