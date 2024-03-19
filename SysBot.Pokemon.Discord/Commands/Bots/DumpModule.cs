@@ -37,7 +37,6 @@ public class DumpModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
             isBatchTrade: false,
             batchTradeNumber: 1,
             totalBatchTrades: 1,
-            formArgument: 0,
             isMysteryEgg: false,
             lgcode: lgcode);
 
