@@ -51,7 +51,7 @@ public sealed class SysCord<T> where T : PKM, new()
         {
             // How much logging do you want to see?
             LogLevel = LogSeverity.Info,
-            GatewayIntents = Guilds | GuildMessages | DirectMessages | GuildMembers | GuildPresences | MessageContent,
+            GatewayIntents = Guilds | GuildMessages | DirectMessages | GuildMembers | MessageContent,
             // If you or another service needs to do anything with messages
             // (ex. checking Reactions, checking the content of edited/deleted messages),
             // you must set the MessageCacheSize. You may adjust the number as needed.
