@@ -48,15 +48,14 @@ public static class AutoLegalityWrapper
         // If the host wants to allow missing HOME trackers, we need to override the default setting.
         bool allowMissingHOME = !cfg.EnableHOMETrackerCheck;
         APILegality.AllowHOMETransferGeneration = allowMissingHOME;
-        if (allowMissingHOME)
+        if (!allowMissingHOME)
         {
-            // Property setter is private; need to use reflection to manually set the value.
             var prop = typeof(ParseSettings).GetProperty(nameof(ParseSettings.HOMETransferTrackerNotPresent));
-            prop?.SetValue(null, Severity.Fishy);
+            prop?.SetValue(null, Severity.Invalid);
         }
 
-        // We need all the encounter types present, so add the missing ones at the end.
-        var missing = EncounterPriority.Except(cfg.PrioritizeEncounters);
+    // We need all the encounter types present, so add the missing ones at the end.
+    var missing = EncounterPriority.Except(cfg.PrioritizeEncounters);
         cfg.PrioritizeEncounters.AddRange(missing);
         cfg.PrioritizeEncounters = cfg.PrioritizeEncounters.Distinct().ToList(); // Don't allow duplicates.
         EncounterMovesetGenerator.PriorityList = cfg.PrioritizeEncounters;
