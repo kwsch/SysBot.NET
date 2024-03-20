@@ -149,7 +149,8 @@ namespace SysBot.Pokemon.Bilibili
             var tt = type == PokeRoutineType.SeedCheck ? PokeTradeType.Seed : PokeTradeType.Specific;
             var detail =
                 new PokeTradeDetail<T>(pk, trainer, notifier, tt, code, sig == RequestSignificance.Favored);
-            var trade = new TradeEntry<T>(detail, userId, type, name);
+            var uniqueTradeID = GenerateUniqueTradeID();
+            var trade = new TradeEntry<T>(detail, userId, type, name, uniqueTradeID);
 
             var added = Info.AddToTradeQueue(trade, userId, sig == RequestSignificance.Owner);
 
@@ -159,7 +160,7 @@ namespace SysBot.Pokemon.Bilibili
                 return false;
             }
 
-            var position = Info.CheckPosition(userId, type);
+            var position = Info.CheckPosition(userId, uniqueTradeID, type);
             //msg = $"@{name}: Added to the {type} queue, unique ID: {detail.ID}. Current Position: {position.Position}";
             msg = $" 你在第{position.Position}位";
 
@@ -172,6 +173,13 @@ namespace SysBot.Pokemon.Bilibili
             }
 
             return true;
+        }
+        private static int GenerateUniqueTradeID()
+        {
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            int randomValue = new Random().Next(1000);
+            int uniqueTradeID = (int)(timestamp % int.MaxValue) * 1000 + randomValue;
+            return uniqueTradeID;
         }
     }
 }

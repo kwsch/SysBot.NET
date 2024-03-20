@@ -15,7 +15,19 @@ public class QueueModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [Summary("Checks the user's position in the queue.")]
     public async Task GetTradePositionAsync()
     {
-        var msg = Context.User.Mention + " - " + Info.GetPositionString(Context.User.Id);
+        var userID = Context.User.Id;
+        var tradeEntry = Info.GetDetail(userID);
+
+        string msg;
+        if (tradeEntry != null)
+        {
+            var uniqueTradeID = tradeEntry.UniqueTradeID;
+            msg = Context.User.Mention + " - " + Info.GetPositionString(userID, uniqueTradeID);
+        }
+        else
+        {
+            msg = Context.User.Mention + " - You are not currently in the queue.";
+        }
 
         // Send the reply and capture the response message
         var response = await ReplyAsync(msg).ConfigureAwait(false);
@@ -157,18 +169,42 @@ public class QueueModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     private static string ClearTrade(ulong userID)
     {
-        var result = Info.ClearTrade(userID);
-        return GetClearTradeMessage(result);
-    }
+        var userEntries = Info.GetIsUserQueued(entry => entry.UserID == userID);
 
-    private static string GetClearTradeMessage(QueueResultRemove result)
-    {
-        return result switch
+        if (userEntries.Count == 0)
+            return "Sorry, you are not currently in the queue.";
+
+        bool removedAll = true;
+        bool currentlyProcessing = false;
+        bool removedPending = false;
+
+        foreach (var entry in userEntries)
         {
-            QueueResultRemove.CurrentlyProcessing => "Looks like you're currently being processed! Did not remove from all queues.",
-            QueueResultRemove.CurrentlyProcessingRemoved => "Looks like you're currently being processed!",
-            QueueResultRemove.Removed => "Removed you from the queue.",
-            _ => "Sorry, you are not currently in the queue.",
-        };
+            if (entry.Trade.IsProcessing)
+            {
+                currentlyProcessing = true;
+                if (!Info.Hub.Config.Queues.CanDequeueIfProcessing)
+                {
+                    removedAll = false;
+                    continue;
+                }
+            }
+            else
+            {
+                Info.Remove(entry);
+                removedPending = true;
+            }
+        }
+
+        if (!removedAll && currentlyProcessing && !removedPending)
+            return "Looks like you have trades currently being processed! Did not remove those from the queue.";
+
+        if (currentlyProcessing && removedPending)
+            return "Looks like you have trades currently being processed! Removed other pending trades from the queue.";
+
+        if (removedPending)
+            return "Removed your pending trades from the queue.";
+
+        return "Sorry, you are not currently in the queue.";
     }
 }

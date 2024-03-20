@@ -111,7 +111,8 @@ namespace SysBot.Pokemon.Twitch
             var notifier = new TwitchTradeNotifier<T>(pk, trainer, code, e.WhisperMessage.Username, client, Channel, Hub.Config.Twitch);
             var tt = type == PokeRoutineType.SeedCheck ? PokeTradeType.Seed : PokeTradeType.Specific;
             var detail = new PokeTradeDetail<T>(pk, trainer, notifier, tt, code, sig == RequestSignificance.Favored);
-            var trade = new TradeEntry<T>(detail, userID, type, name);
+            var uniqueTradeID = GenerateUniqueTradeID();
+            var trade = new TradeEntry<T>(detail, userID, type, name, uniqueTradeID);
 
             var added = Info.AddToTradeQueue(trade, userID, sig == RequestSignificance.Owner);
 
@@ -121,7 +122,7 @@ namespace SysBot.Pokemon.Twitch
                 return false;
             }
 
-            var position = Info.CheckPosition(userID, type);
+            var position = Info.CheckPosition(userID, uniqueTradeID, type);
             msg = $"@{name}: Added to the {type} queue, unique ID: {detail.ID}. Current Position: {position.Position}";
 
             var botct = Info.Hub.Bots.Count;
@@ -131,6 +132,14 @@ namespace SysBot.Pokemon.Twitch
                 msg += $". Estimated: {eta:F1} minutes.";
             }
             return true;
+        }
+
+        private static int GenerateUniqueTradeID()
+        {
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            int randomValue = new Random().Next(1000);
+            int uniqueTradeID = (int)(timestamp % int.MaxValue) * 1000 + randomValue;
+            return uniqueTradeID;
         }
 
         private void Client_OnLog(object? sender, OnLogArgs e)
@@ -227,7 +236,17 @@ namespace SysBot.Pokemon.Twitch
                 case "ts":
                 case "queue":
                 case "position":
-                    return $"@{m.Username}: {Info.GetPositionString(ulong.Parse(m.UserId))}";
+                    var userID = ulong.Parse(m.UserId);
+                    var tradeEntry = Info.GetDetail(userID);
+                    if (tradeEntry != null)
+                    {
+                        var uniqueTradeID = tradeEntry.UniqueTradeID;
+                        return $"@{m.Username}: {Info.GetPositionString(userID, uniqueTradeID)}";
+                    }
+                    else
+                    {
+                        return $"@{m.Username}: You are not currently in the queue.";
+                    }
                 case "tc":
                 case "cancel":
                 case "remove":

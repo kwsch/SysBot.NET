@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net.Http;
 using DoDo.Open.Sdk.Models.Bots;
 using DoDo.Open.Sdk.Models.ChannelMessages;
@@ -137,10 +137,23 @@ namespace SysBot.Pokemon.Dodo
             }
             else if (content.Contains("位置"))
             {
-                var result = DodoBot<TP>.Info.CheckPosition(ulong.Parse(eventBody.DodoSourceId));
-                DodoBot<TP>.SendChannelAtMessage(ulong.Parse(eventBody.DodoSourceId),
-                    $" {GetQueueCheckResultMessage(result)}",
-                    eventBody.ChannelId);
+                var userID = ulong.Parse(eventBody.DodoSourceId);
+                var tradeEntry = DodoBot<TP>.Info.GetDetail(userID);
+
+                if (tradeEntry != null)
+                {
+                    var uniqueTradeID = tradeEntry.UniqueTradeID;
+                    var result = DodoBot<TP>.Info.CheckPosition(userID, uniqueTradeID);
+                    DodoBot<TP>.SendChannelAtMessage(userID,
+                        $" {GetQueueCheckResultMessage(result)}",
+                        eventBody.ChannelId);
+                }
+                else
+                {
+                    DodoBot<TP>.SendChannelAtMessage(userID,
+                        "You are not currently in the queue.",
+                        eventBody.ChannelId);
+                }
             }
             else
             {

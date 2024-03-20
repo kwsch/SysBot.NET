@@ -1,4 +1,4 @@
-﻿using Mirai.Net.Data.Messages;
+using Mirai.Net.Data.Messages;
 using Mirai.Net.Data.Messages.Concretes;
 using Mirai.Net.Data.Messages.Receivers;
 using Mirai.Net.Modules;
@@ -22,6 +22,7 @@ namespace SysBot.Pokemon.QQ
 
             var text = receiver.MessageChain.OfType<PlainMessage>()?.FirstOrDefault()?.Text ?? "";
             if (string.IsNullOrWhiteSpace(text)) return;
+
             if (text.Trim().StartsWith("取消"))
             {
                 var result = MiraiQQBot<T>.Info.ClearTrade(ulong.Parse(receiver.Sender.Id));
@@ -29,8 +30,19 @@ namespace SysBot.Pokemon.QQ
             }
             else if (text.Trim().StartsWith("位置"))
             {
-                var result = MiraiQQBot<T>.Info.CheckPosition(ulong.Parse(receiver.Sender.Id));
-                MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At(receiver.Sender.Id).Plain($" {GetQueueCheckResultMessage(result)}").Build());
+                var userID = ulong.Parse(receiver.Sender.Id);
+                var tradeEntry = MiraiQQBot<T>.Info.GetDetail(userID);
+
+                if (tradeEntry != null)
+                {
+                    var uniqueTradeID = tradeEntry.UniqueTradeID;
+                    var result = MiraiQQBot<T>.Info.CheckPosition(userID, uniqueTradeID);
+                    MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At(receiver.Sender.Id).Plain($" {GetQueueCheckResultMessage(result)}").Build());
+                }
+                else
+                {
+                    MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At(receiver.Sender.Id).Plain("You are not currently in the queue.").Build());
+                }
             }
         }
 

@@ -59,7 +59,7 @@ public class QueueTests
         first.Notifier.TradeSearching(executor, first);
         first.Notifier.TradeFinished(executor, first, new T { Species = 777 });
 
-        var status = info.CheckPosition(t1.UserID, PokeRoutineType.LinkTrade);
+        var status = info.CheckPosition(t1.UserID, 12345, PokeRoutineType.LinkTrade);
         status.Position.Should().Be(1); // not zero indexed
         var count = info.UserCount(z => z.Type == PokeRoutineType.LinkTrade);
         count.Should().Be(3);
@@ -74,7 +74,7 @@ public class QueueTests
         second.Notifier.TradeSearching(executor, second);
         second.Notifier.TradeCanceled(executor, second, PokeTradeResult.TrainerTooSlow);
 
-        status = info.CheckPosition(t1.UserID, PokeRoutineType.LinkTrade);
+        status = info.CheckPosition(t1.UserID, 12345, PokeRoutineType.LinkTrade);
         status.Position.Should().Be(-1);
         count = info.UserCount(z => z.Type == PokeRoutineType.LinkTrade);
         count.Should().Be(2);
@@ -111,7 +111,7 @@ public class QueueTests
     private static TradeEntry<T> GetTestTrade<T>(int tag, bool favor) where T : PKM, new()
     {
         var d3 = new PokeTradeDetail<T>(new T { Species = (ushort)tag }, new PokeTradeTrainerInfo($"{(favor ? "*" : "")}Test {tag}"), new PokeTradeLogNotifier<T>(), PokeTradeType.Specific, tag, favor);
-        return new TradeEntry<T>(d3, (ulong)tag, PokeRoutineType.LinkTrade, $"Test Trade {tag}");
+        return new TradeEntry<T>(d3, (ulong)tag, PokeRoutineType.LinkTrade, $"Test Trade {tag}", 12345);
     }
 
     private static void TestFavor<T>() where T : PKM, new()

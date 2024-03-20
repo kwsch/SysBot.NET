@@ -49,11 +49,11 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
             return UsersInQueue.Find(z => z.UserID == uid);
     }
 
-    public QueueCheckResult<T> CheckPosition(ulong uid, PokeRoutineType type = 0)
+    public QueueCheckResult<T> CheckPosition(ulong uid, int uniqueTradeID, PokeRoutineType type = 0)
     {
         lock (_sync)
         {
-            var index = UsersInQueue.FindIndex(z => z.Equals(uid, type));
+            var index = UsersInQueue.FindIndex(z => z.Equals(uid, uniqueTradeID, type));
             if (index < 0)
                 return QueueCheckResult<T>.None;
 
@@ -61,7 +61,7 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
             var actualIndex = 1;
             for (int i = 0; i < index; i++)
             {
-                if (UsersInQueue[i].Type == entry.Type)
+                if (UsersInQueue[i].Type == entry.Type && UsersInQueue[i].UniqueTradeID < entry.UniqueTradeID)
                     actualIndex++;
             }
 
@@ -71,9 +71,9 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
         }
     }
 
-    public string GetPositionString(ulong uid, PokeRoutineType type = PokeRoutineType.Idle)
+    public string GetPositionString(ulong uid, int uniqueTradeID, PokeRoutineType type = PokeRoutineType.Idle)
     {
-        var check = CheckPosition(uid, type);
+        var check = CheckPosition(uid, uniqueTradeID, type);
         return check.GetMessage();
     }
 
@@ -114,45 +114,38 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
         if (details.Count == 0)
             return QueueResultRemove.NotInQueue;
 
-        int removedCount = ClearTrade(details, Hub);
+        bool removedAll = true;
+        bool currentlyProcessing = false;
+        bool removedPending = false;
 
-        if (removedCount == details.Count)
-            return QueueResultRemove.Removed;
-
-        bool canRemoveWhileProcessing = Hub.Config.Queues.CanDequeueIfProcessing;
         foreach (var detail in details)
         {
-            if (detail.Trade.IsProcessing && !canRemoveWhileProcessing)
-                continue;
-            Remove(detail);
-        }
-
-        return canRemoveWhileProcessing
-            ? QueueResultRemove.CurrentlyProcessingRemoved
-            : QueueResultRemove.CurrentlyProcessing;
-    }
-
-    public int ClearTrade(IEnumerable<TradeEntry<T>> details, PokeTradeHub<T> hub)
-    {
-        int removedCount = 0;
-        lock (_sync)
-        {
-            var queues = hub.Queues.AllQueues;
-            foreach (var detail in details)
+            if (detail.Trade.IsProcessing)
             {
-                if (detail.Trade.IsProcessing && !Hub.Config.Queues.CanDequeueIfProcessing)
-                    continue;
-                foreach (var queue in queues)
+                currentlyProcessing = true;
+                if (!Hub.Config.Queues.CanDequeueIfProcessing)
                 {
-                    int removed = queue.Remove(detail.Trade);
-                    if (removed != 0)
-                        UsersInQueue.Remove(detail);
-                    removedCount += removed;
+                    removedAll = false;
+                    continue;
                 }
+            }
+            else
+            {
+                if (Remove(detail))
+                    removedPending = true;
             }
         }
 
-        return removedCount;
+        if (!removedAll && currentlyProcessing && !removedPending)
+            return QueueResultRemove.CurrentlyProcessing;
+
+        if (currentlyProcessing && removedPending)
+            return QueueResultRemove.CurrentlyProcessingRemoved;
+
+        if (removedPending)
+            return QueueResultRemove.Removed;
+
+        return QueueResultRemove.NotInQueue;
     }
 
     public IEnumerable<string> GetUserList(string fmt)

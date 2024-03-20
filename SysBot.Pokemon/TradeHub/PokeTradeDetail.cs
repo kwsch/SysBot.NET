@@ -48,9 +48,10 @@ namespace SysBot.Pokemon
 
         public readonly int BatchTradeNumber;
         public readonly int TotalBatchTrades;
+        public readonly int UniqueTradeID;
         public bool IsMysteryEgg { get; }
 
-        public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code, bool favored = false, List<Pictocodes> lgcode = null, int batchTradeNumber = 0, int totalBatchTrades = 0, bool isMysteryEgg = false) // Modify constructor to include isMysteryEgg
+        public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code, bool favored = false, List<Pictocodes> lgcode = null, int batchTradeNumber = 0, int totalBatchTrades = 0, bool isMysteryEgg = false, int uniqueTradeID = 0)
         {
             ID = Interlocked.Increment(ref CreatedCount) % 3000;
             Code = code;
@@ -64,6 +65,7 @@ namespace SysBot.Pokemon
             BatchTradeNumber = batchTradeNumber;
             TotalBatchTrades = totalBatchTrades;
             IsMysteryEgg = isMysteryEgg;
+            UniqueTradeID = uniqueTradeID;
         }
 
         public void TradeInitialize(PokeRoutineExecutor<TPoke> routine) => Notifier.TradeInitialize(routine, this);
@@ -83,7 +85,7 @@ namespace SysBot.Pokemon
         {
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
-            return ReferenceEquals(Trainer, other.Trainer);
+            return Trainer.ID == other.Trainer.ID && UniqueTradeID == other.UniqueTradeID;
         }
 
         public override bool Equals(object? obj)
@@ -94,7 +96,7 @@ namespace SysBot.Pokemon
             return Equals((PokeTradeDetail<TPoke>)obj);
         }
 
-        public override int GetHashCode() => Trainer.GetHashCode();
+        public override int GetHashCode() => HashCode.Combine(Trainer.ID, UniqueTradeID);
         public override string ToString() => $"{Trainer.TrainerName} - {Code}";
 
         public string Summary(int queuePosition)

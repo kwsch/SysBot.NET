@@ -73,11 +73,12 @@ public static class QueueHelper<T> where T : PKM, new()
         var trainer = new PokeTradeTrainerInfo(trainerName, userID);
         var notifier = new DiscordTradeNotifier<T>(pk, trainer, code, trader, batchTradeNumber, totalBatchTrades, isMysteryEgg, lgcode);
         var detail = new PokeTradeDetail<T>(pk, trainer, notifier, t, code, sig == RequestSignificance.Favored, lgcode, batchTradeNumber, totalBatchTrades, isMysteryEgg);
-        var trade = new TradeEntry<T>(detail, userID, type, name);
+        var uniqueTradeID = GenerateUniqueTradeID();
+        var trade = new TradeEntry<T>(detail, userID, type, name, uniqueTradeID);
         var strings = GameInfo.GetStrings(1);
         var hub = SysCord<T>.Runner.Hub;
         var Info = hub.Queues.Info;
-        var canAddMultiple = isBatchTrade || sig == RequestSignificance.Owner;
+        var canAddMultiple = isBatchTrade || sig == RequestSignificance.None;
         var added = Info.AddToTradeQueue(trade, userID, canAddMultiple);
         bool useTypeEmojis = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.MoveTypeEmojis;
         string maleEmojiString = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.MaleEmoji.EmojiString;
@@ -178,7 +179,7 @@ public static class QueueHelper<T> where T : PKM, new()
         string pokemonDisplayName = pk.IsNicknamed ? pk.Nickname : GameInfo.GetStrings(1).Species[pk.Species];
 
         // Queue position and ETA calculation
-        var position = Info.CheckPosition(userID, type);
+        var position = Info.CheckPosition(userID, uniqueTradeID, type);
         var botct = Info.Hub.Bots.Count;
         var baseEta = position.Position > botct ? Info.Hub.Config.Queues.EstimateDelay(position.Position, botct) : 0;
         var adjustedEta = baseEta + (batchTradeNumber - 1); // Increment ETA by 1 minute for each batch trade
@@ -309,6 +310,14 @@ public static class QueueHelper<T> where T : PKM, new()
         }
 
         return new TradeQueueResult(true);
+    }
+
+    private static int GenerateUniqueTradeID()
+    {
+        long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        int randomValue = new Random().Next(1000);
+        int uniqueTradeID = (int)(timestamp % int.MaxValue) * 1000 + randomValue;
+        return uniqueTradeID;
     }
 
     private static string GetTeraTypeString(PK9 pk9)

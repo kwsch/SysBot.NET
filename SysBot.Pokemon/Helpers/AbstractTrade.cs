@@ -515,7 +515,8 @@ namespace SysBot.Pokemon.Helpers
             {
                 detail.Context.Add("batch", pks);
             }
-            var trade = new TradeEntry<T>(detail, userInfo.ID, type, userInfo.TrainerName);
+            var uniqueTradeID = GenerateUniqueTradeID();
+            var trade = new TradeEntry<T>(detail, userInfo.ID, type, userInfo.TrainerName, uniqueTradeID);
 
             var added = queueInfo.AddToTradeQueue(trade, userInfo.ID, false);
 
@@ -525,7 +526,7 @@ namespace SysBot.Pokemon.Helpers
                 return false;
             }
 
-            var position = queueInfo.CheckPosition(userInfo.ID, type);
+            var position = queueInfo.CheckPosition(userInfo.ID, uniqueTradeID, type);
             //msg = $"@{name}: Added to the {type} queue, unique ID: {detail.ID}. Current Position: {position.Position}";
             msg = $"Added to the {type} queue, unique ID: {detail.ID}. Current Position: {position.Position}";
 
@@ -538,6 +539,14 @@ namespace SysBot.Pokemon.Helpers
             }
 
             return true;
+        }
+
+        private static int GenerateUniqueTradeID()
+        {
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            int randomValue = new Random().Next(1000);
+            int uniqueTradeID = (int)(timestamp % int.MaxValue) * 1000 + randomValue;
+            return uniqueTradeID;
         }
 
         public static void DittoTrade(PKM pkm)
