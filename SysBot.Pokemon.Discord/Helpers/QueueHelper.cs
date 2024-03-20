@@ -72,8 +72,8 @@ public static class QueueHelper<T> where T : PKM, new()
 
         var trainer = new PokeTradeTrainerInfo(trainerName, userID);
         var notifier = new DiscordTradeNotifier<T>(pk, trainer, code, trader, batchTradeNumber, totalBatchTrades, isMysteryEgg, lgcode);
-        var detail = new PokeTradeDetail<T>(pk, trainer, notifier, t, code, sig == RequestSignificance.Favored, lgcode, batchTradeNumber, totalBatchTrades, isMysteryEgg);
         var uniqueTradeID = GenerateUniqueTradeID();
+        var detail = new PokeTradeDetail<T>(pk, trainer, notifier, t, code, sig == RequestSignificance.Favored, lgcode, batchTradeNumber, totalBatchTrades, isMysteryEgg, uniqueTradeID);
         var trade = new TradeEntry<T>(detail, userID, type, name, uniqueTradeID);
         var strings = GameInfo.GetStrings(1);
         var hub = SysCord<T>.Runner.Hub;
