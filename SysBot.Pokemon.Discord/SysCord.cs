@@ -108,6 +108,8 @@ public sealed class SysCord<T> where T : PKM, new()
         await AnnounceBotStatus("Offline", EmbedColorOption.Red);
     }
 
+    private readonly Dictionary<ulong, ulong> _announcementMessageIds = [];
+
     public async Task AnnounceBotStatus(string status, EmbedColorOption color)
     {
         // Check the BotEmbedStatus setting before proceeding
@@ -149,7 +151,23 @@ public sealed class SysCord<T> where T : PKM, new()
 
             try
             {
-                await channel.SendMessageAsync(embed: embed);
+                // Check if there's a previous announcement message in this channel
+                if (_announcementMessageIds.TryGetValue(channelId, out ulong messageId))
+                {
+                    // Try to delete the previous announcement message
+                    try
+                    {
+                        await channel.DeleteMessageAsync(messageId);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtil.LogText($"AnnounceBotStatus: Exception when deleting previous message in channel {channelId}: {ex.Message}");
+                    }
+                }
+
+                // Send the new announcement and store the message ID
+                var message = await channel.SendMessageAsync(embed: embed);
+                _announcementMessageIds[channelId] = message.Id;
                 LogUtil.LogText($"AnnounceBotStatus: {fullStatusMessage} announced in channel {channelId}.");
             }
             catch (Exception ex)
