@@ -26,8 +26,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     private static readonly char[] separator = [' '];
     private static readonly char[] separatorArray = [' '];
-    private static readonly string[] sourceArray = ["item", "clothing", "battle", "coins", "league points", "rare candy"];
-    private static readonly char[] separatorArray0 = new char[] { ' ' };
+    private static readonly char[] separatorArray0 = [' '];
 
     [Command("listguilds")]
     [Alias("lg", "servers", "listservers")]
@@ -1475,7 +1474,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
         var homeLegalityCfg = Info.Hub.Config.Trade.HomeLegalitySettings;
-        var MGDBPath = Info.Hub.Config.Legality.MGDBPath;
         var la = new LegalityAnalysis(pk);
         if (!la.Valid)
         {
