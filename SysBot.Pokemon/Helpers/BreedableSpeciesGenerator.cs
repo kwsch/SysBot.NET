@@ -1,13 +1,14 @@
 using PKHeX.Core;
 using System;
-using System.IO;
 using System.Collections.Generic;
 
-public static class BreedableSpeciesGenerator
+namespace SysBot.Pokemon.Helpers
 {
-    // Note this is for SV only right now - Mystery Eggs Command
-    private static readonly List<string> BreedableSpeciesNames = new List<string>
+    public static class BreedableSpeciesGenerator
     {
+        // Note this is for SV only right now - Mystery Eggs Command
+        private static readonly List<string> BreedableSpeciesNames =
+    [
         "Applin","Arrokuda","Axew","Azurill","Bagon","Basculin","Beldum","Bellsprout","Bergmite","Bidoof","Blitzle","Bounsweet","Bramblin",
         "Bronzor","Budew","Buizel","Bulbasaur","Cacnea","Carbink","Cetoddle","Charcadet","Charmander","Chespin","Chewtle",
         "Chimchar","Chinchou","Clauncher","Clefable","Cleffa","Clodsire","Combee","Cottonee","Cramorant","Cranidos","Croagunk","Cubchoo",
@@ -27,28 +28,27 @@ public static class BreedableSpeciesGenerator
         "Tandemaus","Tauros","Tauros-Paldea-Combat","Tauros-Paldea-Blaze","Tauros-Paldea-Aqua","Teddiursa","Tentacool","Tepig","Timburr","Tinkatink","Toedscool",
         "Torchic","Toxapex","Trapinch","Tynamo","Tyrogue","Varoom","Venonat","Vibrava","Voltorb","Vullaby","Vulpix","Vulpix-Alola","Wattrel","Wiglett",
         "Wingull","Wooper","Yanma","Yungoos","Zorua",
-    };
+    ];
 
-    public static List<ushort> GetBreedableSpeciesForSV()
-    {
-        var breedableSpecies = new List<ushort>();
-        foreach (var name in BreedableSpeciesNames)
+        public static List<ushort> GetBreedableSpeciesForSV()
         {
-            ushort speciesId = ConvertNameToSpeciesId(name);
-            if (speciesId != 0) 
-                breedableSpecies.Add(speciesId);
+            var breedableSpecies = new List<ushort>();
+            foreach (var name in BreedableSpeciesNames)
+            {
+                ushort speciesId = ConvertNameToSpeciesId(name);
+                if (speciesId != 0)
+                    breedableSpecies.Add(speciesId);
+            }
+
+            return breedableSpecies;
         }
 
-        return breedableSpecies;
-    }
-
-    private static ushort ConvertNameToSpeciesId(string name)
-    {
-        if (Enum.TryParse(typeof(Species), name, out var result))
+        private static ushort ConvertNameToSpeciesId(string name)
         {
-            return (ushort)result;
+            if (Enum.TryParse(typeof(Species), name, out var result))
+                return (ushort)result;
+            Console.WriteLine($"Warning: Species name '{name}' not found in Species enum.");
+            return 0;
         }
-        Console.WriteLine($"Warning: Species name '{name}' not found in Species enum.");
-        return 0; 
     }
 }
