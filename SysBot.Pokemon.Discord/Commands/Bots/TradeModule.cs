@@ -1020,8 +1020,8 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 case "bdsp":
                     eventData = EncounterEvent.MGDB_G8B;
                     break;
-                case "scvi":
-                case "sv":
+                case "9":
+                case "gen9":
                     eventData = EncounterEvent.MGDB_G9;
                     break;
                 default:
