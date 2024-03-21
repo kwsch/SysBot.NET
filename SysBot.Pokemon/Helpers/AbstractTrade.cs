@@ -570,7 +570,7 @@ namespace SysBot.Pokemon.Helpers
 
             if (pkm is PK9 pk9)
             {
-                pk9.Obedience_Level = (byte)pk9.MetLevel;
+                pk9.ObedienceLevel = pk9.MetLevel;
                 pk9.TeraTypeOriginal = MoveType.Normal;
                 pk9.TeraTypeOverride = (MoveType)19;
             }
@@ -663,7 +663,7 @@ namespace SysBot.Pokemon.Helpers
                 pk9.HandlingTrainerMemory = 0;
                 pk9.HandlingTrainerMemoryFeeling = 0;
                 pk9.HandlingTrainerMemoryIntensity = 0;
-                pk9.Obedience_Level = 1;
+                pk9.ObedienceLevel = 1;
                 pk9.Version = 0;
                 pk9.BattleVersion = 0;
                 pk9.TeraTypeOverride = (MoveType)19;
