@@ -13,7 +13,7 @@ namespace SysBot.Pokemon
         /// <summary> Indicates if this trade data should be given priority for queue insertion. </summary>
         public bool IsFavored { get; }
         /// <summary> Customized trade parameters. </summary>
-        public Dictionary<string, object> Context = new();
+        public Dictionary<string, object> Context = [];
         /// <summary>
         /// Trade Code
         /// </summary>
@@ -49,6 +49,7 @@ namespace SysBot.Pokemon
         public readonly int BatchTradeNumber;
         public readonly int TotalBatchTrades;
         public readonly int UniqueTradeID;
+        public bool IsCanceled { get; set; }
         public bool IsMysteryEgg { get; }
 
         public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code, bool favored = false, List<Pictocodes> lgcode = null, int batchTradeNumber = 0, int totalBatchTrades = 0, bool isMysteryEgg = false, int uniqueTradeID = 0)

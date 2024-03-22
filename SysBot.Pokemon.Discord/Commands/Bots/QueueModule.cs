@@ -186,11 +186,13 @@ public class QueueModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 if (!Info.Hub.Config.Queues.CanDequeueIfProcessing)
                 {
                     removedAll = false;
+                    entry.Trade.IsCanceled = true; // Set the trade as canceled
                     continue;
                 }
             }
             else
             {
+                entry.Trade.IsCanceled = true; // Set the trade as canceled
                 Info.Remove(entry);
                 removedPending = true;
             }
