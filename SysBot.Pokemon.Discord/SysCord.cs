@@ -51,7 +51,7 @@ public sealed class SysCord<T> where T : PKM, new()
         {
             // How much logging do you want to see?
             LogLevel = LogSeverity.Info,
-            GatewayIntents = Guilds | GuildMessages | DirectMessages | GuildMembers | MessageContent,
+            GatewayIntents = Guilds | GuildMessages | DirectMessages | GuildMembers | GuildPresences | MessageContent,
             // If you or another service needs to do anything with messages
             // (ex. checking Reactions, checking the content of edited/deleted messages),
             // you must set the MessageCacheSize. You may adjust the number as needed.
@@ -78,6 +78,8 @@ public sealed class SysCord<T> where T : PKM, new()
 
         // Setup your DI container.
         _services = ConfigureServices();
+
+        _client.PresenceUpdated += Client_PresenceUpdated;
 
         // Subscribe to the BotStopped event
         runner.BotStopped += async (sender, e) => await HandleBotStop();
@@ -360,6 +362,11 @@ public sealed class SysCord<T> where T : PKM, new()
             await msg.Channel.SendMessageAsync(finalResponse).ConfigureAwait(false);
             return;
         }
+    }
+
+    private Task Client_PresenceUpdated(SocketUser user, SocketPresence before, SocketPresence after)
+    {
+        return Task.CompletedTask;
     }
 
     private async Task<bool> TryHandleCommandAsync(SocketUserMessage msg, int pos)

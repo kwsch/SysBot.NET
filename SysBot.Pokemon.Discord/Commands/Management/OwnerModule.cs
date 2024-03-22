@@ -1,5 +1,6 @@
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using PKHeX.Core;
 using System;
 using System.Linq;
@@ -148,7 +149,7 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
     [Command("dm")]
     [Summary("Sends a direct message to a specified user.")]
     [RequireOwner]
-    public async Task DMUserAsync(IUser user, [Remainder] string message)
+    public async Task DMUserAsync(SocketUser user, [Remainder] string message)
     {
         var attachments = Context.Message.Attachments;
         var hasAttachments = attachments.Count != 0;
@@ -182,7 +183,6 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
             }
 
             var confirmationMessage = await ReplyAsync($"Message successfully sent to {user.Username}.");
-
             await Context.Message.DeleteAsync();
             await Task.Delay(TimeSpan.FromSeconds(10));
             await confirmationMessage.DeleteAsync();
