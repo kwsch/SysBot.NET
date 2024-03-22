@@ -980,6 +980,13 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
     public async Task SpecialEventRequestAsync(string generationOrGame, int index)
     {
+        // Check if the user is already in the queue
+        var userID = Context.User.Id;
+        if (Info.IsUserInQueue(userID))
+        {
+            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            return;
+        }
         try
         {
             MysteryGift[] eventData;
@@ -1183,6 +1190,13 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
     public async Task EventRequestAsync(int index)
     {
+        // Check if the user is already in the queue
+        var userID = Context.User.Id;
+        if (Info.IsUserInQueue(userID))
+        {
+            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            return;
+        }
         try
         {
             var eventsFolderPath = SysCord<T>.Runner.Config.Trade.RequestFolderSettings.EventsFolder;
@@ -1342,6 +1356,13 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
     public async Task BattleReadyRequestAsync(int index)
     {
+        // Check if the user is already in the queue
+        var userID = Context.User.Id;
+        if (Info.IsUserInQueue(userID))
+        {
+            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            return;
+        }
         try
         {
             var battleReadyFolderPath = SysCord<T>.Runner.Config.Trade.RequestFolderSettings.BattleReadyPKMFolder;
