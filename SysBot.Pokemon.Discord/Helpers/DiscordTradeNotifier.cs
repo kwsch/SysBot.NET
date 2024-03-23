@@ -82,11 +82,14 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
         }
         else
         {
-            message = $"I'm waiting for you{trainer}{batchInfo}! Your code is **{Code:0000 0000}**. My IGN is **{routine.InGameName}**.";
-
-            if (Data is PK9 && TotalBatchTrades > 1 && BatchTradeNumber == 1)
+            if (TotalBatchTrades > 1 && BatchTradeNumber > 1)
             {
-                message += "\n**Please stay in the trade until all batch trades are completed.**";
+                var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";
+                message = $"Now trading{receive} (Trade {BatchTradeNumber} of {TotalBatchTrades}). **Select the Pokémon you wish to trade!**";
+            }
+            else
+            {
+                message = $"I'm waiting for you{trainer}{batchInfo}! Your code is **{Code:0000 0000}**. My IGN is **{routine.InGameName}**.";
             }
         }
 
