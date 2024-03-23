@@ -459,15 +459,6 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                 {
                     Log("User did not complete the trade.");
                     await ExitTradeToPortal(false, token).ConfigureAwait(false);
-
-                    if (poke.TotalBatchTrades > 1)
-                    {
-                        // If it's part of a batch trade, remove the current trade from the queue
-                        var tradeRoutineType = GetRoutineType(poke.Type);
-                        Hub.Queues.Info.Remove(new TradeEntry<PK9>(poke, poke.Trainer.ID, tradeRoutineType, poke.Trainer.TrainerName, poke.UniqueTradeID));
-                        Log($"Trade {completedTrades + 1} of {poke.TotalBatchTrades} was canceled due to trainer being too slow. Removing from the queue.");
-                    }
-
                     return PokeTradeResult.TrainerTooSlow;
                 }
 
