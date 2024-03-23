@@ -430,10 +430,13 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                     }
 
                     // Swap the Pokémon details (AutoOT)
-                    var swapResult = await SetBoxPkmWithSwappedIDDetailsSV(toSend, tradePartnerFullInfo, sav, token).ConfigureAwait(false);
-                    if (!swapResult)
+                    if (Hub.Config.Legality.UseTradePartnerInfo)
                     {
-                        Log("Failed to swap Pokémon details. Proceeding with the original Pokémon.");
+                        var swapResult = await SetBoxPkmWithSwappedIDDetailsSV(toSend, tradePartnerFullInfo, sav, token).ConfigureAwait(false);
+                        if (!swapResult)
+                        {
+                            Log("Failed to swap Pokémon details. Proceeding with the original Pokémon.");
+                        }
                     }
 
                     if (itemReq == SpecialTradeType.WonderCard)
