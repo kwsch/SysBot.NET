@@ -317,6 +317,15 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                     await RecoverToOverworld(token).ConfigureAwait(false);
                 }
                 await ExitTradeToPortal(false, token).ConfigureAwait(false);
+
+                if (poke.TotalBatchTrades > 1)
+                {
+                    // If it's part of a batch trade, remove the current trade from the queue
+                    var routineType = GetRoutineType(poke.Type);
+                    Hub.Queues.Info.Remove(new TradeEntry<PK9>(poke, poke.Trainer.ID, routineType, poke.Trainer.TrainerName, poke.UniqueTradeID));
+                    Log($"No trainer found for trade {completedTrades + 1} of {poke.TotalBatchTrades}. Removing from the queue.");
+                }
+
                 return PokeTradeResult.NoTrainerFound;
             }
 
@@ -420,6 +429,13 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                         return update;
                     }
 
+                    // Swap the Pokémon details (AutoOT)
+                    var swapResult = await SetBoxPkmWithSwappedIDDetailsSV(toSend, tradePartnerFullInfo, sav, token).ConfigureAwait(false);
+                    if (!swapResult)
+                    {
+                        Log("Failed to swap Pokémon details. Proceeding with the original Pokémon.");
+                    }
+
                     if (itemReq == SpecialTradeType.WonderCard)
                         poke.SendNotification(this, "Distribution success!");
                     else if (itemReq != SpecialTradeType.None && itemReq != SpecialTradeType.Shinify)
@@ -443,6 +459,15 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                 {
                     Log("User did not complete the trade.");
                     await ExitTradeToPortal(false, token).ConfigureAwait(false);
+
+                    if (poke.TotalBatchTrades > 1)
+                    {
+                        // If it's part of a batch trade, remove the current trade from the queue
+                        var tradeRoutineType = GetRoutineType(poke.Type);
+                        Hub.Queues.Info.Remove(new TradeEntry<PK9>(poke, poke.Trainer.ID, tradeRoutineType, poke.Trainer.TrainerName, poke.UniqueTradeID));
+                        Log($"Trade {completedTrades + 1} of {poke.TotalBatchTrades} was canceled due to trainer being too slow. Removing from the queue.");
+                    }
+
                     return PokeTradeResult.TrainerTooSlow;
                 }
 
