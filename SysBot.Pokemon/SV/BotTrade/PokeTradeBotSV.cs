@@ -477,15 +477,25 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
 
                 completedTrades++;
 
-                // Dequeue the next trade for the current user
+                // Remove the current trade from the queue
                 var routineType = GetRoutineType(poke.Type);
-                if (Hub.Queues.TryDequeue(routineType, out var nextDetail, out var priority) && nextDetail.Trainer.ID == poke.Trainer.ID)
+                Hub.Queues.Info.Remove(new TradeEntry<PK9>(poke, poke.Trainer.ID, routineType, poke.Trainer.TrainerName, poke.UniqueTradeID));
+
+                if (completedTrades < poke.TotalBatchTrades)
                 {
-                    poke = nextDetail;
+                    // If there are more trades in the batch, dequeue the next trade for the current user
+                    if (Hub.Queues.TryDequeue(routineType, out var nextDetail, out var priority) && nextDetail.Trainer.ID == poke.Trainer.ID)
+                    {
+                        poke = nextDetail;
+                    }
+                    else
+                    {
+                        break; // No more trades for the current user, exit the loop
+                    }
                 }
                 else
                 {
-                    break; // No more trades for the current user, exit the loop
+                    break; // All trades in the batch are completed, exit the loop
                 }
             }
             catch (Exception ex)
@@ -513,7 +523,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         // Sometimes they offered another mon, so store that immediately upon leaving Union Room.
         lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(TradePartnerOfferedOffset, 8, token).ConfigureAwait(false);
 
-        await RecoverToOverworld(token).ConfigureAwait(false); // Return to the overworld after all trades are completed
+        await ExitTradeToPortal(false, token).ConfigureAwait(false); // Return to the overworld after all trades are completed
         return PokeTradeResult.Success;
     }
 

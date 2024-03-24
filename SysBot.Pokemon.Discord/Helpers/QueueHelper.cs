@@ -182,8 +182,7 @@ public static class QueueHelper<T> where T : PKM, new()
         var position = Info.CheckPosition(userID, uniqueTradeID, type);
         var botct = Info.Hub.Bots.Count;
         var baseEta = position.Position > botct ? Info.Hub.Config.Queues.EstimateDelay(position.Position, botct) : 0;
-        var adjustedEta = baseEta + (batchTradeNumber - 1); // Increment ETA by 1 minute for each batch trade
-        var etaMessage = $"Estimated: {adjustedEta:F1} min(s) for trade {batchTradeNumber}/{totalBatchTrades}.";
+        var etaMessage = $"Estimated: {baseEta:F1} min(s) for trade {batchTradeNumber}/{totalBatchTrades}.";
 
         // Determining trade title based on trade type
         string tradeTitle;
