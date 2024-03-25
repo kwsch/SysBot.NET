@@ -225,6 +225,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             PokeTradeType.Clone => PokeRoutineType.Clone,
             PokeTradeType.Dump => PokeRoutineType.Dump,
             PokeTradeType.FixOT => PokeRoutineType.FixOT,
+            PokeTradeType.Batch => PokeRoutineType.Batch,
             _ => PokeRoutineType.LinkTrade,
         };
     }

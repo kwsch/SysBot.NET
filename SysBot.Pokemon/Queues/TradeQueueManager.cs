@@ -10,6 +10,7 @@ public class TradeQueueManager<T> where T : PKM, new()
     private readonly PokeTradeHub<T> Hub;
 
     private readonly PokeTradeQueue<T> Trade = new(PokeTradeType.Specific);
+    private readonly PokeTradeQueue<T> Batch = new(PokeTradeType.Batch);
     private readonly PokeTradeQueue<T> Seed = new(PokeTradeType.Seed);
     private readonly PokeTradeQueue<T> Clone = new(PokeTradeType.Clone);
     private readonly PokeTradeQueue<T> FixOT = new(PokeTradeType.FixOT);
@@ -21,7 +22,7 @@ public class TradeQueueManager<T> where T : PKM, new()
     {
         Hub = hub;
         Info = new TradeQueueInfo<T>(hub);
-        AllQueues = [Seed, Dump, Clone, FixOT, Trade];
+        AllQueues = [Seed, Dump, Clone, FixOT, Trade, Batch];
 
         foreach (var q in AllQueues)
             q.Queue.Settings = hub.Config.Favoritism;
@@ -33,6 +34,7 @@ public class TradeQueueManager<T> where T : PKM, new()
         PokeRoutineType.Clone => Clone,
         PokeRoutineType.Dump => Dump,
         PokeRoutineType.FixOT => FixOT,
+        PokeRoutineType.Batch => Batch,
         _ => Trade,
     };
 
