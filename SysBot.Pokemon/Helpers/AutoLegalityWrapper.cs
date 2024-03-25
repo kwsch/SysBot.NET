@@ -132,7 +132,7 @@ public static class AutoLegalityWrapper
     public static bool IsFixedOT(IEncounterTemplate t, PKM pkm) => t switch
     {
         IFixedTrainer tr => tr.IsFixedTrainer,
-        MysteryGift g => !g.EggEncounter && g switch
+        MysteryGift g => !g.IsEgg && g switch
         {
             WC9 wc9 => wc9.GetHasOT(pkm.Language),
             WA8 wa8 => wa8.GetHasOT(pkm.Language),

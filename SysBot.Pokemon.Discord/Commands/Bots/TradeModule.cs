@@ -400,8 +400,8 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             var randomIndex = new Random().Next(speciesList.Count); 
             ushort speciesId = speciesList[randomIndex];
             var context = new EntityContext(); 
-            var eggEncounter = new EncounterEgg(speciesId, 0, 1, 9, GameVersion.SV, context);
-            var pk = eggEncounter.ConvertToPKM(sav);
+            var IsEgg = new EncounterEgg(speciesId, 0, 1, 9, GameVersion.SV, context);
+            var pk = IsEgg.ConvertToPKM(sav);
             TradeModule<T>.SetPerfectIVsAndShiny(pk);
 
             if (pk is not T pkT)
