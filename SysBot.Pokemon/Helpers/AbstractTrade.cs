@@ -23,9 +23,9 @@ namespace SysBot.Pokemon.Helpers
         public abstract IPokeTradeNotifier<T> GetPokeTradeNotifier(T pkm, int code);//完善此方法以实现消息通知功能
         protected PokeTradeTrainerInfo userInfo = default!;
         private TradeQueueInfo<T> queueInfo = default!;
-        private List<Pictocodes> lgcode;
-        public static readonly ushort[] ShinyLock = {  (ushort)Species.Victini, (ushort)Species.Keldeo, (ushort)Species.Volcanion, (ushort)Species.Cosmog, (ushort)Species.Cosmoem, (ushort)Species.Magearna, (ushort)Species.Marshadow, (ushort)Species.Eternatus,
-                                                    (ushort)Species.Kubfu, (ushort)Species.Urshifu, (ushort)Species.Zarude, (ushort)Species.Glastrier, (ushort)Species.Spectrier, (ushort)Species.Calyrex };
+        private readonly List<Pictocodes>? lgcode;
+        public static readonly ushort[] ShinyLock = [  (ushort)Species.Victini, (ushort)Species.Keldeo, (ushort)Species.Volcanion, (ushort)Species.Cosmog, (ushort)Species.Cosmoem, (ushort)Species.Magearna, (ushort)Species.Marshadow, (ushort)Species.Eternatus,
+                                                    (ushort)Species.Kubfu, (ushort)Species.Urshifu, (ushort)Species.Zarude, (ushort)Species.Glastrier, (ushort)Species.Spectrier, (ushort)Species.Calyrex ];
 
         public void SetPokeTradeTrainerInfo(PokeTradeTrainerInfo pokeTradeTrainerInfo)
         {
@@ -161,14 +161,14 @@ namespace SysBot.Pokemon.Helpers
         {
             var pkMet = (T)pkm.Clone();
             if (pkMet.Version is not GameVersion.GO)
-                pkMet.MetDate = DateOnly.Parse("2020/10/20");
+                pkMet.MetDate = DateOnly.FromDateTime(DateTime.Now);
 
             var analysis = new LegalityAnalysis(pkMet);
             var pkTrash = (T)pkMet.Clone();
             if (analysis.Valid)
             {
                 pkTrash.IsNicknamed = true;
-                pkTrash.Nickname = "KOIKOIKOIKOI";
+                pkTrash.Nickname = "UwU";
                 pkTrash.SetDefaultNickname(la ?? new LegalityAnalysis(pkTrash));
             }
 
@@ -204,7 +204,10 @@ namespace SysBot.Pokemon.Helpers
                     mgPkm.HeldItem = mgPkm.Form + 903;
                 else mgPkm.HeldItem = 0;
             }
-            else return new();
+            else
+            {
+                return new();
+            }
 
             mgPkm = TrashBytes((T)mgPkm);
             var la = new LegalityAnalysis(mgPkm);
@@ -218,7 +221,10 @@ namespace SysBot.Pokemon.Helpers
                 pk.SetAllTrainerData(info);
                 return (T)pk;
             }
-            else return (T)mgPkm;
+            else
+            {
+                return (T)mgPkm;
+            }
         }
 
         public void StartTradePs(string ps)
@@ -284,8 +290,8 @@ namespace SysBot.Pokemon.Helpers
         {
             if (!JudgeMultiNum(rawPkms.Count)) return;
 
-            List<T> pkms = new();
-            List<bool> skipAutoOTList = new();
+            List<T> pkms = [];
+            List<bool> skipAutoOTList = [];
             int invalidCount = 0;
             for (var i = 0; i < rawPkms.Count; i++)
             {
@@ -320,8 +326,8 @@ namespace SysBot.Pokemon.Helpers
         /// <returns></returns>
         private List<T> GetPKMsFromPsList(List<string> psList, bool isChinesePS, out int invalidCount, out List<bool> skipAutoOTList)
         {
-            List<T> pkms = new();
-            skipAutoOTList = new List<bool>();
+            List<T> pkms = [];
+            skipAutoOTList = [];
             invalidCount = 0;
             for (var i = 0; i < psList.Count; i++)
             {
@@ -428,6 +434,7 @@ namespace SysBot.Pokemon.Helpers
             }
             return false;
         }
+
         public bool CheckPkm(T pkm, out string msg)
         {
             if (!queueInfo.GetCanQueue())
@@ -491,7 +498,7 @@ namespace SysBot.Pokemon.Helpers
         private bool AddToTradeQueue(T pk, int code, bool skipAutoOT,
             PokeRoutineType type, out string msg)
         {
-            return AddToTradeQueue(new List<T> { pk }, code, new List<bool> { skipAutoOT }, type, out msg);
+            return AddToTradeQueue([pk], code, [skipAutoOT], type, out msg);
         }
 
         private bool AddToTradeQueue(List<T> pks, int code, List<bool> skipAutoOTList,
@@ -576,7 +583,7 @@ namespace SysBot.Pokemon.Helpers
             }
 
             pkm.Ball = 21;
-            pkm.IVs = new int[] { 31, nickname.Contains(dittoStats[0]) ? 0 : 31, 31, nickname.Contains(dittoStats[1]) ? 0 : 31, nickname.Contains(dittoStats[2]) ? 0 : 31, 31 };
+            pkm.IVs = [31, nickname.Contains(dittoStats[0]) ? 0 : 31, 31, nickname.Contains(dittoStats[1]) ? 0 : 31, nickname.Contains(dittoStats[2]) ? 0 : 31, 31];
             pkm.ClearHyperTraining();
             TrashBytes(pkm, new LegalityAnalysis(pkm));
         }
