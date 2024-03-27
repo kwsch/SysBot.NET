@@ -63,7 +63,7 @@ public static class QueueHelper<T> where T : PKM, new()
         return AddToQueueAsync(context, code, trainer, sig, trade, routine, type, context.User);
     }
 
-    private static async Task<TradeQueueResult> AddToTradeQueue(SocketCommandContext context, T pk, int code, string trainerName, RequestSignificance sig, PokeRoutineType type, PokeTradeType t, SocketUser trader, bool isBatchTrade, int batchTradeNumber, int totalBatchTrades, bool isMysteryEgg = false, List<Pictocodes> lgcode = null)
+    private static async Task<TradeQueueResult> AddToTradeQueue(SocketCommandContext context, T pk, int code, string trainerName, RequestSignificance sig, PokeRoutineType type, PokeTradeType t, SocketUser trader, bool isBatchTrade, int batchTradeNumber, int totalBatchTrades, bool isMysteryEgg = false, List<Pictocodes> lgcode = null, string[] markTitles = null)
     {
         var user = trader;
         var userID = user.Id;
@@ -136,10 +136,15 @@ public static class QueueHelper<T> where T : PKM, new()
         speciesName = GameInfo.GetStrings(1).Species[pk.Species];
         string alphaMarkSymbol = string.Empty;
         string mightyMarkSymbol = string.Empty;
+        string markTitle = string.Empty;
         if (pk is IRibbonSetMark9 ribbonSetMark)
         {
             alphaMarkSymbol = ribbonSetMark.RibbonMarkAlpha ? SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.AlphaMarkEmoji.EmojiString : string.Empty;
             mightyMarkSymbol = ribbonSetMark.RibbonMarkMightiest ? SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.MightiestMarkEmoji.EmojiString : string.Empty;
+        }
+        if (pk is IRibbonIndex ribbonIndex && AbstractTrade<T>.HasMark(ribbonIndex, out RibbonIndex result) && markTitles != null)
+        {
+            markTitle = markTitles[(int)result - (int)RibbonIndex.MarkLunchtime];
         }
         string alphaSymbol = (pk is IAlpha alpha && alpha.IsAlpha) ? SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.AlphaPLAEmoji.EmojiString : string.Empty;
         string shinySymbol = pk.ShinyXor == 0 ? "◼ " : pk.IsShiny ? "★ " : string.Empty;
@@ -160,10 +165,9 @@ public static class QueueHelper<T> where T : PKM, new()
             toppingName = $"-{topping}";
             formName += toppingName;
         }
-        speciesAndForm = $"**{shinySymbol}{speciesName}{(string.IsNullOrEmpty(formName) ? "" : $"-{formName}")} {displayGender}**";
+        speciesAndForm = $"**{shinySymbol}{speciesName}{(string.IsNullOrEmpty(formName) ? "" : $"-{formName}")}{(!string.IsNullOrEmpty(markTitle) ? markTitle : "")} {displayGender}**";
         heldItemName = strings.itemlist[pk.HeldItem];
         ballName = strings.balllist[pk.Ball];
-
 
         // Request type flags
         bool isCloneRequest = type == PokeRoutineType.Clone;
