@@ -134,25 +134,41 @@ namespace SysBot.Pokemon.Helpers
             return formString[form].Contains('-') ? formString[form] : formString[form] == "" ? "" : $"-{formString[form]}";
         }
 
-        public static bool HasMark(IRibbonIndex pk, out RibbonIndex result)
+        public static bool HasMark(IRibbonIndex pk, out RibbonIndex result, out string markTitle)
         {
             result = default;
+            markTitle = string.Empty;
 
             if (pk is IRibbonSetMark9 ribbonSetMark)
             {
                 if (ribbonSetMark.RibbonMarkMightiest)
                 {
                     result = RibbonIndex.MarkMightiest;
+                    markTitle = " The Unrivaled";
                     return true;
                 }
                 else if (ribbonSetMark.RibbonMarkAlpha)
                 {
                     result = RibbonIndex.MarkAlpha;
+                    markTitle = " The Former Alpha";
                     return true;
                 }
                 else if (ribbonSetMark.RibbonMarkTitan)
                 {
                     result = RibbonIndex.MarkTitan;
+                    markTitle = " The Former Titan";
+                    return true;
+                }
+                else if (ribbonSetMark.RibbonMarkJumbo)
+                {
+                    result = RibbonIndex.MarkJumbo;
+                    markTitle = " The Great";
+                    return true;
+                }
+                else if (ribbonSetMark.RibbonMarkMini)
+                {
+                    result = RibbonIndex.MarkMini;
+                    markTitle = " The Teeny";
                     return true;
                 }
             }
@@ -162,6 +178,7 @@ namespace SysBot.Pokemon.Helpers
                 if (pk.GetRibbon((int)mark))
                 {
                     result = mark;
+                    markTitle = MarkTitle[(int)mark - (int)RibbonIndex.MarkLunchtime];
                     return true;
                 }
             }
@@ -229,6 +246,7 @@ namespace SysBot.Pokemon.Helpers
             " The Unrivaled",
             " The Former Titan",
         ];
+
         public static PKM TrashBytes(PKM pkm, LegalityAnalysis? la = null)
         {
             var pkMet = (T)pkm.Clone();

@@ -63,7 +63,7 @@ public static class QueueHelper<T> where T : PKM, new()
         return AddToQueueAsync(context, code, trainer, sig, trade, routine, type, context.User);
     }
 
-    private static async Task<TradeQueueResult> AddToTradeQueue(SocketCommandContext context, T pk, int code, string trainerName, RequestSignificance sig, PokeRoutineType type, PokeTradeType t, SocketUser trader, bool isBatchTrade, int batchTradeNumber, int totalBatchTrades, bool isMysteryEgg = false, List<Pictocodes> lgcode = null, string[] markTitles = null)
+    private static async Task<TradeQueueResult> AddToTradeQueue(SocketCommandContext context, T pk, int code, string trainerName, RequestSignificance sig, PokeRoutineType type, PokeTradeType t, SocketUser trader, bool isBatchTrade, int batchTradeNumber, int totalBatchTrades, bool isMysteryEgg = false, List<Pictocodes> lgcode = null)
     {
         var user = trader;
         var userID = user.Id;
@@ -142,9 +142,9 @@ public static class QueueHelper<T> where T : PKM, new()
             alphaMarkSymbol = ribbonSetMark.RibbonMarkAlpha ? SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.AlphaMarkEmoji.EmojiString : string.Empty;
             mightyMarkSymbol = ribbonSetMark.RibbonMarkMightiest ? SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.MightiestMarkEmoji.EmojiString : string.Empty;
         }
-        if (pk is IRibbonIndex ribbonIndex && AbstractTrade<T>.HasMark(ribbonIndex, out RibbonIndex result) && markTitles != null)
+        if (pk is IRibbonIndex ribbonIndex)
         {
-            markTitle = markTitles[(int)result - (int)RibbonIndex.MarkLunchtime];
+            AbstractTrade<T>.HasMark(ribbonIndex, out RibbonIndex result, out markTitle);
         }
         string alphaSymbol = (pk is IAlpha alpha && alpha.IsAlpha) ? SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.AlphaPLAEmoji.EmojiString : string.Empty;
         string shinySymbol = pk.ShinyXor == 0 ? "◼ " : pk.IsShiny ? "★ " : string.Empty;
