@@ -137,6 +137,26 @@ namespace SysBot.Pokemon.Helpers
         public static bool HasMark(IRibbonIndex pk, out RibbonIndex result)
         {
             result = default;
+
+            if (pk is IRibbonSetMark9 ribbonSetMark)
+            {
+                if (ribbonSetMark.RibbonMarkMightiest)
+                {
+                    result = RibbonIndex.MarkMightiest;
+                    return true;
+                }
+                else if (ribbonSetMark.RibbonMarkAlpha)
+                {
+                    result = RibbonIndex.MarkAlpha;
+                    return true;
+                }
+                else if (ribbonSetMark.RibbonMarkTitan)
+                {
+                    result = RibbonIndex.MarkTitan;
+                    return true;
+                }
+            }
+
             for (var mark = RibbonIndex.MarkLunchtime; mark <= RibbonIndex.MarkSlump; mark++)
             {
                 if (pk.GetRibbon((int)mark))
@@ -145,6 +165,7 @@ namespace SysBot.Pokemon.Helpers
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -162,7 +183,6 @@ namespace SysBot.Pokemon.Helpers
             " The Parched",
             " The Sandswept",
             " The Mist Drifter",
-
             " The Chosen One",
             " The Catch of The Day",
             " The Curry Connoisseur",
@@ -176,7 +196,6 @@ namespace SysBot.Pokemon.Helpers
             " The Serene",
             " The Feisty",
             " The Daydreamer",
-
             " The Joyful",
             " The Furious",
             " The Beaming",
@@ -190,7 +209,6 @@ namespace SysBot.Pokemon.Helpers
             " The Kindhearted",
             " The Easily Flustered",
             " The Driven",
-
             " The Apathetic",
             " The Arrogant",
             " The Reluctant",
@@ -204,7 +222,6 @@ namespace SysBot.Pokemon.Helpers
             " The Great",
             " The Teeny",
             " The Treasure Hunter",
-
             " The Reliable Partner",
             " The Gourmet",
             " The One-in-a-Million",
@@ -212,8 +229,7 @@ namespace SysBot.Pokemon.Helpers
             " The Unrivaled",
             " The Former Titan",
         ];
-    
-    public static PKM TrashBytes(PKM pkm, LegalityAnalysis? la = null)
+        public static PKM TrashBytes(PKM pkm, LegalityAnalysis? la = null)
         {
             var pkMet = (T)pkm.Clone();
             if (pkMet.Version is not GameVersion.GO)
