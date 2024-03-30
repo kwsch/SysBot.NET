@@ -53,21 +53,17 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
     {
         lock (_sync)
         {
-            var index = UsersInQueue.FindIndex(z => z.Equals(uid, uniqueTradeID, type));
+            var allTrades = Hub.Queues.AllQueues.SelectMany(q => q.Queue.Select(x => x.Value)).ToList();
+            var index = allTrades.FindIndex(z => z.Trainer.ID == uid && z.UniqueTradeID == uniqueTradeID);
             if (index < 0)
                 return QueueCheckResult<T>.None;
 
-            var entry = UsersInQueue[index];
-            var actualIndex = 1;
-            for (int i = 0; i < index; i++)
-            {
-                if (UsersInQueue[i].Type == entry.Type && UsersInQueue[i].UniqueTradeID < entry.UniqueTradeID)
-                    actualIndex++;
-            }
+            var entry = allTrades[index];
+            var actualIndex = index + 1;
 
-            var inQueue = UsersInQueue.Count(z => z.Type == entry.Type);
+            var inQueue = allTrades.Count;
 
-            return new QueueCheckResult<T>(true, entry, actualIndex, inQueue);
+            return new QueueCheckResult<T>(true, new TradeEntry<T>(entry, uid, type, entry.Trainer.TrainerName, uniqueTradeID), actualIndex, inQueue);
         }
     }
 
