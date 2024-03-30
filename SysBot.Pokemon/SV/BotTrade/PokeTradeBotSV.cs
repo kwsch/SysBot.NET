@@ -485,9 +485,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
 
                 completedTrades++;
 
-                // Remove the current trade from the queue
                 var routineType = GetRoutineType(poke.Type);
-                Hub.Queues.Info.Remove(new TradeEntry<PK9>(poke, poke.Trainer.ID, routineType, poke.Trainer.TrainerName, poke.UniqueTradeID));
 
                 if (completedTrades < poke.TotalBatchTrades)
                 {
