@@ -1,6 +1,7 @@
 using PKHeX.Core;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Emit;
 
 namespace SysBot.Pokemon;
@@ -34,7 +35,6 @@ public class TradeQueueManager<T> where T : PKM, new()
         PokeRoutineType.Clone => Clone,
         PokeRoutineType.Dump => Dump,
         PokeRoutineType.FixOT => FixOT,
-        PokeRoutineType.Batch => Batch,
         _ => Trade,
     };
 
@@ -59,7 +59,7 @@ public class TradeQueueManager<T> where T : PKM, new()
         var lgcode = Hub.Config.Trade.GetRandomLGTradeCode(true);
         if (lgcode == null || lgcode.Count == 0)
         {
-            lgcode = [Pictocodes.Pikachu, Pictocodes.Pikachu, Pictocodes.Pikachu];
+            lgcode = new List<Pictocodes> { Pictocodes.Pikachu, Pictocodes.Pikachu, Pictocodes.Pikachu };
         }
         var trainer = new PokeTradeTrainerInfo("Random Distribution");
         // Include lgcode in the creation of PokeTradeDetail
@@ -101,10 +101,6 @@ public class TradeQueueManager<T> where T : PKM, new()
             if (!peek)
                 continue;
 
-            // Check if the trade is canceled
-            if (detail.IsCanceled)
-                continue;
-
             // priority queue is a min-queue, so prefer smaller priorities
             if (priority > bestPriority)
                 continue;
@@ -134,26 +130,16 @@ public class TradeQueueManager<T> where T : PKM, new()
 
     private bool GetFlexDequeueOld(out PokeTradeDetail<T> detail, out uint priority)
     {
-        if (TryDequeueInternalWithCancellationCheck(PokeRoutineType.SeedCheck, out detail, out priority))
+        if (TryDequeueInternal(PokeRoutineType.SeedCheck, out detail, out priority))
             return true;
-        if (TryDequeueInternalWithCancellationCheck(PokeRoutineType.Clone, out detail, out priority))
+        if (TryDequeueInternal(PokeRoutineType.Clone, out detail, out priority))
             return true;
-        if (TryDequeueInternalWithCancellationCheck(PokeRoutineType.Dump, out detail, out priority))
+        if (TryDequeueInternal(PokeRoutineType.Dump, out detail, out priority))
             return true;
-        if (TryDequeueInternalWithCancellationCheck(PokeRoutineType.FixOT, out detail, out priority))
+        if (TryDequeueInternal(PokeRoutineType.FixOT, out detail, out priority))
             return true;
-        if (TryDequeueInternalWithCancellationCheck(PokeRoutineType.LinkTrade, out detail, out priority))
+        if (TryDequeueInternal(PokeRoutineType.LinkTrade, out detail, out priority))
             return true;
-        return false;
-    }
-
-    private bool TryDequeueInternalWithCancellationCheck(PokeRoutineType type, out PokeTradeDetail<T> detail, out uint priority)
-    {
-        if (TryDequeueInternal(type, out detail, out priority))
-        {
-            if (!detail.IsCanceled)
-                return true;
-        }
         return false;
     }
 
@@ -170,5 +156,20 @@ public class TradeQueueManager<T> where T : PKM, new()
     {
         foreach (var f in Forwarders)
             f.Invoke(b, detail);
+    }
+
+    public List<PokeTradeDetail<T>> GetBatchTradeDetails(ulong trainerID, int uniqueTradeID)
+    {
+        var batchDetails = new List<PokeTradeDetail<T>>();
+
+        foreach (var queue in AllQueues)
+        {
+            var matchingDetails = queue.Queue.Where(kvp => kvp.Value.Trainer.ID == trainerID && kvp.Value.UniqueTradeID == uniqueTradeID)
+                                              .Select(kvp => kvp.Value)
+                                              .ToList();
+            batchDetails.AddRange(matchingDetails);
+        }
+
+        return batchDetails;
     }
 }

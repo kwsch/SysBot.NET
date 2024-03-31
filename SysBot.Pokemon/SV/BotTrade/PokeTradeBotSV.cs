@@ -232,20 +232,13 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
 
     private async Task<PokeTradeResult> PerformLinkCodeTrade(SAV9SV sav, PokeTradeDetail<PK9> poke, CancellationToken token)
     {
-        PokeTradeResult result;
-        int completedTrades = 0;
-
-        // Update Barrier Settings
         UpdateBarrier(poke.IsSynchronized);
+        poke.TradeInitialize(this);
         Hub.Config.Stream.EndEnterCode(this);
 
-        // StartFromOverworld can be true on first pass or if something went wrong last trade.
         if (StartFromOverworld && !await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
             await RecoverToOverworld(token).ConfigureAwait(false);
 
-        // Handles getting into the portal. Will retry this until successful.
-        // if we're not starting from overworld, then ensure we're online before opening link trade -- will break the bot otherwise.
-        // If we're starting from overworld, then ensure we're online before opening the portal.
         if (!StartFromOverworld && !await IsConnectedOnline(ConnectedOffset, token).ConfigureAwait(false))
         {
             await RecoverToOverworld(token).ConfigureAwait(false);
@@ -261,17 +254,14 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             return PokeTradeResult.RecoverStart;
         }
 
-        // Assumes we're freshly in the Portal and the cursor is over Link Trade.
         Log("Selecting Link Trade.");
-
         await Click(A, 1_500, token).ConfigureAwait(false);
-        // Make sure we clear any Link Codes if we're not in Distribution with fixed code, and it wasn't entered last round.
-        if (poke.Type != PokeTradeType.Random || !LastTradeDistributionFixed)
+
+        if (poke.Type != PokeTradeType.Batch || poke.BatchTradeNumber == 1)
         {
             await Click(X, 1_000, token).ConfigureAwait(false);
             await Click(PLUS, 1_000, token).ConfigureAwait(false);
 
-            // Loading code entry.
             if (poke.Type != PokeTradeType.Random)
                 Hub.Config.Stream.StartEnterCode(this);
             await Task.Delay(Hub.Config.Timings.ExtraTimeOpenCodeEntry, token).ConfigureAwait(false);
@@ -286,37 +276,31 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
 
         LastTradeDistributionFixed = poke.Type == PokeTradeType.Random && !Hub.Config.Distribution.RandomCode;
 
+        int completedTrades = 0;
         while (completedTrades < poke.TotalBatchTrades)
         {
             var toSend = poke.TradeData;
-
-            poke.TradeInitialize(this);
-
             if (toSend.Species != 0)
                 await SetBoxPokemonAbsolute(BoxStartOffset, toSend, token, sav).ConfigureAwait(false);
 
-            // Trigger the StartTrade process only after the first trade in the batch
-            if (completedTrades > 0)
-            {
-                Hub.Queues.StartTrade(this, poke);
-            }
-
-            // Search for a trade partner for a Link Trade.
             await Click(A, 0_500, token).ConfigureAwait(false);
             await Click(A, 0_500, token).ConfigureAwait(false);
 
-            // Clear it so we can detect it loading.
             await ClearTradePartnerNID(TradePartnerNIDOffset, token).ConfigureAwait(false);
 
-            // Wait for Barrier to trigger all bots simultaneously.
             WaitAtBarrierIfApplicable(token);
             await Click(A, 1_000, token).ConfigureAwait(false);
 
             poke.TradeSearching(this);
-
-            // Wait for a Trainer...
             var partnerFound = await WaitForTradePartner(token).ConfigureAwait(false);
 
+            if (token.IsCancellationRequested)
+            {
+                StartFromOverworld = true;
+                LastTradeDistributionFixed = false;
+                await ExitTradeToPortal(false, token).ConfigureAwait(false);
+                return PokeTradeResult.RoutineCancel;
+            }
             if (!partnerFound)
             {
                 if (!await RecoverToPortal(token).ConfigureAwait(false))
@@ -324,33 +308,23 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                     Log("Failed to recover to portal.");
                     await RecoverToOverworld(token).ConfigureAwait(false);
                 }
-                await ExitTradeToPortal(false, token).ConfigureAwait(false);
-
-                if (poke.TotalBatchTrades > 1)
-                {
-                    // If it's part of a batch trade, remove the current trade from the queue
-                    Log($"No trainer found for trade {completedTrades + 1} of {poke.TotalBatchTrades}. Removing from the queue.");
-                }
-
-                return PokeTradeResult.NoTrainerFound;
+                continue;
             }
 
             Hub.Config.Stream.EndEnterCode(this);
 
-            // Wait until we get into the box.
             var cnt = 0;
             while (!await IsInBox(PortalOffset, token).ConfigureAwait(false))
             {
                 await Task.Delay(0_500, token).ConfigureAwait(false);
-                if (++cnt > 20) // Didn't make it in after 10 seconds.
+                if (++cnt > 20)
                 {
-                    await Click(A, 1_000, token).ConfigureAwait(false); // Ensures we dismiss a popup.
+                    await Click(A, 1_000, token).ConfigureAwait(false);
                     if (!await RecoverToPortal(token).ConfigureAwait(false))
                     {
                         Log("Failed to recover to portal.");
                         await RecoverToOverworld(token).ConfigureAwait(false);
                     }
-                    await ExitTradeToPortal(false, token).ConfigureAwait(false);
                     return PokeTradeResult.RecoverOpenBox;
                 }
             }
@@ -360,18 +334,16 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             var tradePartner = new TradePartnerSV(tradePartnerFullInfo);
             var trainerNID = await GetTradePartnerNID(TradePartnerNIDOffset, token).ConfigureAwait(false);
             RecordUtil<PokeTradeBotSWSH>.Record($"Initiating\t{trainerNID:X16}\t{tradePartner.TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
-            Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7} (ID: {trainerNID})");
+            Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7} (ID: {trainerNID}) (Trade {completedTrades + 1}/{poke.TotalBatchTrades})");
 
-            var partnerCheck = await CheckPartnerReputation(this, poke, trainerNID, tradePartner.TrainerName, AbuseSettings, token);
+            var partnerCheck = await CheckPartnerReputation(this, poke, trainerNID, tradePartner.TrainerName, AbuseSettings, token).ConfigureAwait(false);
             if (partnerCheck != PokeTradeResult.Success)
             {
-                await Click(A, 1_000, token).ConfigureAwait(false); // Ensures we dismiss a popup.
+                await Click(A, 1_000, token).ConfigureAwait(false);
                 await ExitTradeToPortal(false, token).ConfigureAwait(false);
                 return partnerCheck;
             }
 
-            // Hard check to verify that the offset changed from the last thing offered from the previous trade.
-            // This is because box opening times can vary per person, the offset persists between trades, and can also change offset between trades.
             var tradeOffered = await ReadUntilChanged(TradePartnerOfferedOffset, lastOffered, 10_000, 0_500, false, true, token).ConfigureAwait(false);
             if (!tradeOffered)
             {
@@ -379,155 +351,104 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                 return PokeTradeResult.TrainerTooSlow;
             }
 
-            poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. TID: {tradePartner.TID7} SID: {tradePartner.SID7} Waiting for a Pokémon...");
+            poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. Waiting for a Pokémon...");
 
-            try
+            if (poke.Type == PokeTradeType.Dump)
             {
-                if (poke.Type == PokeTradeType.Dump)
-                {
-                    var dumpResult = await ProcessDumpTradeAsync(poke, token).ConfigureAwait(false);
-                    if (dumpResult != PokeTradeResult.Success)
-                    {
-                        await ExitTradeToPortal(false, token).ConfigureAwait(false);
-                        return dumpResult;
-                    }
-                }
-                else
-                {
-                    // Wait for user input...
-                    var offered = await ReadUntilPresent(TradePartnerOfferedOffset, 25_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
-                    var oldEC = await SwitchConnection.ReadBytesAbsoluteAsync(TradePartnerOfferedOffset, 8, token).ConfigureAwait(false);
-                    if (offered == null || offered.Species < 1 || !offered.ChecksumValid)
-                    {
-                        Log("Trade ended because a valid Pokémon was not offered.");
-                        await ExitTradeToPortal(false, token).ConfigureAwait(false);
-                        return PokeTradeResult.TrainerTooSlow;
-                    }
-
-                    SpecialTradeType itemReq = SpecialTradeType.None;
-                    if (poke.Type == PokeTradeType.Seed)
-                        itemReq = CheckItemRequest(ref offered, this, poke, tradePartner.TrainerName, sav);
-                    if (itemReq == SpecialTradeType.FailReturn)
-                    {
-                        await ExitTradeToPortal(false, token).ConfigureAwait(false);
-                        return PokeTradeResult.IllegalTrade;
-                    }
-
-                    if (poke.Type == PokeTradeType.Seed && itemReq == SpecialTradeType.None)
-                    {
-                        // Immediately exit, we aren't trading anything.
-                        poke.SendNotification(this, "No held item or valid request!  Cancelling this trade.");
-                        await ExitTradeToPortal(true, token).ConfigureAwait(false);
-                        return PokeTradeResult.TrainerRequestBad;
-                    }
-
-                    var trainer = new PartnerDataHolder(0, tradePartner.TrainerName, tradePartner.TID7);
-                    PokeTradeResult update;
-                    (toSend, update) = await GetEntityToSend(sav, poke, offered, oldEC, toSend, trainer, poke.Type == PokeTradeType.Seed ? itemReq : null, token).ConfigureAwait(false);
-                    if (update != PokeTradeResult.Success)
-                    {
-                        if (itemReq != SpecialTradeType.None)
-                        {
-                            poke.SendNotification(this, "Your request isn't legal. Please try a different Pokémon or request.");
-                        }
-
-                        await ExitTradeToPortal(false, token).ConfigureAwait(false);
-                        return update;
-                    }
-
-                    // Swap the Pokémon details (AutoOT)
-                    if (Hub.Config.Legality.UseTradePartnerInfo)
-                    {
-                        var swapResult = await SetBoxPkmWithSwappedIDDetailsSV(toSend, tradePartnerFullInfo, sav, token).ConfigureAwait(false);
-                        if (!swapResult)
-                        {
-                            Log("Failed to swap Pokémon details. Proceeding with the original Pokémon.");
-                        }
-                    }
-
-                    if (itemReq == SpecialTradeType.WonderCard)
-                        poke.SendNotification(this, "Distribution success!");
-                    else if (itemReq != SpecialTradeType.None && itemReq != SpecialTradeType.Shinify)
-                        poke.SendNotification(this, "Special request successful!");
-                    else if (itemReq == SpecialTradeType.Shinify)
-                        poke.SendNotification(this, "Shinify success!  Thanks for being part of the community!");
-                }
-
-                Log("Confirming trade.");
-                var tradeResult = await ConfirmAndStartTrading(poke, token).ConfigureAwait(false);
-                if (tradeResult != PokeTradeResult.Success)
-                {
-                    await ExitTradeToPortal(false, token).ConfigureAwait(false);
-                    return tradeResult;
-                }
-
-                // Trade was Successful!
-                var received = await ReadPokemon(BoxStartOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
-                // Pokémon in b1s1 is same as the one they were supposed to receive (was never sent).
-                if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend) && received.Checksum == toSend.Checksum)
-                {
-                    Log("User did not complete the trade.");
-                    await ExitTradeToPortal(false, token).ConfigureAwait(false);
-                    return PokeTradeResult.TrainerTooSlow;
-                }
-
-                // As long as we got rid of our inject in b1s1, assume the trade went through.
-                Log("User completed the trade.");
-                poke.TradeFinished(this, received);
-
-                // Only log if we completed the trade.
-                UpdateCountsAndExport(poke, received, toSend);
-
-                // Log for Trade Abuse tracking.
-                LogSuccessfulTrades(poke, trainerNID, tradePartner.TrainerName);
-
-                completedTrades++;
-
-                var routineType = GetRoutineType(poke.Type);
-
-                if (completedTrades < poke.TotalBatchTrades)
-                {
-                    // If there are more trades in the batch, dequeue the next trade for the current user
-                    if (Hub.Queues.TryDequeue(routineType, out var nextDetail, out var priority) && nextDetail.Trainer.ID == poke.Trainer.ID)
-                    {
-                        poke = nextDetail;
-                    }
-                    else
-                    {
-                        break; // No more trades for the current user, exit the loop
-                    }
-                }
-                else
-                {
-                    break; // All trades in the batch are completed, exit the loop
-                }
-            }
-            catch (Exception ex)
-            {
-                Log($"Error occurred during trade: {ex.Message}");
+                var result = await ProcessDumpTradeAsync(poke, token).ConfigureAwait(false);
                 await ExitTradeToPortal(false, token).ConfigureAwait(false);
-                return PokeTradeResult.RecoverStart;
+                return result;
             }
+
+            if (Hub.Config.Legality.UseTradePartnerInfo)
+                await SetBoxPkmWithSwappedIDDetailsSV(toSend, tradePartnerFullInfo, sav, token);
+
+            var offered = await ReadUntilPresent(TradePartnerOfferedOffset, 25_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
+            var oldEC = await SwitchConnection.ReadBytesAbsoluteAsync(TradePartnerOfferedOffset, 8, token).ConfigureAwait(false);
+            if (offered == null || offered.Species < 1 || !offered.ChecksumValid)
+            {
+                Log("Trade ended because a valid Pokémon was not offered.");
+                continue;
+            }
+
+            SpecialTradeType itemReq = SpecialTradeType.None;
+            if (poke.Type == PokeTradeType.Seed)
+                itemReq = CheckItemRequest(ref offered, this, poke, tradePartner.TrainerName, sav);
+            if (itemReq == SpecialTradeType.FailReturn)
+                return PokeTradeResult.IllegalTrade;
+
+            if (poke.Type == PokeTradeType.Seed && itemReq == SpecialTradeType.None)
+            {
+                poke.SendNotification(this, "No held item or valid request! Cancelling this trade.");
+                await ExitTradeToPortal(true, token).ConfigureAwait(false);
+                return PokeTradeResult.TrainerRequestBad;
+            }
+
+            var trainer = new PartnerDataHolder(0, tradePartner.TrainerName, tradePartner.TID7);
+            PokeTradeResult update;
+            (toSend, update) = await GetEntityToSend(sav, poke, offered, oldEC, toSend, trainer, poke.Type == PokeTradeType.Seed ? itemReq : null, token).ConfigureAwait(false);
+            if (update != PokeTradeResult.Success)
+            {
+                if (itemReq != SpecialTradeType.None)
+                    poke.SendNotification(this, "Your request isn't legal. Please try a different Pokémon or request.");
+
+                continue;
+            }
+
+            if (itemReq == SpecialTradeType.WonderCard)
+                poke.SendNotification(this, "Distribution success!");
+            else if (itemReq != SpecialTradeType.None && itemReq != SpecialTradeType.Shinify)
+                poke.SendNotification(this, "Special request successful!");
+            else if (itemReq == SpecialTradeType.Shinify)
+                poke.SendNotification(this, "Shinify success! Thanks for being part of the community!");
+
+            Log("Confirming trade.");
+            var tradeResult = await ConfirmAndStartTrading(poke, token).ConfigureAwait(false);
+            if (tradeResult != PokeTradeResult.Success)
+            {
+                await ExitTradeToPortal(false, token).ConfigureAwait(false);
+                continue;
+            }
+
+            if (token.IsCancellationRequested)
+            {
+                StartFromOverworld = true;
+                LastTradeDistributionFixed = false;
+                await ExitTradeToPortal(false, token).ConfigureAwait(false);
+                return PokeTradeResult.RoutineCancel;
+            }
+
+            var received = await ReadPokemon(BoxStartOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
+            if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend) && received.Checksum == toSend.Checksum)
+            {
+                Log("User did not complete the trade.");
+                continue;
+            }
+
+            Log("User completed the trade.");
+            poke.TradeFinished(this, received);
+
+            UpdateCountsAndExport(poke, received, toSend);
+            LogSuccessfulTrades(poke, trainerNID, tradePartner.TrainerName);
+            lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(TradePartnerOfferedOffset, 8, token).ConfigureAwait(false);
+
+            completedTrades++;
 
             if (completedTrades < poke.TotalBatchTrades)
             {
-                // If there are more trades in the batch, continue trading
-                Log($"Completed trade {completedTrades} of {poke.TotalBatchTrades}. Waiting for the next trade...");
-                await Task.Delay(1000, token).ConfigureAwait(false);
-            }
-            else
-            {
-                // If all trades in the batch are completed, exit the trade
-                Log("All trades in the batch completed. Exiting the trade.");
-                await ExitTradeToPortal(false, token).ConfigureAwait(false);
-                break; // Exit the loop after all trades are completed
+                var routineType = GetRoutineType(poke.Type);
+                if (Hub.Queues.TryDequeue(routineType, out var nextDetail, out var priority) && nextDetail.Trainer.ID == poke.Trainer.ID)
+                {
+                    poke = nextDetail;
+                }
+                else
+                {
+                    break;
+                }
             }
         }
 
-        // Sometimes they offered another mon, so store that immediately upon leaving Union Room.
-        lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(TradePartnerOfferedOffset, 8, token).ConfigureAwait(false);
-
-        await ExitTradeToPortal(false, token).ConfigureAwait(false); // Return to the overworld after all trades are completed
+        await ExitTradeToPortal(false, token).ConfigureAwait(false);
         return PokeTradeResult.Success;
     }
 
