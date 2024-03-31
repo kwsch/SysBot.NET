@@ -283,6 +283,14 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             if (toSend.Species != 0)
                 await SetBoxPokemonAbsolute(BoxStartOffset, toSend, token, sav).ConfigureAwait(false);
 
+            // Execute StartTrade functions for each trade in the batch after the first
+            if (completedTrades > 0)
+            {
+                Log($"Starting next trade in the batch. Trade {completedTrades + 1} of {poke.TotalBatchTrades}...");
+                Hub.Config.Stream.StartTrade(this, poke, Hub);
+                Hub.Queues.StartTrade(this, poke);
+            }
+
             await Click(A, 0_500, token).ConfigureAwait(false);
             await Click(A, 0_500, token).ConfigureAwait(false);
 
