@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
 namespace SysBot.Pokemon;
@@ -10,6 +11,7 @@ public class QueueSettings
     private const string UserBias = nameof(UserBias);
     private const string TimeBias = nameof(TimeBias);
     private const string QueueToggle = nameof(QueueToggle);
+
     public override string ToString() => "Queue Joining Settings";
 
     // General

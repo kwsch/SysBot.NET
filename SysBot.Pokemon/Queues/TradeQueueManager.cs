@@ -1,8 +1,6 @@
 using PKHeX.Core;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
 
 namespace SysBot.Pokemon;
 
@@ -35,6 +33,7 @@ public class TradeQueueManager<T> where T : PKM, new()
         PokeRoutineType.Clone => Clone,
         PokeRoutineType.Dump => Dump,
         PokeRoutineType.FixOT => FixOT,
+        PokeRoutineType.Batch => Batch,
         _ => Trade,
     };
 
@@ -66,7 +65,6 @@ public class TradeQueueManager<T> where T : PKM, new()
         detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random, code, false, lgcode);
         return true;
     }
-
 
     public bool TryDequeue(PokeRoutineType type, out PokeTradeDetail<T> detail, out uint priority)
     {
@@ -156,20 +154,5 @@ public class TradeQueueManager<T> where T : PKM, new()
     {
         foreach (var f in Forwarders)
             f.Invoke(b, detail);
-    }
-
-    public List<PokeTradeDetail<T>> GetBatchTradeDetails(ulong trainerID, int uniqueTradeID)
-    {
-        var batchDetails = new List<PokeTradeDetail<T>>();
-
-        foreach (var queue in AllQueues)
-        {
-            var matchingDetails = queue.Queue.Where(kvp => kvp.Value.Trainer.ID == trainerID && kvp.Value.UniqueTradeID == uniqueTradeID)
-                                              .Select(kvp => kvp.Value)
-                                              .ToList();
-            batchDetails.AddRange(matchingDetails);
-        }
-
-        return batchDetails;
     }
 }
