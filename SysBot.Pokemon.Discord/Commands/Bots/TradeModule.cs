@@ -382,9 +382,18 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("mysteryegg")]
     [Alias("me")]
+    [Summary("Trades an egg generated from the provided Pokémon name.")]
+    public async Task TradeMysteryEggAsync()
+    {
+        var code = Info.GetRandomTradeCode();
+        await TradeMysteryEggAsync(code).ConfigureAwait(false);
+    }
+
+    [Command("mysteryegg")]
+    [Alias("me")]
     [Summary("Trades a random mystery egg with perfect stats and shiny appearance.")]
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-    public async Task TradeMysteryEggAsync()
+    public async Task TradeMysteryEggAsync([Summary("Trade Code")] int code)
     {
         // Check if the user is already in the queue
         var userID = Context.User.Id;
@@ -412,7 +421,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
             AbstractTrade<T>.EggTrade(pkT, null);
 
-            var code = Info.GetRandomTradeCode();
             var sig = Context.User.GetFavor();
             await AddTradeToQueueAsync(code, Context.User.Username, pkT, sig, Context.User, isMysteryEgg: true).ConfigureAwait(false);
 
