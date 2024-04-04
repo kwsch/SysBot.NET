@@ -339,7 +339,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
                 await Click(A, 0_500, token).ConfigureAwait(false);
         }
 
-        poke.SendNotification(this, $"Found Link Trade partner: {trainerName}. Waiting for a Pokémon...");
+        poke.SendNotification(this, $"Found Link Trade partner: {trainerName}. TID: {trainerTID} Waiting for a Pokémon...");
 
         if (poke.Type == PokeTradeType.Dump)
             return await ProcessDumpTradeAsync(poke, token).ConfigureAwait(false);
