@@ -7,7 +7,7 @@ namespace SysBot.Pokemon;
 public class TradeCodeStorage
 {
     private const string FileName = "tradecodes.json";
-    private readonly Dictionary<ulong, int> _tradeCodes;
+    private Dictionary<ulong, int> _tradeCodes;
 
     public TradeCodeStorage()
     {
@@ -16,6 +16,9 @@ public class TradeCodeStorage
 
     public int GetTradeCode(ulong trainerID)
     {
+        // Load the trade codes from the JSON file
+        _tradeCodes = LoadFromFile();
+
         if (_tradeCodes.TryGetValue(trainerID, out int code))
             return code;
 
@@ -43,6 +46,9 @@ public class TradeCodeStorage
 
     public bool DeleteTradeCode(ulong trainerID)
     {
+        // Load the trade codes from the JSON file
+        _tradeCodes = LoadFromFile();
+
         if (_tradeCodes.Remove(trainerID))
         {
             SaveToFile();
