@@ -84,6 +84,9 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         [Category(TradeConfig), Description("Maximum Link Code.")]
         public int MaxTradeCode { get; set; } = 9999_9999;
 
+        [Category(TradeConfig), Description("If set to True, Discord Users trade code will be stored and used repeatedly without changing.")]
+        public bool StoreTradeCodes { get; set; } = false;
+
         [Category(TradeConfig), Description("Time to wait for a trade partner in seconds.")]
         public int TradeWaitTime { get; set; } = 30;
 
@@ -250,7 +253,8 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     /// Gets a random trade code based on the range settings.
     /// </summary>
     public int GetRandomTradeCode() => Util.Rand.Next(TradeConfiguration.MinTradeCode, TradeConfiguration.MaxTradeCode + 1);
-    public List<Pictocodes> GetRandomLGTradeCode(bool randomtrade = false)
+
+    public static List<Pictocodes> GetRandomLGTradeCode(bool randomtrade = false)
     {
         var lgcode = new List<Pictocodes>();
         if (randomtrade)

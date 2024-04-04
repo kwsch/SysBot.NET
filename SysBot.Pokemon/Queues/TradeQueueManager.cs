@@ -55,7 +55,7 @@ public class TradeQueueManager<T> where T : PKM, new()
 
         var random = Hub.Ledy.Pool.GetRandomPoke();
         var code = cfg.RandomCode ? Hub.Config.Trade.GetRandomTradeCode() : cfg.TradeCode;
-        var lgcode = Hub.Config.Trade.GetRandomLGTradeCode(true);
+        var lgcode = TradeSettings.GetRandomLGTradeCode(true);
         if (lgcode == null || lgcode.Count == 0)
         {
             lgcode = new List<Pictocodes> { Pictocodes.Pikachu, Pictocodes.Pikachu, Pictocodes.Pikachu };

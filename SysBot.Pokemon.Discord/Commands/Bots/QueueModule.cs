@@ -155,6 +155,27 @@ public class QueueModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await Context.User.SendMessageAsync(msg).ConfigureAwait(false);
     }
 
+    [Command("deleteTradeCode")]
+    [Alias("dtc")]
+    [Summary("Deletes the stored trade code for the user.")]
+    public async Task DeleteTradeCodeAsync()
+    {
+        var userID = Context.User.Id;
+        string msg = QueueModule<T>.DeleteTradeCode(userID);
+        await ReplyAsync(msg).ConfigureAwait(false);
+    }
+
+    private static string DeleteTradeCode(ulong userID)
+    {
+        var tradeCodeStorage = new TradeCodeStorage();
+        bool success = tradeCodeStorage.DeleteTradeCode(userID);
+
+        if (success)
+            return "Your stored trade code has been deleted successfully.";
+        else
+            return "No stored trade code found for your user ID.";
+    }
+
     private string ClearTrade()
     {
         var userID = Context.User.Id;

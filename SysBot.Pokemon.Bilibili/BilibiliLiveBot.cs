@@ -60,7 +60,7 @@ namespace SysBot.Pokemon.Bilibili
                     LogUtil.LogInfo($"收到命令\n{showdown}", LogIdentity);
                     var _ = CheckAndGetPkm(showdown, DefaultUserName, out var msg, out var pkm);
                     if (!_) continue;
-                    var code = Info.GetRandomTradeCode();
+                    var code = Info.GetRandomTradeCode(12345);
                     File.WriteAllText(@"msg.txt",
                         $"派送:{ShowdownTranslator<T>.GameStringsZh.Species[pkm.Species]}\n密码:{code:0000 0000}");
                     var __ = AddToTradeQueue(pkm, code, DefaultUserId, DefaultUserName, RequestSignificance.Favored,

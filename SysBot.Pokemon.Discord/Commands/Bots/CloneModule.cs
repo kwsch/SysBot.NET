@@ -56,7 +56,7 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var sig = Context.User.GetFavor();
         var lgcode = Info.GetRandomLGTradeCode();
 
-        await QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone, Context.User, false, 1, 1, false, lgcode);
+        await QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode(userID) : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone, Context.User, false, 1, 1, false, lgcode);
 
         var confirmationMessage = await ReplyAsync("Processing your clone request...").ConfigureAwait(false);
 
@@ -75,7 +75,8 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [RequireQueueRole(nameof(DiscordManager.RolesClone))]
     public Task CloneAsync()
     {
-        var code = Info.GetRandomTradeCode();
+        var userID = Context.User.Id;
+        var code = Info.GetRandomTradeCode(userID);
         return CloneAsync(code);
 
     }

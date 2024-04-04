@@ -3,7 +3,6 @@ using Discord.Commands;
 using Discord.Net;
 using Discord.WebSocket;
 using PKHeX.Core;
-using PKHeX.Core.AutoMod;
 using SysBot.Base;
 using SysBot.Pokemon.Helpers;
 using System;
@@ -132,7 +131,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
             return;
         }
-        var code = Info.GetRandomTradeCode();
+        var code = Info.GetRandomTradeCode(userID);
         var trainerName = Context.User.Username;
         var lgcode = Info.GetRandomLGTradeCode();
         var sig = Context.User.GetFavor();
@@ -192,7 +191,14 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [Summary("Makes the bot trade you a Ditto with a requested stat spread and language.")]
     public async Task DittoTrade([Summary("A combination of \"ATK/SPA/SPE\" or \"6IV\"")] string keyword, [Summary("Language")] string language, [Summary("Nature")] string nature)
     {
-        var code = Info.GetRandomTradeCode();
+        // Check if the user is already in the queue
+        var userID = Context.User.Id;
+        if (Info.IsUserInQueue(userID))
+        {
+            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            return;
+        }
+        var code = Info.GetRandomTradeCode(userID);
         await DittoTrade(code, keyword, language, nature).ConfigureAwait(false);
 
         if (Context.Message is IUserMessage userMessage)
@@ -216,7 +222,9 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         }
         keyword = keyword.ToLower().Trim();
         if (Enum.TryParse(language, true, out LanguageID lang))
+        {
             language = lang.ToString();
+        }
         else
         {
             await Context.Message.ReplyAsync($"Couldn't recognize language: {language}.").ConfigureAwait(false);
@@ -256,7 +264,14 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [Summary("Makes the bot trade you a Pokémon holding the requested item, or Ditto if stat spread keyword is provided.")]
     public async Task ItemTrade([Remainder] string item)
     {
-        var code = Info.GetRandomTradeCode();
+        // Check if the user is already in the queue
+        var userID = Context.User.Id;
+        if (Info.IsUserInQueue(userID))
+        {
+            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            return;
+        }
+        var code = Info.GetRandomTradeCode(userID);
         await ItemTrade(code, item).ConfigureAwait(false);
     }
 
@@ -327,7 +342,8 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [Summary("Trades an egg generated from the provided Pokémon name.")]
     public async Task TradeEgg([Remainder] string egg)
     {
-        var code = Info.GetRandomTradeCode();
+        var userID = Context.User.Id;
+        var code = Info.GetRandomTradeCode(userID);
         await TradeEggAsync(code, egg).ConfigureAwait(false);
     }
 
@@ -385,7 +401,14 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [Summary("Trades an egg generated from the provided Pokémon name.")]
     public async Task TradeMysteryEggAsync()
     {
-        var code = Info.GetRandomTradeCode();
+        // Check if the user is already in the queue
+        var userID = Context.User.Id;
+        if (Info.IsUserInQueue(userID))
+        {
+            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            return;
+        }
+        var code = Info.GetRandomTradeCode(userID);
         await TradeMysteryEggAsync(code).ConfigureAwait(false);
     }
 
@@ -592,7 +615,8 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
     public Task TradeAsync([Summary("Showdown Set")][Remainder] string content)
     {
-        var code = Info.GetRandomTradeCode();
+        var userID = Context.User.Id;
+        var code = Info.GetRandomTradeCode(userID);
         return TradeAsync(code, content);
     }
 
@@ -602,7 +626,8 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
     public async Task TradeAsyncAttach()
     {
-        var code = Info.GetRandomTradeCode();
+        var userID = Context.User.Id;
+        var code = Info.GetRandomTradeCode(userID);
         var sig = Context.User.GetFavor();
 
         await TradeAsyncAttach(code, sig, Context.User);
@@ -666,8 +691,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await Context.Message.DeleteAsync(); 
             return;
         }
-
-        var batchTradeCode = Info.GetRandomTradeCode();
+        var batchTradeCode = Info.GetRandomTradeCode(userID);
         int batchTradeNumber = 1;
         _ = Task.Delay(2000).ContinueWith(async _ => await Context.Message.DeleteAsync());
 
@@ -738,7 +762,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
 
-        var batchTradeCode = Info.GetRandomTradeCode();
+        var batchTradeCode = Info.GetRandomTradeCode(userID);
         int batchTradeNumber = 1;
         _ = Task.Delay(2000).ContinueWith(async _ => await Context.Message.DeleteAsync());
 
@@ -778,7 +802,8 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
             pk.ResetPartyStats();
 
-            var code = Info.GetRandomTradeCode();
+            var userID = Context.User.Id;
+            var code = Info.GetRandomTradeCode(userID);
             var lgcode = Info.GetRandomLGTradeCode();
 
             // Add the trade to the queue
@@ -843,7 +868,8 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             pk.ResetPartyStats();
 
             // Use a predefined or random trade code
-            var code = Info.GetRandomTradeCode();
+            var userID = Context.User.Id;
+            var code = Info.GetRandomTradeCode(userID);
             var lgcode = Info.GetRandomLGTradeCode();
 
             // Add the trade to the queue
@@ -1092,7 +1118,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 return;
             }
 
-            var code = Info.GetRandomTradeCode();
+            var code = Info.GetRandomTradeCode(userID);
             var lgcode = Info.GetRandomLGTradeCode();
             var sig = Context.User.GetFavor();
             await ReplyAsync($"Special event request added to queue.");
@@ -1258,7 +1284,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 return;
             }
 
-            var code = Info.GetRandomTradeCode();
+            var code = Info.GetRandomTradeCode(userID);
             var lgcode = Info.GetRandomLGTradeCode();
             var sig = Context.User.GetFavor();
             await ReplyAsync($"Event request added to queue.").ConfigureAwait(false);
@@ -1424,7 +1450,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 return;
             }
 
-            var code = Info.GetRandomTradeCode();
+            var code = Info.GetRandomTradeCode(userID);
             var lgcode = Info.GetRandomLGTradeCode();
             var sig = Context.User.GetFavor();
             await ReplyAsync($"Battle-ready request added to queue.").ConfigureAwait(false);
@@ -1472,7 +1498,8 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [RequireSudo]
     public Task TradeAsyncAttachUser([Remainder] string _)
     {
-        var code = Info.GetRandomTradeCode();
+        var userID = Context.User.Id;
+        var code = Info.GetRandomTradeCode(userID);
         return TradeAsyncAttachUser(code, _);
     }
 

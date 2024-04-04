@@ -60,7 +60,7 @@ public class DumpModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
         }
         int tradeCode = Util.ToInt32(code);
         var sig = Context.User.GetFavor();
-        await QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.Dump, PokeTradeType.Dump);
+        await QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode(userID) : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.Dump, PokeTradeType.Dump);
     }
 
     [Command("dump")]
@@ -76,7 +76,7 @@ public class DumpModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
             await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
             return;
         }
-        var code = Info.GetRandomTradeCode();
+        var code = Info.GetRandomTradeCode(userID);
         await DumpAsync(code);
     }
 
