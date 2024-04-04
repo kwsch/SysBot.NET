@@ -356,7 +356,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
                 return PokeTradeResult.TrainerTooSlow;
             }
             //lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
-            if (Hub.Config.Legality.UseTradePartnerInfo)
+            if (Hub.Config.Legality.UseTradePartnerInfo && !poke.IgnoreAutoOT)
             {
                 await SetBoxPkmWithSwappedIDDetailsBDSP(toSend, offered, sav, tradePartner.TrainerName, token);
             }

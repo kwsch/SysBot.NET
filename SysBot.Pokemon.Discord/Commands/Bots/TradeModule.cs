@@ -457,7 +457,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         return TradeAsyncAttach(code, sig, Context.User);
     }
 
-
     [Command("trade")]
     [Alias("t")]
     [Summary("Makes the bot trade you a Pokémon converted from the provided Showdown Set.")]
@@ -474,6 +473,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         }
 
         content = ReusableActions.StripCodeBlock(content);
+        var ignoreAutoOT = content.Contains("OT:") || content.Contains("TID:") || content.Contains("SID:");
         var set = new ShowdownSet(content);
         var template = AutoLegalityWrapper.GetTemplate(set);
         int formArgument = ExtractFormArgument(content);
@@ -490,24 +490,40 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         {
             var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
             var pkm = sav.GetLegal(template, out var result);
+
             if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.SuggestRelearnMoves)
             {
-                if (pkm is ITechRecord tr)
+                if (pkm is PK9 pk9)
                 {
-                    tr.SetRecordFlagsAll();
+                    pk9.SetRecordFlagsAll();
+                }
+                else if (pkm is PK8 pk8)
+                {
+                    pk8.SetRecordFlagsAll();
+                }
+                else if (pkm is PB8 pb8)
+                {
+                    pb8.SetRecordFlagsAll();
+                }
+                else if (pkm is PB7 pb7)
+                {
+                    // not applicable for PB7 (LGPE)
+                }
+                else if (pkm is PA8 pa8)
+                {
+                    // not applicable for PA8 (Legends: Arceus)
                 }
             }
-            // Check if the Pokémon is from "Legends: Arceus"
-            bool isLegendsArceus = pkm.Version == GameVersion.PLA;
 
-            if (!isLegendsArceus && pkm.HeldItem == 0 && !pkm.IsEgg)
-            {
-                pkm.HeldItem = (int)SysCord<T>.Runner.Config.Trade.TradeConfiguration.DefaultHeldItem;
-            }
-            else if (isLegendsArceus)
+            if (pkm is PA8)
             {
                 pkm.HeldItem = (int)HeldItem.None; // Set to None for "Legends: Arceus" Pokémon
             }
+            else if (pkm.HeldItem == 0 && !pkm.IsEgg)
+            {
+                pkm.HeldItem = (int)SysCord<T>.Runner.Config.Trade.TradeConfiguration.DefaultHeldItem;
+            }
+
             if (pkm is PB7)
             {
                 if (pkm.Species == (int)Species.Mew)
@@ -557,7 +573,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             pk.ResetPartyStats();
 
             var sig = Context.User.GetFavor();
-            await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, isBatchTrade: false, batchTradeNumber: 1, totalBatchTrades: 1, lgcode: lgcode).ConfigureAwait(false);
+            await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, isBatchTrade: false, batchTradeNumber: 1, totalBatchTrades: 1, lgcode: lgcode, ignoreAutoOT: ignoreAutoOT).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -1492,7 +1508,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         };
     }
 
-    private async Task AddTradeToQueueAsync(int code, string trainerName, T pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, bool isMysteryEgg = false, List<Pictocodes> lgcode = null, PokeTradeType tradeType = PokeTradeType.Specific)
+    private async Task AddTradeToQueueAsync(int code, string trainerName, T pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, bool isMysteryEgg = false, List<Pictocodes> lgcode = null, PokeTradeType tradeType = PokeTradeType.Specific, bool ignoreAutoOT = false)
     {
         lgcode ??= TradeModule<T>.GenerateRandomPictocodes(3);
         if (!pk.CanBeTraded())
@@ -1544,7 +1560,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             if (la.Valid) pk = clone;
         }
 
-        await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk, PokeRoutineType.LinkTrade, tradeType, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, isMysteryEgg, lgcode).ConfigureAwait(false);
+        await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk, PokeRoutineType.LinkTrade, tradeType, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, isMysteryEgg, lgcode, ignoreAutoOT).ConfigureAwait(false);
     }
 
     private static List<Pictocodes> GenerateRandomPictocodes(int count)

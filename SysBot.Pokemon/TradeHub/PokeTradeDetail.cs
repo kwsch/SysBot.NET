@@ -56,8 +56,9 @@ namespace SysBot.Pokemon
         public readonly int UniqueTradeID;
         public bool IsCanceled { get; set; }
         public bool IsMysteryEgg { get; }
+        public bool IgnoreAutoOT { get; }
 
-        public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code, bool favored = false, List<Pictocodes> lgcode = null, int batchTradeNumber = 0, int totalBatchTrades = 0, bool isMysteryEgg = false, int uniqueTradeID = 0)
+        public PokeTradeDetail(TPoke pkm, PokeTradeTrainerInfo info, IPokeTradeNotifier<TPoke> notifier, PokeTradeType type, int code, bool favored = false, List<Pictocodes> lgcode = null, int batchTradeNumber = 0, int totalBatchTrades = 0, bool isMysteryEgg = false, int uniqueTradeID = 0, bool ignoreAutoOT = false)
         {
             ID = Interlocked.Increment(ref CreatedCount) % 3000;
             Code = code;
@@ -72,6 +73,7 @@ namespace SysBot.Pokemon
             TotalBatchTrades = totalBatchTrades;
             IsMysteryEgg = isMysteryEgg;
             UniqueTradeID = uniqueTradeID;
+            IgnoreAutoOT = ignoreAutoOT;
         }
 
         public void TradeInitialize(PokeRoutineExecutor<TPoke> routine) => Notifier.TradeInitialize(routine, this);

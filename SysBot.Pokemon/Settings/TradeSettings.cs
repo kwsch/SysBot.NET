@@ -23,26 +23,22 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         [Description("The type of move.")]
         public MoveType MoveType { get; set; }
 
-        [Description("The Discord name for the emoji.")]
-        public string EmojiName { get; set; }
-
-        [Description("The unique Discord ID for the emoji.")]
-        public string ID { get; set; }
+        [Description("The Discord emoji string for this move type.")]
+        public string EmojiCode { get; set; }
 
         public MoveTypeEmojiInfo() { }
 
         public MoveTypeEmojiInfo(MoveType moveType)
         {
             MoveType = moveType;
-            EmojiName = moveType.ToString(); 
         }
 
         public override string ToString()
         {
-            if (string.IsNullOrEmpty(ID))
+            if (string.IsNullOrEmpty(EmojiCode))
                 return MoveType.ToString();
 
-            return $"<:{EmojiName}:{ID}>";
+            return $"{EmojiCode}";
         }
     }
 

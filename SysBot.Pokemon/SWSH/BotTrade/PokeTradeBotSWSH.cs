@@ -327,7 +327,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
             return PokeTradeResult.RecoverOpenBox;
         }
 
-        if (hub.Config.Legality.UseTradePartnerInfo)
+        if (hub.Config.Legality.UseTradePartnerInfo && !poke.IgnoreAutoOT)
         {
             await SetPkmWithSwappedIDDetails(toSend, trainerName, sav, token);
         }
