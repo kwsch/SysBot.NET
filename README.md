@@ -1,7 +1,9 @@
 # SysBot.NET
 ![License](https://img.shields.io/badge/License-AGPLv3-blue.svg)
 
-## Support Discord von Aura und Furby, die SysBot benutzung ist kostenlos bei uns:
+## Dies ist ein benutzerdefinierter Fork des Sysbots und somit ein eigenes Projekt - darum bitte nicht mit unseren Problemen die Pkhex Entwickler belästigen
+
+## Support Discord von Aura und Furby, die SysBot Benutzung ist kostenlos bei uns:
 - [Discord](https://discord.gg/MzVM8DVM9w)
 
 ## Support Discord:
