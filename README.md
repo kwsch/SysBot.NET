@@ -3,22 +3,22 @@
 
 ## Support Discord:
 
-For support on setting up your own instance of SysBot.NET, feel free to join the discord! (Beware of un-official discords who claim to be official)
+Wenn Sie Unterstützung beim Einrichten Ihrer eigenen Instanz von SysBot.NET benötigen, können Sie sich gerne dem Discord anschließen! (Vorsicht vor inoffiziellen Zwietracht, die behaupten, offiziell zu sein)
 
 [<img src="https://canary.discordapp.com/api/guilds/401014193211441153/widget.png?style=banner2">](https://discord.gg/tDMvSRv)
 
-[sys-botbase](https://github.com/olliz0r/sys-botbase) client for remote control automation of Nintendo Switch consoles.
+[sys-botbase](https://github.com/olliz0r/sys-botbase) Client zur Fernsteuerungsautomatisierung von Nintendo Switch-Konsolen.
 
 ## SysBot.Base:
-- Base logic library to be built upon in game-specific projects.
-- Contains a synchronous and asynchronous Bot connection class to interact with sys-botbase.
+- Basislogikbibliothek, auf der in spielspezifischen Projekten aufgebaut werden kann.
+– Enthält eine synchrone und asynchrone Bot-Verbindungsklasse zur Interaktion mit sys-botbase.
 
 ## SysBot.Tests:
-- Unit Tests for ensuring logic behaves as intended :)
+- Unit-Tests, um sicherzustellen, dass sich die Logik wie beabsichtigt verhält :)
 
 # Example Implementations
 
-The driving force to develop this project is automated bots for Nintendo Switch Pokémon games. An example implementation is provided in this repo to demonstrate interesting tasks this framework is capable of performing. Refer to the [Wiki](https://github.com/kwsch/SysBot.NET/wiki) for more details on the supported Pokémon features.
+Die treibende Kraft bei der Entwicklung dieses Projekts sind automatisierte Bots für Nintendo Switch-Pokémon-Spiele. In diesem Repo wird eine Beispielimplementierung bereitgestellt, um interessante Aufgaben zu demonstrieren, die dieses Framework ausführen kann. Siehe die [Wiki](https://github.com/kwsch/SysBot.NET/wiki) Weitere Informationen zu den unterstützten Pokémon-Funktionen finden Sie hier.
 
 ## SysBot.Pokemon:
 - Class library using SysBot.Base to contain logic related to creating & running Sword/Shield bots.
