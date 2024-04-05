@@ -278,4 +278,16 @@ public sealed partial class Main : Form
     {
         TB_IP.Visible = CB_Protocol.SelectedIndex == 0;
     }
+
+    private void button1_Click(object sender, EventArgs e)
+    {
+        AboutBox1 aboutform = new AboutBox1();
+        aboutform.Show();
+    }
+
+    private void button2_Click(object sender, EventArgs e)
+    {
+        AboutBox1 aboutform = new AboutBox1();
+        aboutform.Show();
+    }
 }
