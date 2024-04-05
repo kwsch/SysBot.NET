@@ -1,6 +1,9 @@
 # SysBot.NET
 ![License](https://img.shields.io/badge/License-AGPLv3-blue.svg)
 
+## Support Discord von Aura und Furby, die Sysbot benutzung ist kostenlos bei uns
+- [Discord](https://discord.gg/MzVM8DVM9w/)
+
 ## Support Discord:
 
 Wenn Sie Unterstützung beim Einrichten Ihrer eigenen Instanz von SysBot.NET benötigen, können Sie sich gerne dem Discord anschließen! (Vorsicht vor inoffiziellen Zwietracht, die behaupten, offiziell zu sein)
