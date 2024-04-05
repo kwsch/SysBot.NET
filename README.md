@@ -21,7 +21,7 @@ Wenn Sie Unterstützung beim Einrichten Ihrer eigenen Instanz von SysBot.NET ben
 ## SysBot.Tests:
 - Unit-Tests, um sicherzustellen, dass sich die Logik wie beabsichtigt verhält :)
 
-# Example Implementations
+# Beispielimplementierungen
 
 Die treibende Kraft bei der Entwicklung dieses Projekts sind automatisierte Bots für Nintendo Switch-Pokémon-Spiele. In diesem Repo wird eine Beispielimplementierung bereitgestellt, um interessante Aufgaben zu demonstrieren, die dieses Framework ausführen kann. Siehe die [Wiki](https://github.com/kwsch/SysBot.NET/wiki) Weitere Informationen zu den unterstützten Pokémon-Funktionen finden Sie hier.
 
@@ -45,10 +45,10 @@ Die treibende Kraft bei der Entwicklung dieses Projekts sind automatisierte Bots
 - YouTube.com-Schnittstelle zur Fernankündigung des Beginns der Verteilung.
 - Geben Sie für die Anmeldung eine YouTube-Anmelde-Client-ID, ein Client-Geheimnis und eine Kanal-ID an.
 
-Uses [Discord.Net](https://github.com/discord-net/Discord.Net) , [TwitchLib](https://github.com/TwitchLib/TwitchLib) and [StreamingClientLibary](https://github.com/SaviorXTanren/StreamingClientLibrary) as a dependency via Nuget.
+Verwendet [Discord.Net](https://github.com/discord-net/Discord.Net) , [TwitchLib](https://github.com/TwitchLib/TwitchLib) und [StreamingClientLibary](https://github.com/SaviorXTanren/StreamingClientLibrary) als Abhängigkeit über Nuget.
 
-## Other Dependencies
+## Andere Abhängigkeiten
 Die Pokémon-API-Logik wird bereitgestellt von [PKHeX](https://github.com/kwsch/PKHeX/), und die Vorlagengenerierung wird bereitgestellt von [Auto-Legality Mod](https://github.com/architdate/PKHeX-Plugins/). Aktuelle Vorlagengenerierungsverwendungen [@santacrab2](https://www.github.com/santacrab2)'s [Auto-Legality Mod fork](https://github.com/santacrab2/PKHeX-Plugins).
 
 # License
-Refer to the `License.md` for details regarding licensing.
+Siehe die `License.md` Einzelheiten zur Lizenzierung.
