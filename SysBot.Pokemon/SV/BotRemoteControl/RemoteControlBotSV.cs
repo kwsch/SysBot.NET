@@ -1,4 +1,4 @@
-﻿using SysBot.Base;
+using SysBot.Base;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,10 +11,10 @@ public class RemoteControlBotSV(PokeBotState Config) : PokeRoutineExecutor9SV(Co
     {
         try
         {
-            Log("Identifying trainer data of the host console.");
+            Log("Identifiziere Trainerdaten der Host-Konsole.");
             await IdentifyTrainer(token).ConfigureAwait(false);
 
-            Log("Starting main loop, then waiting for commands.");
+            Log("Starte main loop, warte dann auf Befehle.");
             Config.IterateNextRoutine();
             while (!token.IsCancellationRequested)
             {

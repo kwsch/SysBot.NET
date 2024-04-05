@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.Collections.Generic;
@@ -59,7 +59,7 @@ public class TwitchBot<T> where T : PKM, new()
         client.OnLeftChannel += Client_OnLeftChannel;
 
         client.OnMessageSent += (_, e)
-            => LogUtil.LogText($"[{client.TwitchUsername}] - Message Sent in {e.SentMessage.Channel}: {e.SentMessage.Message}");
+            => LogUtil.LogText($"[{client.TwitchUsername}] - Nachricht Sent in {e.SentMessage.Channel}: {e.SentMessage.Message}");
         client.OnWhisperSent += (_, e)
             => LogUtil.LogText($"[{client.TwitchUsername}] - Whisper Sent to @{e.Receiver}: {e.Message}");
 
@@ -116,18 +116,18 @@ public class TwitchBot<T> where T : PKM, new()
 
         if (added == QueueResultAdd.AlreadyInQueue)
         {
-            msg = $"@{name}: Sorry, you are already in the queue.";
+            msg = $"@{name}: Sorry, du bist bereits in der Warteliste.";
             return false;
         }
 
         var position = Info.CheckPosition(userID, type);
-        msg = $"@{name}: Added to the {type} queue, unique ID: {detail.ID}. Current Position: {position.Position}";
+        msg = $"@{name}: wurde zur {type} Warteliste hinzugefügt, Einzigartige ID: {detail.ID}. Aktuelle Position: {position.Position}";
 
         var botct = Info.Hub.Bots.Count;
         if (position.Position > botct)
         {
             var eta = Info.Hub.Config.Queues.EstimateDelay(position.Position, botct);
-            msg += $". Estimated: {eta:F1} minutes.";
+            msg += $". Geschätzt: {eta:F1} Minuten.";
         }
         return true;
     }
@@ -139,7 +139,7 @@ public class TwitchBot<T> where T : PKM, new()
 
     private void Client_OnConnected(object? sender, OnConnectedArgs e)
     {
-        LogUtil.LogText($"[{client.TwitchUsername}] - Connected {e.AutoJoinChannel} as {e.BotUsername}");
+        LogUtil.LogText($"[{client.TwitchUsername}] - Verbunden zu {e.AutoJoinChannel} als {e.BotUsername}");
     }
 
     private void Client_OnDisconnected(object? sender, OnDisconnectedEventArgs e)
@@ -157,14 +157,14 @@ public class TwitchBot<T> where T : PKM, new()
 
     private void Client_OnMessageReceived(object? sender, OnMessageReceivedArgs e)
     {
-        LogUtil.LogText($"[{client.TwitchUsername}] - Received message: @{e.ChatMessage.Username}: {e.ChatMessage.Message}");
+        LogUtil.LogText($"[{client.TwitchUsername}] - erhaltene Nachricht: @{e.ChatMessage.Username}: {e.ChatMessage.Message}");
         if (client.JoinedChannels.Count == 0)
             client.JoinChannel(e.ChatMessage.Channel);
     }
 
     private void Client_OnLeftChannel(object? sender, OnLeftChannelArgs e)
     {
-        LogUtil.LogText($"[{client.TwitchUsername}] - Left channel {e.Channel}");
+        LogUtil.LogText($"[{client.TwitchUsername}] - Habt Kanal {e.Channel} verlassen");
         client.JoinChannel(e.Channel);
     }
 
@@ -228,7 +228,7 @@ public class TwitchBot<T> where T : PKM, new()
 
             case "tca":
                 Info.ClearAllQueues();
-                return "Cleared all queues!";
+                return "Wartelisten bereinigt!";
 
             case "pr":
                 return Info.Hub.Ledy.Pool.Reload(Hub.Config.Folder.DistributeFolder) ? $"Reloaded from folder. Pool count: {Info.Hub.Ledy.Pool.Count}" : "Failed to reload from folder.";
@@ -238,8 +238,8 @@ public class TwitchBot<T> where T : PKM, new()
 
             case "tt":
                 return Info.Hub.Queues.Info.ToggleQueue()
-                    ? "Users are now able to join the trade queue."
-                    : "Changed queue settings: **Users CANNOT join the queue until it is turned back on.**";
+                    ? "Benutzer können jetzt die Warteliste betreten."
+                    : "Wartelisteeinstellungen geändert: **Benutzer können die Warteliste NICHT betreten bis sie wieder aktiviert wurde.**";
 
             case "tcu":
                 return TwitchCommandsHelper<T>.ClearTrade(args);
@@ -255,7 +255,7 @@ public class TwitchBot<T> where T : PKM, new()
         {
             var removed = QueuePool[0];
             QueuePool.RemoveAt(0); // First in, first out
-            client.SendMessage(Channel, $"Removed @{removed.DisplayName} ({(Species)removed.Entity.Species}) from the waiting list: stale request.");
+            client.SendMessage(Channel, $"Habe @{removed.DisplayName} ({(Species)removed.Entity.Species}) von der Warteliste entfernt: stale request.");
         }
 
         var user = QueuePool.FindLast(q => q.UserName == e.WhisperMessage.Username);

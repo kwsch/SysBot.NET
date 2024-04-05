@@ -214,19 +214,19 @@ public sealed class SysCord<T> where T : PKM, new()
         var mgr = Manager;
         if (!mgr.CanUseCommandUser(msg.Author.Id))
         {
-            await msg.Channel.SendMessageAsync("You are not permitted to use this command.").ConfigureAwait(false);
+            await msg.Channel.SendMessageAsync("Du hast keine Erlaubnis diesen Befehl zu benutzen.").ConfigureAwait(false);
             return true;
         }
         if (!mgr.CanUseCommandChannel(msg.Channel.Id) && msg.Author.Id != mgr.Owner)
         {
             if (Hub.Config.Discord.ReplyCannotUseCommandInChannel)
-                await msg.Channel.SendMessageAsync("You can't use that command here.").ConfigureAwait(false);
+                await msg.Channel.SendMessageAsync("Dieser Befehl kann hier nicht benutzt werden.").ConfigureAwait(false);
             return true;
         }
 
         // Execute the command. (result does not indicate a return value, 
         // rather an object stating if the command executed successfully).
-        var guild = msg.Channel is SocketGuildChannel g ? g.Guild.Name : "Unknown Guild";
+        var guild = msg.Channel is SocketGuildChannel g ? g.Guild.Name : "Unbekannter Server";
         await Log(new LogMessage(LogSeverity.Info, "Command", $"Executing command from {guild}#{msg.Channel.Name}:@{msg.Author.Username}. Content: {msg}")).ConfigureAwait(false);
         var result = await _commands.ExecuteAsync(context, pos, _services).ConfigureAwait(false);
 
@@ -297,7 +297,7 @@ public sealed class SysCord<T> where T : PKM, new()
         TradeStartModule<T>.RestoreTradeStarting(_client);
 
         // Don't let it load more than once in case of Discord hiccups.
-        await Log(new LogMessage(LogSeverity.Info, "LoadLoggingAndEcho()", "Logging and Echo channels loaded!")).ConfigureAwait(false);
+        await Log(new LogMessage(LogSeverity.Info, "LoadLoggingAndEcho()", "Logging and Ausgabe Kanaele geladen!")).ConfigureAwait(false);
         MessageChannelsLoaded = true;
 
         var game = Hub.Config.Discord.BotGameStatus;

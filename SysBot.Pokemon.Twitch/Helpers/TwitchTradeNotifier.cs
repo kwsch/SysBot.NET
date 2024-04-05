@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.Linq;
@@ -40,7 +40,7 @@ public class TwitchTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new()
     public void TradeCanceled(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeResult msg)
     {
         OnFinish?.Invoke(routine);
-        var line = $"@{info.Trainer.TrainerName}: Trade canceled, {msg}";
+        var line = $"@{info.Trainer.TrainerName}: Trade abgebrochen, {msg}";
         LogUtil.LogText(line);
         SendMessage(line, Settings.TradeCanceledDestination);
     }
@@ -49,7 +49,7 @@ public class TwitchTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new()
     {
         OnFinish?.Invoke(routine);
         var tradedToUser = Data.Species;
-        var message = $"@{info.Trainer.TrainerName}: " + (tradedToUser != 0 ? $"Trade finished. Enjoy your {(Species)tradedToUser}!" : "Trade finished!");
+        var message = $"@{info.Trainer.TrainerName}: " + (tradedToUser != 0 ? $"Handel abgeschlossen. Viel spass mit deinem {(Species)tradedToUser}!" : "Handel beendet!");
         LogUtil.LogText(message);
         SendMessage(message, Settings.TradeFinishDestination);
     }
@@ -57,10 +57,10 @@ public class TwitchTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new()
     public void TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
     {
         var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";
-        var msg = $"@{info.Trainer.TrainerName} (ID: {info.ID}): Initializing trade{receive} with you. Please be ready. Use the code you whispered me to search!";
+        var msg = $"@{info.Trainer.TrainerName} (ID: {info.ID}): Starte Handel{receive} mit dir. Bitte sei Bereit. Benutze den Code den du mir zugeflüstert hast!";
         var dest = Settings.TradeStartDestination;
         if (dest == TwitchMessageDestination.Whisper)
-            msg += $" Your trade code is: {info.Code:0000 0000}";
+            msg += $" Dein HandelsCode ist: {info.Code:0000 0000}";
         LogUtil.LogText(msg);
         SendMessage(msg, dest);
     }
@@ -69,12 +69,12 @@ public class TwitchTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new()
     {
         var name = Info.TrainerName;
         var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", @{name}";
-        var message = $"I'm waiting for you{trainer}! My IGN is {routine.InGameName}.";
+        var message = $"Ich warte auf dich, {trainer}! Mein IGN ist {routine.InGameName}.";
         var dest = Settings.TradeSearchDestination;
         if (dest == TwitchMessageDestination.Channel)
-            message += " Use the code you whispered me to search!";
+            message += " Benutze den Code den du mir zugeflüstert hast!";
         else if (dest == TwitchMessageDestination.Whisper)
-            message += $" Your trade code is: {info.Code:0000 0000}";
+            message += $" Dein HandelsCode ist: {info.Code:0000 0000}";
         LogUtil.LogText(message);
         SendMessage($"@{info.Trainer.TrainerName} {message}", dest);
     }
