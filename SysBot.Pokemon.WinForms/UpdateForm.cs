@@ -1,124 +1,138 @@
 using System;
-using System.Windows.Forms;
 using System.Diagnostics;
-using SysBot.Pokemon.WinForms;
 using System.Drawing;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
-public class UpdateForm : Form
+namespace SysBot.Pokemon.WinForms
 {
-    private Button buttonDownload;
-    private Label labelUpdateInfo;
-    Label labelChangelogTitle = new Label();
-    private TextBox textBoxChangelog;
-    private bool isUpdateRequired;
-
-    public UpdateForm(bool updateRequired)
+    public class UpdateForm : Form
     {
-        isUpdateRequired = updateRequired;
-        InitializeComponent();
-        Load += async (sender, e) => await FetchAndDisplayChangelog();
-        if (isUpdateRequired)
+        private Button buttonDownload;
+        private Label labelUpdateInfo;
+        private readonly Label labelChangelogTitle = new();
+        private TextBox textBoxChangelog;
+        private readonly bool isUpdateRequired;
+        private readonly string newVersion;
+
+        public UpdateForm(bool updateRequired, string newVersion)
         {
-            labelUpdateInfo.Text = "A required update is available. You must update to continue using this application.";
-            // Optionally, you can also disable the close button on the form if the update is required
-            ControlBox = false;
+            isUpdateRequired = updateRequired;
+            this.newVersion = newVersion;
+            InitializeComponent();
+            Load += async (sender, e) => await FetchAndDisplayChangelog();
+            if (isUpdateRequired)
+            {
+                labelUpdateInfo.Text = "A required update is available. You must update to continue using this application.";
+                // Optionally, you can also disable the close button on the form if the update is required
+                ControlBox = false;
+            }
         }
-    }
 
-    private void InitializeComponent()
-    {
-        labelUpdateInfo = new Label();
-        buttonDownload = new Button();
-
-        // Update the size of the form
-        this.ClientSize = new System.Drawing.Size(500, 300); // New width and height
-
-        // labelUpdateInfo
-        labelUpdateInfo.AutoSize = true;
-        labelUpdateInfo.Location = new System.Drawing.Point(12, 20); // Adjust as needed
-        labelUpdateInfo.Size = new System.Drawing.Size(460, 60); // Adjust as needed
-        labelUpdateInfo.Text = "A new version is available. Please download the latest version.";
-
-        // buttonDownload
-        buttonDownload.Size = new System.Drawing.Size(130, 23); // Set the button size if not already set
-        int buttonX = (this.ClientSize.Width - buttonDownload.Size.Width) / 2; // Calculate X position
-        int buttonY = this.ClientSize.Height - buttonDownload.Size.Height - 20; // Calculate Y position, 20 pixels from the bottom
-        buttonDownload.Location = new System.Drawing.Point(buttonX, buttonY);
-        buttonDownload.Text = "Download Update";
-        buttonDownload.Click += ButtonDownload_Click;
-
-        // labelChangelogTitle
-        labelChangelogTitle.AutoSize = true;
-        labelChangelogTitle.Location = new System.Drawing.Point(10, 60); // Set this Y position above textBoxChangelog
-        labelChangelogTitle.Size = new System.Drawing.Size(70, 15); // Set an appropriate size or leave it to AutoSize
-        labelChangelogTitle.Font = new Font(labelChangelogTitle.Font.FontFamily, 11, FontStyle.Bold);
-        labelChangelogTitle.Text = "Changelog:";
-
-        // textBoxChangelog
-        // Adjust the size and position to fit the new form dimensions
-        textBoxChangelog = new TextBox
+        private void InitializeComponent()
         {
-            Multiline = true,
-            ReadOnly = true,
-            ScrollBars = ScrollBars.Vertical,
-            Location = new Point(10, 90), // Adjust as needed
-            Size = new Size(480, 150), // Adjust as needed to fit the new form size
-            Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Bottom | AnchorStyles.Right
-        };
+            labelUpdateInfo = new Label();
+            buttonDownload = new Button();
 
-        // UpdateForm
-        this.Controls.Add(this.labelUpdateInfo);
-        this.Controls.Add(this.buttonDownload);
-        this.Controls.Add(labelChangelogTitle);
-        this.Controls.Add(this.textBoxChangelog);
-        this.FormBorderStyle = FormBorderStyle.FixedDialog;
-        this.MaximizeBox = false;
-        this.MinimizeBox = false;
-        this.Name = "UpdateForm";
-        this.StartPosition = FormStartPosition.CenterScreen;
-        this.Text = "Update Available";
-    }
+            // Update the size of the form
+            ClientSize = new Size(500, 300); // New width and height
 
-    private async Task FetchAndDisplayChangelog()
-    {
-        UpdateChecker updateChecker = new UpdateChecker();
-        string changelog = await updateChecker.FetchChangelogAsync();
-        textBoxChangelog.Text = changelog;
-    }
-    private void ButtonDownload_Click(object sender, EventArgs e)
-    {
-        StartDownloadProcess();
-        if (isUpdateRequired)
-        {
-            Application.Exit();
+            // labelUpdateInfo
+            labelUpdateInfo.AutoSize = true;
+            labelUpdateInfo.Location = new Point(12, 20); // Adjust as needed
+            labelUpdateInfo.Size = new Size(460, 60); // Adjust as needed
+            labelUpdateInfo.Text = $"A new version is available. Please download the latest version.";
+
+            // buttonDownload
+            buttonDownload.Size = new Size(130, 23); // Set the button size if not already set
+            int buttonX = (ClientSize.Width - buttonDownload.Size.Width) / 2; // Calculate X position
+            int buttonY = ClientSize.Height - buttonDownload.Size.Height - 20; // Calculate Y position, 20 pixels from the bottom
+            buttonDownload.Location = new Point(buttonX, buttonY);
+            buttonDownload.Text = $"Download Update";
+            buttonDownload.Click += ButtonDownload_Click;
+
+            // labelChangelogTitle
+            labelChangelogTitle.AutoSize = true;
+            labelChangelogTitle.Location = new Point(10, 60); // Set this Y position above textBoxChangelog
+            labelChangelogTitle.Size = new Size(70, 15); // Set an appropriate size or leave it to AutoSize
+            labelChangelogTitle.Font = new Font(labelChangelogTitle.Font.FontFamily, 11, FontStyle.Bold);
+            labelChangelogTitle.Text = $"Changelog ({newVersion}):";
+
+            // textBoxChangelog
+            // Adjust the size and position to fit the new form dimensions
+            textBoxChangelog = new TextBox
+            {
+                Multiline = true,
+                ReadOnly = true,
+                ScrollBars = ScrollBars.Vertical,
+                Location = new Point(10, 90), // Adjust as needed
+                Size = new Size(480, 150), // Adjust as needed to fit the new form size
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Bottom | AnchorStyles.Right
+            };
+
+            // UpdateForm
+            Controls.Add(labelUpdateInfo);
+            Controls.Add(buttonDownload);
+            Controls.Add(labelChangelogTitle);
+            Controls.Add(textBoxChangelog);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            MinimizeBox = false;
+            Name = "UpdateForm";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = $"Update Available ({newVersion})";
         }
-        else
-        {
-            MessageBox.Show("An update is available. Please close this program and replace it with the one that just downloaded.", "Update Instructions", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-    }
 
-    protected override void OnFormClosing(FormClosingEventArgs e)
-    {
-        base.OnFormClosing(e);
-        if (isUpdateRequired && e.CloseReason == CloseReason.UserClosing)
+        private async Task FetchAndDisplayChangelog()
         {
-            // Prevent the form from closing
-            e.Cancel = true;
-            MessageBox.Show("This update is required. Please download and install the new version to continue using the application.", "Update Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            _ = new UpdateChecker();
+            string changelog = await UpdateChecker.FetchChangelogAsync();
+            textBoxChangelog.Text = changelog;
         }
-    }
 
-    private void StartDownloadProcess()
-    {
-        Main.IsUpdating = true;
-        // Start the download by opening the URL in the default web browser
-        Process.Start(new ProcessStartInfo
+        private async void ButtonDownload_Click(object sender, EventArgs e)
         {
-            FileName = "https://genpkm.com/tradebot/SysBot.exe",
-            UseShellExecute = true
-        });
+            _ = new UpdateChecker();
+            string downloadUrl = await UpdateChecker.FetchDownloadUrlAsync();
+            if (!string.IsNullOrWhiteSpace(downloadUrl))
+            {
+                StartDownloadProcess(downloadUrl);
+            }
+            else
+            {
+                MessageBox.Show("Failed to fetch the download URL. Please check your internet connection and try again.", "Download Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            if (isUpdateRequired)
+            {
+                Application.Exit();
+            }
+            else
+            {
+                MessageBox.Show("An update is available. Please close this program and replace it with the one that just downloaded.", "Update Instructions", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+            if (isUpdateRequired && e.CloseReason == CloseReason.UserClosing)
+            {
+                // Prevent the form from closing
+                e.Cancel = true;
+                MessageBox.Show("This update is required. Please download and install the new version to continue using the application.", "Update Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private static void StartDownloadProcess(string downloadUrl)
+        {
+            Main.IsUpdating = true;
+            // Start the download by opening the URL in the default web browser
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = downloadUrl,
+                UseShellExecute = true
+            });
+        }
     }
 }
-

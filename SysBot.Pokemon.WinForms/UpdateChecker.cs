@@ -1,68 +1,112 @@
+using Newtonsoft.Json;
+using SysBot.Pokemon.Helpers;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using SysBot.Pokemon.Helpers;
 
-public class UpdateChecker
+namespace SysBot.Pokemon.WinForms
 {
-    private const string VersionUrl = "https://genpkm.com/tradebot/version.txt";
-
-    // This method is now updated to return a tuple containing version and required flag
-    public async Task<(bool UpdateAvailable, bool UpdateRequired)> CheckForUpdatesAsync()
+    public class UpdateChecker
     {
-        var versionInfo = await FetchVersionInfoAsync();
-        bool updateAvailable = !string.IsNullOrEmpty(versionInfo.Version) && versionInfo.Version != TradeBot.Version;
-        bool updateRequired = versionInfo.UpdateRequired;
+        private const string RepositoryOwner = "bdawg1989";
+        private const string RepositoryName = "MergeBot";
 
-        if (updateAvailable)
+        public static async Task<(bool UpdateAvailable, bool UpdateRequired, string NewVersion)> CheckForUpdatesAsync()
         {
-            UpdateForm updateForm = new UpdateForm(updateRequired); // Pass the required update flag to the form
-            updateForm.ShowDialog();
+            ReleaseInfo latestRelease = await FetchLatestReleaseAsync();
+
+            bool updateAvailable = latestRelease != null && latestRelease.TagName != TradeBot.Version;
+            bool updateRequired = latestRelease?.Prerelease == false && IsUpdateRequired(latestRelease.Body);
+            string? newVersion = latestRelease?.TagName;
+
+            if (updateAvailable)
+            {
+                UpdateForm updateForm = new(updateRequired, newVersion);
+                updateForm.ShowDialog();
+            }
+
+            return (updateAvailable, updateRequired, newVersion);
         }
 
-        return (updateAvailable, updateRequired);
-    }
-
-    // Fetch and parse the version information
-    private async Task<(string Version, bool UpdateRequired)> FetchVersionInfoAsync()
-    {
-        using (var client = new HttpClient())
+        public static async Task<string> FetchChangelogAsync()
         {
+            ReleaseInfo latestRelease = await FetchLatestReleaseAsync();
+
+            if (latestRelease == null)
+                return "Failed to fetch the latest release information.";
+
+            return latestRelease.Body;
+        }
+
+        public static async Task<string?> FetchDownloadUrlAsync()
+        {
+            ReleaseInfo latestRelease = await FetchLatestReleaseAsync();
+
+            if (latestRelease == null)
+                return null;
+
+            string downloadUrl = latestRelease.Assets.FirstOrDefault(a => a.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))?.BrowserDownloadUrl;
+
+            return downloadUrl;
+        }
+
+        private static async Task<ReleaseInfo?> FetchLatestReleaseAsync()
+        {
+            using var client = new HttpClient();
             try
             {
-                string content = await client.GetStringAsync(VersionUrl);
-                var lines = content.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                var versionLine = lines[0].Trim();
-                var requiredLine = lines.Length > 1 ? lines[1].Trim() : "";
-                var required = requiredLine.Equals("required=yes", StringComparison.OrdinalIgnoreCase);
+                // Add a custom header to identify the request
+                client.DefaultRequestHeaders.Add("User-Agent", "MergeBot");
 
-                return (versionLine, required);
+                string releasesUrl = $"http://api.github.com/repos/{RepositoryOwner}/{RepositoryName}/releases/latest";
+                HttpResponseMessage response = await client.GetAsync(releasesUrl);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return null;
+                }
+
+                string jsonContent = await response.Content.ReadAsStringAsync();
+                ReleaseInfo release = JsonConvert.DeserializeObject<ReleaseInfo>(jsonContent);
+
+                return release;
             }
             catch (Exception)
             {
-                // Handle exceptions (e.g., network errors)
-                return (null, false);
+                return null;
             }
         }
-    }
 
-    // Add a method to fetch the changelog
-    public async Task<string> FetchChangelogAsync()
-    {
-        using (var client = new HttpClient())
+        private static bool IsUpdateRequired(string changelogBody)
         {
-            try
-            {
-                string changelog = await client.GetStringAsync("https://genpkm.com/tradebot/changelog.txt");
-                return changelog.Trim();
-            }
-            catch (Exception)
-            {
-                // Handle exceptions (e.g., network errors)
-                return "Changelog is not available at the moment.";
-            }
+            return !string.IsNullOrWhiteSpace(changelogBody) &&
+                   changelogBody.Contains("Required = Yes", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private class ReleaseInfo
+        {
+            [JsonProperty("tag_name")]
+            public string? TagName { get; set; }
+
+            [JsonProperty("prerelease")]
+            public bool Prerelease { get; set; }
+
+            [JsonProperty("assets")]
+            public List<AssetInfo>? Assets { get; set; }
+
+            [JsonProperty("body")]
+            public string? Body { get; set; }
+        }
+
+        private class AssetInfo
+        {
+            [JsonProperty("name")]
+            public string? Name { get; set; }
+
+            [JsonProperty("browser_download_url")]
+            public string? BrowserDownloadUrl { get; set; }
         }
     }
 }
-
