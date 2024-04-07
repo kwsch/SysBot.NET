@@ -12,36 +12,36 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     private const string TradeConfig = nameof(TradeConfig);
     private const string Dumping = nameof(Dumping);
     private const string Counts = nameof(Counts);
-    public override string ToString() => "Trade Bot Settings";
+    public override string ToString() => "Trade Bot Einstellungen";
 
-    [Category(TradeConfig), Description("Time to wait for a trade partner in seconds.")]
+    [Category(TradeConfig), Description("Zeit in Sekunden um auf einen Handelspartner zu warten.")]
     public int TradeWaitTime { get; set; } = 30;
 
-    [Category(TradeConfig), Description("Max amount of time in seconds pressing A to wait for a trade to process.")]
+    [Category(TradeConfig), Description("Maximale Zeitspanne in Sekunden, die beim Drücken von A gewartet wird, bis ein Handel abgewickelt ist.")]
     public int MaxTradeConfirmTime { get; set; } = 25;
 
-    [Category(TradeCode), Description("Minimum Link Code.")]
+    [Category(TradeCode), Description("Minimum Link-Code.")]
     public int MinTradeCode { get; set; } = 8180;
 
-    [Category(TradeCode), Description("Maximum Link Code.")]
+    [Category(TradeCode), Description("Maximum Link-Code.")]
     public int MaxTradeCode { get; set; } = 8199;
 
-    [Category(Dumping), Description("Dump Trade: Dumping routine will stop after a maximum number of dumps from a single user.")]
+    [Category(Dumping), Description("Dump-Trade: Die Dumping-Routine wird nach einer maximalen Anzahl von Dumps eines einzelnen Benutzers beendet.")]
     public int MaxDumpsPerTrade { get; set; } = 20;
 
-    [Category(Dumping), Description("Dump Trade: Dumping routine will stop after spending x seconds in trade.")]
+    [Category(Dumping), Description("Dump-Trade: Die Dumping-Routine wird nach x Sekunden im Handel beendet.")]
     public int MaxDumpTradeTime { get; set; } = 180;
 
-    [Category(Dumping), Description("Dump Trade: If enabled, Dumping routine will output legality check information to the user.")]
+    [Category(Dumping), Description("Dump-Trade: Wenn diese Option aktiviert ist, gibt die Dumping-Routine Informationen zur Legalitätsprüfung an den Benutzer aus.")]
     public bool DumpTradeLegalityCheck { get; set; } = true;
 
-    [Category(TradeConfig), Description("When enabled, the screen will be turned off during normal bot loop operation to save power.")]
+    [Category(TradeConfig), Description("Wenn diese Funktion aktiviert ist, wird der Bildschirm während des normalen Bot-Loop-Betriebs ausgeschaltet, um Strom zu sparen.")]
     public bool ScreenOff { get; set; }
 
-    [Category(TradeConfig), Description("When enabled, disallows requesting Pokémon from outside of their original context.")]
+    [Category(TradeConfig), Description("Wenn diese Option aktiviert ist, wird das Anfordern von Pokémon von außerhalb ihres ursprünglichen Kontexts nicht zugelassen.")]
     public bool DisallowNonNatives { get; set; } = true;
 
-    [Category(TradeConfig), Description("When enabled, disallows requesting Pokémon if they have a HOME Tracker.")]
+    [Category(TradeConfig), Description("Wenn diese Option aktiviert ist, können Pokémon nicht angefordert werden, wenn sie einen HOME-Tracker haben.")]
     public bool DisallowTracked { get; set; } = true;
 
     /// <summary>
@@ -56,49 +56,49 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     private int _completedClones;
     private int _completedDumps;
 
-    [Category(Counts), Description("Completed Surprise Trades")]
+    [Category(Counts), Description("Abgeschlossene Überraschungstrades")]
     public int CompletedSurprise
     {
         get => _completedSurprise;
         set => _completedSurprise = value;
     }
 
-    [Category(Counts), Description("Completed Link Trades (Distribution)")]
+    [Category(Counts), Description("Abgeschlossene Link-Trades (Verteilung)")]
     public int CompletedDistribution
     {
         get => _completedDistribution;
         set => _completedDistribution = value;
     }
 
-    [Category(Counts), Description("Completed Link Trades (Specific User)")]
+    [Category(Counts), Description("Abgeschlossene Link-Trades (bestimmter Benutzer)")]
     public int CompletedTrades
     {
         get => _completedTrades;
         set => _completedTrades = value;
     }
 
-    [Category(Counts), Description("Completed Seed Check Trades")]
+    [Category(Counts), Description("Abgeschlossene Seed-Check-Transaktionen")]
     public int CompletedSeedChecks
     {
         get => _completedSeedChecks;
         set => _completedSeedChecks = value;
     }
 
-    [Category(Counts), Description("Completed Clone Trades (Specific User)")]
+    [Category(Counts), Description("Abgeschlossene Clone Trades (Spezifischer Benutzer)")]
     public int CompletedClones
     {
         get => _completedClones;
         set => _completedClones = value;
     }
 
-    [Category(Counts), Description("Completed Dump Trades (Specific User)")]
+    [Category(Counts), Description("Abgeschlossene Dump Trades (spezifischer Benutzer)")]
     public int CompletedDumps
     {
         get => _completedDumps;
         set => _completedDumps = value;
     }
 
-    [Category(Counts), Description("When enabled, the counts will be emitted when a status check is requested.")]
+    [Category(Counts), Description("Wenn diese Option aktiviert ist, werden die Zählungen bei der Anforderung einer Statusprüfung ausgegeben.")]
     public bool EmitCountsOnStatusCheck { get; set; }
 
     public void AddCompletedTrade() => Interlocked.Increment(ref _completedTrades);
@@ -121,8 +121,8 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         if (CompletedTrades != 0)
             yield return $"Link Trades: {CompletedTrades}";
         if (CompletedDistribution != 0)
-            yield return $"Distribution Trades: {CompletedDistribution}";
+            yield return $"Verteilungs-Trades: {CompletedDistribution}";
         if (CompletedSurprise != 0)
-            yield return $"Surprise Trades: {CompletedSurprise}";
+            yield return $"Überraschungs-Trades: {CompletedSurprise}";
     }
 }

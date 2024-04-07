@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace SysBot.Pokemon;
 
@@ -11,16 +11,16 @@ public abstract class BaseConfig
     protected const string Operation = nameof(Operation);
     private const string Debug = nameof(Debug);
 
-    [Category(FeatureToggle), Description("When enabled, the bot will press the B button occasionally when it is not processing anything (to avoid sleep).")]
+    [Category(FeatureToggle), Description("Wenn diese Funktion aktiviert ist, drückt der Bot gelegentlich die B-Taste, wenn er gerade nichts verarbeitet (um den Schlaf zu vermeiden).")]
     public bool AntiIdle { get; set; }
 
-    [Category(FeatureToggle), Description("Enables text logs. Restart to apply changes.")]
+    [Category(FeatureToggle), Description("Aktiviert Textprotokolle. Starten Sie neu, um die Änderungen zu übernehmen.")]
     public bool LoggingEnabled { get; set; } = true;
 
-    [Category(FeatureToggle), Description("Maximum number of old text log files to retain. Set this to <= 0 to disable log cleanup. Restart to apply changes.")]
+    [Category(FeatureToggle), Description("Maximale Anzahl der alten Textprotokolldateien, die aufbewahrt werden sollen. Setzen Sie diesen Wert auf <= 0, um die Protokollbereinigung zu deaktivieren. Starten Sie neu, um die Änderungen zu übernehmen.")]
     public int MaxArchiveFiles { get; set; } = 14;
 
-    [Category(Debug), Description("Skips creating bots when the program is started; helpful for testing integrations.")]
+    [Category(Debug), Description("Überspringt das erstellen von Bots wenn die App gestartet wird; hilfreich für das Testen von Integrationen.")]
     public bool SkipConsoleBotCreation { get; set; }
 
     [Category(Operation)]

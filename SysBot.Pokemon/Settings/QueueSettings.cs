@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
@@ -10,71 +10,71 @@ public class QueueSettings
     private const string UserBias = nameof(UserBias);
     private const string TimeBias = nameof(TimeBias);
     private const string QueueToggle = nameof(QueueToggle);
-    public override string ToString() => "Queue Joining Settings";
+    public override string ToString() => "Einstellungen für Warteschlange";
 
     // General
 
-    [Category(FeatureToggle), Description("Toggles if users can join the queue.")]
+    [Category(FeatureToggle), Description("Schaltet um, ob Benutzer der Warteschlange beitreten können.")]
     public bool CanQueue { get; set; } = true;
 
-    [Category(FeatureToggle), Description("Prevents adding users if there are this many users in the queue already.")]
+    [Category(FeatureToggle), Description("Verhindert das Hinzufügen von Benutzern, wenn sich bereits so viele Benutzer in der Warteschlange befinden.")]
     public int MaxQueueCount { get; set; } = 999;
 
-    [Category(FeatureToggle), Description("Allows users to dequeue while being traded.")]
+    [Category(FeatureToggle), Description("Ermöglicht es Benutzern, die Warteschlange zu verlassen, während sie gehandelt werden.")]
     public bool CanDequeueIfProcessing { get; set; }
 
-    [Category(FeatureToggle), Description("Determines how Flex Mode will process the queues.")]
+    [Category(FeatureToggle), Description("Legt fest, wie der Flex-Modus die Warteschlangen verarbeiten soll.")]
     public FlexYieldMode FlexMode { get; set; } = FlexYieldMode.Weighted;
 
-    [Category(FeatureToggle), Description("Determines when the queue is turned on and off.")]
+    [Category(FeatureToggle), Description("Legt fest, wann die Warteschlange ein- und ausgeschaltet wird.")]
     public QueueOpening QueueToggleMode { get; set; } = QueueOpening.Threshold;
 
     // Queue Toggle
 
-    [Category(QueueToggle), Description("Threshold Mode: Count of users that will cause the queue to open.")]
+    [Category(QueueToggle), Description("Schwellenwert-Modus: Anzahl der Benutzer, bei denen die Warteschlange geöffnet wird.")]
     public int ThresholdUnlock { get; set; }
 
-    [Category(QueueToggle), Description("Threshold Mode: Count of users that will cause the queue to close.")]
+    [Category(QueueToggle), Description("Schwellenwert-Modus: Anzahl der Benutzer, bei denen die Warteschlange geschlossen wird.")]
     public int ThresholdLock { get; set; } = 30;
 
-    [Category(QueueToggle), Description("Scheduled Mode: Seconds of being open before the queue locks.")]
+    [Category(QueueToggle), Description("Geplanter Modus: Sekunden, die die Warteschlange offen ist, bevor sie gesperrt wird.")]
     public int IntervalOpenFor { get; set; } = 5 * 60;
 
-    [Category(QueueToggle), Description("Scheduled Mode: Seconds of being closed before the queue unlocks.")]
+    [Category(QueueToggle), Description("Geplanter Modus: Sekunden, in denen die Warteschlange geschlossen ist, bevor sie entsperrt wird.")]
     public int IntervalCloseFor { get; set; } = 15 * 60;
 
     // Flex Users
 
-    [Category(UserBias), Description("Biases the Trade Queue's weight based on how many users are in the queue.")]
+    [Category(UserBias), Description("Beeinflusst die Gewichtung der Handelswarteschlange, je nachdem, wie viele Benutzer sich in der Warteschlange befinden.")]
     public int YieldMultCountTrade { get; set; } = 100;
 
-    [Category(UserBias), Description("Biases the Seed Check Queue's weight based on how many users are in the queue.")]
+    [Category(UserBias), Description("Beeinflusst die Gewichtung der Seed-Check-Warteschlange, je nachdem, wie viele Benutzer sich in der Warteschlange befinden.")]
     public int YieldMultCountSeedCheck { get; set; } = 100;
 
-    [Category(UserBias), Description("Biases the Clone Queue's weight based on how many users are in the queue.")]
+    [Category(UserBias), Description("Die Gewichtung der Klon-Warteschlange richtet sich danach, wie viele Benutzer sich in der Warteschlange befinden.")]
     public int YieldMultCountClone { get; set; } = 100;
 
-    [Category(UserBias), Description("Biases the Dump Queue's weight based on how many users are in the queue.")]
+    [Category(UserBias), Description("Beeinflusst die Gewichtung der Dump Warteschlange auf der Grundlage der Anzahl der Benutzer in der Warteschlange.")]
     public int YieldMultCountDump { get; set; } = 100;
 
     // Flex Time
 
-    [Category(TimeBias), Description("Determines whether the weight should be added or multiplied to the total weight.")]
+    [Category(TimeBias), Description("Legt fest, ob das Gewicht zum Gesamtgewicht addiert oder multipliziert werden soll.")]
     public FlexBiasMode YieldMultWait { get; set; } = FlexBiasMode.Multiply;
 
-    [Category(TimeBias), Description("Checks time elapsed since the user joined the Trade queue, and increases the queue's weight accordingly.")]
+    [Category(TimeBias), Description("Überprüft die Zeit, die seit dem Beitritt des Benutzers zur Warteschlange \"Handel\" verstrichen ist, und erhöht die Gewichtung der Warteschlange entsprechend.")]
     public int YieldMultWaitTrade { get; set; } = 1;
 
-    [Category(TimeBias), Description("Checks time elapsed since the user joined the Seed Check queue, and increases the queue's weight accordingly.")]
+    [Category(TimeBias), Description("Überprüft die Zeit, die seit dem Beitritt des Benutzers zur Seed Check-Warteschlange verstrichen ist, und erhöht die Gewichtung der Warteschlange entsprechend.")]
     public int YieldMultWaitSeedCheck { get; set; } = 1;
 
-    [Category(TimeBias), Description("Checks time elapsed since the user joined the Clone queue, and increases the queue's weight accordingly.")]
+    [Category(TimeBias), Description("Überprüft die Zeit, die seit dem Beitritt des Benutzers zur Seed Check-Warteschlange verstrichen ist, und erhöht die Gewichtung der Warteschlange entsprechend.")]
     public int YieldMultWaitClone { get; set; } = 1;
 
-    [Category(TimeBias), Description("Checks time elapsed since the user joined the Dump queue, and increases the queue's weight accordingly.")]
+    [Category(TimeBias), Description("Überprüft die Zeit, die seit dem Beitritt des Benutzers zur Dump-Warteschlange verstrichen ist, und erhöht die Gewichtung der Warteschlange entsprechend.")]
     public int YieldMultWaitDump { get; set; } = 1;
 
-    [Category(TimeBias), Description("Multiplies the amount of users in queue to give an estimate of how much time it will take until the user is processed.")]
+    [Category(TimeBias), Description("Multipliziert die Anzahl der Benutzer in der Warteschlange, um eine Schätzung der Zeit zu erhalten, die bis zur Bearbeitung des Benutzers vergehen wird.")]
     public float EstimatedDelayFactor { get; set; } = 1.1f;
 
     private int GetCountBias(PokeTradeType type) => type switch
