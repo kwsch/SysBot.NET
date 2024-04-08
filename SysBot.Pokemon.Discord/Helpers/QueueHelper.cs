@@ -240,9 +240,9 @@ public static class QueueHelper<T> where T : PKM, new()
         {
             userDetailsText += $" | OT: {tradeDetails.OT}";
         }
-        if (userDetails?.TID != null)
+        if (userDetails?.TID != 0)
         {
-            userDetailsText += $" | TID: {tradeDetails.TID}";
+            userDetailsText += $" | TID: {userDetails.TID:D6}";
         }
 
         footerText += $"\n{userDetailsText}\n{etaMessage}";
