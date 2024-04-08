@@ -12,9 +12,8 @@ public class TradeCodeStorage
     public class TradeCodeDetails
     {
         public int Code { get; set; }
-        public string? OT { get; set; }
+        public string OT { get; set; }
         public int TID { get; set; }
-        public int SID { get; set; }
         public int TradeCount { get; set; }
     }
 
@@ -26,14 +25,13 @@ public class TradeCodeStorage
 
     public TradeCodeStorage()
     {
-#pragma warning disable IDE0028 // Simplify collection initialization
-        _tradeCodeDetails = new Dictionary<ulong, TradeCodeDetails>();
-#pragma warning restore IDE0028 // Simplify collection initialization
         LoadFromFile();
     }
 
     public int GetTradeCode(ulong trainerID)
     {
+        LoadFromFile();
+
         if (_tradeCodeDetails.TryGetValue(trainerID, out var details))
         {
             details.TradeCount++;
@@ -53,15 +51,6 @@ public class TradeCodeStorage
         return settings.GetRandomTradeCode();
     }
 
-    public TradeCodeDetails? GetTradeDetails(ulong trainerID)
-    {
-        if (_tradeCodeDetails.TryGetValue(trainerID, out var details))
-        {
-            return details;
-        }
-        return null;
-    }
-
     private void LoadFromFile()
     {
         if (File.Exists(FileName))
@@ -71,14 +60,14 @@ public class TradeCodeStorage
         }
         else
         {
-#pragma warning disable IDE0028 // Simplify collection initialization
             _tradeCodeDetails = new Dictionary<ulong, TradeCodeDetails>();
-#pragma warning restore IDE0028 // Simplify collection initialization
         }
     }
 
     public bool DeleteTradeCode(ulong trainerID)
     {
+        LoadFromFile();
+
         if (_tradeCodeDetails.Remove(trainerID))
         {
             SaveToFile();
@@ -95,6 +84,8 @@ public class TradeCodeStorage
 
     public int GetTradeCount(ulong trainerID)
     {
+        LoadFromFile();
+
         if (_tradeCodeDetails.TryGetValue(trainerID, out var details))
         {
             return details.TradeCount;
@@ -102,13 +93,25 @@ public class TradeCodeStorage
         return 0;
     }
 
+    public TradeCodeDetails GetTradeDetails(ulong trainerID)
+    {
+        LoadFromFile();
+
+        if (_tradeCodeDetails.TryGetValue(trainerID, out var details))
+        {
+            return details;
+        }
+        return null;
+    }
+
     public void UpdateTradeDetails(ulong trainerID, string ot, int tid)
     {
+        LoadFromFile(); 
+
         if (_tradeCodeDetails.TryGetValue(trainerID, out var details))
         {
             details.OT = ot;
             details.TID = tid;
-            // details.SID = sid;
             SaveToFile();
         }
     }

@@ -295,11 +295,15 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7} (ID: {trainerNID}");
 
         var tradeCodeStorage = new TradeCodeStorage();
-        int tid7 = int.Parse(tradePartner.TID7);
-        // int sid7 = int.Parse(tradePartner.SID7); // uncomment if you want to also store SID
-        tradeCodeStorage.UpdateTradeDetails(poke.Trainer.ID, tradePartner.TrainerName, tid7);
-        // or 
-        // tradeCodeStorage.UpdateTradeDetails(poke.Trainer.ID, tradePartner.TrainerName, tid7, sid7); // if you want to store SID
+        var existingTradeDetails = tradeCodeStorage.GetTradeDetails(poke.Trainer.ID);
+
+        bool shouldUpdateOT = existingTradeDetails?.OT != tradePartner.TrainerName;
+        bool shouldUpdateTID = existingTradeDetails?.TID != int.Parse(tradePartner.TID7);
+
+        if (shouldUpdateOT || shouldUpdateTID)
+        {
+            tradeCodeStorage.UpdateTradeDetails(poke.Trainer.ID, shouldUpdateOT ? tradePartner.TrainerName : existingTradeDetails.OT, shouldUpdateTID ? int.Parse(tradePartner.TID7) : existingTradeDetails.TID);
+        }
 
         var partnerCheck = await CheckPartnerReputation(this, poke, trainerNID, tradePartner.TrainerName, AbuseSettings, token);
         if (partnerCheck != PokeTradeResult.Success)
