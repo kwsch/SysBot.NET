@@ -294,6 +294,13 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         RecordUtil<PokeTradeBotSWSH>.Record($"Initiating\t{trainerNID:X16}\t{tradePartner.TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
         Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7} (ID: {trainerNID}");
 
+        var tradeCodeStorage = new TradeCodeStorage();
+        int tid7 = int.Parse(tradePartner.TID7);
+        // int sid7 = int.Parse(tradePartner.SID7); // uncomment if you want to also store SID
+        tradeCodeStorage.UpdateTradeDetails(poke.Trainer.ID, tradePartner.TrainerName, tid7);
+        // or 
+        // tradeCodeStorage.UpdateTradeDetails(poke.Trainer.ID, tradePartner.TrainerName, tid7, sid7); // if you want to store SID
+
         var partnerCheck = await CheckPartnerReputation(this, poke, trainerNID, tradePartner.TrainerName, AbuseSettings, token);
         if (partnerCheck != PokeTradeResult.Success)
         {

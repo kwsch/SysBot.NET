@@ -3,7 +3,6 @@ using SysBot.Base;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text.Json.Serialization;
 using System.Threading;
 
 namespace SysBot.Pokemon;
