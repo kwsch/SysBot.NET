@@ -213,6 +213,7 @@ public enum BotControlCommand
     Idle,
     Resume,
     Restart,
+    RebootAndStop,
 }
 
 public static class BotControlCommandExtensions

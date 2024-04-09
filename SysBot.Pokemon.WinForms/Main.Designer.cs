@@ -47,6 +47,7 @@ namespace SysBot.Pokemon.WinForms
             RTB_Logs = new RichTextBox();
             B_Stop = new Button();
             B_Start = new Button();
+            B_RebootStop = new Button();
             TC_Main.SuspendLayout();
             Tab_Bots.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)NUD_Port).BeginInit();
@@ -106,7 +107,7 @@ namespace SysBot.Pokemon.WinForms
             comboBox1.Name = "comboBox1";
             comboBox1.Size = new System.Drawing.Size(67, 23);
             comboBox1.TabIndex = 11;
-            comboBox1.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
+            comboBox1.SelectedIndexChanged += ComboBox1_SelectedIndexChanged;
             // 
             // CB_Protocol
             // 
@@ -221,11 +222,13 @@ namespace SysBot.Pokemon.WinForms
             // B_Stop
             // 
             B_Stop.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            B_Stop.Cursor = Cursors.Hand;
+            B_Stop.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             B_Stop.FlatStyle = FlatStyle.Flat;
-            B_Stop.Location = new System.Drawing.Point(565, 0);
+            B_Stop.Location = new System.Drawing.Point(527, 0);
             B_Stop.Margin = new Padding(4, 3, 4, 3);
             B_Stop.Name = "B_Stop";
-            B_Stop.Size = new System.Drawing.Size(69, 23);
+            B_Stop.Size = new System.Drawing.Size(70, 27);
             B_Stop.TabIndex = 4;
             B_Stop.Text = "Stop All";
             B_Stop.UseVisualStyleBackColor = true;
@@ -234,15 +237,33 @@ namespace SysBot.Pokemon.WinForms
             // B_Start
             // 
             B_Start.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            B_Start.BackColor = System.Drawing.SystemColors.Control;
+            B_Start.Cursor = Cursors.Hand;
+            B_Start.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             B_Start.FlatStyle = FlatStyle.Flat;
-            B_Start.Location = new System.Drawing.Point(489, 0);
+            B_Start.Location = new System.Drawing.Point(448, 0);
             B_Start.Margin = new Padding(4, 3, 4, 3);
             B_Start.Name = "B_Start";
-            B_Start.Size = new System.Drawing.Size(69, 23);
+            B_Start.Size = new System.Drawing.Size(71, 27);
             B_Start.TabIndex = 3;
             B_Start.Text = "Start All";
-            B_Start.UseVisualStyleBackColor = true;
+            B_Start.UseVisualStyleBackColor = false;
             B_Start.Click += B_Start_Click;
+            // 
+            // B_RebootStop
+            // 
+            B_RebootStop.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            B_RebootStop.Cursor = Cursors.Hand;
+            B_RebootStop.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            B_RebootStop.FlatStyle = FlatStyle.Flat;
+            B_RebootStop.Location = new System.Drawing.Point(605, 0);
+            B_RebootStop.Margin = new Padding(4, 3, 4, 3);
+            B_RebootStop.Name = "B_RebootStop";
+            B_RebootStop.Size = new System.Drawing.Size(61, 27);
+            B_RebootStop.TabIndex = 3;
+            B_RebootStop.Text = "Reboot";
+            B_RebootStop.UseVisualStyleBackColor = true;
+            B_RebootStop.Click += B_RebootStop_Click;
             // 
             // Main
             // 
@@ -251,6 +272,7 @@ namespace SysBot.Pokemon.WinForms
             ClientSize = new System.Drawing.Size(679, 420);
             Controls.Add(B_Stop);
             Controls.Add(B_Start);
+            Controls.Add(B_RebootStop);
             Controls.Add(TC_Main);
             Icon = Resources.icon;
             Margin = new Padding(4, 3, 4, 3);
@@ -284,6 +306,7 @@ namespace SysBot.Pokemon.WinForms
         private System.Windows.Forms.ComboBox CB_Protocol;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.ComboBox comboBox2;
+        private System.Windows.Forms.Button B_RebootStop;
     }
 }
 

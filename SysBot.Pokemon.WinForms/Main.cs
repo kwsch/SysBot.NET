@@ -28,8 +28,8 @@ public sealed partial class Main : Form
     public Main()
     {
         InitializeComponent();
-        comboBox1.SelectedIndexChanged += new EventHandler(comboBox1_SelectedIndexChanged);
-        this.Load += async (sender, e) => await InitializeAsync();
+        comboBox1.SelectedIndexChanged += new EventHandler(ComboBox1_SelectedIndexChanged);
+        Load += async (sender, e) => await InitializeAsync();
 
     }
 
@@ -168,7 +168,7 @@ public sealed partial class Main : Form
                 ApplySylveonTheme();
                 break;
             default:
-                ApplyGengarTheme(); 
+                ApplyGengarTheme();
                 break;
         }
 
@@ -215,17 +215,17 @@ public sealed partial class Main : Form
     [JsonSerializable(typeof(ProgramConfig))]
     [JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
     public sealed partial class ProgramConfigContext : JsonSerializerContext;
-    private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+    private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
     {
         if (_isFormLoading) return; // Check to avoid processing during form loading
 
         if (comboBox1.SelectedValue is int selectedValue)
         {
             ProgramMode newMode = (ProgramMode)selectedValue;
-            Config.Mode = newMode; 
+            Config.Mode = newMode;
 
             SaveCurrentConfig();
-            UpdateRunnerAndUI(); 
+            UpdateRunnerAndUI();
 
             UpdateBackgroundImage(newMode);
         }
@@ -248,6 +248,24 @@ public sealed partial class Main : Form
 
         if (Bots.Count == 0)
             WinFormsUtil.Alert("No bots configured, but all supporting services have been started.");
+    }
+
+    private void B_RebootStop_Click(object sender, EventArgs e)
+    {
+        B_Stop_Click(sender, e);
+        Task.Run(async () =>
+        {
+            await Task.Delay(3_500).ConfigureAwait(false);
+            SaveCurrentConfig();
+
+            LogUtil.LogInfo("Restarting all the consoles...", "Form");
+            RunningEnvironment.InitializeStart();
+            SendAll(BotControlCommand.RebootAndStop);
+            Tab_Logs.Select();
+
+            if (Bots.Count == 0)
+                WinFormsUtil.Alert("No bots configured, but all supporting services have been issued the reboot command.");
+        });
     }
 
     private void UpdateBackgroundImage(ProgramMode mode)
@@ -439,331 +457,346 @@ public sealed partial class Main : Form
         }
     }
 
-        private void ApplySylveonTheme()
+    private void ApplySylveonTheme()
+    {
+        // Define Sylveon-theme colors
+        Color SoftPink = Color.FromArgb(255, 182, 193);   // A soft pink color inspired by Sylveon's body
+        Color DeepPink = Color.FromArgb(255, 105, 180);   // A deeper pink for contrast and visual interest
+        Color SkyBlue = Color.FromArgb(135, 206, 250);    // A soft blue color inspired by Sylveon's eyes and ribbons
+        Color DeepBlue = Color.FromArgb(70, 130, 180);   // A deeper blue for contrast
+        Color ElegantWhite = Color.FromArgb(255, 255, 255);// An elegant white for background and contrast
+
+        // Set the background color of the form
+        BackColor = ElegantWhite;
+
+        // Set the foreground color of the form (text color)
+        ForeColor = DeepBlue;
+
+        // Set the background color of the tab control
+        TC_Main.BackColor = SkyBlue;
+
+        // Set the background color of each tab page
+        foreach (TabPage page in TC_Main.TabPages)
         {
-            // Define Sylveon-theme colors
-            Color SoftPink = Color.FromArgb(255, 182, 193);   // A soft pink color inspired by Sylveon's body
-            Color DeepPink = Color.FromArgb(255, 105, 180);   // A deeper pink for contrast and visual interest
-            Color SkyBlue = Color.FromArgb(135, 206, 250);    // A soft blue color inspired by Sylveon's eyes and ribbons
-            Color DeepBlue = Color.FromArgb(70, 130, 180);   // A deeper blue for contrast
-            Color ElegantWhite = Color.FromArgb(255, 255, 255);// An elegant white for background and contrast
-
-            // Set the background color of the form
-            this.BackColor = ElegantWhite;
-
-            // Set the foreground color of the form (text color)
-            this.ForeColor = DeepBlue;
-
-            // Set the background color of the tab control
-            TC_Main.BackColor = SkyBlue;
-
-            // Set the background color of each tab page
-            foreach (TabPage page in TC_Main.TabPages)
-            {
-                page.BackColor = ElegantWhite;
-            }
-
-            // Set the background color of the property grid
-            PG_Hub.BackColor = ElegantWhite;
-            PG_Hub.LineColor = SkyBlue;
-            PG_Hub.CategoryForeColor = DeepBlue;
-            PG_Hub.CategorySplitterColor = SkyBlue;
-            PG_Hub.HelpBackColor = SoftPink;
-            PG_Hub.HelpForeColor = DeepBlue;
-            PG_Hub.ViewBackColor = ElegantWhite;
-            PG_Hub.ViewForeColor = DeepBlue;
-
-            // Set the background color of the rich text box
-            RTB_Logs.BackColor = SoftPink;
-            RTB_Logs.ForeColor = DeepBlue;
-
-            // Set colors for other controls
-            TB_IP.BackColor = SkyBlue;
-            TB_IP.ForeColor = DeepBlue;
-
-            CB_Routine.BackColor = SkyBlue;
-            CB_Routine.ForeColor = DeepBlue;
-
-            NUD_Port.BackColor = SkyBlue;
-            NUD_Port.ForeColor = DeepBlue;
-
-            B_New.BackColor = DeepPink;
-            B_New.ForeColor = ElegantWhite;
-
-            FLP_Bots.BackColor = ElegantWhite;
-
-            CB_Protocol.BackColor = SkyBlue;
-            CB_Protocol.ForeColor = DeepBlue;
-
-            comboBox1.BackColor = SkyBlue;
-            comboBox1.ForeColor = DeepBlue;
-
-            B_Stop.BackColor = DeepPink;
-            B_Stop.ForeColor = ElegantWhite;
-
-            B_Start.BackColor = DeepPink;
-            B_Start.ForeColor = ElegantWhite;
+            page.BackColor = ElegantWhite;
         }
 
-        private void ApplyGengarTheme()
-        {
-            // Define Gengar-theme colors
-            Color GengarPurple = Color.FromArgb(88, 88, 120);  // A muted purple, the main color of Gengar
-            Color DarkShadow = Color.FromArgb(40, 40, 60);     // A deeper shade for shadowing and contrast
-            Color GhostlyGrey = Color.FromArgb(200, 200, 215); // A soft grey for text and borders
-            Color HauntingBlue = Color.FromArgb(80, 80, 160);  // A haunting blue for accenting and highlights
-            Color MidnightBlack = Color.FromArgb(25, 25, 35);  // A near-black for the darkest areas
+        // Set the background color of the property grid
+        PG_Hub.BackColor = ElegantWhite;
+        PG_Hub.LineColor = SkyBlue;
+        PG_Hub.CategoryForeColor = DeepBlue;
+        PG_Hub.CategorySplitterColor = SkyBlue;
+        PG_Hub.HelpBackColor = SoftPink;
+        PG_Hub.HelpForeColor = DeepBlue;
+        PG_Hub.ViewBackColor = ElegantWhite;
+        PG_Hub.ViewForeColor = DeepBlue;
 
-            // Set the background color of the form
-            this.BackColor = MidnightBlack;
+        // Set the background color of the rich text box
+        RTB_Logs.BackColor = SoftPink;
+        RTB_Logs.ForeColor = DeepBlue;
 
-            // Set the foreground color of the form (text color)
-            this.ForeColor = GhostlyGrey;
+        // Set colors for other controls
+        TB_IP.BackColor = SkyBlue;
+        TB_IP.ForeColor = DeepBlue;
 
-            // Set the background color of the tab control
-            TC_Main.BackColor = GengarPurple;
+        CB_Routine.BackColor = SkyBlue;
+        CB_Routine.ForeColor = DeepBlue;
 
-            // Set the background color of each tab page
-            foreach (TabPage page in TC_Main.TabPages)
-            {
-                page.BackColor = DarkShadow;
-            }
+        NUD_Port.BackColor = SkyBlue;
+        NUD_Port.ForeColor = DeepBlue;
 
-            // Set the background color of the property grid
-            PG_Hub.BackColor = DarkShadow;
-            PG_Hub.LineColor = HauntingBlue;
-            PG_Hub.CategoryForeColor = GhostlyGrey;
-            PG_Hub.CategorySplitterColor = HauntingBlue;
-            PG_Hub.HelpBackColor = DarkShadow;
-            PG_Hub.HelpForeColor = GhostlyGrey;
-            PG_Hub.ViewBackColor = DarkShadow;
-            PG_Hub.ViewForeColor = GhostlyGrey;
+        B_New.BackColor = DeepPink;
+        B_New.ForeColor = ElegantWhite;
 
-            // Set the background color of the rich text box
-            RTB_Logs.BackColor = MidnightBlack;
-            RTB_Logs.ForeColor = GhostlyGrey;
+        FLP_Bots.BackColor = ElegantWhite;
 
-            // Set colors for other controls
-            TB_IP.BackColor = GengarPurple;
-            TB_IP.ForeColor = GhostlyGrey;
+        CB_Protocol.BackColor = SkyBlue;
+        CB_Protocol.ForeColor = DeepBlue;
 
-            CB_Routine.BackColor = GengarPurple;
-            CB_Routine.ForeColor = GhostlyGrey;
+        comboBox1.BackColor = SkyBlue;
+        comboBox1.ForeColor = DeepBlue;
 
-            NUD_Port.BackColor = GengarPurple;
-            NUD_Port.ForeColor = GhostlyGrey;
+        B_Stop.BackColor = DeepPink;
+        B_Stop.ForeColor = ElegantWhite;
 
-            B_New.BackColor = HauntingBlue;
-            B_New.ForeColor = GhostlyGrey;
+        B_Start.BackColor = DeepPink;
+        B_Start.ForeColor = ElegantWhite;
 
-            FLP_Bots.BackColor = DarkShadow;
-
-            CB_Protocol.BackColor = GengarPurple;
-            CB_Protocol.ForeColor = GhostlyGrey;
-
-            comboBox1.BackColor = GengarPurple;
-            comboBox1.ForeColor = GhostlyGrey;
-
-            B_Stop.BackColor = HauntingBlue;
-            B_Stop.ForeColor = GhostlyGrey;
-
-            B_Start.BackColor = HauntingBlue;
-            B_Start.ForeColor = GhostlyGrey;
-        }
-
-        private void ApplyLightTheme()
-        {
-            // Define the color palette
-            Color SoftBlue = Color.FromArgb(235, 245, 251);
-            Color GentleGrey = Color.FromArgb(245, 245, 245);
-            Color DarkBlue = Color.FromArgb(26, 13, 171);
-
-            // Set the background color of the form
-            this.BackColor = GentleGrey;
-
-            // Set the foreground color of the form (text color)
-            this.ForeColor = DarkBlue;
-
-            // Set the background color of the tab control
-            TC_Main.BackColor = SoftBlue;
-
-            // Set the background color of each tab page
-            foreach (TabPage page in TC_Main.TabPages)
-            {
-                page.BackColor = GentleGrey;
-            }
-
-            // Set the background color of the property grid
-            PG_Hub.BackColor = GentleGrey;
-            PG_Hub.LineColor = SoftBlue;
-            PG_Hub.CategoryForeColor = DarkBlue;
-            PG_Hub.CategorySplitterColor = SoftBlue;
-            PG_Hub.HelpBackColor = GentleGrey;
-            PG_Hub.HelpForeColor = DarkBlue;
-            PG_Hub.ViewBackColor = GentleGrey;
-            PG_Hub.ViewForeColor = DarkBlue;
-
-            // Set the background color of the rich text box
-            RTB_Logs.BackColor = Color.White;
-            RTB_Logs.ForeColor = DarkBlue;
-
-            // Set colors for other controls
-            TB_IP.BackColor = Color.White;
-            TB_IP.ForeColor = DarkBlue;
-
-            CB_Routine.BackColor = Color.White;
-            CB_Routine.ForeColor = DarkBlue;
-
-            NUD_Port.BackColor = Color.White;
-            NUD_Port.ForeColor = DarkBlue;
-
-            B_New.BackColor = SoftBlue;
-            B_New.ForeColor = DarkBlue;
-
-            FLP_Bots.BackColor = GentleGrey;
-
-            CB_Protocol.BackColor = Color.White;
-            CB_Protocol.ForeColor = DarkBlue;
-
-            comboBox1.BackColor = Color.White;
-            comboBox1.ForeColor = DarkBlue;
-
-            B_Stop.BackColor = SoftBlue;
-            B_Stop.ForeColor = DarkBlue;
-
-            B_Start.BackColor = SoftBlue;
-            B_Start.ForeColor = DarkBlue;
-        }
-
-        private void ApplyPokemonTheme()
-        {
-            // Define Poke-theme colors
-            Color PokeRed = Color.FromArgb(206, 12, 30);      // A classic red tone reminiscent of the Pokeball
-            Color DarkPokeRed = Color.FromArgb(164, 10, 24);  // A darker shade of the PokeRed for contrast and depth
-            Color SleekGrey = Color.FromArgb(46, 49, 54);     // A sleek grey for background and contrast
-            Color SoftWhite = Color.FromArgb(230, 230, 230);  // A soft white for text and borders
-            Color MidnightBlack = Color.FromArgb(18, 19, 20); // A near-black for darker elements and depth
-
-            // Set the background color of the form
-            this.BackColor = SleekGrey;
-
-            // Set the foreground color of the form (text color)
-            this.ForeColor = SoftWhite;
-
-            // Set the background color of the tab control
-            TC_Main.BackColor = DarkPokeRed;
-
-            // Set the background color of each tab page
-            foreach (TabPage page in TC_Main.TabPages)
-            {
-                page.BackColor = SleekGrey;
-            }
-
-            // Set the background color of the property grid
-            PG_Hub.BackColor = SleekGrey;
-            PG_Hub.LineColor = DarkPokeRed;
-            PG_Hub.CategoryForeColor = SoftWhite;
-            PG_Hub.CategorySplitterColor = DarkPokeRed;
-            PG_Hub.HelpBackColor = SleekGrey;
-            PG_Hub.HelpForeColor = SoftWhite;
-            PG_Hub.ViewBackColor = SleekGrey;
-            PG_Hub.ViewForeColor = SoftWhite;
-
-            // Set the background color of the rich text box
-            RTB_Logs.BackColor = MidnightBlack;
-            RTB_Logs.ForeColor = SoftWhite;
-
-            // Set colors for other controls
-            TB_IP.BackColor = DarkPokeRed;
-            TB_IP.ForeColor = SoftWhite;
-
-            CB_Routine.BackColor = DarkPokeRed;
-            CB_Routine.ForeColor = SoftWhite;
-
-            NUD_Port.BackColor = DarkPokeRed;
-            NUD_Port.ForeColor = SoftWhite;
-
-            B_New.BackColor = PokeRed;
-            B_New.ForeColor = SoftWhite;
-
-            FLP_Bots.BackColor = SleekGrey;
-
-            CB_Protocol.BackColor = DarkPokeRed;
-            CB_Protocol.ForeColor = SoftWhite;
-
-            comboBox1.BackColor = DarkPokeRed;
-            comboBox1.ForeColor = SoftWhite;
-
-            B_Stop.BackColor = PokeRed;
-            B_Stop.ForeColor = SoftWhite;
-
-            B_Start.BackColor = PokeRed;
-            B_Start.ForeColor = SoftWhite;
-        }
-
-        private void ApplyDarkTheme()
-        {
-            // Define the dark theme colors
-            Color DarkRed = Color.FromArgb(90, 0, 0);
-            Color DarkGrey = Color.FromArgb(30, 30, 30);
-            Color LightGrey = Color.FromArgb(60, 60, 60);
-            Color SoftWhite = Color.FromArgb(245, 245, 245);
-
-            // Set the background color of the form
-            this.BackColor = DarkGrey;
-
-            // Set the foreground color of the form (text color)
-            this.ForeColor = SoftWhite;
-
-            // Set the background color of the tab control
-            TC_Main.BackColor = LightGrey;
-
-            // Set the background color of each tab page
-            foreach (TabPage page in TC_Main.TabPages)
-            {
-                page.BackColor = DarkGrey;
-            }
-
-            // Set the background color of the property grid
-            PG_Hub.BackColor = DarkGrey;
-            PG_Hub.LineColor = LightGrey;
-            PG_Hub.CategoryForeColor = SoftWhite;
-            PG_Hub.CategorySplitterColor = LightGrey;
-            PG_Hub.HelpBackColor = DarkGrey;
-            PG_Hub.HelpForeColor = SoftWhite;
-            PG_Hub.ViewBackColor = DarkGrey;
-            PG_Hub.ViewForeColor = SoftWhite;
-
-            // Set the background color of the rich text box
-            RTB_Logs.BackColor = DarkGrey;
-            RTB_Logs.ForeColor = SoftWhite;
-
-            // Set colors for other controls
-            TB_IP.BackColor = LightGrey;
-            TB_IP.ForeColor = SoftWhite;
-
-            CB_Routine.BackColor = LightGrey;
-            CB_Routine.ForeColor = SoftWhite;
-
-            NUD_Port.BackColor = LightGrey;
-            NUD_Port.ForeColor = SoftWhite;
-
-            B_New.BackColor = DarkRed;
-            B_New.ForeColor = SoftWhite;
-
-            FLP_Bots.BackColor = DarkGrey;
-
-            CB_Protocol.BackColor = LightGrey;
-            CB_Protocol.ForeColor = SoftWhite;
-
-            comboBox1.BackColor = LightGrey;
-            comboBox1.ForeColor = SoftWhite;
-
-            B_Stop.BackColor = DarkRed;
-            B_Stop.ForeColor = SoftWhite;
-
-            B_Start.BackColor = DarkRed;
-            B_Start.ForeColor = SoftWhite;
-        }
+        B_RebootStop.BackColor = DeepPink;
+        B_RebootStop.ForeColor = ElegantWhite;
     }
+
+    private void ApplyGengarTheme()
+    {
+        // Define Gengar-theme colors
+        Color GengarPurple = Color.FromArgb(88, 88, 120);  // A muted purple, the main color of Gengar
+        Color DarkShadow = Color.FromArgb(40, 40, 60);     // A deeper shade for shadowing and contrast
+        Color GhostlyGrey = Color.FromArgb(200, 200, 215); // A soft grey for text and borders
+        Color HauntingBlue = Color.FromArgb(80, 80, 160);  // A haunting blue for accenting and highlights
+        Color MidnightBlack = Color.FromArgb(25, 25, 35);  // A near-black for the darkest areas
+
+        // Set the background color of the form
+        BackColor = MidnightBlack;
+
+        // Set the foreground color of the form (text color)
+        ForeColor = GhostlyGrey;
+
+        // Set the background color of the tab control
+        TC_Main.BackColor = GengarPurple;
+
+        // Set the background color of each tab page
+        foreach (TabPage page in TC_Main.TabPages)
+        {
+            page.BackColor = DarkShadow;
+        }
+
+        // Set the background color of the property grid
+        PG_Hub.BackColor = DarkShadow;
+        PG_Hub.LineColor = HauntingBlue;
+        PG_Hub.CategoryForeColor = GhostlyGrey;
+        PG_Hub.CategorySplitterColor = HauntingBlue;
+        PG_Hub.HelpBackColor = DarkShadow;
+        PG_Hub.HelpForeColor = GhostlyGrey;
+        PG_Hub.ViewBackColor = DarkShadow;
+        PG_Hub.ViewForeColor = GhostlyGrey;
+
+        // Set the background color of the rich text box
+        RTB_Logs.BackColor = MidnightBlack;
+        RTB_Logs.ForeColor = GhostlyGrey;
+
+        // Set colors for other controls
+        TB_IP.BackColor = GengarPurple;
+        TB_IP.ForeColor = GhostlyGrey;
+
+        CB_Routine.BackColor = GengarPurple;
+        CB_Routine.ForeColor = GhostlyGrey;
+
+        NUD_Port.BackColor = GengarPurple;
+        NUD_Port.ForeColor = GhostlyGrey;
+
+        B_New.BackColor = HauntingBlue;
+        B_New.ForeColor = GhostlyGrey;
+
+        FLP_Bots.BackColor = DarkShadow;
+
+        CB_Protocol.BackColor = GengarPurple;
+        CB_Protocol.ForeColor = GhostlyGrey;
+
+        comboBox1.BackColor = GengarPurple;
+        comboBox1.ForeColor = GhostlyGrey;
+
+        B_Stop.BackColor = HauntingBlue;
+        B_Stop.ForeColor = GhostlyGrey;
+
+        B_Start.BackColor = HauntingBlue;
+        B_Start.ForeColor = GhostlyGrey;
+
+        B_RebootStop.BackColor = HauntingBlue;
+        B_RebootStop.ForeColor = GhostlyGrey;
+    }
+
+    private void ApplyLightTheme()
+    {
+        // Define the color palette
+        Color SoftBlue = Color.FromArgb(235, 245, 251);
+        Color GentleGrey = Color.FromArgb(245, 245, 245);
+        Color DarkBlue = Color.FromArgb(26, 13, 171);
+
+        // Set the background color of the form
+        BackColor = GentleGrey;
+
+        // Set the foreground color of the form (text color)
+        ForeColor = DarkBlue;
+
+        // Set the background color of the tab control
+        TC_Main.BackColor = SoftBlue;
+
+        // Set the background color of each tab page
+        foreach (TabPage page in TC_Main.TabPages)
+        {
+            page.BackColor = GentleGrey;
+        }
+
+        // Set the background color of the property grid
+        PG_Hub.BackColor = GentleGrey;
+        PG_Hub.LineColor = SoftBlue;
+        PG_Hub.CategoryForeColor = DarkBlue;
+        PG_Hub.CategorySplitterColor = SoftBlue;
+        PG_Hub.HelpBackColor = GentleGrey;
+        PG_Hub.HelpForeColor = DarkBlue;
+        PG_Hub.ViewBackColor = GentleGrey;
+        PG_Hub.ViewForeColor = DarkBlue;
+
+        // Set the background color of the rich text box
+        RTB_Logs.BackColor = Color.White;
+        RTB_Logs.ForeColor = DarkBlue;
+
+        // Set colors for other controls
+        TB_IP.BackColor = Color.White;
+        TB_IP.ForeColor = DarkBlue;
+
+        CB_Routine.BackColor = Color.White;
+        CB_Routine.ForeColor = DarkBlue;
+
+        NUD_Port.BackColor = Color.White;
+        NUD_Port.ForeColor = DarkBlue;
+
+        B_New.BackColor = SoftBlue;
+        B_New.ForeColor = DarkBlue;
+
+        FLP_Bots.BackColor = GentleGrey;
+
+        CB_Protocol.BackColor = Color.White;
+        CB_Protocol.ForeColor = DarkBlue;
+
+        comboBox1.BackColor = Color.White;
+        comboBox1.ForeColor = DarkBlue;
+
+        B_Stop.BackColor = SoftBlue;
+        B_Stop.ForeColor = DarkBlue;
+
+        B_Start.BackColor = SoftBlue;
+        B_Start.ForeColor = DarkBlue;
+
+        B_RebootStop.BackColor = SoftBlue;
+        B_RebootStop.ForeColor = DarkBlue;
+    }
+
+    private void ApplyPokemonTheme()
+    {
+        // Define Poke-theme colors
+        Color PokeRed = Color.FromArgb(206, 12, 30);      // A classic red tone reminiscent of the Pokeball
+        Color DarkPokeRed = Color.FromArgb(164, 10, 24);  // A darker shade of the PokeRed for contrast and depth
+        Color SleekGrey = Color.FromArgb(46, 49, 54);     // A sleek grey for background and contrast
+        Color SoftWhite = Color.FromArgb(230, 230, 230);  // A soft white for text and borders
+        Color MidnightBlack = Color.FromArgb(18, 19, 20); // A near-black for darker elements and depth
+
+        // Set the background color of the form
+        BackColor = SleekGrey;
+
+        // Set the foreground color of the form (text color)
+        ForeColor = SoftWhite;
+
+        // Set the background color of the tab control
+        TC_Main.BackColor = DarkPokeRed;
+
+        // Set the background color of each tab page
+        foreach (TabPage page in TC_Main.TabPages)
+        {
+            page.BackColor = SleekGrey;
+        }
+
+        // Set the background color of the property grid
+        PG_Hub.BackColor = SleekGrey;
+        PG_Hub.LineColor = DarkPokeRed;
+        PG_Hub.CategoryForeColor = SoftWhite;
+        PG_Hub.CategorySplitterColor = DarkPokeRed;
+        PG_Hub.HelpBackColor = SleekGrey;
+        PG_Hub.HelpForeColor = SoftWhite;
+        PG_Hub.ViewBackColor = SleekGrey;
+        PG_Hub.ViewForeColor = SoftWhite;
+
+        // Set the background color of the rich text box
+        RTB_Logs.BackColor = MidnightBlack;
+        RTB_Logs.ForeColor = SoftWhite;
+
+        // Set colors for other controls
+        TB_IP.BackColor = DarkPokeRed;
+        TB_IP.ForeColor = SoftWhite;
+
+        CB_Routine.BackColor = DarkPokeRed;
+        CB_Routine.ForeColor = SoftWhite;
+
+        NUD_Port.BackColor = DarkPokeRed;
+        NUD_Port.ForeColor = SoftWhite;
+
+        B_New.BackColor = PokeRed;
+        B_New.ForeColor = SoftWhite;
+
+        FLP_Bots.BackColor = SleekGrey;
+
+        CB_Protocol.BackColor = DarkPokeRed;
+        CB_Protocol.ForeColor = SoftWhite;
+
+        comboBox1.BackColor = DarkPokeRed;
+        comboBox1.ForeColor = SoftWhite;
+
+        B_Stop.BackColor = PokeRed;
+        B_Stop.ForeColor = SoftWhite;
+
+        B_Start.BackColor = PokeRed;
+        B_Start.ForeColor = SoftWhite;
+
+        B_RebootStop.BackColor = PokeRed;
+        B_RebootStop.ForeColor = SoftWhite;
+    }
+
+    private void ApplyDarkTheme()
+    {
+        // Define the dark theme colors
+        Color DarkRed = Color.FromArgb(90, 0, 0);
+        Color DarkGrey = Color.FromArgb(30, 30, 30);
+        Color LightGrey = Color.FromArgb(60, 60, 60);
+        Color SoftWhite = Color.FromArgb(245, 245, 245);
+
+        // Set the background color of the form
+        BackColor = DarkGrey;
+
+        // Set the foreground color of the form (text color)
+        ForeColor = SoftWhite;
+
+        // Set the background color of the tab control
+        TC_Main.BackColor = LightGrey;
+
+        // Set the background color of each tab page
+        foreach (TabPage page in TC_Main.TabPages)
+        {
+            page.BackColor = DarkGrey;
+        }
+
+        // Set the background color of the property grid
+        PG_Hub.BackColor = DarkGrey;
+        PG_Hub.LineColor = LightGrey;
+        PG_Hub.CategoryForeColor = SoftWhite;
+        PG_Hub.CategorySplitterColor = LightGrey;
+        PG_Hub.HelpBackColor = DarkGrey;
+        PG_Hub.HelpForeColor = SoftWhite;
+        PG_Hub.ViewBackColor = DarkGrey;
+        PG_Hub.ViewForeColor = SoftWhite;
+
+        // Set the background color of the rich text box
+        RTB_Logs.BackColor = DarkGrey;
+        RTB_Logs.ForeColor = SoftWhite;
+
+        // Set colors for other controls
+        TB_IP.BackColor = LightGrey;
+        TB_IP.ForeColor = SoftWhite;
+
+        CB_Routine.BackColor = LightGrey;
+        CB_Routine.ForeColor = SoftWhite;
+
+        NUD_Port.BackColor = LightGrey;
+        NUD_Port.ForeColor = SoftWhite;
+
+        B_New.BackColor = DarkRed;
+        B_New.ForeColor = SoftWhite;
+
+        FLP_Bots.BackColor = DarkGrey;
+
+        CB_Protocol.BackColor = LightGrey;
+        CB_Protocol.ForeColor = SoftWhite;
+
+        comboBox1.BackColor = LightGrey;
+        comboBox1.ForeColor = SoftWhite;
+
+        B_Stop.BackColor = DarkRed;
+        B_Stop.ForeColor = SoftWhite;
+
+        B_Start.BackColor = DarkRed;
+        B_Start.ForeColor = SoftWhite;
+
+        B_RebootStop.BackColor = DarkRed;
+        B_RebootStop.ForeColor = SoftWhite;
+    }
+}
 
