@@ -66,6 +66,17 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
         UpdateBarrier(false);
         await CleanExit(TradeSettings, CancellationToken.None).ConfigureAwait(false);
     }
+    public override async Task RebootAndStop(CancellationToken t)
+    {
+        await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
+        await HardStop().ConfigureAwait(false);
+    }
+    public async Task ReOpenGame(PokeTradeHubConfig config, CancellationToken token)
+    {
+        Log("Error detected, restarting the game!!");
+        await CloseGame(config, token).ConfigureAwait(false);
+        await StartGame(config, token).ConfigureAwait(false);
+    }
     private async Task InnerLoop(SAV7b sav, CancellationToken token)
     {
         while (!token.IsCancellationRequested)
@@ -88,6 +99,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
             }
         }
     }
+
     private async Task DoNothing(CancellationToken token)
     {
         int waitCounter = 0;

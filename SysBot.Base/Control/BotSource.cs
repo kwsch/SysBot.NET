@@ -68,6 +68,21 @@ public class BotSource<T>(RoutineExecutor<T> Bot)
         }, TaskContinuationOptions.RunContinuationsAsynchronously | TaskContinuationOptions.NotOnFaulted);
     }
 
+    public void RebootAndStop()
+    {
+        if (IsPaused)
+            Stop(); // can't soft-resume; just re-launch
+
+        if (IsRunning || IsStopping)
+            return;
+
+        Task.Run(() => Bot.RebootAndStopAsync(Source.Token)
+            .ContinueWith(ReportFailure, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously)
+            .ContinueWith(_ => IsRunning = false));
+
+        IsRunning = true;
+    }
+
     private void ReportFailure(Task finishedTask)
     {
         var ident = Bot.Connection.Name;

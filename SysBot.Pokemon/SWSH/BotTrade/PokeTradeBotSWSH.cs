@@ -71,7 +71,11 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         UpdateBarrier(false);
         return CleanExit(CancellationToken.None);
     }
-
+    public override async Task RebootAndStop(CancellationToken t)
+    {
+        await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
+        await HardStop().ConfigureAwait(false);
+    }
     private async Task InnerLoop(SAV8SWSH sav, CancellationToken token)
     {
         while (!token.IsCancellationRequested)

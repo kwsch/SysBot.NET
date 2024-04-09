@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using PKHeX.Core.Searching;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,7 +34,11 @@ public sealed class EncounterBotResetSWSH(PokeBotState Config, PokeTradeHub<PK8>
             await StartGame(Hub.Config, token).ConfigureAwait(false);
         }
     }
-
+    public override async Task RebootAndStop(CancellationToken t)
+    {
+        await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
+        await HardStop().ConfigureAwait(false);
+    }
     private async Task DoExtraCommands(EncounterMode mode, CancellationToken token)
     {
         switch (mode)

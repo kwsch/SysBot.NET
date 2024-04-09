@@ -52,7 +52,11 @@ public class EncounterBotEggSWSH : EncounterBotSWSH
                 return;
         }
     }
-
+    public override async Task RebootAndStop(CancellationToken t)
+    {
+        await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
+        await HardStop().ConfigureAwait(false);
+    }
     private async Task<int> StepUntilEgg(CancellationToken token)
     {
         Log("Walking around until an egg is ready...");

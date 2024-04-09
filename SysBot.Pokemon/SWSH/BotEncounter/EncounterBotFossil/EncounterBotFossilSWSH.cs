@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;
@@ -71,7 +71,11 @@ public class EncounterBotFossilSWSH : EncounterBotSWSH
             await SetBoxPokemon(Blank, 0, 0, token).ConfigureAwait(false);
         }
     }
-
+    public override async Task RebootAndStop(CancellationToken t)
+    {
+        await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
+        await HardStop().ConfigureAwait(false);
+    }
     private async Task ReviveFossil(FossilCount count, CancellationToken token)
     {
         Log("Starting fossil revival routine...");

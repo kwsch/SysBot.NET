@@ -9,6 +9,11 @@ namespace SysBot.Pokemon;
 
 public sealed class EncounterBotDogSWSH(PokeBotState Config, PokeTradeHub<PK8> Hub) : EncounterBotSWSH(Config, Hub)
 {
+    public override async Task RebootAndStop(CancellationToken t)
+    {
+        await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
+        await HardStop().ConfigureAwait(false);
+    }
     protected override async Task EncounterLoop(SAV8SWSH sav, CancellationToken token)
     {
         while (!token.IsCancellationRequested)

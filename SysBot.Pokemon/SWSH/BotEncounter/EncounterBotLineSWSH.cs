@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchStick;
@@ -42,7 +42,11 @@ public sealed class EncounterBotLineSWSH(PokeBotState Config, PokeTradeHub<PK8> 
             await FleeToOverworld(token).ConfigureAwait(false);
         }
     }
-
+    public override async Task RebootAndStop(CancellationToken t)
+    {
+        await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
+        await HardStop().ConfigureAwait(false);
+    }
     private async Task<int> StepUntilEncounter(CancellationToken token)
     {
         Log("Walking around until an encounter...");

@@ -75,7 +75,11 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         UpdateBarrier(false);
         return CleanExit(CancellationToken.None);
     }
-
+    public override async Task RebootAndStop(CancellationToken t)
+    {
+        await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
+        await HardStop().ConfigureAwait(false);
+    }
     private async Task InnerLoop(SAV8LA sav, CancellationToken token)
     {
         while (!token.IsCancellationRequested)

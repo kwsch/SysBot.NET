@@ -102,7 +102,11 @@ public class RaidBotSWSH(PokeBotState Config, PokeTradeHub<PK8> Hub) : PokeRouti
     {
         return CleanExit(CancellationToken.None);
     }
-
+    public override async Task RebootAndStop(CancellationToken t)
+    {
+        await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
+        await HardStop().ConfigureAwait(false);
+    }
     private async Task HostRaidAsync(int code, CancellationToken token)
     {
         // Connect to Y-Comm

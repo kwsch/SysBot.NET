@@ -157,6 +157,7 @@ public partial class BotController : UserControl
                 Runner.InitializeStart();
                 bot.Start(); break;
             case BotControlCommand.Stop: bot.Stop(); break;
+            case BotControlCommand.RebootAndStop: bot.RebootAndStop(); break;
             case BotControlCommand.Resume: bot.Resume(); break;
             case BotControlCommand.Restart:
             {
