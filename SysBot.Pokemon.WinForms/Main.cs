@@ -467,7 +467,7 @@ public sealed partial class Main : Form
         Color ElegantWhite = Color.FromArgb(255, 255, 255);// An elegant white for background and contrast
         Color StartGreen = Color.FromArgb(10, 74, 27);// Start Button
         Color StopRed = Color.FromArgb(74, 10, 10);// Stop Button
-        Color RebootBlue = Color.FromArgb(10,35,74);// Reboot Button
+        Color RebootBlue = Color.FromArgb(10, 35, 74);// Reboot Button
 
         // Set the background color of the form
         BackColor = ElegantWhite;
