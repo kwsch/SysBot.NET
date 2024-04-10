@@ -25,6 +25,8 @@ public class SeedCheckModule<T> : ModuleBase<SocketCommandContext> where T : PKM
         }
         var sig = Context.User.GetFavor();
         await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed).ConfigureAwait(false);
+        if (Context.Message is IUserMessage userMessage)
+            await userMessage.DeleteAsync().ConfigureAwait(false);
     }
 
     [Command("seedCheck")]
@@ -43,6 +45,8 @@ public class SeedCheckModule<T> : ModuleBase<SocketCommandContext> where T : PKM
         int tradeCode = Util.ToInt32(code);
         var sig = Context.User.GetFavor();
         await QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode(userID) : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed).ConfigureAwait(false);
+        if (Context.Message is IUserMessage userMessage)
+            await userMessage.DeleteAsync().ConfigureAwait(false);
     }
 
     [Command("seedCheck")]
@@ -60,6 +64,8 @@ public class SeedCheckModule<T> : ModuleBase<SocketCommandContext> where T : PKM
         }
         var code = Info.GetRandomTradeCode(userID);
         await SeedCheckAsync(code).ConfigureAwait(false);
+        if (Context.Message is IUserMessage userMessage)
+            await userMessage.DeleteAsync().ConfigureAwait(false);
     }
 
     [Command("seedList")]
