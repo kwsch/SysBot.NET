@@ -193,7 +193,9 @@ namespace SysBot.Pokemon.WinForms
             // 
             // PG_Hub
             // 
+            PG_Hub.BackColor = System.Drawing.SystemColors.Desktop;
             PG_Hub.Dock = DockStyle.Fill;
+            PG_Hub.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             PG_Hub.Location = new System.Drawing.Point(5, 4);
             PG_Hub.Margin = new Padding(4, 3, 4, 3);
             PG_Hub.Name = "PG_Hub";

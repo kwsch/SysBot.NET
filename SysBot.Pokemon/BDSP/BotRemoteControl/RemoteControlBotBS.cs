@@ -40,6 +40,13 @@ public class RemoteControlBotBS(PokeBotState Config) : PokeRoutineExecutor8BS(Co
     {
         await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
         await HardStop().ConfigureAwait(false);
+
+        await Task.Delay(2_000, t).ConfigureAwait(false);
+        if (!t.IsCancellationRequested)
+        {
+            Log("Restarting the main loop.");
+            await MainLoop(t).ConfigureAwait(false);
+        }
     }
     private class DummyReset : IBotStateSettings
     {

@@ -257,12 +257,12 @@ public sealed partial class Main : Form
         {
             await Task.Delay(3_500).ConfigureAwait(false);
             SaveCurrentConfig();
-
             LogUtil.LogInfo("Restarting all the consoles...", "Form");
             RunningEnvironment.InitializeStart();
             SendAll(BotControlCommand.RebootAndStop);
+            await Task.Delay(5_000).ConfigureAwait(false); // Add a delay before restarting the bot
+            SendAll(BotControlCommand.Start); // Start the bot after the delay
             Tab_Logs.Select();
-
             if (Bots.Count == 0)
                 WinFormsUtil.Alert("No bots configured, but all supporting services have been issued the reboot command.");
         });

@@ -40,5 +40,12 @@ public class RemoteControlBotSWSH(PokeBotState Config) : PokeRoutineExecutor8SWS
     {
         await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
         await HardStop().ConfigureAwait(false);
+
+        await Task.Delay(2_000, t).ConfigureAwait(false);
+        if (!t.IsCancellationRequested)
+        {
+            Log("Restarting the main loop.");
+            await MainLoop(t).ConfigureAwait(false);
+        }
     }
 }

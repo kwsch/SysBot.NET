@@ -70,6 +70,13 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
     {
         await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
         await HardStop().ConfigureAwait(false);
+
+        await Task.Delay(2_000, t).ConfigureAwait(false);
+        if (!t.IsCancellationRequested)
+        {
+            Log("Restarting the main loop.");
+            await MainLoop(t).ConfigureAwait(false);
+        }
     }
     public async Task ReOpenGame(PokeTradeHubConfig config, CancellationToken token)
     {
