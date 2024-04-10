@@ -17,11 +17,19 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DebugType>portable</DebugType>
     <EmbedAllSources>true</EmbedAllSources>
     <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
     <PublishTrimmed>false</PublishTrimmed>
     <SelfContained>false</SelfContained>
+    <Authors>Kaphotics, Gengar</Authors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>pdbonly</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>pdbonly</DebugType>
   </PropertyGroup>
 
   <ItemGroup>

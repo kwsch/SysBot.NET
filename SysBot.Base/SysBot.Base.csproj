@@ -4,5 +4,10 @@
     <PackageReference Include="NLog" Version="5.2.8" />
     <PackageReference Include="LibUsbDotNet" Version="2.2.29" />
   </ItemGroup>
-
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
 </Project>

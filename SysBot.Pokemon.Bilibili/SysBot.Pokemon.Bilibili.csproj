@@ -1,5 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <DebugType>none</DebugType>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <DebugType>none</DebugType>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />
 		<ProjectReference Include="..\SysBot.Pokemon\SysBot.Pokemon.csproj" />
