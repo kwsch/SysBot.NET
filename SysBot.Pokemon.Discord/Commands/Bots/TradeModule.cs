@@ -821,7 +821,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         // Strip any code block formatting and parse the Showdown set
         tradeContent = ReusableActions.StripCodeBlock(tradeContent);
         var set = new ShowdownSet(tradeContent);
-
+        var ignoreAutoOT = tradeContent.Contains("OT:") || tradeContent.Contains("TID:") || tradeContent.Contains("SID:");
         // Get the template for the Pokémon
         var template = AutoLegalityWrapper.GetTemplate(set);
 
@@ -874,7 +874,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
             // Add the trade to the queue
             var sig = Context.User.GetFavor();
-            await AddTradeToQueueAsync(batchTradeCode, Context.User.Username, pk, sig, Context.User, isBatchTrade, batchTradeNumber, totalBatchTrades, lgcode: lgcode, tradeType: PokeTradeType.Batch).ConfigureAwait(false);
+            await AddTradeToQueueAsync(batchTradeCode, Context.User.Username, pk, sig, Context.User, isBatchTrade, batchTradeNumber, totalBatchTrades, lgcode: lgcode, tradeType: PokeTradeType.Batch, ignoreAutoOT: ignoreAutoOT).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
