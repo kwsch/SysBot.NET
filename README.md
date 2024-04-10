@@ -4,7 +4,7 @@
 ## Dies ist ein benutzerdefinierter Fork des Sysbots und somit ein eigenes Projekt - darum bitte nicht mit unseren Problemen die Pkhex Entwickler belästigen
 
 ## Note: for all those who don't understand German but only English, we still use SysBot from PKHex in English, using SysBot is free, feel free!
-### - Our support Discord from Aura and Furby: [Discord](https://discord.gg/MzVM8DVM9w)
+### - our Support Discord from Aura and Furby: [Discord](https://discord.gg/MzVM8DVM9w)
 
 ## Support Discord von Aura und Furby, die SysBot Benutzung ist kostenlos bei uns:
 - [Discord](https://discord.gg/MzVM8DVM9w)
