@@ -48,11 +48,13 @@ namespace SysBot.Pokemon.WinForms
             B_Stop = new Button();
             B_Start = new Button();
             B_RebootStop = new Button();
+            ButtonPanel = new Panel();
             TC_Main.SuspendLayout();
             Tab_Bots.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)NUD_Port).BeginInit();
             Tab_Hub.SuspendLayout();
             Tab_Logs.SuspendLayout();
+            ButtonPanel.SuspendLayout();
             SuspendLayout();
             // 
             // TC_Main
@@ -221,58 +223,63 @@ namespace SysBot.Pokemon.WinForms
             // 
             // B_Stop
             // 
-            B_Stop.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            B_Stop.Cursor = Cursors.Hand;
-            B_Stop.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            B_Stop.BackColor = System.Drawing.Color.Maroon;
             B_Stop.FlatStyle = FlatStyle.Flat;
-            B_Stop.Location = new System.Drawing.Point(527, 0);
-            B_Stop.Margin = new Padding(4, 3, 4, 3);
+            B_Stop.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            B_Stop.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            B_Stop.Location = new System.Drawing.Point(230, 0);
             B_Stop.Name = "B_Stop";
-            B_Stop.Size = new System.Drawing.Size(70, 27);
-            B_Stop.TabIndex = 4;
+            B_Stop.Size = new System.Drawing.Size(248, 40);
+            B_Stop.TabIndex = 1;
             B_Stop.Text = "Stop All";
-            B_Stop.UseVisualStyleBackColor = true;
+            B_Stop.UseVisualStyleBackColor = false;
             B_Stop.Click += B_Stop_Click;
             // 
             // B_Start
             // 
-            B_Start.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            B_Start.BackColor = System.Drawing.SystemColors.Control;
-            B_Start.Cursor = Cursors.Hand;
-            B_Start.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            B_Start.BackColor = System.Drawing.Color.ForestGreen;
             B_Start.FlatStyle = FlatStyle.Flat;
-            B_Start.Location = new System.Drawing.Point(448, 0);
-            B_Start.Margin = new Padding(4, 3, 4, 3);
+            B_Start.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            B_Start.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            B_Start.Location = new System.Drawing.Point(0, 0);
             B_Start.Name = "B_Start";
-            B_Start.Size = new System.Drawing.Size(71, 27);
-            B_Start.TabIndex = 3;
+            B_Start.Size = new System.Drawing.Size(232, 40);
+            B_Start.TabIndex = 0;
             B_Start.Text = "Start All";
             B_Start.UseVisualStyleBackColor = false;
             B_Start.Click += B_Start_Click;
             // 
             // B_RebootStop
             // 
-            B_RebootStop.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            B_RebootStop.Cursor = Cursors.Hand;
-            B_RebootStop.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            B_RebootStop.BackColor = System.Drawing.Color.SteelBlue;
             B_RebootStop.FlatStyle = FlatStyle.Flat;
-            B_RebootStop.Location = new System.Drawing.Point(605, 0);
-            B_RebootStop.Margin = new Padding(4, 3, 4, 3);
+            B_RebootStop.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            B_RebootStop.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            B_RebootStop.Location = new System.Drawing.Point(477, 0);
             B_RebootStop.Name = "B_RebootStop";
-            B_RebootStop.Size = new System.Drawing.Size(61, 27);
-            B_RebootStop.TabIndex = 3;
-            B_RebootStop.Text = "Reboot";
-            B_RebootStop.UseVisualStyleBackColor = true;
+            B_RebootStop.Size = new System.Drawing.Size(202, 40);
+            B_RebootStop.TabIndex = 2;
+            B_RebootStop.Text = "Reboot And Stop";
+            B_RebootStop.UseVisualStyleBackColor = false;
             B_RebootStop.Click += B_RebootStop_Click;
+            // 
+            // ButtonPanel
+            // 
+            ButtonPanel.Controls.Add(B_RebootStop);
+            ButtonPanel.Controls.Add(B_Stop);
+            ButtonPanel.Controls.Add(B_Start);
+            ButtonPanel.Dock = DockStyle.Bottom;
+            ButtonPanel.Location = new System.Drawing.Point(0, 380);
+            ButtonPanel.Name = "ButtonPanel";
+            ButtonPanel.Size = new System.Drawing.Size(679, 40);
+            ButtonPanel.TabIndex = 0;
             // 
             // Main
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(679, 420);
-            Controls.Add(B_Stop);
-            Controls.Add(B_Start);
-            Controls.Add(B_RebootStop);
+            Controls.Add(ButtonPanel);
             Controls.Add(TC_Main);
             Icon = Resources.icon;
             Margin = new Padding(4, 3, 4, 3);
@@ -286,6 +293,7 @@ namespace SysBot.Pokemon.WinForms
             ((System.ComponentModel.ISupportInitialize)NUD_Port).EndInit();
             Tab_Hub.ResumeLayout(false);
             Tab_Logs.ResumeLayout(false);
+            ButtonPanel.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -307,6 +315,7 @@ namespace SysBot.Pokemon.WinForms
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.ComboBox comboBox2;
         private System.Windows.Forms.Button B_RebootStop;
+        private System.Windows.Forms.Panel ButtonPanel;
     }
 }
 
