@@ -78,13 +78,13 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
 
             if (dest.Species == 0)
             {
-                LogUtil.LogInfo("SKIPPED: Provided file is not valid: " + dest.FileName, nameof(PokemonPool<T>));
+                LogUtil.LogInfo("ÜBERSPRUNGEN: Die angegebene Datei ist nicht gültig: " + dest.FileName, nameof(PokemonPool<T>));
                 continue;
             }
 
             if (!dest.CanBeTraded())
             {
-                LogUtil.LogInfo("SKIPPED: Provided file cannot be traded: " + dest.FileName, nameof(PokemonPool<T>));
+                LogUtil.LogInfo("ÜBERSPRUNGEN: Die angegebene Datei kann nicht gehandelt werden: " + dest.FileName, nameof(PokemonPool<T>));
                 continue;
             }
 
@@ -92,13 +92,13 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
             if (!la.Valid)
             {
                 var reason = la.Report();
-                LogUtil.LogInfo($"SKIPPED: Provided file is not legal: {dest.FileName} -- {reason}", nameof(PokemonPool<T>));
+                LogUtil.LogInfo($"ÜBERSPRUNGEN: Die angegebene Datei ist nicht legal: {dest.FileName} -- {reason}", nameof(PokemonPool<T>));
                 continue;
             }
 
             if (DisallowRandomRecipientTrade(dest, la.EncounterMatch))
             {
-                LogUtil.LogInfo("Provided file was loaded but can't be Surprise Traded: " + dest.FileName, nameof(PokemonPool<T>));
+                LogUtil.LogInfo("Bereitgestellte Datei wurde geladen, kann aber nicht mit ÜberraschungsTrade gehandelt werden: " + dest.FileName, nameof(PokemonPool<T>));
                 surpriseBlocked++;
             }
 
@@ -116,7 +116,7 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
             }
             else
             {
-                LogUtil.LogInfo("Provided file was not added due to duplicate name: " + dest.FileName, nameof(PokemonPool<T>));
+                LogUtil.LogInfo("Die angegebene Datei wurde aufgrund eines doppelten Namens nicht hinzugefügt: " + dest.FileName, nameof(PokemonPool<T>));
             }
             loadedAny = true;
         }
@@ -124,13 +124,13 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
         // Anti-spam: Same trainer names.
         if (Files.Count != 1 && Files.Select(z => z.Value.RequestInfo.OriginalTrainerName).Distinct().Count() == 1)
         {
-            LogUtil.LogInfo("Provided pool to distribute has the same OT for all loaded. Pool is not valid; please distribute from a variety of trainers.", nameof(PokemonPool<T>));
+            LogUtil.LogInfo("Vorausgesetzter Pool zum Verteilen hat den gleichen OT für alle geladenen. Pool ist nicht gültig; bitte verteilen Sie aus einer Vielzahl von Trainern.", nameof(PokemonPool<T>));
             surpriseBlocked = Count;
             Files.Clear();
         }
 
         if (surpriseBlocked == Count)
-            LogUtil.LogInfo("Surprise trading will fail; failed to load any compatible files.", nameof(PokemonPool<T>));
+            LogUtil.LogInfo("Überraschungshandel wird fehlschlagen; es konnten keine kompatiblen Dateien geladen werden.", nameof(PokemonPool<T>));
 
         return loadedAny;
     }

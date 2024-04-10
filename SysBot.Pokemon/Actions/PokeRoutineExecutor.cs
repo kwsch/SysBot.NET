@@ -73,7 +73,7 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
             // If ReconnectAttempts is set to -1, this should allow it to reconnect (essentially) indefinitely.
             for (int i = 0; i < (uint)attempts; i++)
             {
-                LogUtil.LogInfo($"Trying to reconnect... ({i + 1})", Connection.Label);
+                LogUtil.LogInfo($"Ich versuche, wieder eine Verbindung herzustellen... ({i + 1})", Connection.Label);
                 Connection.Reset();
                 if (Connection.Connected)
                     break;
@@ -92,7 +92,7 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
         {
             var protocol = Config.Connection.Protocol;
             var msg = protocol is SwitchProtocol.WiFi ? "sys-botbase" : "usb-botbase";
-            msg += $" version is not supported. Expected version {BotbaseVersion} or greater, and current version is {version}. Please download the latest version from: ";
+            msg += $" Version wird nicht unterstützt. Erwartete Version {BotbaseVersion} oder höher, und die aktuelle Version ist {version}. Bitte laden Sie die neueste Version herunter: ";
             if (protocol is SwitchProtocol.WiFi)
                 msg += "https://github.com/olliz0r/sys-botbase/releases/latest";
             else

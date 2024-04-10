@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Linq;
 
@@ -19,13 +19,13 @@ public class YouTubeSettings
     [Category(Startup), Description("Bot Client Secret")]
     public string ClientSecret { get; set; } = string.Empty;
 
-    [Category(Startup), Description("ChannelID to Send Messages To")]
+    [Category(Startup), Description("ChannelID zum Senden von Nachrichten an")]
     public string ChannelID { get; set; } = string.Empty;
 
-    [Category(Startup), Description("Bot Command Prefix")]
+    [Category(Startup), Description("Bot-Befehls-Präfix")]
     public char CommandPrefix { get; set; } = '$';
 
-    [Category(Operation), Description("Message sent when the Barrier is released.")]
+    [Category(Operation), Description("Nachricht, die gesendet wird, wenn die Schranke aufgehoben wird.")]
     public string MessageStart { get; set; } = string.Empty;
 
     // Operation
@@ -33,7 +33,7 @@ public class YouTubeSettings
     [Category(Operation), Description("Sudo Usernames")]
     public string SudoList { get; set; } = string.Empty;
 
-    [Category(Operation), Description("Users with these usernames cannot use the bot.")]
+    [Category(Operation), Description("Benutzer mit diesen Benutzernamen können den Bot nicht verwenden.")]
     public string UserBlacklist { get; set; } = string.Empty;
 
     public bool IsSudo(string username)

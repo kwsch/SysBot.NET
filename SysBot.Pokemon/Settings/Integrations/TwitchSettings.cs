@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Linq;
 
@@ -9,7 +9,7 @@ public class TwitchSettings
     private const string Startup = nameof(Startup);
     private const string Operation = nameof(Operation);
     private const string Messages = nameof(Messages);
-    public override string ToString() => "Twitch Integration Settings";
+    public override string ToString() => "Einstellungen zur Twitch-Integration";
 
     // Startup
 
@@ -19,27 +19,27 @@ public class TwitchSettings
     [Category(Startup), Description("Bot Username")]
     public string Username { get; set; } = string.Empty;
 
-    [Category(Startup), Description("Channel to Send Messages To")]
+    [Category(Startup), Description("Kanal zum Senden von Nachrichten an")]
     public string Channel { get; set; } = string.Empty;
 
-    [Category(Startup), Description("Bot Command Prefix")]
+    [Category(Startup), Description("Bot-Befehls-Präfix")]
     public char CommandPrefix { get; set; } = '$';
 
-    [Category(Operation), Description("Message sent when the Barrier is released.")]
+    [Category(Operation), Description("Nachricht, die gesendet wird, wenn die Schranke aufgehoben wird.")]
     public string MessageStart { get; set; } = string.Empty;
 
     // Messaging
 
-    [Category(Operation), Description("Throttle the bot from sending messages if X messages have been sent in the past Y seconds.")]
+    [Category(Operation), Description("Den Bot vom Senden von Nachrichten abhalten, wenn in den letzten Y Sekunden X Nachrichten gesendet wurden.")]
     public int ThrottleMessages { get; set; } = 100;
 
-    [Category(Operation), Description("Throttle the bot from sending messages if X messages have been sent in the past Y seconds.")]
+    [Category(Operation), Description("Den Bot vom Senden von Nachrichten abhalten, wenn in den letzten Y Sekunden X Nachrichten gesendet wurden.")]
     public double ThrottleSeconds { get; set; } = 30;
 
-    [Category(Operation), Description("Throttle the bot from sending whispers if X messages have been sent in the past Y seconds.")]
+    [Category(Operation), Description("Den Bot daran hindern, Flüstern zu senden, wenn in den letzten Y Sekunden X Nachrichten gesendet wurden.")]
     public int ThrottleWhispers { get; set; } = 100;
 
-    [Category(Operation), Description("Throttle the bot from sending whispers if X messages have been sent in the past Y seconds.")]
+    [Category(Operation), Description("Den Bot daran hindern, Flüstern zu senden, wenn in den letzten Y Sekunden X Nachrichten gesendet wurden.")]
     public double ThrottleWhispersSeconds { get; set; } = 60;
 
     // Operation
@@ -47,33 +47,33 @@ public class TwitchSettings
     [Category(Operation), Description("Sudo Usernames")]
     public string SudoList { get; set; } = string.Empty;
 
-    [Category(Operation), Description("Users with these usernames cannot use the bot.")]
+    [Category(Operation), Description("Benutzer mit diesen Benutzernamen können den Bot nicht verwenden.")]
     public string UserBlacklist { get; set; } = string.Empty;
 
-    [Category(Operation), Description("When enabled, the bot will process commands sent to the channel.")]
+    [Category(Operation), Description("Wenn diese Option aktiviert ist, verarbeitet der Bot Befehle, die an den Kanal gesendet werden.")]
     public bool AllowCommandsViaChannel { get; set; } = true;
 
-    [Category(Operation), Description("When enabled, the bot will allow users to send command via whisper (bypasses slow mode)")]
+    [Category(Operation), Description("Wenn aktiviert, erlaubt der Bot den Benutzern, Befehle per Flüstern zu senden (umgeht den langsamen Modus)")]
     public bool AllowCommandsViaWhisper { get; set; }
 
     // Message Destinations
 
-    [Category(Messages), Description("Determines where generic notifications are sent.")]
+    [Category(Messages), Description("Legt fest, wohin allgemeine Benachrichtigungen gesendet werden.")]
     public TwitchMessageDestination NotifyDestination { get; set; }
 
-    [Category(Messages), Description("Determines where TradeStart notifications are sent.")]
+    [Category(Messages), Description("Legt fest, wohin TradeStart-Benachrichtigungen gesendet werden.")]
     public TwitchMessageDestination TradeStartDestination { get; set; } = TwitchMessageDestination.Channel;
 
-    [Category(Messages), Description("Determines where TradeSearch notifications are sent.")]
+    [Category(Messages), Description("Legt fest, wohin TradeSearch-Benachrichtigungen gesendet werden.")]
     public TwitchMessageDestination TradeSearchDestination { get; set; }
 
-    [Category(Messages), Description("Determines where TradeFinish notifications are sent.")]
+    [Category(Messages), Description("Legt fest, wohin TradeFinish-Benachrichtigungen gesendet werden.")]
     public TwitchMessageDestination TradeFinishDestination { get; set; }
 
-    [Category(Messages), Description("Determines where TradeCanceled notifications are sent.")]
+    [Category(Messages), Description("Legt fest, wohin TradeCancled-Benachrichtigungen gesendet werden.")]
     public TwitchMessageDestination TradeCanceledDestination { get; set; } = TwitchMessageDestination.Channel;
 
-    [Category(Messages), Description("Toggles whether Distribution trades count down before starting.")]
+    [Category(Messages), Description("Legt fest, ob der Handel der Verteilung vor dem Start abwärts zählt.")]
     public bool DistributionCountDown { get; set; } = true;
 
     public bool IsSudo(string username)

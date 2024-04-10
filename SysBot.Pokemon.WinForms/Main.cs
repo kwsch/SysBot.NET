@@ -143,13 +143,13 @@ public sealed partial class Main : Form
     {
         SaveCurrentConfig();
 
-        LogUtil.LogInfo("Starting all bots...", "Form");
+        LogUtil.LogInfo("Alle Bots starten...", "Form");
         RunningEnvironment.InitializeStart();
         SendAll(BotControlCommand.Start);
         Tab_Logs.Select();
 
         if (Bots.Count == 0)
-            WinFormsUtil.Alert("No bots configured, but all supporting services have been started.");
+            WinFormsUtil.Alert("Keine Bots konfiguriert, aber alle unterstützenden Dienste wurden gestartet.");
     }
 
     private void SendAll(BotControlCommand cmd)
@@ -157,7 +157,7 @@ public sealed partial class Main : Form
         foreach (var c in FLP_Bots.Controls.OfType<BotController>())
             c.SendCommand(cmd, false);
 
-        EchoUtil.Echo($"All bots have been issued a command to {cmd}.");
+        EchoUtil.Echo($"Alle Bots haben einen Befehl erhalten: {cmd}.");
     }
 
     private void B_Stop_Click(object sender, EventArgs e)
@@ -165,7 +165,7 @@ public sealed partial class Main : Form
         var env = RunningEnvironment;
         if (!env.IsRunning && (ModifierKeys & Keys.Alt) == 0)
         {
-            WinFormsUtil.Alert("Nothing is currently running.");
+            WinFormsUtil.Alert("Derzeit ist nichts in Betrieb.");
             return;
         }
 
@@ -175,12 +175,12 @@ public sealed partial class Main : Form
         {
             if (env.IsRunning)
             {
-                WinFormsUtil.Alert("Commanding all bots to Idle.", "Press Stop (without a modifier key) to hard-stop and unlock control, or press Stop with the modifier key again to resume.");
+                WinFormsUtil.Alert("Alle Bots werden in den Leerlauf versetzt.", "Drücken Sie Stop (ohne Modifikatortaste), um die Steuerung abrupt zu stoppen und zu entsperren, oder drücken Sie erneut Stop mit der Modifikatortaste, um fortzufahren.");
                 cmd = BotControlCommand.Idle;
             }
             else
             {
-                WinFormsUtil.Alert("Commanding all bots to resume their original task.", "Press Stop (without a modifier key) to hard-stop and unlock control.");
+                WinFormsUtil.Alert("Alle Bots werden angewiesen, ihre ursprüngliche Aufgabe wieder aufzunehmen.", "Drücken Sie Stop (ohne Modifikatortaste), um die Steuerung abrupt zu beenden und freizugeben.");
                 cmd = BotControlCommand.Resume;
             }
         }
@@ -192,7 +192,7 @@ public sealed partial class Main : Form
         var cfg = CreateNewBotConfig();
         if (!AddBot(cfg))
         {
-            WinFormsUtil.Alert("Unable to add bot; ensure details are valid and not duplicate with an already existing bot.");
+            WinFormsUtil.Alert("Bot kann nicht hinzugefügt werden; stellen Sie sicher, dass die Details gültig sind und sich nicht mit einem bereits existierenden Bot überschneiden.");
             return;
         }
         System.Media.SystemSounds.Asterisk.Play();
@@ -209,7 +209,7 @@ public sealed partial class Main : Form
         PokeRoutineExecutorBase newBot;
         try
         {
-            Console.WriteLine($"Current Mode ({Config.Mode}) does not support this type of bot ({cfg.CurrentRoutineType}).");
+            Console.WriteLine($"Der aktuelle Modus ({Config.Mode}) unterstützt diese Art von Bot nicht: ({cfg.CurrentRoutineType}).");
             newBot = RunningEnvironment.CreateBotFromConfig(cfg);
         }
         catch

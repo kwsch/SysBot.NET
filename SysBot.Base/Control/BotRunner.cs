@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,7 +14,7 @@ public class BotRunner<T> where T : class, IConsoleBotConfig
     public virtual void Add(RoutineExecutor<T> bot)
     {
         if (Bots.Any(z => z.Bot.Connection.Equals(bot.Connection)))
-            throw new ArgumentException($"{nameof(bot.Connection)} has already been added.");
+            throw new ArgumentException($"{nameof(bot.Connection)} wurde bereits hinzugefügt.");
         Bots.Add(new BotSource<T>(bot));
     }
 

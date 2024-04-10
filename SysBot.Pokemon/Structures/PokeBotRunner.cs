@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
 using System.IO;
 using System.Threading;
@@ -110,11 +110,11 @@ public abstract class PokeBotRunner<T> : BotRunner<PokeBotState>, IPokeBotRunner
 
         var path = Hub.Config.Folder.DistributeFolder;
         if (!Directory.Exists(path))
-            LogUtil.LogError("The distribution folder was not found. Please verify that it exists!", "Hub");
+            LogUtil.LogError("Der Distributionsordner wurde nicht gefunden. Bitte überprüfen Sie, ob er existiert!", "Hub");
 
         var pool = Hub.Ledy.Pool;
         if (!pool.Reload(Hub.Config.Folder.DistributeFolder))
-            LogUtil.LogError("Nothing to distribute for Empty Trade Queues!", "Hub");
+            LogUtil.LogError("Nichts zu verteilen für leere Warteschlangen!", "Hub");
     }
 
     public PokeRoutineExecutorBase CreateBotFromConfig(PokeBotState cfg) => Factory.CreateBot(Hub, cfg);

@@ -32,7 +32,7 @@ public abstract class PokeRoutineExecutorBase(IConsoleBotManaged<IConsoleConnect
         Version = sav.Version;
         InGameName = sav.OT;
         Connection.Label = $"{InGameName}-{sav.DisplayTID:000000}";
-        Log($"{Connection.Name} identified as {Connection.Label}, using {GameLang}.");
+        Log($"{Connection.Name} identifiziert als {Connection.Label}, mit {GameLang}.");
     }
 
     protected bool IsValidTrainerData() => GameLang is > 0 and <= LanguageID.ChineseT && InGameName.Length > 0 && Version > 0;

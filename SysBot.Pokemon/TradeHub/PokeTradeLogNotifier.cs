@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.Linq;
@@ -9,23 +9,23 @@ public class PokeTradeLogNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
 {
     public void TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
     {
-        LogUtil.LogInfo($"Starting trade loop for {info.Trainer.TrainerName}, sending {GameInfo.GetStrings(1).Species[info.TradeData.Species]}", routine.Connection.Label);
+        LogUtil.LogInfo($"Beginn der Handelsschleife für {info.Trainer.TrainerName}, sende {GameInfo.GetStrings(1).Species[info.TradeData.Species]}", routine.Connection.Label);
     }
 
     public void TradeSearching(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
     {
-        LogUtil.LogInfo($"Searching for trade with {info.Trainer.TrainerName}, sending {GameInfo.GetStrings(1).Species[info.TradeData.Species]}", routine.Connection.Label);
+        LogUtil.LogInfo($"Auf der Suche nach Handel mit {info.Trainer.TrainerName}, sende {GameInfo.GetStrings(1).Species[info.TradeData.Species]}", routine.Connection.Label);
     }
 
     public void TradeCanceled(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeResult msg)
     {
-        LogUtil.LogInfo($"Canceling trade with {info.Trainer.TrainerName}, because {msg}.", routine.Connection.Label);
+        LogUtil.LogInfo($"Abbruch des Handels mit {info.Trainer.TrainerName}, weil {msg}.", routine.Connection.Label);
         OnFinish?.Invoke(routine);
     }
 
     public void TradeFinished(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result)
     {
-        LogUtil.LogInfo($"Finished trading {info.Trainer.TrainerName} {GameInfo.GetStrings(1).Species[info.TradeData.Species]} for {GameInfo.GetStrings(1).Species[result.Species]}", routine.Connection.Label);
+        LogUtil.LogInfo($"Beendeter Handel {info.Trainer.TrainerName} {GameInfo.GetStrings(1).Species[info.TradeData.Species]} für {GameInfo.GetStrings(1).Species[result.Species]}", routine.Connection.Label);
         OnFinish?.Invoke(routine);
     }
 
@@ -44,7 +44,7 @@ public class PokeTradeLogNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
 
     public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result, string message)
     {
-        LogUtil.LogInfo($"Notifying {info.Trainer.TrainerName} about their {GameInfo.GetStrings(1).Species[result.Species]}", routine.Connection.Label);
+        LogUtil.LogInfo($"Benachrichtige {info.Trainer.TrainerName} über ihres {GameInfo.GetStrings(1).Species[result.Species]}", routine.Connection.Label);
         LogUtil.LogInfo(message, routine.Connection.Label);
     }
 

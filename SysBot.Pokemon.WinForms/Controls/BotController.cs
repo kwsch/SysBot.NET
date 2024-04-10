@@ -146,7 +146,7 @@ public partial class BotController : UserControl
     {
         if (Runner?.Config.SkipConsoleBotCreation != false)
         {
-            LogUtil.LogError("No bots were created because SkipConsoleBotCreation is on!", "Hub");
+            LogUtil.LogError("Es wurden keine Bots erstellt, da SkipConsoleBotCreation aktiviert ist!", "Hub");
             return;
         }
         var bot = GetBot();
@@ -160,7 +160,7 @@ public partial class BotController : UserControl
             case BotControlCommand.Resume: bot.Resume(); break;
             case BotControlCommand.Restart:
             {
-                var prompt = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Are you sure you want to restart the connection?");
+                var prompt = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Sind Sie sicher, dass Sie die Verbindung neu starten wollen?");
                 if (prompt != DialogResult.Yes)
                     return;
 
@@ -169,11 +169,11 @@ public partial class BotController : UserControl
                 break;
             }
             default:
-                WinFormsUtil.Alert($"{cmd} is not a command that can be sent to the Bot.");
+                WinFormsUtil.Alert($"{cmd} ist kein Befehl, der an den Bot gesendet werden kann.");
                 return;
         }
         if (echo)
-            EchoUtil.Echo($"{bot.Bot.Connection.Name} ({bot.Bot.Config.InitialRoutine}) has been issued a command to {cmd}.");
+            EchoUtil.Echo($"{bot.Bot.Connection.Name} ({bot.Bot.Config.InitialRoutine}) hat einen Befehl erhalten, der lautet {cmd}.");
     }
 
     private BotSource<PokeBotState> GetBot()
