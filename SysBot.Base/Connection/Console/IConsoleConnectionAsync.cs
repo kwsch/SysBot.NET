@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SysBot.Base;
@@ -12,4 +12,6 @@ public interface IConsoleConnectionAsync : IConsoleConnection
 
     Task<byte[]> ReadBytesAsync(uint offset, int length, CancellationToken token);
     Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token);
+
+    Task<byte[]> PixelPeek(CancellationToken token);
 }

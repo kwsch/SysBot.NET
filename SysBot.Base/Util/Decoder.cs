@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace SysBot.Base;
 
@@ -11,10 +11,16 @@ public static class Decoder
     private static bool IsHexUpper(char c) => (uint)(c - 'A') <= 5;
     private static bool IsHexLower(char c) => (uint)(c - 'a') <= 5;
 
-    public static byte[] ConvertHexByteStringToBytes(ReadOnlySpan<byte> bytes)
+    public static byte[] ConvertHexByteStringToBytes(byte[] bytes)
     {
         var dest = new byte[bytes.Length / 2];
-        LoadHexBytesTo(bytes, dest, 2);
+        for (int i = 0; i < dest.Length; i++)
+        {
+            int ofs = i * 2;
+            var _0 = (char)bytes[ofs + 0];
+            var _1 = (char)bytes[ofs + 1];
+            dest[i] = DecodeTuple(_0, _1);
+        }
         return dest;
     }
 

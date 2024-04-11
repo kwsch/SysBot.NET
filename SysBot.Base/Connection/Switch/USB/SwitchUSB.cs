@@ -239,4 +239,33 @@ public abstract class SwitchUSB : IConsoleConnection
             Thread.Sleep((MaximumTransferSize / DelayFactor) + BaseDelay);
         }
     }
+
+    protected byte[] PixelPeekUSB()
+    {
+        Thread.Sleep(1);
+        lock (_sync)
+        {
+            byte[] sizeOfReturn = new byte[4];
+            if (reader == null)
+                throw new Exception("USB device not found or not connected.");
+
+            reader.Read(sizeOfReturn, 5000, out _);
+            int size = BitConverter.ToInt32(sizeOfReturn, 0);
+            byte[] buffer = new byte[size];
+            int transfSize = 0;
+            while (transfSize < size)
+            {
+                Thread.Sleep(1);
+                var ec = reader.Read(buffer, transfSize, Math.Min(reader.ReadBufferSize, size - transfSize), 5000, out int lenVal);
+                if (ec != ErrorCode.None)
+                {
+                    LogError($"Error while getting screenshot: {UsbDevice.LastErrorString}");
+                    Disconnect();
+                    break;
+                }
+                transfSize += lenVal;
+            }
+            return buffer;
+        }
+    }
 }

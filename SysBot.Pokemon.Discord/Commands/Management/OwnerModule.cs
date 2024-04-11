@@ -1,10 +1,14 @@
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Newtonsoft.Json.Linq;
 using PKHeX.Core;
 using System;
+using System.IO;
 using System.Linq;
+using SysBot.Pokemon.Helpers;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.Discord;
@@ -135,8 +139,68 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
         }
     }
 
-    [Command("sudoku")]
-    [Alias("kill", "shutdown")]
+    [Command("repeek")]
+    [Alias("peek")]
+    [Summary("Take and send a screenshot from the currently configured Switch.")]
+    [RequireSudo]
+    public async Task RePeek()
+    {
+        string ip = OwnerModule<T>.GetBotIPFromJsonConfig();
+        var source = new CancellationTokenSource();
+        var token = source.Token;
+
+        var bot = SysCord<T>.Runner.GetBot(ip);
+        if (bot == null)
+        {
+            await ReplyAsync($"No bot found with the specified IP address ({ip}).").ConfigureAwait(false);
+            return;
+        }
+
+        _ = Array.Empty<byte>();
+        byte[]? bytes;
+        try
+        {
+            bytes = await bot.Bot.Connection.PixelPeek(token).ConfigureAwait(false) ?? [];
+        }
+        catch (Exception ex)
+        {
+            await ReplyAsync($"Error while fetching pixels: {ex.Message}");
+            return;
+        }
+
+        if (bytes.Length == 0)
+        {
+            await ReplyAsync("No screenshot data received.");
+            return;
+        }
+
+        using MemoryStream ms = new(bytes);
+        var img = "cap.jpg";
+        var embed = new EmbedBuilder { ImageUrl = $"attachment://{img}", Color = Color.Purple }
+            .WithFooter(new EmbedFooterBuilder { Text = $"Here's your screenshot." });
+
+        await Context.Channel.SendFileAsync(ms, img, embed: embed.Build());
+    }
+
+    private static string GetBotIPFromJsonConfig()
+    {
+        try
+        {
+            var jsonData = File.ReadAllText(TradeBot.ConfigPath);
+            var config = JObject.Parse(jsonData);
+
+            var ip = config["Bots"][0]["Connection"]["IP"].ToString();
+            return ip;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error reading config file: {ex.Message}");
+            return "192.168.1.1";
+        }
+    }
+
+    [Command("kill")]
+    [Alias("shutdown")]
     [Summary("Causes the entire process to end itself!")]
     [RequireOwner]
     // ReSharper disable once UnusedParameter.Global

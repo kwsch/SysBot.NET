@@ -240,6 +240,13 @@ public static class SwitchCommand
         => Encode($"pointerPeek {count}{Encode(jumps)}", crlf);
 
     /// <summary>
+    /// Takes and sends a raw screenshot.
+    /// </summary>
+    /// <param name="crlf">Line terminator (unused by USB's protocol)</param>
+    /// <returns>Encoded command bytes</returns>
+    public static byte[] PixelPeek(bool crlf = true) => Encode("pixelPeek", crlf);
+
+    /// <summary>
     /// Sends the Bot <see cref="data"/> to be written to the offset at the end pointer traversals defined by <see cref="jumps"/>.
     /// </summary>
     /// <param name="jumps">All traversals in the pointer expression</param>
