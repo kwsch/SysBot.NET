@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.Commands;
 using PKHeX.Core;
 using System;
@@ -12,7 +12,7 @@ namespace SysBot.Pokemon.Discord;
 public class BatchEditingModule : ModuleBase<SocketCommandContext>
 {
     [Command("batchInfo"), Alias("bei")]
-    [Summary("Tries to get info about the requested property.")]
+    [Summary("Es wird versucht, Informationen über die angeforderte Eigenschaft zu erhalten.")]
     public async Task GetBatchInfo(string propertyName)
     {
         var result = BatchEditing.GetPropertyType(propertyName);
@@ -23,7 +23,7 @@ public class BatchEditingModule : ModuleBase<SocketCommandContext>
     }
 
     [Command("batchValidate"), Alias("bev")]
-    [Summary("Tries to get info about the requested property.")]
+    [Summary("Es wird versucht, Informationen über die angeforderte Eigenschaft zu erhalten.")]
     public async Task ValidateBatchInfo(string instructions)
     {
         bool valid = IsValidInstructionSet(instructions, out var invalid);
@@ -31,12 +31,12 @@ public class BatchEditingModule : ModuleBase<SocketCommandContext>
         if (!valid)
         {
             var msg = invalid.Select(z => $"{z.PropertyName}, {z.PropertyValue}");
-            await ReplyAsync($"Invalid Lines Detected:\r\n{Format.Code(string.Join(Environment.NewLine, msg))}")
+            await ReplyAsync($"Ungültige Zeilen entdeckt:\r\n{Format.Code(string.Join(Environment.NewLine, msg))}")
                 .ConfigureAwait(false);
         }
         else
         {
-            await ReplyAsync($"{invalid.Count} line(s) are invalid.").ConfigureAwait(false);
+            await ReplyAsync($"{invalid.Count} Zeile(n) sind ungültig.").ConfigureAwait(false);
         }
     }
 

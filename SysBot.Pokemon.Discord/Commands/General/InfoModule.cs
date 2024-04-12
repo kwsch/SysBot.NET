@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.Commands;
 using System;
 using System.Diagnostics;
@@ -15,11 +15,11 @@ namespace SysBot.Pokemon.Discord;
 // Copyright 2017, Christopher F. <foxbot@protonmail.com>
 public class InfoModule : ModuleBase<SocketCommandContext>
 {
-    private const string detail = "I am an open-source Discord bot powered by PKHeX.Core and other open-source software.";
-    private const string repo = "https://github.com/kwsch/SysBot.NET";
+    private const string detail = "Ich bin ein Open-Source-Discord-Bot, der auf PKHeX.Core und anderer Open-Source-Software basiert.";
+    private const string repo = "https://github.com/Furby87/SysBot.German";
 
     [Command("info")]
-    [Alias("about", "whoami", "owner")]
+    [Alias("about", "whoami", "owner", "werbinich")]
     public async Task InfoAsync()
     {
         var app = await Context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
@@ -32,24 +32,24 @@ public class InfoModule : ModuleBase<SocketCommandContext>
 
         builder.AddField("Info",
             $"- [Source Code]({repo})\n" +
-            $"- {Format.Bold("Owner")}: {app.Owner} ({app.Owner.Id})\n" +
+            $"- {Format.Bold("Eigentümer")}: {app.Owner} ({app.Owner.Id})\n" +
             $"- {Format.Bold("Library")}: Discord.Net ({DiscordConfig.Version})\n" +
-            $"- {Format.Bold("Uptime")}: {GetUptime()}\n" +
-            $"- {Format.Bold("Runtime")}: {RuntimeInformation.FrameworkDescription} {RuntimeInformation.ProcessArchitecture} " +
+            $"- {Format.Bold("Betriebszeit")}: {GetUptime()}\n" +
+            $"- {Format.Bold("Laufzeit")}: {RuntimeInformation.FrameworkDescription} {RuntimeInformation.ProcessArchitecture} " +
             $"({RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture})\n" +
             $"- {Format.Bold("Buildtime")}: {GetVersionInfo("SysBot.Base", false)}\n" +
-            $"- {Format.Bold("Core Version")}: {GetVersionInfo("PKHeX.Core")}\n" +
+            $"- {Format.Bold("Grundversion")}: {GetVersionInfo("PKHeX.Core")}\n" +
             $"- {Format.Bold("AutoLegality Version")}: {GetVersionInfo("PKHeX.Core.AutoMod")}\n"
         );
 
         builder.AddField("Stats",
-            $"- {Format.Bold("Heap Size")}: {GetHeapSize()}MiB\n" +
-            $"- {Format.Bold("Guilds")}: {Context.Client.Guilds.Count}\n" +
-            $"- {Format.Bold("Channels")}: {Context.Client.Guilds.Sum(g => g.Channels.Count)}\n" +
-            $"- {Format.Bold("Users")}: {Context.Client.Guilds.Sum(g => g.MemberCount)}\n"
+            $"- {Format.Bold("Heap-Größe")}: {GetHeapSize()}MiB\n" +
+            $"- {Format.Bold("Gilden")}: {Context.Client.Guilds.Count}\n" +
+            $"- {Format.Bold("Kanäle")}: {Context.Client.Guilds.Sum(g => g.Channels.Count)}\n" +
+            $"- {Format.Bold("Benutzer")}: {Context.Client.Guilds.Sum(g => g.MemberCount)}\n"
         );
 
-        await ReplyAsync("Here's a bit about me!", embed: builder.Build()).ConfigureAwait(false);
+        await ReplyAsync("Hier ein bisschen was über mich!", embed: builder.Build()).ConfigureAwait(false);
     }
 
     private static string GetUptime() => (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss");

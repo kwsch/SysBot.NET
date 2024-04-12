@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,7 +14,7 @@ public abstract class RoutineExecutor<T>(IConsoleBotManaged<IConsoleConnection, 
     public readonly IConsoleConnectionAsync Connection = Config.CreateAsynchronous();
     public readonly T Config = (T)Config;
 
-    public string LastLogged { get; private set; } = "Not Started";
+    public string LastLogged { get; private set; } = "Nicht gestartet";
     public DateTime LastTime { get; private set; } = DateTime.Now;
 
     public void ReportStatus() => LastTime = DateTime.Now;
@@ -35,7 +35,7 @@ public abstract class RoutineExecutor<T>(IConsoleBotManaged<IConsoleConnection, 
     public async Task RunAsync(CancellationToken token)
     {
         Connection.Connect();
-        Log("Initializing connection with console...");
+        Log("Initialisierung der Verbindung zur Konsole...");
         await InitialStartup(token).ConfigureAwait(false);
         await MainLoop(token).ConfigureAwait(false);
         Connection.Disconnect();

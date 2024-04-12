@@ -12,7 +12,7 @@ public class QueueModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("queueStatus")]
     [Alias("qs", "ts")]
-    [Summary("Checks the user's position in the queue.")]
+    [Summary("Ermittelt die Position des Benutzers in der Warteschlange.")]
     public async Task GetTradePositionAsync()
     {
         var msg = Context.User.Mention + " - " + Info.GetPositionString(Context.User.Id);
@@ -21,7 +21,7 @@ public class QueueModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("queueClear")]
     [Alias("qc", "tc")]
-    [Summary("Clears the user from the trade queues. Will not remove a user if they are being processed.")]
+    [Summary("Löscht den Benutzer aus den Warteschlangen für den Handel. Der Benutzer wird nicht entfernt, wenn er gerade verarbeitet wird.")]
     public async Task ClearTradeAsync()
     {
         string msg = ClearTrade();
@@ -30,7 +30,7 @@ public class QueueModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("queueClearUser")]
     [Alias("qcu", "tcu")]
-    [Summary("Clears the user from the trade queues. Will not remove a user if they are being processed.")]
+    [Summary("Löscht den Benutzer aus den Warteschlangen für den Handel. Der Benutzer wird nicht entfernt, wenn er gerade abgewickelt wird.")]
     [RequireSudo]
     public async Task ClearTradeUserAsync([Summary("Discord user ID")] ulong id)
     {
@@ -40,9 +40,9 @@ public class QueueModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("queueClearUser")]
     [Alias("qcu", "tcu")]
-    [Summary("Clears the user from the trade queues. Will not remove a user if they are being processed.")]
+    [Summary("Löscht den Benutzer aus den Warteschlangen für den Handel. Der Benutzer wird nicht entfernt, wenn er gerade abgewickelt wird.")]
     [RequireSudo]
-    public async Task ClearTradeUserAsync([Summary("Username of the person to clear")] string _)
+    public async Task ClearTradeUserAsync([Summary("Nutzername der zu löschenden Person")] string _)
     {
         foreach (var user in Context.Message.MentionedUsers)
         {

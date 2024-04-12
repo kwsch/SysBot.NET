@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.Commands;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,13 +9,14 @@ namespace SysBot.Pokemon.Discord;
 public class HelpModule(CommandService Service) : ModuleBase<SocketCommandContext>
 {
     [Command("help")]
-    [Summary("Lists available commands.")]
+    [Alias("hilfe")]
+    [Summary("Listet verfügbare Befehle auf.")]
     public async Task HelpAsync()
     {
         var builder = new EmbedBuilder
         {
             Color = new Color(114, 137, 218),
-            Description = "These are the commands you can use:",
+            Description = "Dies sind die Befehle, die Sie verwenden können:",
         };
 
         var mgr = SysCordSettings.Manager;
@@ -62,21 +63,21 @@ public class HelpModule(CommandService Service) : ModuleBase<SocketCommandContex
     }
 
     [Command("help")]
-    [Summary("Lists information about a specific command.")]
-    public async Task HelpAsync([Summary("The command you want help for")] string command)
+    [Summary("Listet Informationen über einen bestimmten Befehl auf.")]
+    public async Task HelpAsync([Summary("Der Befehl, für den Sie Hilfe benötigen")] string command)
     {
         var result = Service.Search(Context, command);
 
         if (!result.IsSuccess)
         {
-            await ReplyAsync($"Sorry, I couldn't find a command like **{command}**.").ConfigureAwait(false);
+            await ReplyAsync($"Entschuldigung, ich konnte keinen Befehl wie **{command}** finden.").ConfigureAwait(false);
             return;
         }
 
         var builder = new EmbedBuilder
         {
             Color = new Color(114, 137, 218),
-            Description = $"Here are some commands like **{command}**:",
+            Description = $"Hier sind einige Befehle wie **{command}**:",
         };
 
         foreach (var match in result.Commands)
@@ -96,7 +97,7 @@ public class HelpModule(CommandService Service) : ModuleBase<SocketCommandContex
 
     private static string GetCommandSummary(CommandInfo cmd)
     {
-        return $"Summary: {cmd.Summary}\nParameters: {GetParameterSummary(cmd.Parameters)}";
+        return $"Zusammenfassung: {cmd.Summary}\nParameter: {GetParameterSummary(cmd.Parameters)}";
     }
 
     private static string GetParameterSummary(IReadOnlyList<ParameterInfo> p)

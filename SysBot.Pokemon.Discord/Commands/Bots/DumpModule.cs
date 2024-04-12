@@ -12,7 +12,7 @@ public class DumpModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
 
     [Command("dump")]
     [Alias("d")]
-    [Summary("Dumps the Pokémon you show via Link Trade.")]
+    [Summary("Dumped das Pokémon, welches du über Link Trade zeigst.")]
     [RequireQueueRole(nameof(DiscordManager.RolesDump))]
     public Task DumpAsync(int code)
     {
@@ -22,7 +22,7 @@ public class DumpModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
 
     [Command("dump")]
     [Alias("d")]
-    [Summary("Dumps the Pokémon you show via Link Trade.")]
+    [Summary("Dumped das Pokémon, welches du über Link Trade zeigst.")]
     [RequireQueueRole(nameof(DiscordManager.RolesDump))]
     public Task DumpAsync([Summary("Trade Code")][Remainder] string code)
     {
@@ -33,7 +33,7 @@ public class DumpModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
 
     [Command("dump")]
     [Alias("d")]
-    [Summary("Dumps the Pokémon you show via Link Trade.")]
+    [Summary("Dumped das Pokémon, welches du über Link Trade zeigst.")]
     [RequireQueueRole(nameof(DiscordManager.RolesDump))]
     public Task DumpAsync()
     {
@@ -43,7 +43,7 @@ public class DumpModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
 
     [Command("dumpList")]
     [Alias("dl", "dq")]
-    [Summary("Prints the users in the Dump queue.")]
+    [Summary("Zeigt die Benutzer in der Dump-Warteschlange an.")]
     [RequireSudo]
     public async Task GetListAsync()
     {
@@ -55,6 +55,6 @@ public class DumpModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
             x.Value = msg;
             x.IsInline = false;
         });
-        await ReplyAsync("These are the users who are currently waiting:", embed: embed.Build()).ConfigureAwait(false);
+        await ReplyAsync("Dies sind die Benutzer, die zurzeit warten:", embed: embed.Build()).ConfigureAwait(false);
     }
 }

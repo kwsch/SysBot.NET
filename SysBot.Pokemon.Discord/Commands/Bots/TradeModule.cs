@@ -16,7 +16,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("tradeList")]
     [Alias("tl")]
-    [Summary("Prints the users in the trade queues.")]
+    [Summary("Zeigt die Benutzer in den Handelswarteschlangen an.")]
     [RequireSudo]
     public async Task GetTradeListAsync()
     {
@@ -28,12 +28,12 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             x.Value = msg;
             x.IsInline = false;
         });
-        await ReplyAsync("These are the users who are currently waiting:", embed: embed.Build()).ConfigureAwait(false);
+        await ReplyAsync("Dies sind die Benutzer, die derzeit warten:", embed: embed.Build()).ConfigureAwait(false);
     }
 
     [Command("trade")]
     [Alias("t")]
-    [Summary("Makes the bot trade you the provided Pokémon file.")]
+    [Summary("Bringt den Bot dazu, dir die angegebene Pokémon-Datei zu geben.")]
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
     public Task TradeAsyncAttach([Summary("Trade Code")] int code)
     {
@@ -43,7 +43,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("trade")]
     [Alias("t")]
-    [Summary("Makes the bot trade you a Pokémon converted from the provided Showdown Set.")]
+    [Summary("Bringt den Bot dazu, dir ein Pokémon zu geben, das aus dem angegebenen Showdown-Set umgewandelt wurde.")]
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
     public async Task TradeAsync([Summary("Trade Code")] int code, [Summary("Showdown Set")][Remainder] string content)
     {
@@ -52,7 +52,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var template = AutoLegalityWrapper.GetTemplate(set);
         if (set.InvalidLines.Count != 0)
         {
-            var msg = $"Unable to parse Showdown Set:\n{string.Join("\n", set.InvalidLines)}";
+            var msg = $"Showdown-Set kann nicht analysiert werden:\n{string.Join("\n", set.InvalidLines)}";
             await ReplyAsync(msg).ConfigureAwait(false);
             return;
         }
@@ -66,7 +66,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
             if (pkm is not T pk || !la.Valid)
             {
-                var reason = result == "Timeout" ? $"That {spec} set took too long to generate." : result == "VersionMismatch" ? "Request refused: PKHeX and Auto-Legality Mod version mismatch." : $"I wasn't able to create a {spec} from that set.";
+                var reason = result == "Timeout" ? $"Die Erstellung dieses {spec}-Satzes hat zu lange gedauert." : result == "VersionMismatch" ? "Anfrage abgelehnt: PKHeX und Auto-Legality Mod Version stimmen nicht überein." : $"Ich war nicht in der Lage, eine {spec} aus diesem Datensatz zu erstellen.";
                 var imsg = $"Oops! {reason}";
                 if (result == "Failed")
                     imsg += $"\n{AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm)}";
@@ -81,14 +81,14 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         catch (Exception ex)
         {
             LogUtil.LogSafe(ex, nameof(TradeModule<T>));
-            var msg = $"Oops! An unexpected problem happened with this Showdown Set:\n```{string.Join("\n", set.GetSetLines())}```";
+            var msg = $"Ups! Bei diesem Showdown-Set ist ein unerwartetes Problem aufgetreten:\n```{string.Join("\n", set.GetSetLines())}```";
             await ReplyAsync(msg).ConfigureAwait(false);
         }
     }
 
     [Command("trade")]
     [Alias("t")]
-    [Summary("Makes the bot trade you a Pokémon converted from the provided Showdown Set.")]
+    [Summary("Bringt den Bot dazu, dir ein Pokémon zu geben, das aus dem angegebenen Showdown-Set umgewandelt wurde.")]
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
     public Task TradeAsync([Summary("Showdown Set")][Remainder] string content)
     {
@@ -98,7 +98,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("trade")]
     [Alias("t")]
-    [Summary("Makes the bot trade you the attached file.")]
+    [Summary("Bringt den Bot dazu, Ihnen die angehängte Datei zu handeln.")]
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
     public Task TradeAsyncAttach()
     {
@@ -119,24 +119,24 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     {
         ID = id,
         Name = id.ToString(),
-        Comment = $"Added by {Context.User.Username} on {DateTime.Now:yyyy.MM.dd-hh:mm:ss} ({comment})",
+        Comment = $"Hinzugefügt von {Context.User.Username} am {DateTime.Now:yyyy.MM.dd-hh:mm:ss} ({comment})",
     };
 
     [Command("tradeUser")]
     [Alias("tu", "tradeOther")]
-    [Summary("Makes the bot trade the mentioned user the attached file.")]
+    [Summary("Bringt den Bot dazu, mit dem genannten Benutzer die angehängte Datei zu handeln.")]
     [RequireSudo]
     public async Task TradeAsyncAttachUser([Summary("Trade Code")] int code, [Remainder] string _)
     {
         if (Context.Message.MentionedUsers.Count > 1)
         {
-            await ReplyAsync("Too many mentions. Queue one user at a time.").ConfigureAwait(false);
+            await ReplyAsync("Zu viele Erwähnungen. Jeweils einen Benutzer in die Warteschlange stellen.").ConfigureAwait(false);
             return;
         }
 
         if (Context.Message.MentionedUsers.Count == 0)
         {
-            await ReplyAsync("A user must be mentioned in order to do this.").ConfigureAwait(false);
+            await ReplyAsync("Dazu muss ein Benutzer genannt werden.").ConfigureAwait(false);
             return;
         }
 
@@ -147,7 +147,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("tradeUser")]
     [Alias("tu", "tradeOther")]
-    [Summary("Makes the bot trade the mentioned user the attached file.")]
+    [Summary("Bringt den Bot dazu, mit dem erwähnten Benutzer die angehängte Datei zu handeln.")]
     [RequireSudo]
     public Task TradeAsyncAttachUser([Remainder] string _)
     {
@@ -160,7 +160,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var attachment = Context.Message.Attachments.FirstOrDefault();
         if (attachment == default)
         {
-            await ReplyAsync("No attachment provided!").ConfigureAwait(false);
+            await ReplyAsync("Keine Anlage vorhanden!").ConfigureAwait(false);
             return;
         }
 
@@ -168,7 +168,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var pk = GetRequest(att);
         if (pk == null)
         {
-            await ReplyAsync("Attachment provided is not compatible with this module!").ConfigureAwait(false);
+            await ReplyAsync("Der mitgelieferte Anhang ist nicht mit diesem Modul kompatibel!").ConfigureAwait(false);
             return;
         }
 
@@ -192,7 +192,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         if (!pk.CanBeTraded())
         {
             // Disallow anything that cannot be traded from the game (e.g. Fusions).
-            await ReplyAsync("Provided Pokémon content is blocked from trading!").ConfigureAwait(false);
+            await ReplyAsync("Vorgesehener Pokémon-Inhalt ist für den Handel gesperrt!").ConfigureAwait(false);
             return;
         }
 
@@ -201,19 +201,19 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         if (!la.Valid)
         {
             // Disallow trading illegal Pokémon.
-            await ReplyAsync($"{typeof(T).Name} attachment is not legal, and cannot be traded!").ConfigureAwait(false);
+            await ReplyAsync($"{typeof(T).Name} Anhang ist nicht legal, und kann nicht gehandelt werden!").ConfigureAwait(false);
             return;
         }
         if (cfg.DisallowNonNatives && (la.EncounterOriginal.Context != pk.Context || pk.GO))
         {
             // Allow the owner to prevent trading entities that require a HOME Tracker even if the file has one already.
-            await ReplyAsync($"{typeof(T).Name} attachment is not native, and cannot be traded!").ConfigureAwait(false);
+            await ReplyAsync($"{typeof(T).Name} Anlage ist nicht einheimisch, und kann nicht gehandelt werden!").ConfigureAwait(false);
             return;
         }
         if (cfg.DisallowTracked && pk is IHomeTrack { HasTracker: true })
         {
             // Allow the owner to prevent trading entities that already have a HOME Tracker.
-            await ReplyAsync($"{typeof(T).Name} attachment is tracked by HOME, and cannot be traded!").ConfigureAwait(false);
+            await ReplyAsync($"{typeof(T).Name} Die Anlage wurde von HOME registriert und kann nicht gehandelt werden!").ConfigureAwait(false);
             return;
         }
 

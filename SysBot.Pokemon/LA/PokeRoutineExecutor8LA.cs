@@ -78,12 +78,12 @@ public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
         // Check title so we can warn if mode is incorrect.
         string title = await SwitchConnection.GetTitleID(token).ConfigureAwait(false);
         if (title != LegendsArceusID)
-            throw new Exception($"{title} is not a valid Pokémon Legends: Arceus title. Is your mode correct?");
+            throw new Exception($"{title} ist kein gültiger Pokémon Legends: Arceus-Titel. Ist Ihr Modus korrekt?");
 
         // Verify the game version.
         var game_version = await SwitchConnection.GetGameInfo("version", token).ConfigureAwait(false);
         if (!game_version.SequenceEqual(LAGameVersion))
-            throw new Exception($"Game version is not supported. Expected version {LAGameVersion}, and current game version is {game_version}.");
+            throw new Exception($"Die Spielversion wird nicht unterstützt. Erwartete Version {LAGameVersion}, und die aktuelle Spielversion ist {game_version}.");
 
         var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
         InitSaveData(sav);
@@ -91,11 +91,11 @@ public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
         if (!IsValidTrainerData())
         {
             await CheckForRAMShiftingApps(token).ConfigureAwait(false);
-            throw new Exception("Refer to the SysBot.NET wiki (https://github.com/kwsch/SysBot.NET/wiki/Troubleshooting) for more information.");
+            throw new Exception("Weitere Informationen finden Sie im SysBot.NET-Wiki (https://github.com/kwsch/SysBot.NET/wiki/Troubleshooting).");
         }
 
         if (await GetTextSpeed(token).ConfigureAwait(false) < TextSpeedOption.Fast)
-            throw new Exception("Text speed should be set to FAST. Fix this for correct operation.");
+            throw new Exception("Die Textgeschwindigkeit sollte auf SCHNELL eingestellt sein. Korrigieren Sie dies für einen korrekten Betrieb.");
 
         return sav;
     }
@@ -111,11 +111,11 @@ public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
 
     public async Task InitializeHardware(IBotStateSettings settings, CancellationToken token)
     {
-        Log("Detaching on startup.");
+        Log("Ablösung beim Start.");
         await DetachController(token).ConfigureAwait(false);
         if (settings.ScreenOff)
         {
-            Log("Turning off screen.");
+            Log("Abschalten des Bildschirms.");
             await SetScreen(ScreenState.Off, token).ConfigureAwait(false);
         }
     }
@@ -123,7 +123,7 @@ public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
     public async Task CleanExit(CancellationToken token)
     {
         await SetScreen(ScreenState.On, token).ConfigureAwait(false);
-        Log("Detaching controllers on routine exit.");
+        Log("Lösen von Controllern beim Routineausgang.");
         await DetachController(token).ConfigureAwait(false);
     }
 
@@ -141,14 +141,14 @@ public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
 
     public async Task ReOpenGame(PokeTradeHubConfig config, CancellationToken token)
     {
-        Log("Error detected, restarting the game!!");
+        Log("Fehler entdeckt, Spiel neu starten!!");
         await CloseGame(config, token).ConfigureAwait(false);
         await StartGame(config, token).ConfigureAwait(false);
     }
 
     public Task UnSoftBan(CancellationToken token)
     {
-        Log("Soft ban detected, unbanning.");
+        Log("Soft-Ban erkannt, Aufhebung des Banns.");
         // Write the value to 0.
         var data = BitConverter.GetBytes(0);
         return SwitchConnection.PointerPoke(data, Offsets.SoftbanPointer, token);
@@ -168,7 +168,7 @@ public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
         await Click(HOME, 2_000 + timing.ExtraTimeReturnHome, token).ConfigureAwait(false);
         await Click(X, 1_000, token).ConfigureAwait(false);
         await Click(A, 5_000 + timing.ExtraTimeCloseGame, token).ConfigureAwait(false);
-        Log("Closed out of the game!");
+        Log("Das Spiel ist beendet!");
     }
 
     public async Task StartGame(PokeTradeHubConfig config, CancellationToken token)
@@ -191,7 +191,7 @@ public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
         await Click(DUP, 0_600, token).ConfigureAwait(false);
         await Click(A, 0_600, token).ConfigureAwait(false);
 
-        Log("Restarting the game!");
+        Log("Das Spiel neu starten!");
 
         // Switch Logo and game load screen
         await Task.Delay(12_000 + timing.ExtraTimeLoadGame, token).ConfigureAwait(false);
@@ -208,7 +208,7 @@ public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
             // Don't risk it if hub is set to avoid updates.
             if (timer <= 0 && !timing.AvoidSystemUpdate)
             {
-                Log("Still not in the game, initiating rescue protocol!");
+                Log("Immer noch nicht im Spiel, leitet das Rettungsprotokoll ein!");
                 while (!await IsOnOverworldTitle(token).ConfigureAwait(false))
                     await Click(A, 6_000, token).ConfigureAwait(false);
                 break;
@@ -216,7 +216,7 @@ public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
         }
 
         await Task.Delay(5_000 + timing.ExtraTimeLoadOverworld, token).ConfigureAwait(false);
-        Log("Back in the overworld!");
+        Log("Zurück in der Oberwelt!");
     }
 
     public async Task<ulong> GetTradePartnerNID(ulong offset, CancellationToken token)

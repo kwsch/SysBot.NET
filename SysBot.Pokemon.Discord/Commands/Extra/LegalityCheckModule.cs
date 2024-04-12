@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.Commands;
 using PKHeX.Core;
 using System.Threading.Tasks;
@@ -7,8 +7,8 @@ namespace SysBot.Pokemon.Discord;
 
 public class LegalityCheckModule : ModuleBase<SocketCommandContext>
 {
-    [Command("lc"), Alias("check", "validate", "verify")]
-    [Summary("Verifies the attachment for legality.")]
+    [Command("lc"), Alias("check", "validate", "verify", "prüfe")]
+    [Summary("Überprüft die Anlage auf Legalität.")]
     public async Task LegalityCheck()
     {
         var attachments = Context.Message.Attachments;
@@ -17,7 +17,7 @@ public class LegalityCheckModule : ModuleBase<SocketCommandContext>
     }
 
     [Command("lcv"), Alias("verbose")]
-    [Summary("Verifies the attachment for legality with a verbose output.")]
+    [Summary("Überprüft den Anhang auf Legalität mit einer ausführlichen Ausgabe.")]
     public async Task LegalityCheckVerbose()
     {
         var attachments = Context.Message.Attachments;
@@ -39,7 +39,7 @@ public class LegalityCheckModule : ModuleBase<SocketCommandContext>
         var builder = new EmbedBuilder
         {
             Color = la.Valid ? Color.Green : Color.Red,
-            Description = $"Legality Report for {download.SanitizedFileName}:",
+            Description = $"Legalitätsbericht für {download.SanitizedFileName}:",
         };
 
         builder.AddField(x =>
@@ -49,6 +49,6 @@ public class LegalityCheckModule : ModuleBase<SocketCommandContext>
             x.IsInline = false;
         });
 
-        await ReplyAsync("Here's the legality report!", false, builder.Build()).ConfigureAwait(false);
+        await ReplyAsync("Hier ist der Bericht über die Legalität!", false, builder.Build()).ConfigureAwait(false);
     }
 }

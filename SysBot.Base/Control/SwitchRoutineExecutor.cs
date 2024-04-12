@@ -15,7 +15,7 @@ public abstract class SwitchRoutineExecutor<T> : RoutineExecutor<T> where T : cl
     {
         UseCRLF = Config.GetInnerConfig() is ISwitchConnectionConfig { UseCRLF: true };
         if (Connection is not ISwitchConnectionAsync connect)
-            throw new System.Exception("Not a valid switch connection");
+            throw new System.Exception("Keine gültige Switch-Verbindung");
         SwitchConnection = connect;
     }
 

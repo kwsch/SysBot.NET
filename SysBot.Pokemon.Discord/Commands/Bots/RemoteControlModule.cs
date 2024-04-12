@@ -11,14 +11,14 @@ namespace SysBot.Pokemon.Discord;
 public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
 {
     [Command("click")]
-    [Summary("Clicks the specified button.")]
+    [Summary("Klickt die angegebene Taste.")]
     [RequireRoleAccess(nameof(DiscordManager.RolesRemoteControl))]
     public async Task ClickAsync(SwitchButton b)
     {
         var bot = SysCord<T>.Runner.Bots.Find(z => IsRemoteControlBot(z.Bot));
         if (bot == null)
         {
-            await ReplyAsync($"No bot is available to execute your command: {b}").ConfigureAwait(false);
+            await ReplyAsync($"Es ist kein Bot verfügbar, um Ihren Befehl auszuführen: {b}").ConfigureAwait(false);
             return;
         }
 
@@ -26,14 +26,14 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
     }
 
     [Command("click")]
-    [Summary("Clicks the specified button.")]
+    [Summary("Klickt die angegebene Taste.")]
     [RequireSudo]
     public async Task ClickAsync(string ip, SwitchButton b)
     {
         var bot = SysCord<T>.Runner.GetBot(ip);
         if (bot == null)
         {
-            await ReplyAsync($"No bot is available to execute your command: {b}").ConfigureAwait(false);
+            await ReplyAsync($"Es ist kein Bot verfügbar, um Ihren Befehl auszuführen: {b}").ConfigureAwait(false);
             return;
         }
 
@@ -41,7 +41,7 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
     }
 
     [Command("setStick")]
-    [Summary("Sets the stick to the specified position.")]
+    [Summary("Setzt den Joystick auf die angegebene Position.")]
     [RequireRoleAccess(nameof(DiscordManager.RolesRemoteControl))]
     public async Task SetStickAsync(SwitchStick s, short x, short y, ushort ms = 1_000)
     {
@@ -56,14 +56,14 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
     }
 
     [Command("setStick")]
-    [Summary("Sets the stick to the specified position.")]
+    [Summary("Setzt den Joystick auf die angegebene Position.")]
     [RequireSudo]
     public async Task SetStickAsync(string ip, SwitchStick s, short x, short y, ushort ms = 1_000)
     {
         var bot = SysCord<T>.Runner.GetBot(ip);
         if (bot == null)
         {
-            await ReplyAsync($"No bot has that IP address ({ip}).").ConfigureAwait(false);
+            await ReplyAsync($"Kein Bot hat die IP-Adresse: ({ip}).").ConfigureAwait(false);
             return;
         }
 
@@ -72,7 +72,7 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
 
     [Command("setScreenOn")]
     [Alias("screenOn", "scrOn")]
-    [Summary("Turns the screen on")]
+    [Summary("Schaltet den Bildschirm ein")]
     [RequireSudo]
     public Task SetScreenOnAsync([Remainder] string ip)
     {
@@ -81,7 +81,7 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
 
     [Command("setScreenOff")]
     [Alias("screenOff", "scrOff")]
-    [Summary("Turns the screen off")]
+    [Summary("Schaltet den Bildschirm aus")]
     [RequireSudo]
     public Task SetScreenOffAsync([Remainder] string ip)
     {
@@ -93,14 +93,14 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
         var bot = GetBot(ip);
         if (bot == null)
         {
-            await ReplyAsync($"No bot has that IP address ({ip}).").ConfigureAwait(false);
+            await ReplyAsync($"Kein Bot hat die IP-Adresse: ({ip}).").ConfigureAwait(false);
             return;
         }
 
         var b = bot.Bot;
         var crlf = b is SwitchRoutineExecutor<PokeBotState> { UseCRLF: true };
         await b.Connection.SendAsync(SwitchCommand.SetScreen(on ? ScreenState.On : ScreenState.Off, crlf), CancellationToken.None).ConfigureAwait(false);
-        await ReplyAsync("Screen state set to: " + (on ? "On" : "Off")).ConfigureAwait(false);
+        await ReplyAsync("Bildschirmstatus wurde festgelegt auf: " + (on ? "Ein" : "Aus")).ConfigureAwait(false);
     }
 
     private static BotSource<PokeBotState>? GetBot(string ip)
@@ -113,31 +113,31 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
     {
         if (!Enum.IsDefined(typeof(SwitchButton), button))
         {
-            await ReplyAsync($"Unknown button value: {button}").ConfigureAwait(false);
+            await ReplyAsync($"Unbekannter Wert der Taste: {button}").ConfigureAwait(false);
             return;
         }
 
         var b = bot.Bot;
         var crlf = b is SwitchRoutineExecutor<PokeBotState> { UseCRLF: true };
         await b.Connection.SendAsync(SwitchCommand.Click(button, crlf), CancellationToken.None).ConfigureAwait(false);
-        await ReplyAsync($"{b.Connection.Name} has performed: {button}").ConfigureAwait(false);
+        await ReplyAsync($"{b.Connection.Name} durchführte {button}").ConfigureAwait(false);
     }
 
     private async Task SetStickAsyncImpl(SwitchStick s, short x, short y, ushort ms, BotSource<PokeBotState> bot)
     {
         if (!Enum.IsDefined(typeof(SwitchStick), s))
         {
-            await ReplyAsync($"Unknown stick: {s}").ConfigureAwait(false);
+            await ReplyAsync($"Unbekannter Stick: {s}").ConfigureAwait(false);
             return;
         }
 
         var b = bot.Bot;
         var crlf = b is SwitchRoutineExecutor<PokeBotState> { UseCRLF: true };
         await b.Connection.SendAsync(SwitchCommand.SetStick(s, x, y, crlf), CancellationToken.None).ConfigureAwait(false);
-        await ReplyAsync($"{b.Connection.Name} has performed: {s}").ConfigureAwait(false);
+        await ReplyAsync($"{b.Connection.Name} durchführte: {s}").ConfigureAwait(false);
         await Task.Delay(ms).ConfigureAwait(false);
         await b.Connection.SendAsync(SwitchCommand.ResetStick(s, crlf), CancellationToken.None).ConfigureAwait(false);
-        await ReplyAsync($"{b.Connection.Name} has reset the stick position.").ConfigureAwait(false);
+        await ReplyAsync($"{b.Connection.Name} hat die Stick-Position zurückgesetzt.").ConfigureAwait(false);
     }
 
     private static bool IsRemoteControlBot(RoutineExecutor<PokeBotState> botstate)

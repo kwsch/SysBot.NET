@@ -12,7 +12,7 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("clone")]
     [Alias("c")]
-    [Summary("Clones the Pokémon you show via Link Trade.")]
+    [Summary("Klont das Pokémon, das du über Link-Handel zeigst.")]
     [RequireQueueRole(nameof(DiscordManager.RolesClone))]
     public Task CloneAsync(int code)
     {
@@ -22,7 +22,7 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("clone")]
     [Alias("c")]
-    [Summary("Clones the Pokémon you show via Link Trade.")]
+    [Summary("Klont das Pokémon, das du über Link-Handel zeigst.")]
     [RequireQueueRole(nameof(DiscordManager.RolesClone))]
     public Task CloneAsync([Summary("Trade Code")][Remainder] string code)
     {
@@ -33,7 +33,7 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("clone")]
     [Alias("c")]
-    [Summary("Clones the Pokémon you show via Link Trade.")]
+    [Summary("Klont das Pokémon, das du über Link-Handel zeigst.")]
     [RequireQueueRole(nameof(DiscordManager.RolesClone))]
     public Task CloneAsync()
     {
@@ -43,7 +43,7 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("cloneList")]
     [Alias("cl", "cq")]
-    [Summary("Prints the users in the Clone queue.")]
+    [Summary("Zeigt die Benutzer in der Clone-Warteschlange an.")]
     [RequireSudo]
     public async Task GetListAsync()
     {
@@ -55,6 +55,6 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             x.Value = msg;
             x.IsInline = false;
         });
-        await ReplyAsync("These are the users who are currently waiting:", embed: embed.Build()).ConfigureAwait(false);
+        await ReplyAsync("Dies sind die Benutzer, die derzeit warten:", embed: embed.Build()).ConfigureAwait(false);
     }
 }

@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.Commands;
 using PKHeX.Core;
 using SysBot.Base;
@@ -13,7 +13,7 @@ public class HubModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new(
 {
     [Command("status")]
     [Alias("stats")]
-    [Summary("Gets the status of the bot environment.")]
+    [Summary("Ermittelt den Status der Bot-Umgebung.")]
     public async Task GetStatusAsync()
     {
         var me = SysCord<T>.Runner;
@@ -31,9 +31,9 @@ public class HubModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new(
         {
             x.Name = "Summary";
             x.Value =
-                $"Bot Count: {botCount}\n" +
-                $"Bot State: {SummarizeBots(allBots)}\n" +
-                $"Pool Count: {hub.Ledy.Pool.Count}\n";
+                $"Bot-Anzahl: {botCount}\n" +
+                $"Bot-Status: {SummarizeBots(allBots)}\n" +
+                $"Pool-Anzahl: {hub.Ledy.Pool.Count}\n";
             x.IsInline = false;
         });
 
@@ -43,7 +43,7 @@ public class HubModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new(
             var lines = bots.SelectMany(z => z.Counts.GetNonZeroCounts()).Distinct();
             var msg = string.Join("\n", lines);
             if (string.IsNullOrWhiteSpace(msg))
-                msg = "Nothing counted yet!";
+                msg = "Es wurde noch nichts gezählt!";
             x.Name = "Counts";
             x.Value = msg;
             x.IsInline = false;
@@ -62,8 +62,8 @@ public class HubModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new(
             {
                 x.Name = $"{q.Type} Queue";
                 x.Value =
-                    $"Next: {nextMsg}\n" +
-                    $"Count: {c}\n";
+                    $"Nächste: {nextMsg}\n" +
+                    $"Anzahl: {c}\n";
                 x.IsInline = false;
             });
             count += c;
@@ -73,13 +73,13 @@ public class HubModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new(
         {
             builder.AddField(x =>
             {
-                x.Name = "Queues are empty.";
-                x.Value = "Nobody in line!";
+                x.Name = "Die Warteschlangen sind leer.";
+                x.Value = "Keiner in der Warteschlange!";
                 x.IsInline = false;
             });
         }
 
-        await ReplyAsync("Bot Status", false, builder.Build()).ConfigureAwait(false);
+        await ReplyAsync("Bot-Status", false, builder.Build()).ConfigureAwait(false);
     }
 
     private static string GetNextName(PokeTradeQueue<T> q)
@@ -100,7 +100,7 @@ public class HubModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new(
     private static string SummarizeBots(IReadOnlyCollection<RoutineExecutor<PokeBotState>> bots)
     {
         if (bots.Count == 0)
-            return "No bots configured.";
+            return "Keine Bots konfiguriert.";
         var summaries = bots.Select(z => $"- {z.GetSummary()}");
         return Environment.NewLine + string.Join(Environment.NewLine, summaries);
     }

@@ -1,4 +1,4 @@
-﻿using Discord.Commands;
+using Discord.Commands;
 using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.Discord;
@@ -6,7 +6,7 @@ namespace SysBot.Pokemon.Discord;
 public class PingModule : ModuleBase<SocketCommandContext>
 {
     [Command("ping")]
-    [Summary("Makes the bot respond, indicating that it is running.")]
+    [Summary("Bringt den Bot zum Reagieren und zeigt damit an, dass er läuft.")]
     public async Task PingAsync()
     {
         await ReplyAsync("Pong!").ConfigureAwait(false);

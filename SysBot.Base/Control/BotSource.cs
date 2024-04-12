@@ -74,24 +74,24 @@ public class BotSource<T>(RoutineExecutor<T> Bot)
         var ae = finishedTask.Exception;
         if (ae == null)
         {
-            LogUtil.LogError("Bot has stopped without error.", ident);
+            LogUtil.LogError("Der Bot wurde ohne Fehler gestoppt.", ident);
             return;
         }
 
-        LogUtil.LogError("Bot has crashed!", ident);
+        LogUtil.LogError("Der Bot ist abgestürzt!", ident);
 
         if (!string.IsNullOrEmpty(ae.Message))
-            LogUtil.LogError("Aggregate message: " + ae.Message, ident);
+            LogUtil.LogError("Sammelnachricht: " + ae.Message, ident);
 
         var st = ae.StackTrace;
         if (!string.IsNullOrEmpty(st))
-            LogUtil.LogError("Aggregate stacktrace: " + st, ident);
+            LogUtil.LogError("Aggregierter Stacktrace: " + st, ident);
 
         foreach (var e in ae.InnerExceptions)
         {
             if (!string.IsNullOrEmpty(e.Message))
-                LogUtil.LogError("Inner message: " + e.Message, ident);
-            LogUtil.LogError("Inner stacktrace: " + e.StackTrace, ident);
+                LogUtil.LogError("Innere Nachricht: " + e.Message, ident);
+            LogUtil.LogError("Innerer Stacktrace: " + e.StackTrace, ident);
         }
     }
 

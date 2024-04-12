@@ -78,12 +78,12 @@ public abstract class PokeRoutineExecutor9SV : PokeRoutineExecutor<PK9>
         // Check title so we can warn if mode is incorrect.
         string title = await SwitchConnection.GetTitleID(token).ConfigureAwait(false);
         if (title is not (ScarletID or VioletID))
-            throw new Exception($"{title} is not a valid SV title. Is your mode correct?");
+            throw new Exception($"{title} ist kein gültiger SV-Titel. Ist Ihr Modus korrekt?");
 
         // Verify the game version.
         var game_version = await SwitchConnection.GetGameInfo("version", token).ConfigureAwait(false);
         if (!game_version.SequenceEqual(SVGameVersion))
-            throw new Exception($"Game version is not supported. Expected version {SVGameVersion}, and current game version is {game_version}.");
+            throw new Exception($"Die Spielversion wird nicht unterstützt. Erwartete Version {SVGameVersion}, und die aktuelle Spielversion ist {game_version}.");
 
         var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
         InitSaveData(sav);
@@ -91,11 +91,11 @@ public abstract class PokeRoutineExecutor9SV : PokeRoutineExecutor<PK9>
         if (!IsValidTrainerData())
         {
             await CheckForRAMShiftingApps(token).ConfigureAwait(false);
-            throw new Exception("Refer to the SysBot.NET wiki (https://github.com/kwsch/SysBot.NET/wiki/Troubleshooting) for more information.");
+            throw new Exception("Weitere Informationen finden Sie im SysBot.NET-Wiki (https://github.com/kwsch/SysBot.NET/wiki/Troubleshooting).");
         }
 
         if (await GetTextSpeed(token).ConfigureAwait(false) < TextSpeedOption.Fast)
-            throw new Exception("Text speed should be set to FAST. Fix this for correct operation.");
+            throw new Exception("Die Textgeschwindigkeit sollte auf SCHNELL eingestellt sein. Korrigieren Sie dies für einen korrekten Betrieb.");
 
         return sav;
     }
@@ -149,7 +149,7 @@ public abstract class PokeRoutineExecutor9SV : PokeRoutineExecutor<PK9>
 
     public async Task ReOpenGame(PokeTradeHubConfig config, CancellationToken token)
     {
-        Log("Error detected, restarting the game!!");
+        Log("Fehler entdeckt, Spiel neu starten!!");
         await CloseGame(config, token).ConfigureAwait(false);
         await StartGame(config, token).ConfigureAwait(false);
     }
@@ -162,7 +162,7 @@ public abstract class PokeRoutineExecutor9SV : PokeRoutineExecutor<PK9>
         await Click(HOME, 2_000 + timing.ExtraTimeReturnHome, token).ConfigureAwait(false);
         await Click(X, 1_000, token).ConfigureAwait(false);
         await Click(A, 5_000 + timing.ExtraTimeCloseGame, token).ConfigureAwait(false);
-        Log("Closed out of the game!");
+        Log("Das Spiel ist beendet!");
     }
 
     public async Task StartGame(PokeTradeHubConfig config, CancellationToken token)
@@ -185,7 +185,7 @@ public abstract class PokeRoutineExecutor9SV : PokeRoutineExecutor<PK9>
         await Click(DUP, 0_600, token).ConfigureAwait(false);
         await Click(A, 0_600, token).ConfigureAwait(false);
 
-        Log("Restarting the game!");
+        Log("Das Spiel neu starten!");
 
         // Switch Logo and game load screen
         await Task.Delay(12_000 + timing.ExtraTimeLoadGame, token).ConfigureAwait(false);
@@ -202,7 +202,7 @@ public abstract class PokeRoutineExecutor9SV : PokeRoutineExecutor<PK9>
             // Don't risk it if hub is set to avoid updates.
             if (timer <= 0 && !timing.AvoidSystemUpdate)
             {
-                Log("Still not in the game, initiating rescue protocol!");
+                Log("Immer noch nicht im Spiel, leitet das Rettungsprotokoll ein!");
                 while (!await IsOnOverworldTitle(token).ConfigureAwait(false))
                     await Click(A, 6_000, token).ConfigureAwait(false);
                 break;
@@ -210,7 +210,7 @@ public abstract class PokeRoutineExecutor9SV : PokeRoutineExecutor<PK9>
         }
 
         await Task.Delay(5_000 + timing.ExtraTimeLoadOverworld, token).ConfigureAwait(false);
-        Log("Back in the overworld!");
+        Log("Zurück in der Oberwelt!");
     }
 
     public async Task<bool> IsConnectedOnline(ulong offset, CancellationToken token)

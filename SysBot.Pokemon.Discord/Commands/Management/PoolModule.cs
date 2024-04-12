@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.Commands;
 using PKHeX.Core;
 using System.Linq;
@@ -10,7 +10,7 @@ namespace SysBot.Pokemon.Discord;
 public class PoolModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
 {
     [Command("poolReload")]
-    [Summary("Reloads the bot pool from the setting's folder.")]
+    [Summary("Lädt den Bot-Pool aus dem Einstellungsordner neu.")]
     [RequireSudo]
     public async Task ReloadPoolAsync()
     {
@@ -19,13 +19,13 @@ public class PoolModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
 
         var pool = hub.Ledy.Pool.Reload(hub.Config.Folder.DistributeFolder);
         if (!pool)
-            await ReplyAsync("Failed to reload from folder.").ConfigureAwait(false);
+            await ReplyAsync("Das Nachladen aus dem Ordner ist fehlgeschlagen.").ConfigureAwait(false);
         else
-            await ReplyAsync($"Reloaded from folder. Pool count: {hub.Ledy.Pool.Count}").ConfigureAwait(false);
+            await ReplyAsync($"Neuladen aus dem Ordner. Anzahl der Pools: {hub.Ledy.Pool.Count}").ConfigureAwait(false);
     }
 
     [Command("pool")]
-    [Summary("Displays the details of Pokémon files in the random pool.")]
+    [Summary("Zeigt die Details der Pokémon-Dateien im Zufalls-Pool an.")]
     public async Task DisplayPoolCountAsync()
     {
         var me = SysCord<T>.Runner;
@@ -40,15 +40,15 @@ public class PoolModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
             var embed = new EmbedBuilder();
             embed.AddField(x =>
             {
-                x.Name = $"Count: {count}";
+                x.Name = $"Anzahl: {count}";
                 x.Value = msg;
                 x.IsInline = false;
             });
-            await ReplyAsync("Pool Details", embed: embed.Build()).ConfigureAwait(false);
+            await ReplyAsync("Pool-Details", embed: embed.Build()).ConfigureAwait(false);
         }
         else
         {
-            await ReplyAsync($"Pool Count: {count}").ConfigureAwait(false);
+            await ReplyAsync($"Anzahl der Pools: {count}").ConfigureAwait(false);
         }
     }
 }

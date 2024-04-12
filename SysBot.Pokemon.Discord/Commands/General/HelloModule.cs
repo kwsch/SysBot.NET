@@ -1,4 +1,4 @@
-﻿using Discord.Commands;
+using Discord.Commands;
 using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.Discord;
@@ -6,8 +6,8 @@ namespace SysBot.Pokemon.Discord;
 public class HelloModule : ModuleBase<SocketCommandContext>
 {
     [Command("hello")]
-    [Alias("hi")]
-    [Summary("Say hello to the bot and get a response.")]
+    [Alias("hi", "hallo")]
+    [Summary("Sagen Sie dem Bot \"Hallo\" und erhalten Sie eine Antwort.")]
     public async Task PingAsync()
     {
         var str = SysCordSettings.Settings.HelloResponse;

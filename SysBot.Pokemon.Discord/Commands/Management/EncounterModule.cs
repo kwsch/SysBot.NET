@@ -1,4 +1,4 @@
-﻿using Discord.Commands;
+using Discord.Commands;
 using PKHeX.Core;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,7 +8,7 @@ namespace SysBot.Pokemon.Discord;
 public class EchoModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
 {
     [Command("toss")]
-    [Summary("Makes all bots that are currently waiting for a go-ahead continue operation.")]
+    [Summary("Sorgt dafür, dass alle Bots, die derzeit auf eine Freigabe warten, weiterarbeiten.")]
     [RequireSudo]
     public async Task TossAsync(string name = "")
     {
