@@ -69,7 +69,7 @@ public static class LogUtil
             }
             catch (Exception ex)
             {
-                Logger.Log(LogLevel.Error, $"Failed to forward log from {identity} - {message}");
+                Logger.Log(LogLevel.Error, $"Fehler beim Weiterleiten des Protokolls von {identity} - {message}");
                 Logger.Log(LogLevel.Error, ex);
             }
         }
@@ -79,7 +79,7 @@ public static class LogUtil
 
     public static void LogSafe(Exception exception, string identity)
     {
-        Logger.Log(LogLevel.Error, $"Exception from {identity}:");
+        Logger.Log(LogLevel.Error, $"Ausnahme von {identity}:");
         Logger.Log(LogLevel.Error, exception);
 
         var err = exception.InnerException;

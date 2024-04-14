@@ -119,11 +119,11 @@ public abstract class PokeRoutineExecutor9SV : PokeRoutineExecutor<PK9>
 
     public async Task InitializeHardware(IBotStateSettings settings, CancellationToken token)
     {
-        Log("Detaching on startup.");
+        Log("Beim Starten ablösen.");
         await DetachController(token).ConfigureAwait(false);
         if (settings.ScreenOff)
         {
-            Log("Turning off screen.");
+            Log("Ausschalten des Bildschirms.");
             await SetScreen(ScreenState.Off, token).ConfigureAwait(false);
         }
     }
@@ -131,7 +131,7 @@ public abstract class PokeRoutineExecutor9SV : PokeRoutineExecutor<PK9>
     public async Task CleanExit(CancellationToken token)
     {
         await SetScreen(ScreenState.On, token).ConfigureAwait(false);
-        Log("Detaching controllers on routine exit.");
+        Log("Lösen von Controllern beim Routineausgang.");
         await DetachController(token).ConfigureAwait(false);
     }
 

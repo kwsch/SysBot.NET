@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,8 +29,8 @@ public class QueueMonitor<T>(PokeTradeHub<T> Hub)
             // Queue setting has been updated. Echo out that things have changed.
             secWaited = 0;
             var state = queues.GetCanQueue()
-                ? "Users are now able to join the trade queue."
-                : "Changed queue settings: **Users CANNOT join the queue until it is turned back on.**";
+                ? "Die Benutzer können sich jetzt in die Warteschlange für den Handel einreihen."
+                : "Geänderte Warteschlangeneinstellungen: **Benutzer können der Warteschlange NICHT beitreten, bis sie wieder eingeschaltet wird.**";
             EchoUtil.Echo(state);
         }
     }

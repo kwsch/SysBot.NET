@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon;
 
@@ -26,12 +26,12 @@ public sealed record QueueCheckResult<T> where T : PKM, new()
     public string GetMessage()
     {
         if (!InQueue || Detail is null)
-            return "You are not in the queue.";
+            return "Sie befinden sich nicht in der Warteschlange.";
         var position = $"{Position}/{QueueCount}";
-        var msg = $"You are in the {Detail.Type} queue! Position: {position} (ID {Detail.Trade.ID})";
+        var msg = $"Sie befinden sich in der {Detail.Type} Warteschlange! Position: {position} (ID {Detail.Trade.ID})";
         var pk = Detail.Trade.TradeData;
         if (pk.Species != 0)
-            msg += $", Receiving: {GameInfo.GetStrings(1).Species[pk.Species]}";
+            msg += $", Empfangen: {GameInfo.GetStrings(1).Species[pk.Species]}";
         return msg;
     }
 }

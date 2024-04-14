@@ -157,7 +157,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         {
             // Updates the assets.
             Hub.Config.Stream.IdleAssets(this);
-            Log("Nothing to check, warte auf neue Nutzer...");
+            Log("Nichts zu prüfen, warte auf neue Nutzer...");
         }
 
         return Task.Delay(1_000, token);
@@ -247,7 +247,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             await SetBoxPokemonAbsolute(BoxStartOffset, toSend, token, sav).ConfigureAwait(false);
 
         // Assumes we're freshly in the Portal and the cursor is over Link Trade.
-        Log("Selecting Link Trade.");
+        Log("Auswählen von Link Trade.");
 
         await Click(A, 1_500, token).ConfigureAwait(false);
         // Make sure we clear any Link Codes if we're not in Distribution with fixed code, and it wasn't entered last round.
@@ -262,7 +262,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             await Task.Delay(Hub.Config.Timings.ExtraTimeOpenCodeEntry, token).ConfigureAwait(false);
 
             var code = poke.Code;
-            Log($"Entering Link Trade code: {code:0000 0000}...");
+            Log($"Eingabe von Link Trade Code: {code:0000 0000}...");
             await EnterLinkCode(code, Hub.Config, token).ConfigureAwait(false);
 
             await Click(PLUS, 3_000, token).ConfigureAwait(false);
@@ -298,7 +298,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         {
             if (!await RecoverToPortal(token).ConfigureAwait(false))
             {
-                Log("Failed to recover to portal.");
+                Log("Die Wiederherstellung zum Portal ist fehlgeschlagen.");
                 await RecoverToOverworld(token).ConfigureAwait(false);
             }
             return PokeTradeResult.NoTrainerFound;
@@ -316,7 +316,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                 await Click(A, 1_000, token).ConfigureAwait(false); // Ensures we dismiss a popup.
                 if (!await RecoverToPortal(token).ConfigureAwait(false))
                 {
-                    Log("Failed to recover to portal.");
+                    Log("Die Wiederherstellung zum Portal ist fehlgeschlagen.");
                     await RecoverToOverworld(token).ConfigureAwait(false);
                 }
                 return PokeTradeResult.RecoverOpenBox;
@@ -346,7 +346,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             return PokeTradeResult.TrainerTooSlow;
         }
 
-        poke.SendNotification(this, $"gefundener LinkTausch Partner: {tradePartner.TrainerName}. warte auf ein Pokémon...");
+        poke.SendNotification(this, $"Gefundener LinkTausch Partner: {tradePartner.TrainerName}. warte auf ein Pokémon...");
 
         if (poke.Type == PokeTradeType.Dump)
         {
@@ -373,7 +373,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             return update;
         }
 
-        Log("Bestaetige Handel.");
+        Log("Bestätige Handel.");
         var tradeResult = await ConfirmAndStartTrading(poke, token).ConfigureAwait(false);
         if (tradeResult != PokeTradeResult.Success)
         {
@@ -533,14 +533,14 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
     // Rather than resetting to overworld, try to reset out of portal and immediately go back in.
     private async Task<bool> RecoverToPortal(CancellationToken token)
     {
-        Log("Reorienting to Poké Portal.");
+        Log("Neuorientierung zum Poké-Portal.");
         var attempts = 0;
         while (await IsInPokePortal(PortalOffset, token).ConfigureAwait(false))
         {
             await Click(B, 2_500, token).ConfigureAwait(false);
             if (++attempts >= 30)
             {
-                Log("Failed to recover to Poké Portal.");
+                Log("Wiederherstellung zum Poké-Portal fehlgeschlagen.");
                 return false;
             }
         }
@@ -558,7 +558,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         if (!await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
             await RecoverToOverworld(token).ConfigureAwait(false);
 
-        Log("Oeffne Poké Portal.");
+        Log("Öffne Poké Portal.");
 
         // Open the X Menu.
         await Click(X, 1_000, token).ConfigureAwait(false);
@@ -592,7 +592,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             await Task.Delay(0_500, token).ConfigureAwait(false);
             if (++attempts > 20)
             {
-                Log("Failed to load the Poké Portal.");
+                Log("Poké-Portal konnte nicht geladen werden.");
                 return false;
             }
         }
@@ -613,7 +613,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             await Click(B, 2_000 + Hub.Config.Timings.ExtraTimeLoadPortal, token).ConfigureAwait(false);
         }
 
-        Log("Adjusting the cursor in the Portal.");
+        Log("Einstellen des Cursors im Portal.");
         // Move down to Link Trade.
         await Click(DDOWN, 0_300, token).ConfigureAwait(false);
         await Click(DDOWN, 0_300, token).ConfigureAwait(false);
@@ -650,7 +650,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             return;
 
         if (unexpected)
-            Log("Unerwartetes Verhalten, gehe zurueck zum Portal.");
+            Log("Unerwartetes Verhalten, gehe zurück zum Portal.");
 
         // Ensure we're not in the box first.
         // Takes a long time for the Portal to load up, so once we exit the box, wait 5 seconds.
@@ -767,25 +767,25 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
 
             var la = new LegalityAnalysis(pk);
             var verbose = $"```{la.Report(true)}```";
-            Log($"Gezeigtes Pokémon ist: {(la.Valid ? "Gueltig" : "Ungueltig")}.");
+            Log($"Gezeigtes Pokémon ist: {(la.Valid ? "Gültig" : "Ungültig")}.");
 
             ctr++;
             var msg = Hub.Config.Trade.DumpTradeLegalityCheck ? verbose : $"Datei {ctr}";
 
             // Extra information about trainer data for people requesting with their own trainer data.
             var ot = pk.OriginalTrainerName;
-            var ot_gender = pk.OriginalTrainerGender == 0 ? "Male" : "Female";
+            var ot_gender = pk.OriginalTrainerGender == 0 ? "Männlich" : "Weiblich";
             var tid = pk.GetDisplayTID().ToString(pk.GetTrainerIDFormat().GetTrainerIDFormatStringTID());
             var sid = pk.GetDisplaySID().ToString(pk.GetTrainerIDFormat().GetTrainerIDFormatStringSID());
-            msg += $"\n**Trainer Data**\n```OT: {ot}\nOTGender: {ot_gender}\nTID: {tid}\nSID: {sid}```";
+            msg += $"\n**Daten des Trainers**\n```OT: {ot}\nOTGeschlecht: {ot_gender}\nTID: {tid}\nSID: {sid}```";
 
             // Extra information for shiny eggs, because of people dumping to skip hatching.
             var eggstring = pk.IsEgg ? "Ei " : string.Empty;
-            msg += pk.IsShiny ? $"\n**Dieses Pokémon {eggstring}ist shiny!**" : string.Empty;
+            msg += pk.IsShiny ? $"\n**Dieses Pokémon {eggstring}ist Shiny!**" : string.Empty;
             detail.SendNotification(this, pk, msg);
         }
 
-        Log($"Ended Dump loop after processing {ctr} Pokémon.");
+        Log($"Beendet Dump-Schleife nach Verarbeitung von {ctr} Pokémon.");
         if (ctr == 0)
             return PokeTradeResult.TrainerTooSlow;
 
@@ -822,13 +822,13 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         var la = new LegalityAnalysis(offered);
         if (!la.Valid)
         {
-            Log($"Clone request (from {poke.Trainer.TrainerName}) erkannte ein ungueltiges Pokémon: {GameInfo.GetStrings(1).Species[offered.Species]}.");
+            Log($"Clone-Anfrage (von {poke.Trainer.TrainerName}) erkannte ein ungültiges Pokémon: {GameInfo.GetStrings(1).Species[offered.Species]}.");
             if (DumpSetting.Dump)
                 DumpPokemon(DumpSetting.DumpFolder, "hacked", offered);
 
             var report = la.Report();
             Log(report);
-            poke.SendNotification(this, "Dieses Pokémon ist nicht legal nach PKHeX's Legalitaets Pruefung. Ich darf das nicht Klonen. Verlasse Handel.");
+            poke.SendNotification(this, "Dieses Pokémon ist nicht legal nach PKHeX's Legalitaets Prüfung. Ich darf das nicht Klonen. Verlasse Handel.");
             poke.SendNotification(this, report);
 
             return (offered, PokeTradeResult.IllegalTrade);
@@ -838,7 +838,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         if (Hub.Config.Legality.ResetHOMETracker)
             clone.Tracker = 0;
 
-        poke.SendNotification(this, $"**Cloned your {GameInfo.GetStrings(1).Species[clone.Species]}!**\nJetzt drueck B um das Angebot abzubrechen und gebe mir ein Pokémon das du nichtmehr willst.");
+        poke.SendNotification(this, $"**Klonen Sie Ihr {GameInfo.GetStrings(1).Species[clone.Species]}!**\nJetzt drück B um das Angebot abzubrechen und gebe mir ein Pokémon das du nichtmehr willst.");
         Log($"Cloned a {GameInfo.GetStrings(1).Species[clone.Species]}. Warte darauf das der Benutzer das Pokémon wechselt...");
 
         // Separate this out from WaitForPokemonChanged since we compare to old EC from original read.
@@ -917,7 +917,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         }
 
         FailedBarrier++;
-        Log($"Barrier sync timed out after {timeoutAfter} seconds. Continuing.");
+        Log($"Die Synchronisierung der Schranke wurde nach {timeoutAfter} Sekunden abgebrochen. Wird fortgesetzt.");
     }
 
     /// <summary>

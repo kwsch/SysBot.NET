@@ -14,9 +14,9 @@ public static class Program
 
     private static void Main(string[] args)
     {
-        Console.WriteLine("Starting up...");
+        Console.WriteLine("Starten...");
         if (args.Length > 1)
-            Console.WriteLine("This program does not support command line arguments.");
+            Console.WriteLine("Dieses Programm unterstützt keine Befehlszeilenargumente.");
 
         if (!File.Exists(ConfigPath))
         {
@@ -33,7 +33,7 @@ public static class Program
         }
         catch (Exception)
         {
-            Console.WriteLine("Unable to start bots with saved config file. Please copy your config from the WinForms project or delete it and reconfigure.");
+            Console.WriteLine("Bots können mit der gespeicherten Konfigurationsdatei nicht gestartet werden. Bitte kopieren Sie Ihre Konfiguration aus dem WinForms-Projekt oder löschen Sie sie und konfigurieren Sie neu.");
             Console.ReadKey();
         }
     }
@@ -44,9 +44,9 @@ public static class Program
         var cfg = new ProgramConfig { Bots = [bot] };
         var created = JsonSerializer.Serialize(cfg, ProgramConfigContext.Default.ProgramConfig);
         File.WriteAllText(ConfigPath, created);
-        Console.WriteLine("Created new config file since none was found in the program's path. Please configure it and restart the program.");
-        Console.WriteLine("It is suggested to configure this config file using the GUI project if possible, as it will help you assign values correctly.");
-        Console.WriteLine("Press any key to exit.");
+        Console.WriteLine("Es wurde eine neue Konfigurationsdatei erstellt, da im Programmpfad keine gefunden wurde. Bitte konfigurieren Sie diese und starten Sie das Programm neu.");
+        Console.WriteLine("Es wird empfohlen, diese Konfigurationsdatei möglichst mit dem GUI-Projekt zu konfigurieren, da sie Ihnen hilft, Werte korrekt zuzuweisen.");
+        Console.WriteLine("Drücken Sie eine beliebige Taste zum Beenden.");
         Console.ReadKey();
     }
 }
@@ -64,13 +64,13 @@ public static class BotContainer
         {
             bot.Initialize();
             if (!AddBot(env, bot, prog.Mode))
-                Console.WriteLine($"Failed to add bot: {bot}");
+                Console.WriteLine($"Bot konnte nicht hinzugefügt werden: {bot}");
         }
 
         LogUtil.Forwarders.Add(ConsoleForwarder.Instance);
         env.StartAll();
-        Console.WriteLine($"Started all bots (Count: {prog.Bots.Length}.");
-        Console.WriteLine("Press any key to stop execution and quit. Feel free to minimize this window!");
+        Console.WriteLine($"Alle Bots gestartet (Anzahl: {prog.Bots.Length}.");
+        Console.WriteLine("Drücken Sie eine beliebige Taste, um die Ausführung zu stoppen und das Programm zu beenden. Sie können dieses Fenster auch minimieren!");
         Console.ReadKey();
         env.StopAll();
     }
@@ -81,14 +81,14 @@ public static class BotContainer
         ProgramMode.BDSP => new PokeBotRunnerImpl<PB8>(prog.Hub, new BotFactory8BS()),
         ProgramMode.LA   => new PokeBotRunnerImpl<PA8>(prog.Hub, new BotFactory8LA()),
         ProgramMode.SV   => new PokeBotRunnerImpl<PK9>(prog.Hub, new BotFactory9SV()),
-        _ => throw new IndexOutOfRangeException("Unsupported mode."),
+        _ => throw new IndexOutOfRangeException("Nicht unterstützter Modus."),
     };
 
     private static bool AddBot(IPokeBotRunner env, PokeBotState cfg, ProgramMode mode)
     {
         if (!cfg.IsValid())
         {
-            Console.WriteLine($"{cfg}'s config is not valid.");
+            Console.WriteLine($"Die Config von {cfg} ist ungültig.");
             return false;
         }
 
@@ -99,7 +99,7 @@ public static class BotContainer
         }
         catch
         {
-            Console.WriteLine($"Current Mode ({mode}) does not support this type of bot ({cfg.CurrentRoutineType}).");
+            Console.WriteLine($"Der aktuelle Modus ({mode}) unterstützt diese Art von Bot ({cfg.CurrentRoutineType}) nicht.");
             return false;
         }
         try
@@ -112,7 +112,7 @@ public static class BotContainer
             return false;
         }
 
-        Console.WriteLine($"Added: {cfg}: {cfg.InitialRoutine}");
+        Console.WriteLine($"Hinzugefügt: {cfg}: {cfg.InitialRoutine}");
         return true;
     }
 }

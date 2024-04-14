@@ -61,7 +61,7 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
         Directory.CreateDirectory(dir);
         var fn = Path.Combine(dir, Util.CleanFileName(pk.FileName));
         File.WriteAllBytes(fn, pk.DecryptedPartyData);
-        LogUtil.LogInfo($"Saved file: {fn}", "Dump");
+        LogUtil.LogInfo($"Gespeicherte Datei: {fn}", "Dump");
     }
 
     public async Task<bool> TryReconnect(int attempts, int extraDelay, SwitchProtocol protocol, CancellationToken token)
@@ -107,28 +107,28 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
 
     public async Task CheckForRAMShiftingApps(CancellationToken token)
     {
-        Log("Trainer data is not valid.");
+        Log("Die Trainerdaten sind ungültig.");
 
         bool found = false;
         var msg = "";
         if (await SwitchConnection.IsProgramRunning(ovlloaderID, token).ConfigureAwait(false))
         {
-            msg += "Found Tesla Menu";
+            msg += "Tesla-Menü gefunden";
             found = true;
         }
 
         if (await SwitchConnection.IsProgramRunning(dmntID, token).ConfigureAwait(false))
         {
             if (found)
-                msg += " and ";
-            msg += "dmnt (cheat codes?)";
+                msg += " und ";
+            msg += "dmnt (Cheat-Codes?)";
             found = true;
         }
         if (found)
         {
             msg += ".";
             Log(msg);
-            Log("Please remove interfering applications and reboot the Switch.");
+            Log("Bitte entfernen Sie störende Anwendung(en) und starten Sie die Switch neu.");
         }
     }
 
@@ -148,9 +148,9 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
             if (AbuseSettings.BlockDetectedBannedUser && bot is PokeRoutineExecutor8SWSH)
                 await BlockUser(token).ConfigureAwait(false);
 
-            var msg = $"{user.TrainerName}{useridmsg} is a banned user, and was encountered in-game using OT: {TrainerName}.";
+            var msg = $"{user.TrainerName}{useridmsg} ist ein gesperrter Benutzer, der im Spiel mit folgendem OT angetroffen wurde: {TrainerName}.";
             if (!string.IsNullOrWhiteSpace(entry.Comment))
-                msg += $"\nUser was banned for: {entry.Comment}";
+                msg += $"\nDer Benutzer wurde gesperrt für: {entry.Comment}";
             if (!string.IsNullOrWhiteSpace(AbuseSettings.BannedIDMatchEchoMention))
                 msg = $"{AbuseSettings.BannedIDMatchEchoMention} {msg}";
             EchoUtil.Echo(msg);
@@ -162,15 +162,15 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
         if (previous != null)
         {
             var delta = DateTime.Now - previous.Time; // Time that has passed since last trade.
-            Log($"Last traded with {user.TrainerName} {delta.TotalMinutes:F1} minutes ago (OT: {TrainerName}).");
+            Log($"Zuletzt gehandelt mit {user.TrainerName} {delta.TotalMinutes:F1} Minuten zuvor (OT: {TrainerName}).");
 
             // Allows setting a cooldown for repeat trades. If the same user is encountered within the cooldown period for the same trade type, the user is warned and the trade will be ignored.
             var cd = AbuseSettings.TradeCooldown;     // Time they must wait before trading again.
             if (cd != 0 && TimeSpan.FromMinutes(cd) > delta)
             {
                 var wait = TimeSpan.FromMinutes(cd) - delta;
-                poke.Notifier.SendNotification(bot, poke, $"You are still on trade cooldown, and cannot trade for another {wait.TotalMinutes:F1} minute(s).");
-                var msg = $"Found {user.TrainerName}{useridmsg} ignoring the {cd} minute trade cooldown. Last encountered {delta.TotalMinutes:F1} minutes ago.";
+                poke.Notifier.SendNotification(bot, poke, $"Sie befinden sich immer noch in der Abklingphase des Handels und können für weitere {wait.TotalMinutes:F1} Minute(n) nicht handeln.");
+                var msg = $"{user.TrainerName}{useridmsg} gefunden, der die Abklingzeit für den Handel von {cd} Minuten ignoriert. Wurde zuletzt vor {delta.TotalMinutes:F1} Minuten gefunden.";
                 if (AbuseSettings.EchoNintendoOnlineIDCooldown)
                     msg += $"\nID: {TrainerNID}";
                 if (!string.IsNullOrWhiteSpace(AbuseSettings.CooldownAbuseEchoMention))
@@ -190,14 +190,14 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
                         await BlockUser(token).ConfigureAwait(false);
                         if (AbuseSettings.BanIDWhenBlockingUser || bot is not PokeRoutineExecutor8SWSH) // Only ban ID if blocking in SWSH, always in other games.
                         {
-                            AbuseSettings.BannedIDs.AddIfNew(new[] { GetReference(TrainerName, TrainerNID, "in-game block for multiple accounts") });
-                            Log($"Added {TrainerNID} to the BannedIDs list.");
+                            AbuseSettings.BannedIDs.AddIfNew(new[] { GetReference(TrainerName, TrainerNID, "Spielinterne Sperre für mehrere Konten") });
+                            Log($"{TrainerNID} zur Liste der gesperrten IDs hinzugefügt.");
                         }
                     }
                     quit = true;
                 }
 
-                var msg = $"Found {user.TrainerName}{useridmsg} using multiple accounts.\nPreviously traded with {previous.Name} ({previous.RemoteID}) {delta.TotalMinutes:F1} minutes ago on OT: {TrainerName}.";
+                var msg = $"{user.TrainerName}{useridmsg} mit mehreren Konten gefunden.\nVormals gehandelt mit {previous.Name} ({previous.RemoteID}) vor {delta.TotalMinutes:F1} Minuten auf OT: {TrainerName}.";
                 if (AbuseSettings.EchoNintendoOnlineIDMulti)
                     msg += $"\nID: {TrainerNID}";
                 if (!string.IsNullOrWhiteSpace(AbuseSettings.MultiAbuseEchoMention))
@@ -220,14 +220,14 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
                         await BlockUser(token).ConfigureAwait(false);
                         if (AbuseSettings.BanIDWhenBlockingUser || bot is not PokeRoutineExecutor8SWSH) // Only ban ID if blocking in SWSH, always in other games.
                         {
-                            AbuseSettings.BannedIDs.AddIfNew(new[] { GetReference(TrainerName, TrainerNID, "in-game block for sending to multiple in-game players") });
-                            Log($"Added {TrainerNID} to the BannedIDs list.");
+                            AbuseSettings.BannedIDs.AddIfNew(new[] { GetReference(TrainerName, TrainerNID, "hat eine Spielinterne Sperre für das Versenden an mehrere Spieler im Spiel") });
+                            Log($"{TrainerNID} zur Liste der gesperrten IDs hinzugefügt.");
                         }
                     }
                     quit = true;
                 }
 
-                var msg = $"Found {user.TrainerName}{useridmsg} sending to multiple in-game players. Previous OT: {previous_remote.Name}, Current OT: {TrainerName}";
+                var msg = $"Es wurde festgestellt, dass {user.TrainerName}{useridmsg} an mehrere Spieler im Spiel sendet. Vorheriger OT: {previous_remote.Name}, Aktueller OT: {TrainerName}";
                 if (AbuseSettings.EchoNintendoOnlineIDMultiRecipients)
                     msg += $"\nID: {TrainerNID}";
                 if (!string.IsNullOrWhiteSpace(AbuseSettings.MultiRecipientEchoMention))
@@ -255,13 +255,13 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
     {
         ID = id,
         Name = name,
-        Comment = $"Added automatically on {DateTime.Now:yyyy.MM.dd-hh:mm:ss} ({comment})",
+        Comment = $"Automatisch hinzugefügt am {DateTime.Now:yyyy.MM.dd-hh:mm:ss} ({comment})",
     };
 
     // Blocks a user from the box during in-game trades (SWSH).
     private async Task BlockUser(CancellationToken token)
     {
-        Log("Blocking user in-game...");
+        Log("Benutzer im Spiel blockieren...");
         await PressAndHold(RSTICK, 0_750, 0, token).ConfigureAwait(false);
         await Click(DUP, 0_300, token).ConfigureAwait(false);
         await Click(A, 1_300, token).ConfigureAwait(false);

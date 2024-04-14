@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.Collections.Generic;
@@ -168,7 +168,7 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
     {
         lock (_sync)
         {
-            LogUtil.LogInfo($"Removing {detail.Trade.Trainer.TrainerName}", nameof(TradeQueueInfo<T>));
+            LogUtil.LogInfo($"Entferne {detail.Trade.Trainer.TrainerName}", nameof(TradeQueueInfo<T>));
             return UsersInQueue.Remove(detail);
         }
     }
