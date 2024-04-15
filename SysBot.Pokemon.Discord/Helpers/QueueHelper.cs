@@ -91,8 +91,8 @@ public static class QueueHelper<T> where T : PKM, new()
         var tradeCodeStorage = new TradeCodeStorage();
         int totalTradeCount = tradeCodeStorage.GetTradeCount(trader.Id);
         var tradeDetails = tradeCodeStorage.GetTradeDetails(trader.Id);
-        string otText = tradeDetails?.OT != null ? $"OT: {tradeDetails.OT}" : "";
-        string tidText = tradeDetails?.TID != 0 ? $"TID: {tradeDetails.TID}" : "";
+        string otText = tradeDetails?.OT != null ? $"OT: {tradeDetails?.OT}" : "";
+        string tidText = tradeDetails?.TID != 0 ? $"TID: {tradeDetails?.TID}" : "";
         if (added == QueueResultAdd.AlreadyInQueue)
         {
             return new TradeQueueResult(false);
@@ -238,11 +238,11 @@ public static class QueueHelper<T> where T : PKM, new()
         string userDetailsText = $"Trades: {totalTradeCount}";
         if (!string.IsNullOrEmpty(tradeDetails?.OT))
         {
-            userDetailsText += $" | OT: {tradeDetails.OT}";
+            userDetailsText += $" | OT: {tradeDetails?.OT}";
         }
-        if (userDetails?.TID != 0)
+        if (userDetails?.TID != null)
         {
-            userDetailsText += $" | TID: {userDetails.TID:D6}";
+            userDetailsText += $" | TID: {userDetails?.TID}";
         }
 
         footerText += $"\n{userDetailsText}\n{etaMessage}";
