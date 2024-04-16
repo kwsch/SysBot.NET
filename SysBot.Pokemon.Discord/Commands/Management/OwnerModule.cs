@@ -10,6 +10,11 @@ using SysBot.Pokemon.Helpers;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using AnimatedGif;
+using System.Drawing;
+using Color = System.Drawing.Color;
+using DiscordColor = Discord.Color;
 
 namespace SysBot.Pokemon.Discord;
 
@@ -176,10 +181,101 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
 
         using MemoryStream ms = new(bytes);
         var img = "cap.jpg";
-        var embed = new EmbedBuilder { ImageUrl = $"attachment://{img}", Color = Color.Purple }
+        var embed = new EmbedBuilder { ImageUrl = $"attachment://{img}", Color = (DiscordColor?)Color.Purple }
             .WithFooter(new EmbedFooterBuilder { Text = $"Here's your screenshot." });
 
         await Context.Channel.SendFileAsync(ms, img, embed: embed.Build());
+    }
+
+    [Command("video")]
+    [Alias("video")]
+    [Summary("Take and send a GIF from the currently configured Switch.")]
+    [RequireSudo]
+    public async Task RePeekGIF()
+    {
+        await Context.Channel.SendMessageAsync("Processing GIF request...").ConfigureAwait(false);
+
+        // Offload processing to a separate task so we dont hold up gateway tasks
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                string ip = OwnerModule<T>.GetBotIPFromJsonConfig();
+                var source = new CancellationTokenSource();
+                var token = source.Token;
+                var bot = SysCord<T>.Runner.GetBot(ip);
+
+                if (bot == null)
+                {
+                    await ReplyAsync($"No bot found with the specified IP address ({ip}).").ConfigureAwait(false);
+                    return;
+                }
+
+                var screenshotCount = 10;
+                var screenshotInterval = TimeSpan.FromSeconds(0.1 / 10);
+#pragma warning disable CA1416 // Validate platform compatibility
+                var gifFrames = new List<System.Drawing.Image>();
+#pragma warning restore CA1416 // Validate platform compatibility
+
+                for (int i = 0; i < screenshotCount; i++)
+                {
+                    byte[] bytes;
+                    try
+                    {
+                        bytes = await bot.Bot.Connection.PixelPeek(token).ConfigureAwait(false) ?? Array.Empty<byte>();
+                    }
+                    catch (Exception ex)
+                    {
+                        await ReplyAsync($"Error while fetching pixels: {ex.Message}").ConfigureAwait(false);
+                        return;
+                    }
+
+                    if (bytes.Length == 0)
+                    {
+                        await ReplyAsync("No screenshot data received.").ConfigureAwait(false);
+                        return;
+                    }
+
+                    using (var ms = new MemoryStream(bytes))
+                    {
+                        using var bitmap = new Bitmap(ms);
+                        var frame = bitmap.Clone(new Rectangle(0, 0, bitmap.Width, bitmap.Height), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                        gifFrames.Add(frame);
+                    }
+
+                    await Task.Delay(screenshotInterval).ConfigureAwait(false);
+                }
+
+                using (var ms = new MemoryStream())
+                {
+                    using (var gif = new AnimatedGifCreator(ms, 200))
+                    {
+                        foreach (var frame in gifFrames)
+                        {
+                            gif.AddFrame(frame);
+                            frame.Dispose();
+                        }
+                    }
+
+                    ms.Position = 0;
+                    var gifFileName = "screenshot.gif";
+                    var embed = new EmbedBuilder { ImageUrl = $"attachment://{gifFileName}", Color = (DiscordColor?)Color.Red }
+                        .WithFooter(new EmbedFooterBuilder { Text = "Here's your GIF." });
+
+                    await Context.Channel.SendFileAsync(ms, gifFileName, embed: embed.Build()).ConfigureAwait(false);
+                }
+
+                foreach (var frame in gifFrames)
+                {
+                    frame.Dispose();
+                }
+                gifFrames.Clear();
+            }
+            catch (Exception ex)
+            {
+                await ReplyAsync($"Error while processing GIF: {ex.Message}").ConfigureAwait(false);
+            }
+        });
     }
 
     private static string GetBotIPFromJsonConfig()
@@ -222,7 +318,7 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
         {
             Title = "Private Message from the Bot Owner",
             Description = message,
-            Color = Color.Gold,
+            Color = (DiscordColor?)Color.Gold,
             Timestamp = DateTimeOffset.Now,
             ThumbnailUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/pikamail.png"
         };

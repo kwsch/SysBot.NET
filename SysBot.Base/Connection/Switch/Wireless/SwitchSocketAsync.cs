@@ -223,19 +223,18 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
     {
         await SendAsync(SwitchCommand.PixelPeek(), token).ConfigureAwait(false);
         await Task.Delay(Connection.ReceiveBufferSize / DelayFactor + BaseDelay, token).ConfigureAwait(false);
-
         var data = await FlexRead(token).ConfigureAwait(false);
-        var result = Array.Empty<byte>();
+
         try
         {
-            result = Decoder.ConvertHexByteStringToBytes(data);
+            var result = Decoder.ConvertHexByteStringToBytes(data);
+            return result;
         }
         catch (Exception e)
         {
-            LogError($"Malformed screenshot data received:\n{e.Message}");
+            LogError($"Malformed screenshot data received: {e.Message}");
+            throw; // Rethrow the exception to the caller
         }
-
-        return result;
     }
 
     private async Task<byte[]> FlexRead(CancellationToken token)
