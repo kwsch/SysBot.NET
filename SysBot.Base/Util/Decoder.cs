@@ -55,4 +55,9 @@ public static class Decoder
             throw new ArgumentOutOfRangeException(nameof(_1));
         return result;
     }
+
+    public static ReadOnlySpan<byte> ConvertHexByteStringToBytes(ReadOnlySpan<byte> raw)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -92,6 +92,11 @@ public class QueueTests
         public override Task<T> ReadPokemon(ulong offset, int size, CancellationToken token) => Task.Run(() => new T(), token);
         public override Task<T> ReadPokemonPointer(IEnumerable<long> jumps, int size, CancellationToken token) => Task.Run(() => new T(), token);
         public override Task<T> ReadBoxPokemon(int box, int slot, CancellationToken token) => Task.Run(() => new T(), token);
+
+        public override Task RebootAndStop(CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private static TradeEntry<T> GetTestTrade<T>(TradeQueueInfo<T> info, int tag, bool favor = false) where T : PKM, new()
