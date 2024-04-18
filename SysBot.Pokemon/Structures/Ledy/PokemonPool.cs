@@ -96,12 +96,6 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
                 continue;
             }
 
-            if (DisallowRandomRecipientTrade(dest, la.EncounterMatch))
-            {
-                LogUtil.LogInfo("Provided file was loaded but can't be Surprise Traded: " + dest.FileName, nameof(PokemonPool<T>));
-                surpriseBlocked++;
-            }
-
             if (Settings.Legality.ResetHOMETracker && dest is IHomeTrack h)
                 h.Tracker = 0;
 
@@ -124,20 +118,6 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
             LogUtil.LogInfo("Surprise trading will fail; failed to load any compatible files.", nameof(PokemonPool<T>));
 
         return loadedAny;
-    }
-
-    private static bool DisallowRandomRecipientTrade(T pk, IEncounterTemplate enc)
-    {
-        // Anti-spam
-        if (pk.IsNicknamed && enc is not IFixedNickname { IsFixedNickname: true } && pk.Nickname.Length > 6)
-            return true;
-
-        // Anti-spam
-        if (pk.IsNicknamed && StringsUtil.IsSpammyString(pk.Nickname))
-            return true;
-        if (StringsUtil.IsSpammyString(pk.OriginalTrainerName) && !AutoLegalityWrapper.IsFixedOT(enc, pk))
-            return true;
-        return DisallowRandomRecipientTrade(pk);
     }
 
     public static bool DisallowRandomRecipientTrade(T pk)
