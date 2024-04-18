@@ -18,7 +18,8 @@ public static class NetUtil
     public static async Task<Download<PKM>> DownloadPKMAsync(IAttachment att, SimpleTrainerInfo? defTrainer = null)
     {
         var result = new Download<PKM> { SanitizedFileName = Format.Sanitize(att.Filename) };
-        var isMyg = MysteryGift.IsMysteryGift(att.Size);
+        var extension = System.IO.Path.GetExtension(result.SanitizedFileName);
+        var isMyg = MysteryGift.IsMysteryGift(att.Size) && extension != ".pb7";
 
         if (!EntityDetection.IsSizePlausible(att.Size) && !isMyg)
         {
@@ -32,11 +33,16 @@ public static class NetUtil
         var buffer = await DownloadFromUrlAsync(url).ConfigureAwait(false);
 
         PKM? pkm = null;
-
         try
         {
-            pkm = isMyg ? MysteryGift.GetMysteryGift(buffer, System.IO.Path.GetExtension(result.SanitizedFileName))?.ConvertToPKM(defTrainer is null ? new SimpleTrainerInfo() : defTrainer) :
-                EntityFormat.GetFromBytes(buffer, EntityFileExtension.GetContextFromExtension(result.SanitizedFileName, EntityContext.None));
+            if (isMyg)
+            {
+                pkm = MysteryGift.GetMysteryGift(buffer, extension)?.ConvertToPKM(defTrainer ?? new SimpleTrainerInfo());
+            }
+            else
+            {
+                pkm = EntityFormat.GetFromBytes(buffer, EntityFileExtension.GetContextFromExtension(result.SanitizedFileName, EntityContext.None));
+            }
         }
         catch (ArgumentException)
         {
