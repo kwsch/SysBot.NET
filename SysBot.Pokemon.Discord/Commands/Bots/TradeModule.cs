@@ -488,7 +488,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
     public async Task TradeAsync([Summary("Trade Code")] int code, [Summary("Showdown Set")][Remainder] string content)
     {
-        var lgcode = Info.GetRandomLGTradeCode();
+        List<Pictocodes> lgcode = null;
         // Check if the user is already in the queue
         var userID = Context.User.Id;
         if (Info.IsUserInQueue(userID))
@@ -596,6 +596,11 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 return;
             }
             pk.ResetPartyStats();
+
+            if (pkm is PB7)
+            {
+                lgcode = TradeModule<T>.GenerateRandomPictocodes(3);
+            }
 
             var sig = Context.User.GetFavor();
             await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, isBatchTrade: false, batchTradeNumber: 1, totalBatchTrades: 1, lgcode: lgcode, ignoreAutoOT: ignoreAutoOT).ConfigureAwait(false);
