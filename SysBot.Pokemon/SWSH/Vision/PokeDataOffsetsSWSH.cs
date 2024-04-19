@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace SysBot.Pokemon;
@@ -90,13 +90,13 @@ public class PokeDataOffsetsSWSH
     {
         TradeMethod.LinkTrade => LinkTradePartnerNameOffset,
         TradeMethod.SurpriseTrade => SurpriseTradePartnerNameOffset,
-        _ => throw new ArgumentException("Trainer name offset is not available for this trade method.", nameof(tradeMethod)),
+        _ => throw new ArgumentException("Die Offsets für Trainernamen sind bei dieser Handelsmethode nicht verfügbar.", nameof(tradeMethod)),
     };
 
     public static uint GetTrainerTIDSIDOffset(TradeMethod tradeMethod) => tradeMethod switch
     {
         TradeMethod.LinkTrade => LinkTradePartnerTIDSIDOffset,
         TradeMethod.SurpriseTrade => SurpriseTradePartnerTIDSIDOffset,
-        _ => throw new ArgumentException("Trainer TID/SID offset is not available for this trade method.", nameof(tradeMethod)),
+        _ => throw new ArgumentException("Trainer TID/SID Offset ist für diese Handelsmethode nicht verfügbar.", nameof(tradeMethod)),
     };
 }

@@ -1,4 +1,4 @@
-﻿using Discord.Commands;
+using Discord.Commands;
 using Discord.WebSocket;
 using System;
 using System.Linq;
@@ -17,12 +17,12 @@ public sealed class RequireSudoAttribute : PreconditionAttribute
 
         // Check if this user is a Guild User, which is the only context where roles exist
         if (context.User is not SocketGuildUser gUser)
-            return Task.FromResult(PreconditionResult.FromError("You must be in a guild to run this command."));
+            return Task.FromResult(PreconditionResult.FromError("Du musst in einer Gilde sein, um diesen Befehl auszuführen."));
 
         if (mgr.CanUseSudo(gUser.Roles.Select(z => z.Name)))
             return Task.FromResult(PreconditionResult.FromSuccess());
 
         // Since it wasn't, fail
-        return Task.FromResult(PreconditionResult.FromError("You are not permitted to run this command."));
+        return Task.FromResult(PreconditionResult.FromError("Sie sind nicht berechtigt, diesen Befehl auszuführen."));
     }
 }

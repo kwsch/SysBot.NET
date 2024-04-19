@@ -227,7 +227,7 @@ public sealed class SysCord<T> where T : PKM, new()
         // Execute the command. (result does not indicate a return value, 
         // rather an object stating if the command executed successfully).
         var guild = msg.Channel is SocketGuildChannel g ? g.Guild.Name : "Unbekannter Server";
-        await Log(new LogMessage(LogSeverity.Info, "Command", $"Executing command from {guild}#{msg.Channel.Name}:@{msg.Author.Username}. Content: {msg}")).ConfigureAwait(false);
+        await Log(new LogMessage(LogSeverity.Info, "Command", $"Ausführen des Befehls von {guild}#{msg.Channel.Name}:@{msg.Author.Username}. Inhalt: {msg}")).ConfigureAwait(false);
         var result = await _commands.ExecuteAsync(context, pos, _services).ConfigureAwait(false);
 
         if (result.Error == CommandError.UnknownCommand)
@@ -297,7 +297,7 @@ public sealed class SysCord<T> where T : PKM, new()
         TradeStartModule<T>.RestoreTradeStarting(_client);
 
         // Don't let it load more than once in case of Discord hiccups.
-        await Log(new LogMessage(LogSeverity.Info, "LoadLoggingAndEcho()", "Logging and Ausgabe Kanaele geladen!")).ConfigureAwait(false);
+        await Log(new LogMessage(LogSeverity.Info, "LoadLoggingAndEcho()", "Logging und Ausgabe Kanäle geladen!")).ConfigureAwait(false);
         MessageChannelsLoaded = true;
 
         var game = Hub.Config.Discord.BotGameStatus;

@@ -59,7 +59,7 @@ public class HelpModule(CommandService Service) : ModuleBase<SocketCommandContex
             });
         }
 
-        await ReplyAsync("Help has arrived!", false, builder.Build()).ConfigureAwait(false);
+        await ReplyAsync("Hilfe ist eingetroffen!", false, builder.Build()).ConfigureAwait(false);
     }
 
     [Command("help")]
@@ -92,7 +92,7 @@ public class HelpModule(CommandService Service) : ModuleBase<SocketCommandContex
             });
         }
 
-        await ReplyAsync("Help has arrived!", false, builder.Build()).ConfigureAwait(false);
+        await ReplyAsync("Hilfe ist eingetroffen!", false, builder.Build()).ConfigureAwait(false);
     }
 
     private static string GetCommandSummary(CommandInfo cmd)

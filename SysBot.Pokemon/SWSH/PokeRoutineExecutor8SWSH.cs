@@ -85,14 +85,14 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
         // Check title so we can warn if mode is incorrect.
         string title = await SwitchConnection.GetTitleID(token).ConfigureAwait(false);
         if (title is not (SwordID or ShieldID))
-            throw new Exception($"{title} is not a valid SWSH title. Is your mode correct?");
+            throw new Exception($"{title} ist kein gültiger SWSH-Titel. Ist Ihr Modus korrekt?");
 
         // Verify the game version.
         var game_version = await SwitchConnection.GetGameInfo("version", token).ConfigureAwait(false);
         if (!game_version.SequenceEqual(SWSHGameVersion))
-            throw new Exception($"Game version is not supported. Expected version {SWSHGameVersion}, and current game version is {game_version}.");
+            throw new Exception($"Die Spielversion wird nicht unterstützt. Erwartete Version {SWSHGameVersion}, und die aktuelle Spielversion ist {game_version}.");
 
-        Log("Grabbing trainer data of host console...");
+        Log("Abrufen von Trainerdaten der Host-Konsole...");
         var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
         InitSaveData(sav);
 
@@ -103,7 +103,7 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
         }
 
         if (await GetTextSpeed(token).ConfigureAwait(false) < TextSpeedOption.Fast)
-            throw new Exception("Text speed should be set to FAST. Fix this for correct operation.");
+            throw new Exception("Die Textgeschwindigkeit sollte auf SCHNELL eingestellt sein. Korrigieren Sie dies für einen korrekten Betrieb.");
 
         return sav;
     }
@@ -114,7 +114,7 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
         await DetachController(token).ConfigureAwait(false);
         if (settings.ScreenOff)
         {
-            Log("Turning off screen.");
+            Log("Ausschalten des Bildschirms.");
             await SetScreen(ScreenState.Off, token).ConfigureAwait(false);
         }
     }
@@ -122,7 +122,7 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
     public async Task CleanExit(CancellationToken token)
     {
         await SetScreen(ScreenState.On, token).ConfigureAwait(false);
-        Log("Detaching controllers on routine exit.");
+        Log("Lösen von Controllern beim Routineausgang.");
         await DetachController(token).ConfigureAwait(false);
     }
 
@@ -154,7 +154,7 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
     {
         if (!await IsGameConnectedToYComm(token).ConfigureAwait(false))
         {
-            Log("Reconnecting to Y-Comm...");
+            Log("Wiederverbindung mit Y-Comm...");
             await ReconnectToYComm(overworldOffset, config, token).ConfigureAwait(false);
         }
     }
@@ -195,7 +195,7 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
     public async Task ReOpenGame(PokeTradeHubConfig config, CancellationToken token)
     {
         // Reopen the game if we get soft-banned
-        Log("Potential soft ban detected, reopening game just in case!");
+        Log("Möglicher Soft Ban entdeckt, Spiel vorsichtshalber neustarten!");
         await CloseGame(config, token).ConfigureAwait(false);
         await StartGame(config, token).ConfigureAwait(false);
 
@@ -208,7 +208,7 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
         // Like previous generations, the game uses a Unix timestamp for 
         // how long we are soft banned and once the soft ban is lifted
         // the game sets the value back to 0 (1970/01/01 12:00 AM (UTC))
-        Log("Soft ban detected, unbanning.");
+        Log("Soft-Ban erkannt, Aufhebung des Banns.");
         var data = BitConverter.GetBytes(0);
         return Connection.WriteBytesAsync(data, SoftBanUnixTimespanOffset, token);
     }
@@ -227,7 +227,7 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
         await Click(HOME, 2_000 + timing.ExtraTimeReturnHome, token).ConfigureAwait(false);
         await Click(X, 1_000, token).ConfigureAwait(false);
         await Click(A, 5_000 + timing.ExtraTimeCloseGame, token).ConfigureAwait(false);
-        Log("Closed out of the game!");
+        Log("Das Spiel ist beendet!");
     }
 
     public async Task StartGame(PokeTradeHubConfig config, CancellationToken token)
@@ -250,7 +250,7 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
         await Click(DUP, 0_600, token).ConfigureAwait(false);
         await Click(A, 0_600, token).ConfigureAwait(false);
 
-        Log("Restarting the game!");
+        Log("Das Spiel neu starten!");
 
         // Switch Logo lag, skip cutscene, game load screen
         await Task.Delay(10_000 + timing.ExtraTimeLoadGame, token).ConfigureAwait(false);
@@ -267,14 +267,14 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
             // Don't risk it if hub is set to avoid updates.
             if (timer <= 0 && !timing.AvoidSystemUpdate)
             {
-                Log("Still not in the game, initiating rescue protocol!");
+                Log("Immer noch nicht im Spiel, leitet das Rettungsprotokoll ein!");
                 while (!await IsOnOverworldTitle(token).ConfigureAwait(false) && !await IsInBattle(token).ConfigureAwait(false))
                     await Click(A, 6_000, token).ConfigureAwait(false);
                 break;
             }
         }
 
-        Log("Back in the overworld!");
+        Log("Zurück in der Oberwelt!");
     }
 
     public async Task<bool> IsCorrectScreen(uint expectedScreen, CancellationToken token)
@@ -338,11 +338,11 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
         var existing = await ReadBoxPokemon(0, 0, token).ConfigureAwait(false);
         if (existing.Species != 0 && existing.ChecksumValid)
         {
-            Log("Destination slot is occupied! Dumping the Pokémon found there...");
+            Log("Der Zielslot ist besetzt! Das dort gefundene Pokémon dumpen...");
             DumpPokemon(DumpSetting.DumpFolder, "saved", existing);
         }
 
-        Log("Clearing destination slot to start the bot.");
+        Log("Löschen des Zielslots, um den Bot zu starten.");
         PK8 blank = new();
         await SetBoxPokemon(blank, 0, 0, token).ConfigureAwait(false);
     }

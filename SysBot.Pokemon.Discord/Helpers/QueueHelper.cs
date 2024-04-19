@@ -15,13 +15,13 @@ public static class QueueHelper<T> where T : PKM, new()
     {
         if ((uint)code > MaxTradeCode)
         {
-            await context.Channel.SendMessageAsync("Trade code should be 00000000-99999999!").ConfigureAwait(false);
+            await context.Channel.SendMessageAsync("Der Handelscode sollte 00000000-99999999 sein!").ConfigureAwait(false);
             return;
         }
 
         try
         {
-            const string helper = "I've added you to the queue! I'll message you here when your trade is starting.";
+            const string helper = "Ich habe Sie in die Warteschlange aufgenommen! Ich werde Sie hier benachrichtigen, wenn Ihr Handel startet.";
             IUserMessage test = await trader.SendMessageAsync(helper).ConfigureAwait(false);
 
             // Try adding
@@ -30,7 +30,7 @@ public static class QueueHelper<T> where T : PKM, new()
             // Notify in channel
             await context.Channel.SendMessageAsync(msg).ConfigureAwait(false);
             // Notify in PM to mirror what is said in the channel.
-            await trader.SendMessageAsync($"{msg}\nYour trade code will be **{code:0000 0000}**.").ConfigureAwait(false);
+            await trader.SendMessageAsync($"{msg}\nIhr Handelscode lautet **{code:0000 0000}**.").ConfigureAwait(false);
 
             // Clean Up
             if (result)
@@ -73,7 +73,7 @@ public static class QueueHelper<T> where T : PKM, new()
 
         if (added == QueueResultAdd.AlreadyInQueue)
         {
-            msg = "Sorry, you are already in the queue.";
+            msg = "Tut mir leid, Sie sind bereits in der Warteschlange.";
             return false;
         }
 
@@ -81,18 +81,18 @@ public static class QueueHelper<T> where T : PKM, new()
 
         var ticketID = "";
         if (TradeStartModule<T>.IsStartChannel(context.Channel.Id))
-            ticketID = $", unique ID: {detail.ID}";
+            ticketID = $", eindeutige ID: {detail.ID}";
 
         var pokeName = "";
         if (t == PokeTradeType.Specific && pk.Species != 0)
-            pokeName = $" Receiving: {GameInfo.GetStrings(1).Species[pk.Species]}.";
-        msg = $"{user.Mention} - Added to the {type} queue{ticketID}. Current Position: {position.Position}.{pokeName}";
+            pokeName = $" Empfangen: {GameInfo.GetStrings(1).Species[pk.Species]}.";
+        msg = $"{user.Mention} - Zur Warteschlange {type} ({ticketID}) hinzugefügt. Aktuelle Position: {position.Position}.{pokeName}";
 
         var botct = Info.Hub.Bots.Count;
         if (position.Position > botct)
         {
             var eta = Info.Hub.Config.Queues.EstimateDelay(position.Position, botct);
-            msg += $" Estimated: {eta:F1} minutes.";
+            msg += $" Geschätzte Wartezeit: {eta:F1} Minuten.";
         }
         return true;
     }
@@ -109,7 +109,7 @@ public static class QueueHelper<T> where T : PKM, new()
                 if (!permissions.SendMessages)
                 {
                     // Nag the owner in logs.
-                    message = "You must grant me \"Send Messages\" permissions!";
+                    message = "Sie müssen mir die Berechtigung \"Nachrichten senden\" erteilen!";
                     Base.LogUtil.LogError(message, "QueueHelper");
                     return;
                 }
@@ -117,14 +117,14 @@ public static class QueueHelper<T> where T : PKM, new()
                 {
                     var app = await context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
                     var owner = app.Owner.Id;
-                    message = $"<@{owner}> You must grant me \"Manage Messages\" permissions!";
+                    message = $"<@{owner}> Sie müssen mir die Berechtigung \"Nachrichten verwalten\" erteilen!";
                 }
             }
                 break;
             case DiscordErrorCode.CannotSendMessageToUser:
             {
                 // The user either has DMs turned off, or Discord thinks they do.
-                message = context.User == trader ? "You must enable private messages in order to be queued!" : "The mentioned user must enable private messages in order for them to be queued!";
+                message = context.User == trader ? "Sie müssen private Nachrichten aktivieren, um in die Warteschlange aufgenommen zu werden!" : "Der genannte Benutzer muss private Nachrichten aktivieren, damit sie in die Warteschlange aufgenommen werden können!";
             }
                 break;
             default:

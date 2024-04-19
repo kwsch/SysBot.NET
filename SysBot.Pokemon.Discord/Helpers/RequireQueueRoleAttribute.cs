@@ -1,4 +1,4 @@
-﻿using Discord.Commands;
+using Discord.Commands;
 using Discord.WebSocket;
 using System;
 using System.Linq;
@@ -23,7 +23,7 @@ public sealed class RequireQueueRoleAttribute(string RoleName) : PreconditionAtt
 
         // Check if this user is a Guild User, which is the only context where roles exist
         if (context.User is not SocketGuildUser gUser)
-            return Task.FromResult(PreconditionResult.FromError("You must be sending the message from a guild to run this command."));
+            return Task.FromResult(PreconditionResult.FromError("Sie müssen die Nachricht von einer Gilde aus senden, um diesen Befehl auszuführen."));
 
         var roles = gUser.Roles;
         if (mgr.CanUseSudo(roles.Select(z => z.Name)))
@@ -31,10 +31,10 @@ public sealed class RequireQueueRoleAttribute(string RoleName) : PreconditionAtt
 
         bool canQueue = SysCordSettings.HubConfig.Queues.CanQueue;
         if (!canQueue)
-            return Task.FromResult(PreconditionResult.FromError("Sorry, I am not currently accepting queue requests!"));
+            return Task.FromResult(PreconditionResult.FromError("Leider nehme ich derzeit keine Warteschlangenanfragen an!"));
 
         if (!mgr.GetHasRoleAccess(RoleName, roles.Select(z => z.Name)))
-            return Task.FromResult(PreconditionResult.FromError("You do not have the required role to run this command."));
+            return Task.FromResult(PreconditionResult.FromError("Sie haben nicht die erforderliche Rolle, um diesen Befehl auszuführen."));
 
         return Task.FromResult(PreconditionResult.FromSuccess());
     }

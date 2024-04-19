@@ -44,12 +44,12 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         {
             await InitializeHardware(hub.Config.Trade, token).ConfigureAwait(false);
 
-            Log("Identifying trainer data of the host console.");
+            Log("Ermittlung der Trainerdaten der Host-Konsole.");
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
             RecentTrainerCache.SetRecentTrainer(sav);
             await InitializeSessionOffsets(token).ConfigureAwait(false);
 
-            Log($"Starting main {nameof(PokeTradeBotSWSH)} loop.");
+            Log($"Starte main {nameof(PokeTradeBotSWSH)} loop.");
             await InnerLoop(sav, token).ConfigureAwait(false);
         }
         catch (Exception e)
@@ -57,7 +57,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
             Log(e.Message);
         }
 
-        Log($"Ending {nameof(PokeTradeBotSWSH)} loop.");
+        Log($"Beenden der {nameof(PokeTradeBotSWSH)} Schleife.");
         await HardStop().ConfigureAwait(false);
     }
 
@@ -101,7 +101,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.Idle)
         {
             if (waitCounter == 0)
-                Log("No task assigned. Waiting for new task assignment.");
+                Log("Keine Aufgabe zugewiesen. Wartet auf neue Aufgabenzuweisung.");
             waitCounter++;
             if (waitCounter % 10 == 0 && hub.Config.AntiIdle)
                 await Click(B, 1_000, token).ConfigureAwait(false);
@@ -127,7 +127,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
 
             detail.IsProcessing = true;
             string tradetype = $" ({detail.Type})";
-            Log($"Starting next {type}{tradetype} Bot Trade. Getting data...");
+            Log($"Starte neuen {type}{tradetype} Bot Handel. Abrufen von Daten...");
             hub.Config.Stream.StartTrade(this, detail, hub);
             hub.Queues.StartTrade(this, detail);
 
@@ -141,7 +141,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         {
             // Updates the assets.
             hub.Config.Stream.IdleAssets(this);
-            Log("Nothing to check, waiting for new users...");
+            Log("Nichts zu prüfen, warten auf neue Benutzer...");
         }
 
         const int interval = 10;
@@ -191,11 +191,11 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         {
             detail.IsRetry = true;
             hub.Queues.Enqueue(type, detail, Math.Min(priority, PokeTradePriorities.Tier2));
-            detail.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
+            detail.SendNotification(this, "Huch! Es ist etwas passiert. Ich fordere Sie zu einem weiteren Versuch auf.");
         }
         else
         {
-            detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
+            detail.SendNotification(this, $"Huch! Es ist etwas passiert. Abbruch des Handels: {result}.");
             detail.TradeCanceled(this, result);
         }
     }
@@ -234,7 +234,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
 
         while (await CheckIfSearchingForLinkTradePartner(token).ConfigureAwait(false))
         {
-            Log("Still searching, resetting bot position.");
+            Log("Immer noch auf der Suche, Rücksetzung der Bot-Position.");
             await ResetTradePosition(token).ConfigureAwait(false);
         }
 
@@ -260,7 +260,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         await Task.Delay(hub.Config.Timings.ExtraTimeOpenCodeEntry, token).ConfigureAwait(false);
 
         var code = poke.Code;
-        Log($"Entering Link Trade code: {code:0000 0000}...");
+        Log($"Link Trade Code eingeben: {code:0000 0000}...");
         await EnterLinkCode(code, hub.Config, token).ConfigureAwait(false);
 
         // Wait for Barrier to trigger all bots simultaneously.
