@@ -201,10 +201,14 @@ namespace SysBot.Pokemon.Discord
                 .Select((gift, index) =>
                 {
                     string species = GameInfo.Strings.Species[gift.Species];
-                    string levelInfo = $"(Lv. {gift.Level})";
+                    string levelInfo = $"{gift.Level}"; 
                     string formName = ShowdownParsing.GetStringFromForm(gift.Form, GameInfo.Strings, gift.Species, gift.Context);
-                    formName = !string.IsNullOrEmpty(formName) ? $"-{formName}" : formName;
-                    return (Index: index + 1, EventInfo: $"{gift.CardHeader} - {species}{formName} {levelInfo}");
+                    formName = !string.IsNullOrEmpty(formName) ? $"-{formName}" : "";
+                    string trainerName = gift.OriginalTrainerName;
+
+                    string eventDetails = $"{gift.CardHeader} - {species}{formName} | Lvl.{levelInfo} | OT: {trainerName}";
+
+                    return (Index: index + 1, EventInfo: eventDetails);
                 })
                 .OrderBy(x => x.Index);
         }
