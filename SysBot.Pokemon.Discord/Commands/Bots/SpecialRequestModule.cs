@@ -12,6 +12,30 @@ using DiscordColor = Discord.Color;
 
 namespace SysBot.Pokemon.Discord
 {
+    /// <summary>
+    /// Provides functionality for listing and requesting Pokémon wondercard events via Discord commands.
+    /// Users can interact with the system in multiple ways:
+    /// 
+    /// 1. Listing Events: 
+    ///    - Users can list events from a specified generation or game. Optionally, users can filter this list by specifying a Pokémon species name.
+    ///    - Command format: .srp {generationOrGame} [speciesName] [pageX]
+    ///    - Example: .srp gen9 Mew page2
+    ///      This command lists the second page of events for the 'gen9' dataset, specifically filtering for events related to 'Mew'.
+    ///
+    /// 2. Requesting Specific Events:
+    ///    - Users can request a specific event to be processed by providing an event index number.
+    ///    - Command format: .srp {generationOrGame} {eventIndex}
+    ///    - Example: .srp gen9 26
+    ///      This command requests the processing of the event at index 26 within the 'gen9' dataset.
+    ///
+    /// 3. Pagination:
+    ///    - Users can navigate through pages of event listings by specifying the page number after the generation/game and optionally the species.
+    ///    - Command format: .srp {generationOrGame} [speciesName] pageX
+    ///    - Example: .srp gen9 page3
+    ///      This command lists the third page of events for the 'gen9' dataset.
+    ///
+    /// This module ensures that user inputs are properly validated for the specific commands to manage event data effectively, adjusting listings or processing requests based on user interactions.
+    /// </summary>
     public class SpecialRequestModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
     {
         private const int itemsPerPage = 25;
@@ -31,14 +55,30 @@ namespace SysBot.Pokemon.Discord
 
         [Command("specialrequestpokemon")]
         [Alias("srp")]
-        [Summary("Lists available wondercard events from the specified generation or game and sends the list via DM.")]
+        [Summary("Lists available wondercard events from the specified generation or game or requests a specific event if a number is provided.")]
         public async Task ListSpecialEventsAsync(string generationOrGame, [Remainder] string args = "")
         {
-            const int itemsPerPage = 25;
             var botPrefix = SysCord<T>.Runner.Config.Discord.CommandPrefix;
-
             var parts = args.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            int page = GetPageNumber(parts);
+
+            if (parts.Length == 1 && int.TryParse(parts[0], out int index))
+            {
+                await SpecialEventRequestAsync(generationOrGame, index.ToString());
+                return;
+            }
+
+            int page = 1;
+            string speciesName = "";
+
+            foreach (string part in parts)
+            {
+                if (part.StartsWith("page", StringComparison.OrdinalIgnoreCase) && int.TryParse(part.Substring(4), out int pageNumber))
+                {
+                    page = pageNumber;
+                    continue;
+                }
+                speciesName = part;
+            }
 
             var eventData = GetEventData(generationOrGame);
             if (eventData == null)
@@ -47,19 +87,17 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            var allEvents = GetFilteredEvents(eventData);
+            var allEvents = GetFilteredEvents(eventData, speciesName);
             if (!allEvents.Any())
             {
-                await ReplyAsync($"No events found for {generationOrGame}.");
+                await ReplyAsync($"No events found for {generationOrGame} with the specified filter.");
                 return;
             }
 
             var pageCount = (int)Math.Ceiling((double)allEvents.Count() / itemsPerPage);
             page = Math.Clamp(page, 1, pageCount);
-
-            var embed = SpecialRequestModule<T>.BuildEventListEmbed(generationOrGame, allEvents, page, pageCount, botPrefix);
+            var embed = BuildEventListEmbed(generationOrGame, allEvents, page, pageCount, botPrefix);
             await SendEventListAsync(embed);
-
             await CleanupMessagesAsync();
         }
 
@@ -67,8 +105,14 @@ namespace SysBot.Pokemon.Discord
         [Alias("srp")]
         [Summary("Downloads wondercard event attachments from the specified generation and adds to trade queue.")]
         [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-        public async Task SpecialEventRequestAsync(string generationOrGame, int index)
+        public async Task SpecialEventRequestAsync(string generationOrGame, [Remainder] string args = "")
         {
+            if (!int.TryParse(args, out int index))
+            {
+                await ReplyAsync("Invalid event index. Please provide a valid event number.");
+                return;
+            }
+
             var userID = Context.User.Id;
             if (Info.IsUserInQueue(userID))
             {
@@ -146,17 +190,21 @@ namespace SysBot.Pokemon.Discord
             };
         }
 
-        private static IOrderedEnumerable<(int Index, string EventInfo)> GetFilteredEvents(MysteryGift[] eventData)
+        private static IOrderedEnumerable<(int Index, string EventInfo)> GetFilteredEvents(MysteryGift[] eventData, string speciesName = "")
         {
             return eventData
-                .Where(gift => gift.IsEntity && !gift.IsItem)
+                .Where(gift =>
+                    gift.IsEntity &&
+                    !gift.IsItem &&
+                    (string.IsNullOrWhiteSpace(speciesName) || GameInfo.Strings.Species[gift.Species].Equals(speciesName, StringComparison.OrdinalIgnoreCase))
+                )
                 .Select((gift, index) =>
                 {
-                    string speciesName = GameInfo.Strings.Species[gift.Species];
+                    string species = GameInfo.Strings.Species[gift.Species];
                     string levelInfo = $"(Lv. {gift.Level})";
                     string formName = ShowdownParsing.GetStringFromForm(gift.Form, GameInfo.Strings, gift.Species, gift.Context);
                     formName = !string.IsNullOrEmpty(formName) ? $"-{formName}" : formName;
-                    return (Index: index + 1, EventInfo: $"{gift.CardHeader} - {speciesName}{formName} {levelInfo}");
+                    return (Index: index + 1, EventInfo: $"{gift.CardHeader} - {species}{formName} {levelInfo}");
                 })
                 .OrderBy(x => x.Index);
         }
