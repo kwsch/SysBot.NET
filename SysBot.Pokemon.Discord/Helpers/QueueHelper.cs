@@ -27,7 +27,7 @@ public static class QueueHelper<T> where T : PKM, new()
     private static readonly Dictionary<int, List<string>> batchTradeFiles = [];
     private static readonly Dictionary<ulong, int> userBatchTradeMaxDetailId = [];
 
-    public static async Task AddToQueueAsync(SocketCommandContext context, int code, string trainer, RequestSignificance sig, T trade, PokeRoutineType routine, PokeTradeType type, SocketUser trader, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, bool isMysteryEgg = false, List<Pictocodes>? lgcode = null, bool ignoreAutoOT = false)
+    public static async Task AddToQueueAsync(SocketCommandContext context, int code, string trainer, RequestSignificance sig, T trade, PokeRoutineType routine, PokeTradeType type, SocketUser trader, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, bool isMysteryEgg = false, List<Pictocodes>? lgcode = null, bool ignoreAutoOT = false, bool isHiddenTrade = false)
     {
         if ((uint)code > MaxTradeCode)
         {
@@ -50,7 +50,7 @@ public static class QueueHelper<T> where T : PKM, new()
                 }
             }
 
-            var result = await AddToTradeQueue(context, trade, code, trainer, sig, routine, isBatchTrade ? PokeTradeType.Batch : type, trader, isBatchTrade, batchTradeNumber, totalBatchTrades, isMysteryEgg, lgcode, ignoreAutoOT).ConfigureAwait(false);
+            var result = await AddToTradeQueue(context, trade, code, trainer, sig, routine, isBatchTrade ? PokeTradeType.Batch : type, trader, isBatchTrade, batchTradeNumber, totalBatchTrades, isMysteryEgg, lgcode, ignoreAutoOT, isHiddenTrade).ConfigureAwait(false);
         }
         catch (HttpException ex)
         {
@@ -63,7 +63,7 @@ public static class QueueHelper<T> where T : PKM, new()
         return AddToQueueAsync(context, code, trainer, sig, trade, routine, type, context.User, ignoreAutoOT: ignoreAutoOT);
     }
 
-    private static async Task<TradeQueueResult> AddToTradeQueue(SocketCommandContext context, T pk, int code, string trainerName, RequestSignificance sig, PokeRoutineType type, PokeTradeType t, SocketUser trader, bool isBatchTrade, int batchTradeNumber, int totalBatchTrades, bool isMysteryEgg = false, List<Pictocodes>? lgcode = null, bool ignoreAutoOT = false)
+    private static async Task<TradeQueueResult> AddToTradeQueue(SocketCommandContext context, T pk, int code, string trainerName, RequestSignificance sig, PokeRoutineType type, PokeTradeType t, SocketUser trader, bool isBatchTrade, int batchTradeNumber, int totalBatchTrades, bool isMysteryEgg = false, List<Pictocodes>? lgcode = null, bool ignoreAutoOT = false, bool isHiddenTrade = false)
     {
         var user = trader;
         var userID = user.Id;
@@ -89,8 +89,8 @@ public static class QueueHelper<T> where T : PKM, new()
         bool showNature = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowNature;
         bool showIVs = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowIVs;
         int totalTradeCount = 0;
-        TradeCodeStorage.TradeCodeDetails tradeDetails = null;
-        TradeCodeStorage tradeCodeStorage = null;
+        TradeCodeStorage.TradeCodeDetails? tradeDetails = null;
+        TradeCodeStorage? tradeCodeStorage = null;
         if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.StoreTradeCodes)
         {
             tradeCodeStorage = new TradeCodeStorage();
@@ -319,36 +319,44 @@ public static class QueueHelper<T> where T : PKM, new()
             embedBuilder.WithThumbnailUrl(heldItemUrl);
         }
 
-        // Building and sending the embed message
-        var embed = embedBuilder.Build();
-        if (embed == null)
+        if (!isHiddenTrade)
         {
-            Console.WriteLine("Error: Embed is null.");
-            await context.Channel.SendMessageAsync("An error occurred while preparing the trade details.");
-            return new TradeQueueResult(false);
-        }
-
-        // Handling file operations for batch trades and sending messages
-        if (isLocalFile)
-        {
-            await context.Channel.SendFileAsync(embedImageUrl, embed: embed);
-            if (isBatchTrade)
+            // Building and sending the embed message
+            var embed = embedBuilder.Build();
+            if (embed == null)
             {
-                userBatchTradeMaxDetailId[userID] = Math.Max(userBatchTradeMaxDetailId.GetValueOrDefault(userID), detail.ID);
-                await ScheduleFileDeletion(embedImageUrl, 0, detail.ID);
-                if (detail.ID == userBatchTradeMaxDetailId[userID] && batchTradeNumber == totalBatchTrades)
+                Console.WriteLine("Error: Embed is null.");
+                await context.Channel.SendMessageAsync("An error occurred while preparing the trade details.");
+                return new TradeQueueResult(false);
+            }
+
+            // Handling file operations for batch trades and sending messages
+            if (isLocalFile)
+            {
+                await context.Channel.SendFileAsync(embedImageUrl, embed: embed);
+                if (isBatchTrade)
                 {
-                    DeleteBatchTradeFiles(detail.ID);
+                    userBatchTradeMaxDetailId[userID] = Math.Max(userBatchTradeMaxDetailId.GetValueOrDefault(userID), detail.ID);
+                    await ScheduleFileDeletion(embedImageUrl, 0, detail.ID);
+                    if (detail.ID == userBatchTradeMaxDetailId[userID] && batchTradeNumber == totalBatchTrades)
+                    {
+                        DeleteBatchTradeFiles(detail.ID);
+                    }
+                }
+                else
+                {
+                    await ScheduleFileDeletion(embedImageUrl, 0);
                 }
             }
             else
             {
-                await ScheduleFileDeletion(embedImageUrl, 0);
+                await context.Channel.SendMessageAsync(embed: embed);
             }
         }
         else
         {
-            await context.Channel.SendMessageAsync(embed: embed);
+            var message = $"{trader.Mention} - Added to the LinkTrade queue. Current Position: {position.Position}. Receiving: {speciesName}.\n{etaMessage}";
+            await context.Channel.SendMessageAsync(message);
         }
 
         return new TradeQueueResult(true);
@@ -472,7 +480,7 @@ public static class QueueHelper<T> where T : PKM, new()
             if (!ballImageLoaded)
             {
                 Console.WriteLine($"Ball image could not be loaded: {ballImgUrl}");
-               // await context.Channel.SendMessageAsync($"Ball image could not be loaded: {ballImgUrl}");
+                // await context.Channel.SendMessageAsync($"Ball image could not be loaded: {ballImgUrl}");
             }
         }
 

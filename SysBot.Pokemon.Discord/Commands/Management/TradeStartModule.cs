@@ -90,6 +90,23 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
             {
                 speciesName = GameInfo.Strings.Species[detail.TradeData.Species];
             }
+            string ballName = "";
+            if (detail.TradeData != null)
+            {
+                var strings = GameInfo.GetStrings(1);
+                ballName = strings.balllist[detail.TradeData.Ball];
+
+                if (ballName.Contains("(LA)"))
+                {
+                    ballName = "la" + ballName.Replace(" ", "").Replace("(LA)", "").ToLower();
+                }
+                else
+                {
+                    ballName = ballName.Replace(" ", "").ToLower();
+                }
+            }
+            string ballImgUrl = $"https://raw.githubusercontent.com/bdawg1989/sprites/main/AltBallImg/28x28/{ballName}.png";
+
             string tradeTitle, embedImageUrl;
             if (detail.IsMysteryEgg)
             {
@@ -132,13 +149,15 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
 
             var embedBuilder = new EmbedBuilder()
                 .WithColor(embedColor)
-                .WithThumbnailUrl(embedImageUrl) 
+                .WithThumbnailUrl(embedImageUrl)
                 .WithAuthor(new EmbedAuthorBuilder()
-                    .WithName($"Processing {user.Username}'s {tradeTitle}")
+                    .WithName($"Up Next: {user.Username}")
                     .WithIconUrl(user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl()))
-                .WithDescription($"# Now Trading {tradeTitle}")
-                .WithFooter($"Trade #{detail.ID}")
-                .WithCurrentTimestamp();
+                .WithDescription($"**Receiving**: {tradeTitle}\n**Trade ID**: {detail.ID}")
+                .WithFooter(new EmbedFooterBuilder()
+                    .WithText($"Initializing trade now. Enjoy your {speciesName}!\u200B")
+                    .WithIconUrl(ballImgUrl))
+                .WithTimestamp(DateTime.Now);
 
             var embed = embedBuilder.Build();
             await c.SendMessageAsync(embed: embed);
