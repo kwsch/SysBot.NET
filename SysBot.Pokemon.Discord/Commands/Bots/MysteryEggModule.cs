@@ -28,8 +28,12 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
             var code = Info.GetRandomTradeCode(userID);
-            await TradeMysteryEggAsync(code).ConfigureAwait(false);
+            await Task.Run(async () =>
+            {
+                await TradeMysteryEggAsync(code).ConfigureAwait(false);
+            }).ConfigureAwait(false);
         }
+
 
         [Command("mysteryegg")]
         [Alias("me")]
@@ -62,9 +66,29 @@ namespace SysBot.Pokemon.Discord
                     var randomIndex = new Random().Next(speciesList.Count);
                     ushort speciesId = speciesList[randomIndex];
 
-                    var context = new EntityContext();
-                    var IsEgg = new EncounterEgg(speciesId, 0, 1, 9, gameVersion, context);
-                    var pk = IsEgg.ConvertToPKM(sav);
+                    LogUtil.LogInfo("MysteryEgg", $"Attempt {attempts}: Generating Mystery Egg for species ID {speciesId}");
+
+                    EntityContext context = gameVersion switch
+                    {
+                        GameVersion.SWSH => EntityContext.Gen8,
+                        GameVersion.BDSP => EntityContext.Gen8b,
+                        GameVersion.PLA => EntityContext.Gen8a,
+                        GameVersion.SV => EntityContext.Gen9,
+                        _ => throw new ArgumentException("Unsupported game version."),
+                    };
+
+                    byte generation = gameVersion switch
+                    {
+                        GameVersion.SWSH => 8,
+                        GameVersion.BDSP => 8,
+                        GameVersion.PLA => 8,
+                        GameVersion.SV => 9,
+                        _ => throw new ArgumentException("Unsupported game version."),
+                    };
+
+                    EncounterEgg eggEncounter = new(speciesId, 0, 1, generation, gameVersion, context);
+
+                    var pk = eggEncounter.ConvertToPKM(sav);
 
                     SetPerfectIVsAndShiny(pk);
 
@@ -72,7 +96,8 @@ namespace SysBot.Pokemon.Discord
 
                     if (pk is not T pkT)
                     {
-                        await ReplyAsync("Oops! I wasn't able to create a mystery egg.  Try again soon.").ConfigureAwait(false);
+                        LogUtil.LogInfo("MysteryEgg", $"Failed to convert Mystery Egg to type {typeof(T).Name}");
+                        await ReplyAsync("Oops! I wasn't able to create a mystery egg. Try again soon.").ConfigureAwait(false);
                         return;
                     }
 
@@ -80,18 +105,25 @@ namespace SysBot.Pokemon.Discord
 
                     var sig = Context.User.GetFavor();
                     validPokemon = await AddTradeToQueueAsync(code, Context.User.Username, pkT, sig, Context.User, isMysteryEgg: true).ConfigureAwait(false);
+
+                    if (!validPokemon)
+                    {
+                        LogUtil.LogInfo("MysteryEgg", $"Mystery Egg for species ID {speciesId} is not valid");
+                    }
                 }
 
                 if (!validPokemon)
                 {
+                    LogUtil.LogInfo("MysteryEgg", "Failed to generate a valid Mystery Egg after all attempts");
                     await ReplyAsync("Our basket is out of Mystery Eggs at this time, please try again.").ConfigureAwait(false);
                     return;
                 }
 
+                LogUtil.LogInfo("MysteryEgg", "Successfully generated and added Mystery Egg to the trade queue");
+
                 if (Context.Message is IUserMessage userMessage)
                 {
-                    await Task.Delay(2000);
-                    await userMessage.DeleteAsync().ConfigureAwait(false);
+                    _ = DeleteMessageAfterDelay(userMessage, 2000);
                 }
             }
             catch (Exception ex)
@@ -99,6 +131,12 @@ namespace SysBot.Pokemon.Discord
                 LogUtil.LogSafe(ex, nameof(MysteryEggModule<T>));
                 await ReplyAsync("An error occurred while processing the request.").ConfigureAwait(false);
             }
+        }
+
+        private static async Task DeleteMessageAfterDelay(IUserMessage message, int delayMilliseconds)
+        {
+            await Task.Delay(delayMilliseconds).ConfigureAwait(false);
+            await message.DeleteAsync().ConfigureAwait(false);
         }
 
         private static GameVersion GetGameVersion()
@@ -177,36 +215,20 @@ namespace SysBot.Pokemon.Discord
             };
         }
 
-        private async Task<bool> AddTradeToQueueAsync(int code, string trainerName, T? pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, bool isMysteryEgg = false, List<Pictocodes> lgcode = null, PokeTradeType tradeType = PokeTradeType.Specific, bool ignoreAutoOT = false, bool isHiddenTrade = false)
+        private async Task<bool> AddTradeToQueueAsync(int code, string trainerName, T? pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, bool isMysteryEgg = false, List<Pictocodes>? lgcode = null, PokeTradeType tradeType = PokeTradeType.Specific, bool ignoreAutoOT = false, bool isHiddenTrade = false)
         {
-            lgcode ??= GenerateRandomPictocodes(3);
             if (!pk.CanBeTraded())
             {
-                var reply = await ReplyAsync("Provided Pokémon content is blocked from trading!").ConfigureAwait(false);
-                await Task.Delay(6000); // Delay for 6 seconds
-                await reply.DeleteAsync().ConfigureAwait(false);
-                return false;
-            }
-            var la = new LegalityAnalysis(pk);
-            if (!la.Valid)
-            {
-                string responseMessage;
-                if (pk.IsEgg)
-                {
-                    string speciesName = GameInfo.GetStrings("en").specieslist[pk.Species];
-                    responseMessage = $"Invalid Showdown Set for the {speciesName} egg. Please review your information and try again.";
-                }
-                else
-                {
-                    responseMessage = $"{typeof(T).Name} attachment is not legal, and cannot be traded!";
-                }
-                var reply = await ReplyAsync(responseMessage).ConfigureAwait(false);
-                await Task.Delay(6000);
-                await reply.DeleteAsync().ConfigureAwait(false);
                 return false;
             }
 
-            await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk, PokeRoutineType.LinkTrade, tradeType, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, isMysteryEgg, lgcode, ignoreAutoOT, isHiddenTrade).ConfigureAwait(false);
+            var la = new LegalityAnalysis(pk);
+            if (!la.Valid)
+            {
+                return false;
+            }
+
+            await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk, PokeRoutineType.LinkTrade, tradeType, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, isHiddenTrade, isMysteryEgg, lgcode, ignoreAutoOT).ConfigureAwait(false);
             return true;
         }
 
