@@ -396,80 +396,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         }
     }
 
-    [Command("mysteryegg")]
-    [Alias("me")]
-    [Summary("Trades an egg generated from the provided Pokémon name.")]
-    public async Task TradeMysteryEggAsync()
-    {
-        // Check if the user is already in the queue
-        var userID = Context.User.Id;
-        if (Info.IsUserInQueue(userID))
-        {
-            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
-            return;
-        }
-        var code = Info.GetRandomTradeCode(userID);
-        await TradeMysteryEggAsync(code).ConfigureAwait(false);
-    }
-
-    [Command("mysteryegg")]
-    [Alias("me")]
-    [Summary("Trades a random mystery egg with perfect stats and shiny appearance.")]
-    [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-    public async Task TradeMysteryEggAsync([Summary("Trade Code")] int code)
-    {
-        // Check if the user is already in the queue
-        var userID = Context.User.Id;
-        if (Info.IsUserInQueue(userID))
-        {
-            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
-            return;
-        }
-        try
-        {
-            var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
-            var speciesList = BreedableSpeciesGenerator.GetBreedableSpeciesForSV();
-            var randomIndex = new Random().Next(speciesList.Count);
-            ushort speciesId = speciesList[randomIndex];
-            var context = new EntityContext();
-            var IsEgg = new EncounterEgg(speciesId, 0, 1, 9, GameVersion.SV, context);
-            var pk = IsEgg.ConvertToPKM(sav);
-            TradeModule<T>.SetPerfectIVsAndShiny(pk);
-
-            if (pk is not T pkT)
-            {
-                await ReplyAsync("Oops! I wasn't able to create a mystery egg.").ConfigureAwait(false);
-                return;
-            }
-
-            AbstractTrade<T>.EggTrade(pkT, null);
-
-            var sig = Context.User.GetFavor();
-            await AddTradeToQueueAsync(code, Context.User.Username, pkT, sig, Context.User, isMysteryEgg: true).ConfigureAwait(false);
-
-            if (Context.Message is IUserMessage userMessage)
-            {
-                await Task.Delay(2000);
-                await userMessage.DeleteAsync().ConfigureAwait(false);
-            }
-        }
-        catch (Exception ex)
-        {
-            LogUtil.LogSafe(ex, nameof(TradeModule<T>));
-            await ReplyAsync("An error occurred while processing the request.").ConfigureAwait(false);
-        }
-    }
-
-    private static void SetPerfectIVsAndShiny(PKM pk)
-    {
-        // Set IVs to perfect
-        pk.IVs = [31, 31, 31, 31, 31, 31];
-        // Set as shiny
-        pk.SetShiny();
-        // Set hidden ability
-        pk.RefreshAbility(2);
-    }
-
     [Command("hidetrade")]
     [Alias("ht")]
     [Summary("Makes the bot trade you the provided Pokémon file without showing the trade embed details.")]
@@ -1494,8 +1420,16 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var la = new LegalityAnalysis(pk);
         if (!la.Valid)
         {
-            string responseMessage = pk.IsEgg ? "Invalid Showdown Set for this Egg. Please review your information and try again." :
-                $"{typeof(T).Name} attachment is not legal, and cannot be traded!";
+            string responseMessage;
+            if (pk.IsEgg)
+            {
+                string speciesName = GameInfo.GetStrings("en").specieslist[pk.Species];
+                responseMessage = $"Invalid Showdown Set for the {speciesName} egg. Please review your information and try again.";
+            }
+            else
+            {
+                responseMessage = $"{typeof(T).Name} attachment is not legal, and cannot be traded!";
+            }
             var reply = await ReplyAsync(responseMessage).ConfigureAwait(false);
             await Task.Delay(6000);
             await reply.DeleteAsync().ConfigureAwait(false);
