@@ -100,6 +100,10 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
                 {
                     ballName = "la" + ballName.Replace(" ", "").Replace("(LA)", "").ToLower();
                 }
+                else if (ballName == "Poké Ball")
+                {
+                    ballName = "pokeball";
+                }
                 else
                 {
                     ballName = ballName.Replace(" ", "").ToLower();
