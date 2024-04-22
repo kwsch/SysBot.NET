@@ -188,6 +188,7 @@ public static class QueueHelper<T> where T : PKM, new()
 
         // Display elements
         string ivsDisplay = $"{ivs[0]}/{ivs[1]}/{ivs[2]}/{ivs[3]}/{ivs[4]}/{ivs[5]}";
+        string MetDate = $"{pk.MetDate}";
         string movesDisplay = string.Join("\n", moveNames);
         string shinyEmoji = pk.IsShiny ? "✨ " : "";
         string pokemonDisplayName = pk.IsNicknamed ? pk.Nickname : GameInfo.GetStrings(1).Species[pk.Species];
@@ -292,6 +293,7 @@ public static class QueueHelper<T> where T : PKM, new()
                 (pk.Version is GameVersion.SL or GameVersion.VL && showTeraType ? $"**Tera Type:** {teraTypeString}\n" : "") +
                 (pk.Version is GameVersion.SL or GameVersion.VL && showScale ? $"**Scale:** {scaleText} ({scaleNumber})\n" : "") +
                 (showLevel ? $"**Level:** {level}\n" : "") +
+                (showLevel ? $"**MetDate:** {MetDate}\n" : "") +
                 (showAbility ? $"**Ability:** {abilityName}\n" : "") +
                 (showNature ? $"**Nature**: {natureName}\n" : "") +
                 (showIVs ? $"**IVs**: {ivsDisplay}\n" : "");

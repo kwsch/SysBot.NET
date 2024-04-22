@@ -72,7 +72,7 @@ namespace SysBot.Pokemon.Discord
 
             foreach (string part in parts)
             {
-                if (part.StartsWith("page", StringComparison.OrdinalIgnoreCase) && int.TryParse(part.Substring(4), out int pageNumber))
+                if (part.StartsWith("page", StringComparison.OrdinalIgnoreCase) && int.TryParse(part.AsSpan(4), out int pageNumber))
                 {
                     page = pageNumber;
                     continue;
@@ -269,7 +269,69 @@ namespace SysBot.Pokemon.Discord
                 Success = true
             };
 
-            return download.Data is null ? null : GetRequest(download);
+            if (download.Data is null)
+                return null;
+
+            var pk = GetRequest(download);
+            if (pk is null)
+                return null;
+            if (selectedEvent is IEncounterServerDate)
+            {
+                var (start, end) = GetEncounterDateRange(selectedEvent);
+                if (start.HasValue && end.HasValue)
+                {
+                    var randomDate = GenerateRandomDateInRange(start.Value, end.Value);
+                    pk.MetDate = randomDate;
+                }
+                else
+                {
+                    // Date not found, using current date
+                    pk.MetDate = DateOnly.FromDateTime(DateTime.Now);
+                }
+            }
+            else
+            {
+                // Date not found, using current date
+                pk.MetDate = DateOnly.FromDateTime(DateTime.Now);
+            }
+
+            return pk;
+        }
+
+        private static (DateOnly? Start, DateOnly? End) GetEncounterDateRange(MysteryGift selectedEvent)
+        {
+            if (selectedEvent is WC8 wc8)
+            {
+                if (EncounterServerDate.WC8Gifts.TryGetValue(wc8.CardID, out var wc8Range))
+                    return wc8Range;
+                else if (EncounterServerDate.WC8GiftsChk.TryGetValue(wc8.Checksum, out var wc8ChkRange))
+                    return wc8ChkRange;
+            }
+            else if (selectedEvent is WA8 wa8 && EncounterServerDate.WA8Gifts.TryGetValue(wa8.CardID, out var wa8Range))
+            {
+                return wa8Range;
+            }
+            else if (selectedEvent is WB8 wb8 && EncounterServerDate.WB8Gifts.TryGetValue(wb8.CardID, out var wb8Range))
+            {
+                return wb8Range;
+            }
+            else if (selectedEvent is WC9 wc9)
+            {
+                if (EncounterServerDate.WC9Gifts.TryGetValue(wc9.CardID, out var wc9Range))
+                    return wc9Range;
+                else if (EncounterServerDate.WC9GiftsChk.TryGetValue(wc9.Checksum, out var wc9ChkRange))
+                    return wc9ChkRange;
+            }
+
+            return (null, null);
+        }
+
+        private static DateOnly GenerateRandomDateInRange(DateOnly startDate, DateOnly endDate)
+        {
+            var random = new Random();
+            var totalDays = (endDate.DayNumber - startDate.DayNumber) + 1;
+            var randomDays = random.Next(totalDays);
+            return startDate.AddDays(randomDays);
         }
 
         private async Task AddTradeToQueueAsync(int code, string trainerName, T? pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, bool isMysteryEgg = false, List<Pictocodes> lgcode = null, PokeTradeType tradeType = PokeTradeType.Specific, bool ignoreAutoOT = false, bool isHiddenTrade = false)
