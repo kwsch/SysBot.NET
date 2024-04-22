@@ -20,7 +20,6 @@ namespace SysBot.Pokemon.Discord
         [Summary("Trades an egg generated from the provided Pokémon name.")]
         public async Task TradeMysteryEggAsync()
         {
-            // Check if the user is already in the queue
             var userID = Context.User.Id;
             if (Info.IsUserInQueue(userID))
             {
@@ -34,14 +33,12 @@ namespace SysBot.Pokemon.Discord
             }).ConfigureAwait(false);
         }
 
-
         [Command("mysteryegg")]
         [Alias("me")]
         [Summary("Trades a random mystery egg with perfect stats and shiny appearance.")]
         [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
         public async Task TradeMysteryEggAsync([Summary("Trade Code")] int code)
         {
-            // Check if the user is already in the queue
             var userID = Context.User.Id;
             if (Info.IsUserInQueue(userID))
             {
@@ -51,75 +48,33 @@ namespace SysBot.Pokemon.Discord
 
             try
             {
-                bool validPokemon = false;
-                int attempts = 0;
-                const int maxAttempts = 15;
+                var gameVersion = GetGameVersion();
+                var speciesList = GetBreedableSpecies(gameVersion, "en");
 
-                while (!validPokemon && attempts < maxAttempts)
+                var randomIndex = new Random().Next(speciesList.Count);
+                ushort speciesId = speciesList[randomIndex];
+                var speciesName = GameInfo.GetStrings("en").specieslist[speciesId];
+
+                var showdownSet = new ShowdownSet(speciesName);
+                var template = AutoLegalityWrapper.GetTemplate(showdownSet);
+
+                var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
+                var pkm = sav.GetLegal(template, out var result);
+
+                SetPerfectIVsAndShiny(pkm);
+
+                pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
+
+                if (pkm is not T pk)
                 {
-                    attempts++;
-
-                    var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
-                    var gameVersion = MysteryEggModule<T>.GetGameVersion();
-                    var speciesList = GetBreedableSpecies(gameVersion, "en");
-
-                    var randomIndex = new Random().Next(speciesList.Count);
-                    ushort speciesId = speciesList[randomIndex];
-
-                    LogUtil.LogInfo("MysteryEgg", $"Attempt {attempts}: Generating Mystery Egg for species ID {speciesId}");
-
-                    EntityContext context = gameVersion switch
-                    {
-                        GameVersion.SWSH => EntityContext.Gen8,
-                        GameVersion.BDSP => EntityContext.Gen8b,
-                        GameVersion.PLA => EntityContext.Gen8a,
-                        GameVersion.SV => EntityContext.Gen9,
-                        _ => throw new ArgumentException("Unsupported game version."),
-                    };
-
-                    byte generation = gameVersion switch
-                    {
-                        GameVersion.SWSH => 8,
-                        GameVersion.BDSP => 8,
-                        GameVersion.PLA => 8,
-                        GameVersion.SV => 9,
-                        _ => throw new ArgumentException("Unsupported game version."),
-                    };
-
-                    EncounterEgg eggEncounter = new(speciesId, 0, 1, generation, gameVersion, context);
-
-                    var pk = eggEncounter.ConvertToPKM(sav);
-
-                    SetPerfectIVsAndShiny(pk);
-
-                    pk = EntityConverter.ConvertToType(pk, typeof(T), out _) ?? pk;
-
-                    if (pk is not T pkT)
-                    {
-                        LogUtil.LogInfo("MysteryEgg", $"Failed to convert Mystery Egg to type {typeof(T).Name}");
-                        await ReplyAsync("Oops! I wasn't able to create a mystery egg. Try again soon.").ConfigureAwait(false);
-                        return;
-                    }
-
-                    AbstractTrade<T>.EggTrade(pkT, null);
-
-                    var sig = Context.User.GetFavor();
-                    validPokemon = await AddTradeToQueueAsync(code, Context.User.Username, pkT, sig, Context.User, isMysteryEgg: true).ConfigureAwait(false);
-
-                    if (!validPokemon)
-                    {
-                        LogUtil.LogInfo("MysteryEgg", $"Mystery Egg for species ID {speciesId} is not valid");
-                    }
-                }
-
-                if (!validPokemon)
-                {
-                    LogUtil.LogInfo("MysteryEgg", "Failed to generate a valid Mystery Egg after all attempts");
-                    await ReplyAsync("Our basket is out of Mystery Eggs at this time, please try again.").ConfigureAwait(false);
+                    await ReplyAsync($"Oops! I wasn't able to create a mystery egg for that.").ConfigureAwait(false);
                     return;
                 }
 
-                LogUtil.LogInfo("MysteryEgg", "Successfully generated and added Mystery Egg to the trade queue");
+                AbstractTrade<T>.EggTrade(pk, template);
+
+                var sig = Context.User.GetFavor();
+                await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, isMysteryEgg: true).ConfigureAwait(false);
 
                 if (Context.Message is IUserMessage userMessage)
                 {
@@ -139,6 +94,13 @@ namespace SysBot.Pokemon.Discord
             await message.DeleteAsync().ConfigureAwait(false);
         }
 
+        private static void SetPerfectIVsAndShiny(PKM pk)
+        {
+            pk.IVs = [31, 31, 31, 31, 31, 31];
+            pk.SetShiny();
+            pk.RefreshAbility(2);
+        }
+
         private static GameVersion GetGameVersion()
         {
             if (typeof(T) == typeof(PK8))
@@ -151,16 +113,6 @@ namespace SysBot.Pokemon.Discord
                 return GameVersion.SV;
             else
                 throw new ArgumentException("Unsupported game version.");
-        }
-
-        private static void SetPerfectIVsAndShiny(PKM pk)
-        {
-            // Set IVs to perfect
-            pk.IVs = new[] { 31, 31, 31, 31, 31, 31 };
-            // Set as shiny
-            pk.SetShiny();
-            // Set hidden ability
-            pk.RefreshAbility(2);
         }
 
         public static List<ushort> GetBreedableSpecies(GameVersion gameVersion, string language = "en")
@@ -176,6 +128,7 @@ namespace SysBot.Pokemon.Discord
             foreach (var species in availableSpeciesList)
             {
                 var speciesId = (ushort)species.Index;
+                var speciesName = species.Name;
                 var pi = GetFormEntry(pt, speciesId, 0);
                 if (IsBreedable(pi) && pi.EvoStage == 1)
                 {
@@ -215,27 +168,45 @@ namespace SysBot.Pokemon.Discord
             };
         }
 
-        private async Task<bool> AddTradeToQueueAsync(int code, string trainerName, T? pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, bool isMysteryEgg = false, List<Pictocodes>? lgcode = null, PokeTradeType tradeType = PokeTradeType.Specific, bool ignoreAutoOT = false, bool isHiddenTrade = false)
+        private async Task AddTradeToQueueAsync(int code, string trainerName, T? pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, bool isHiddenTrade = false, bool isMysteryEgg = false, List<Pictocodes> lgcode = null, PokeTradeType tradeType = PokeTradeType.Specific, bool ignoreAutoOT = false)
         {
-            if (!pk.CanBeTraded())
-            {
-                return false;
-            }
-
+            lgcode ??= GenerateRandomPictocodes(3);
             var la = new LegalityAnalysis(pk);
             if (!la.Valid)
             {
-                return false;
+                string responseMessage;
+                string speciesName = GameInfo.GetStrings("en").specieslist[pk.Species];
+                responseMessage = $"Invalid Showdown Set for the {speciesName} egg. Please review your information and try again.";
+
+                var reply = await ReplyAsync(responseMessage).ConfigureAwait(false);
+                await Task.Delay(6000);
+                await reply.DeleteAsync().ConfigureAwait(false);
+                return;
+            }
+            if (!la.Valid && la.Results.Any(m => m.Identifier is CheckIdentifier.Memory))
+            {
+                var clone = (T)pk.Clone();
+
+                clone.HandlingTrainerName = pk.OriginalTrainerName;
+                clone.HandlingTrainerGender = pk.OriginalTrainerGender;
+
+                if (clone is PK8 or PA8 or PB8 or PK9)
+                    ((dynamic)clone).HandlingTrainerLanguage = (byte)pk.Language;
+
+                clone.CurrentHandler = 1;
+
+                la = new LegalityAnalysis(clone);
+
+                if (la.Valid) pk = clone;
             }
 
             await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk, PokeRoutineType.LinkTrade, tradeType, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, isHiddenTrade, isMysteryEgg, lgcode, ignoreAutoOT).ConfigureAwait(false);
-            return true;
         }
 
         private static List<Pictocodes> GenerateRandomPictocodes(int count)
         {
             Random rnd = new();
-            List<Pictocodes> randomPictocodes = new List<Pictocodes>();
+            List<Pictocodes> randomPictocodes = [];
             Array pictocodeValues = Enum.GetValues(typeof(Pictocodes));
 
             for (int i = 0; i < count; i++)
