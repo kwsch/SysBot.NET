@@ -1469,7 +1469,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk, PokeRoutineType.LinkTrade, tradeType, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, isHiddenTrade, isMysteryEgg, lgcode, ignoreAutoOT).ConfigureAwait(false);
     }
 
-    private static List<Pictocodes> GenerateRandomPictocodes(int count)
+    public static List<Pictocodes> GenerateRandomPictocodes(int count)
     {
         Random rnd = new();
         List<Pictocodes> randomPictocodes = [];

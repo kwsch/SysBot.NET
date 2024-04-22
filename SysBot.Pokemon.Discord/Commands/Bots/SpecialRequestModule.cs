@@ -63,7 +63,7 @@ namespace SysBot.Pokemon.Discord
 
             if (parts.Length == 1 && int.TryParse(parts[0], out int index))
             {
-                await SpecialEventRequestAsync(generationOrGame, index.ToString());
+                await SpecialEventRequestAsync(generationOrGame, index.ToString()).ConfigureAwait(false);
                 return;
             }
 
@@ -83,22 +83,22 @@ namespace SysBot.Pokemon.Discord
             var eventData = GetEventData(generationOrGame);
             if (eventData == null)
             {
-                await ReplyAsync($"Invalid generation or game: {generationOrGame}");
+                await ReplyAsync($"Invalid generation or game: {generationOrGame}").ConfigureAwait(false);
                 return;
             }
 
             var allEvents = GetFilteredEvents(eventData, speciesName);
             if (!allEvents.Any())
             {
-                await ReplyAsync($"No events found for {generationOrGame} with the specified filter.");
+                await ReplyAsync($"No events found for {generationOrGame} with the specified filter.").ConfigureAwait(false);
                 return;
             }
 
             var pageCount = (int)Math.Ceiling((double)allEvents.Count() / itemsPerPage);
             page = Math.Clamp(page, 1, pageCount);
             var embed = BuildEventListEmbed(generationOrGame, allEvents, page, pageCount, botPrefix);
-            await SendEventListAsync(embed);
-            await CleanupMessagesAsync();
+            await SendEventListAsync(embed).ConfigureAwait(false);
+            await CleanupMessagesAsync().ConfigureAwait(false);
         }
 
         [Command("specialrequestpokemon")]
@@ -109,14 +109,14 @@ namespace SysBot.Pokemon.Discord
         {
             if (!int.TryParse(args, out int index))
             {
-                await ReplyAsync("Invalid event index. Please provide a valid event number.");
+                await ReplyAsync("Invalid event index. Please provide a valid event number.").ConfigureAwait(false);
                 return;
             }
 
             var userID = Context.User.Id;
             if (Info.IsUserInQueue(userID))
             {
-                await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.");
+                await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
                 return;
             }
 
@@ -125,14 +125,14 @@ namespace SysBot.Pokemon.Discord
                 var eventData = GetEventData(generationOrGame);
                 if (eventData == null)
                 {
-                    await ReplyAsync($"Invalid generation or game: {generationOrGame}");
+                    await ReplyAsync($"Invalid generation or game: {generationOrGame}").ConfigureAwait(false);
                     return;
                 }
 
                 var entityEvents = eventData.Where(gift => gift.IsEntity && !gift.IsItem).ToArray();
                 if (index < 1 || index > entityEvents.Length)
                 {
-                    await ReplyAsync($"Invalid event index. Please use a valid event number from the `{SysCord<T>.Runner.Config.Discord.CommandPrefix}srp {generationOrGame}` command.");
+                    await ReplyAsync($"Invalid event index. Please use a valid event number from the `{SysCord<T>.Runner.Config.Discord.CommandPrefix}srp {generationOrGame}` command.").ConfigureAwait(false);
                     return;
                 }
 
@@ -140,36 +140,25 @@ namespace SysBot.Pokemon.Discord
                 var pk = ConvertEventToPKM(selectedEvent);
                 if (pk == null)
                 {
-                    await ReplyAsync("Wondercard data provided is not compatible with this module!");
+                    await ReplyAsync("Wondercard data provided is not compatible with this module!").ConfigureAwait(false);
                     return;
                 }
 
                 var code = Info.GetRandomTradeCode(userID);
                 var lgcode = Info.GetRandomLGTradeCode();
                 var sig = Context.User.GetFavor();
-                await ReplyAsync("Special event request added to queue.");
-                await AddTradeToQueueAsync(code, Context.User.Username, pk as T, sig, Context.User, lgcode: lgcode);
+                await ReplyAsync("Special event request added to queue.").ConfigureAwait(false);
+
+                await AddTradeToQueueAsync(code, Context.User.Username, pk as T, sig, Context.User, lgcode: lgcode).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                await ReplyAsync($"An error occurred: {ex.Message}");
+                await ReplyAsync($"An error occurred: {ex.Message}").ConfigureAwait(false);
             }
             finally
             {
-                await CleanupUserMessageAsync();
+                await CleanupUserMessageAsync().ConfigureAwait(false);
             }
-        }
-
-        private static int GetPageNumber(string[] parts)
-        {
-            var pagePart = parts.FirstOrDefault(p => p.StartsWith("page", StringComparison.OrdinalIgnoreCase));
-            if (pagePart != null && int.TryParse(pagePart.AsSpan(4), out int pageNumber))
-                return pageNumber;
-
-            if (parts.Length > 0 && int.TryParse(parts.Last(), out int parsedPage))
-                return parsedPage;
-
-            return 1;
         }
 
         private static MysteryGift[]? GetEventData(string generationOrGame)
@@ -201,7 +190,7 @@ namespace SysBot.Pokemon.Discord
                 .Select((gift, index) =>
                 {
                     string species = GameInfo.Strings.Species[gift.Species];
-                    string levelInfo = $"{gift.Level}"; 
+                    string levelInfo = $"{gift.Level}";
                     string formName = ShowdownParsing.GetStringFromForm(gift.Form, GameInfo.Strings, gift.Species, gift.Context);
                     formName = !string.IsNullOrEmpty(formName) ? $"-{formName}" : "";
                     string trainerName = gift.OriginalTrainerName;
@@ -251,8 +240,8 @@ namespace SysBot.Pokemon.Discord
 
         private async Task CleanupMessagesAsync()
         {
-            await Task.Delay(10_000);
-            await CleanupUserMessageAsync();
+            await Task.Delay(10_000).ConfigureAwait(false);
+            await CleanupUserMessageAsync().ConfigureAwait(false);
         }
 
         private async Task CleanupUserMessageAsync()
@@ -336,14 +325,7 @@ namespace SysBot.Pokemon.Discord
 
         private async Task AddTradeToQueueAsync(int code, string trainerName, T? pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, bool isMysteryEgg = false, List<Pictocodes> lgcode = null, PokeTradeType tradeType = PokeTradeType.Specific, bool ignoreAutoOT = false, bool isHiddenTrade = false)
         {
-            lgcode ??= GenerateRandomPictocodes(3);
-            if (!pk.CanBeTraded())
-            {
-                var reply = await ReplyAsync("Provided Pokémon content is blocked from trading!").ConfigureAwait(false);
-                await Task.Delay(6000); // Delay for 6 seconds
-                await reply.DeleteAsync().ConfigureAwait(false);
-                return;
-            }
+            lgcode ??= TradeModule<T>.GenerateRandomPictocodes(3);
             var homeLegalityCfg = Info.Hub.Config.Trade.HomeLegalitySettings;
             var la = new LegalityAnalysis(pk);
             if (!la.Valid)
@@ -355,20 +337,6 @@ namespace SysBot.Pokemon.Discord
                 await reply.DeleteAsync().ConfigureAwait(false);
                 return;
             }
-            if (homeLegalityCfg.DisallowNonNatives && (la.EncounterOriginal.Context != pk.Context || pk.GO))
-            {
-                // Allow the owner to prevent trading entities that require a HOME Tracker even if the file has one already.
-                await ReplyAsync($"{typeof(T).Name} attachment is not native, and cannot be traded!").ConfigureAwait(false);
-                return;
-            }
-            if (homeLegalityCfg.DisallowTracked && pk is IHomeTrack { HasTracker: true })
-            {
-                // Allow the owner to prevent trading entities that already have a HOME Tracker.
-                await ReplyAsync($"{typeof(T).Name} attachment is tracked by HOME, and cannot be traded!").ConfigureAwait(false);
-                return;
-            }
-            // handle past gen file requests
-            // thanks manu https://github.com/Manu098vm/SysBot.NET/commit/d8c4b65b94f0300096704390cce998940413cc0d
             if (!la.Valid && la.Results.Any(m => m.Identifier is CheckIdentifier.Memory))
             {
                 var clone = (T)pk.Clone();
@@ -388,21 +356,5 @@ namespace SysBot.Pokemon.Discord
 
             await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk, PokeRoutineType.LinkTrade, tradeType, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, isHiddenTrade, isMysteryEgg, lgcode, ignoreAutoOT).ConfigureAwait(false);
         }
-
-        private static List<Pictocodes> GenerateRandomPictocodes(int count)
-        {
-            Random rnd = new();
-            List<Pictocodes> randomPictocodes = [];
-            Array pictocodeValues = Enum.GetValues(typeof(Pictocodes));
-
-            for (int i = 0; i < count; i++)
-            {
-                Pictocodes randomPictocode = (Pictocodes)pictocodeValues.GetValue(rnd.Next(pictocodeValues.Length));
-                randomPictocodes.Add(randomPictocode);
-            }
-
-            return randomPictocodes;
-        }
     }
 }
-
