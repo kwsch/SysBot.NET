@@ -147,7 +147,6 @@ namespace SysBot.Pokemon.Discord
                 var code = Info.GetRandomTradeCode(userID);
                 var lgcode = Info.GetRandomLGTradeCode();
                 var sig = Context.User.GetFavor();
-                await ReplyAsync("Special event request added to queue.").ConfigureAwait(false);
 
                 await AddTradeToQueueAsync(code, Context.User.Username, pk as T, sig, Context.User, lgcode: lgcode).ConfigureAwait(false);
             }

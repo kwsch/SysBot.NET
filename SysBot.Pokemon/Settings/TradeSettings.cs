@@ -142,6 +142,8 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     public class TradeEmbedSettingsCategory
     {
         public override string ToString() => "Trade Embed Configuration Settings";
+        [Category(EmbedSettings), Description("If true, will show beautiful embeds in your discord trade channels of what the user is trading.  False will show default text.")]
+        public bool UseEmbeds { get; set; } = true;
 
         [Category(EmbedSettings), Description("Will show Move Type Icons next to moves in trade embed (Discord only).  Requires user to upload the emojis to their server.")]
         public bool MoveTypeEmojis { get; set; } = true;
@@ -195,6 +197,9 @@ public class TradeSettings : IBotStateSettings, ICountSettings
 
         [Category(EmbedSettings), Description("Will show Level in trade embed (Discord only).")]
         public bool ShowLevel { get; set; } = true;
+
+        [Category(EmbedSettings), Description("Will show MetDate in trade embed (Discord only).")]
+        public bool ShowMetDate { get; set; } = true;
 
         [Category(EmbedSettings), Description("Will show Ability in trade embed (Discord only).")]
         public bool ShowAbility { get; set; } = true;
