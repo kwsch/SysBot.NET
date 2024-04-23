@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml.Linq;
+using static SysBot.Pokemon.TradeSettings;
 
 namespace SysBot.Pokemon.Helpers
 {
@@ -63,14 +64,29 @@ namespace SysBot.Pokemon.Helpers
             return false;
         }
 
-        public static string PokeImg(PKM pkm, bool canGmax, bool fullSize)
+        public static string PokeImg(PKM pkm, bool canGmax, bool fullSize, ImageSize? preferredImageSize = null)
         {
             bool md = false;
             bool fd = false;
             string[] baseLink;
+
             if (fullSize)
+            {
                 baseLink = "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/512x512/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_');
-            else baseLink = "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/256x256/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_');
+            }
+            else if (preferredImageSize.HasValue)
+            {
+                baseLink = preferredImageSize.Value switch
+                {
+                    ImageSize.Size256x256 => "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/256x256/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_'),
+                    ImageSize.Size128x128 => "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/128x128/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_'),
+                    _ => "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/256x256/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_'),
+                };
+            }
+            else
+            {
+                baseLink = "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/256x256/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_');
+            }
 
             if (Enum.IsDefined(typeof(GenderDependent), pkm.Species) && !canGmax && pkm.Form is 0)
             {

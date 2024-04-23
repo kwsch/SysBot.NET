@@ -122,8 +122,7 @@ public static class QueueHelper<T> where T : PKM, new()
             var botct = Info.Hub.Bots.Count;
             var baseEta = position.Position > botct ? Info.Hub.Config.Queues.EstimateDelay(position.Position, botct) : 0;
             var etaMessage = $"Estimated: {baseEta:F1} min(s) for trade {batchTradeNumber}/{totalBatchTrades}.";
-
-            string footerText = $"Current Position: {position.Position}";
+            string footerText = $"Current Position: {(position.Position == -1 ? 1 : position.Position)}"; 
 
             string userDetailsText = DetailsExtractor<T>.GetUserDetails(totalTradeCount, tradeDetails);
             if (!string.IsNullOrEmpty(userDetailsText))
@@ -244,14 +243,14 @@ public static class QueueHelper<T> where T : PKM, new()
         if (pk.IsEgg)
         {
             string eggImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/egg.png";
-            speciesImageUrl = AbstractTrade<T>.PokeImg(pk, false, true);
+            speciesImageUrl = AbstractTrade<T>.PokeImg(pk, false, true, null);
             System.Drawing.Image combinedImage = await OverlaySpeciesOnEgg(eggImageUrl, speciesImageUrl);
             embedImageUrl = SaveImageLocally(combinedImage);
         }
         else
         {
             bool canGmax = pk is PK8 pk8 && pk8.CanGigantamax;
-            speciesImageUrl = AbstractTrade<T>.PokeImg(pk, canGmax, false);
+            speciesImageUrl = AbstractTrade<T>.PokeImg(pk, canGmax, false, SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.PreferredImageSize);
             embedImageUrl = speciesImageUrl;
         }
 
