@@ -75,7 +75,7 @@ public class PokeDataOffsetsSWSH
     public IReadOnlyList<long> OverworldPointer { get; } = new long[] { 0x2636678, 0xC0, 0x80 };
 
     // For detecting when we're on the in-battle menu, so we can flee.
-    public const uint BattleMenuOffset = 0x6B578EDC;
+    public const uint BattleMenuOffset = 0x8398A470;
 
     // Original screen detection offset.
     public const uint CurrentScreenOffset = 0x6B30FA00;
