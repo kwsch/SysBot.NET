@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using PKHeX.Core.Searching;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,6 +54,6 @@ public sealed class EncounterBotResetSWSH(PokeBotState Config, PokeTradeHub<PK8>
         EncounterMode.Gift                                 => BoxStartOffset,
         EncounterMode.Regigigas or EncounterMode.Eternatus => RaidPokemonOffset,
         EncounterMode.MotostokeGym                         => LegendaryPokemonOffset,
-        _ => WildPokemonOffset,
+        _                                                  => WildPokemonOffset,
     };
 }

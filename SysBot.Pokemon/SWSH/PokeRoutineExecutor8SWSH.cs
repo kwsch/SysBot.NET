@@ -317,6 +317,14 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
         return data[0] == 1;
     }
 
+    // Used to check if the battle menu has loaded, so we can attempt to flee.
+    // This value starts at 1 and goes up each time a menu is opened.
+    public async Task<bool> IsOnBattleMenu(CancellationToken token)
+    {
+        var data = await Connection.ReadBytesAsync(BattleMenuOffset, 1, token).ConfigureAwait(false);
+        return data[0] >= 1;
+    }
+
     public async Task<TextSpeedOption> GetTextSpeed(CancellationToken token)
     {
         var data = await Connection.ReadBytesAsync(TextSpeedOffset, 1, token).ConfigureAwait(false);
