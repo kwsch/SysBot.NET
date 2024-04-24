@@ -124,23 +124,22 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [RequireQueueRole(nameof(DiscordManager.RolesFixOT))]
     public async Task FixAdOT()
     {
-        // Check if the user is already in the queue
         var userID = Context.User.Id;
+
+        // Check if the user is already in the queue
         if (Info.IsUserInQueue(userID))
         {
-            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2);
             return;
         }
+
         var code = Info.GetRandomTradeCode(userID);
         var trainerName = Context.User.Username;
         var lgcode = Info.GetRandomLGTradeCode();
         var sig = Context.User.GetFavor();
+
         await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, new T(), PokeRoutineType.FixOT, PokeTradeType.FixOT, Context.User, false, 1, 1, false, false, lgcode).ConfigureAwait(false);
-        if (Context.Message is IUserMessage userMessage)
-        {
-            await Task.Delay(2000);
-            await userMessage.DeleteAsync().ConfigureAwait(false);
-        }
+        _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
     }
 
     [Command("fixOT")]
@@ -149,24 +148,21 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [RequireQueueRole(nameof(DiscordManager.RolesFixOT))]
     public async Task FixAdOT([Summary("Trade Code")] int code)
     {
-        // Check if the user is already in the queue
         var userID = Context.User.Id;
+
+        // Check if the user is already in the queue
         if (Info.IsUserInQueue(userID))
         {
-            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2);
             return;
         }
+
         var trainerName = Context.User.Username;
         var sig = Context.User.GetFavor();
         var lgcode = Info.GetRandomLGTradeCode();
 
         await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, new T(), PokeRoutineType.FixOT, PokeTradeType.FixOT, Context.User, false, 1, 1, false, false, lgcode).ConfigureAwait(false);
-
-        if (Context.Message is IUserMessage userMessage)
-        {
-            await Task.Delay(2000);
-            await userMessage.DeleteAsync().ConfigureAwait(false);
-        }
+        _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
     }
 
     [Command("fixOTList")]
@@ -191,21 +187,18 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [Summary("Makes the bot trade you a Ditto with a requested stat spread and language.")]
     public async Task DittoTrade([Summary("A combination of \"ATK/SPA/SPE\" or \"6IV\"")] string keyword, [Summary("Language")] string language, [Summary("Nature")] string nature)
     {
-        // Check if the user is already in the queue
         var userID = Context.User.Id;
+
+        // Check if the user is already in the queue
         if (Info.IsUserInQueue(userID))
         {
-            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2);
             return;
         }
+
         var code = Info.GetRandomTradeCode(userID);
         await DittoTrade(code, keyword, language, nature).ConfigureAwait(false);
-
-        if (Context.Message is IUserMessage userMessage)
-        {
-            await Task.Delay(2000);
-            await userMessage.DeleteAsync().ConfigureAwait(false);
-        }
+        _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
     }
 
     [Command("dittoTrade")]
@@ -213,21 +206,24 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [Summary("Makes the bot trade you a Ditto with a requested stat spread and language.")]
     public async Task DittoTrade([Summary("Trade Code")] int code, [Summary("A combination of \"ATK/SPA/SPE\" or \"6IV\"")] string keyword, [Summary("Language")] string language, [Summary("Nature")] string nature)
     {
-        // Check if the user is already in the queue
         var userID = Context.User.Id;
+
+        // Check if the user is already in the queue
         if (Info.IsUserInQueue(userID))
         {
-            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2);
             return;
         }
+
         keyword = keyword.ToLower().Trim();
+
         if (Enum.TryParse(language, true, out LanguageID lang))
         {
             language = lang.ToString();
         }
         else
         {
-            await Context.Message.ReplyAsync($"Couldn't recognize language: {language}.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync($"Couldn't recognize language: {language}.", 2, Context.Message);
             return;
         }
 
@@ -237,7 +233,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
         var pkm = sav.GetLegal(template, out var result);
         AbstractTrade<T>.DittoTrade((T)pkm);
-
         var la = new LegalityAnalysis(pkm);
 
         if (pkm is not T pk || !la.Valid)
@@ -251,12 +246,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         pk.ResetPartyStats();
         var sig = Context.User.GetFavor();
         await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, pk, PokeRoutineType.LinkTrade, PokeTradeType.Specific).ConfigureAwait(false);
-
-        if (Context.Message is IUserMessage userMessage)
-        {
-            await Task.Delay(2000);
-            await userMessage.DeleteAsync().ConfigureAwait(false);
-        }
+        _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
     }
 
     [Command("itemTrade")]
@@ -280,27 +270,29 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [Summary("Makes the bot trade you a Pokémon holding the requested item.")]
     public async Task ItemTrade([Summary("Trade Code")] int code, [Remainder] string item)
     {
-        // Check if the user is already in the queue
         var userID = Context.User.Id;
+
+        // Check if the user is already in the queue
         if (Info.IsUserInQueue(userID))
         {
-            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2);
             return;
         }
+
         Species species = Info.Hub.Config.Trade.TradeConfiguration.ItemTradeSpecies == Species.None ? Species.Diglett : Info.Hub.Config.Trade.TradeConfiguration.ItemTradeSpecies;
         var set = new ShowdownSet($"{SpeciesName.GetSpeciesNameGeneration((ushort)species, 2, 8)} @ {item.Trim()}");
         var template = AutoLegalityWrapper.GetTemplate(set);
         var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
         var pkm = sav.GetLegal(template, out var result);
         pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
+
         if (pkm.HeldItem == 0)
         {
-            await ReplyAsync($"{Context.User.Username}, the item you entered wasn't recognized.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync($"{Context.User.Username}, the item you entered wasn't recognized.", 2, Context.Message);
             return;
         }
 
         var la = new LegalityAnalysis(pkm);
-
         if (pkm is not T pk || !la.Valid)
         {
             var reason = result == "Timeout" ? "That set took too long to generate." : "I wasn't able to create something from that.";
@@ -308,16 +300,12 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await Context.Channel.SendPKMAsync(pkm, imsg).ConfigureAwait(false);
             return;
         }
-        pk.ResetPartyStats();
 
+        pk.ResetPartyStats();
         var sig = Context.User.GetFavor();
         await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, pk, PokeRoutineType.LinkTrade, PokeTradeType.Specific).ConfigureAwait(false);
 
-        if (Context.Message is IUserMessage userMessage)
-        {
-            await Task.Delay(2000);
-            await userMessage.DeleteAsync().ConfigureAwait(false);
-        }
+        _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
     }
 
     [Command("tradeList")]
@@ -353,13 +341,15 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
     public async Task TradeEggAsync([Summary("Trade Code")] int code, [Summary("Showdown Set")][Remainder] string content)
     {
-        // Check if the user is already in the queue
         var userID = Context.User.Id;
+
+        // Check if the user is already in the queue
         if (Info.IsUserInQueue(userID))
         {
-            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2);
             return;
         }
+
         content = ReusableActions.StripCodeBlock(content);
         var set = new ShowdownSet(content);
         var template = AutoLegalityWrapper.GetTemplate(set);
@@ -372,7 +362,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
             if (pkm is not T pk)
             {
-                await ReplyAsync($"Oops! I wasn't able to create an egg for that.").ConfigureAwait(false);
+                _ = ReplyAndDeleteAsync($"Oops! I wasn't able to create an egg for that.", 2, Context.Message);
                 return;
             }
 
@@ -383,16 +373,12 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             var sig = Context.User.GetFavor();
             await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User).ConfigureAwait(false);
 
-            if (Context.Message is IUserMessage userMessage)
-            {
-                await Task.Delay(2000);
-                await userMessage.DeleteAsync().ConfigureAwait(false);
-            }
+            _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
         }
         catch (Exception ex)
         {
             LogUtil.LogSafe(ex, nameof(TradeModule<T>));
-            await ReplyAsync("An error occurred while processing the request.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("An error occurred while processing the request.", 2, Context.Message);
         }
     }
 
@@ -413,11 +399,12 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public async Task HideTradeAsync([Summary("Trade Code")] int code, [Summary("Showdown Set")][Remainder] string content)
     {
         List<Pictocodes>? lgcode = null;
-        // Check if the user is already in the queue
         var userID = Context.User.Id;
+
+        // Check if the user is already in the queue
         if (Info.IsUserInQueue(userID))
         {
-            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2);
             return;
         }
 
@@ -426,12 +413,11 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var set = new ShowdownSet(content);
         var template = AutoLegalityWrapper.GetTemplate(set);
         int formArgument = ExtractFormArgument(content);
+
         if (set.InvalidLines.Count != 0)
         {
             var msg = $"Unable to parse Showdown Set:\n{string.Join("\n", set.InvalidLines)}";
-            await ReplyAsync(msg).ConfigureAwait(false);
-            await Task.Delay(2000);
-            await Context.Message.DeleteAsync();
+            _ = ReplyAndDeleteAsync(msg, 2, Context.Message);
             return;
         }
 
@@ -487,6 +473,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
             pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
+
             if (pkm is not T pk || !la.Valid)
             {
                 var reason = result == "Timeout" ? $"That {spec} set took too long to generate." :
@@ -513,12 +500,11 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 string messageContent = $"{userMention}, here's the report for your request:";
 
                 var message = await Context.Channel.SendMessageAsync(text: messageContent, embed: embedBuilder.Build()).ConfigureAwait(false);
-                await Task.Delay(10_000);
-                await message.DeleteAsync().ConfigureAwait(false);
-                await Context.Message.DeleteAsync().ConfigureAwait(false);
+                _ = DeleteMessagesAfterDelayAsync(message, Context.Message, 10);
 
                 return;
             }
+
             pk.ResetPartyStats();
 
             if (pkm is PB7)
@@ -534,10 +520,8 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             LogUtil.LogSafe(ex, nameof(TradeModule<T>));
             var msg = $"Oops! An unexpected problem happened with this Showdown Set:\n```{string.Join("\n", set.GetSetLines())}```";
 
-            await Task.Delay(2000);
-            await Context.Message.DeleteAsync();
+            _ = ReplyAndDeleteAsync(msg, 2, Context.Message);
         }
-        _ = Task.Delay(2000).ContinueWith(async _ => await Context.Message.DeleteAsync());
     }
 
     [Command("hidetrade")]
@@ -563,11 +547,9 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
         await HideTradeAsyncAttach(code, sig, Context.User).ConfigureAwait(false);
 
-        await Task.Delay(2000);
-
         if (Context.Message is IUserMessage userMessage)
         {
-            await userMessage.DeleteAsync().ConfigureAwait(false);
+            _ = DeleteMessagesAfterDelayAsync(userMessage, null, 2);
         }
     }
 
@@ -592,7 +574,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var userID = Context.User.Id;
         if (Info.IsUserInQueue(userID))
         {
-            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2, null);
             return;
         }
 
@@ -604,9 +586,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         if (set.InvalidLines.Count != 0)
         {
             var msg = $"Unable to parse Showdown Set:\n{string.Join("\n", set.InvalidLines)}";
-            await ReplyAsync(msg).ConfigureAwait(false);
-            await Task.Delay(2000);
-            await Context.Message.DeleteAsync();
+            _ = ReplyAndDeleteAsync(msg, 2, Context.Message);
             return;
         }
 
@@ -688,9 +668,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 string messageContent = $"{userMention}, here's the report for your request:";
 
                 var message = await Context.Channel.SendMessageAsync(text: messageContent, embed: embedBuilder.Build()).ConfigureAwait(false);
-                await Task.Delay(10_000);
-                await message.DeleteAsync().ConfigureAwait(false);
-                await Context.Message.DeleteAsync().ConfigureAwait(false);
+                _ = DeleteMessagesAfterDelayAsync(message, Context.Message, 30);
 
                 return;
             }
@@ -709,10 +687,8 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             LogUtil.LogSafe(ex, nameof(TradeModule<T>));
             var msg = $"Oops! An unexpected problem happened with this Showdown Set:\n```{string.Join("\n", set.GetSetLines())}```";
 
-            await Task.Delay(2000);
-            await Context.Message.DeleteAsync();
+            _ = ReplyAndDeleteAsync(msg, 2, null);
         }
-        _ = Task.Delay(2000).ContinueWith(async _ => await Context.Message.DeleteAsync());
     }
 
     [Command("trade")]
@@ -738,11 +714,9 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
         await TradeAsyncAttach(code, sig, Context.User);
 
-        await Task.Delay(2000);
-
         if (Context.Message is IUserMessage userMessage)
         {
-            await userMessage.DeleteAsync().ConfigureAwait(false);
+            _ = DeleteMessagesAfterDelayAsync(userMessage, null, 2);
         }
     }
 
@@ -765,14 +739,15 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         // First, check if batch trades are allowed
         if (!SysCord<T>.Runner.Config.Trade.TradeConfiguration.AllowBatchTrades)
         {
-            await ReplyAsync("Batch trades are currently disabled.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("Batch trades are currently disabled.", 2);
             return;
         }
+
         // Check if the user is already in the queue
         var userID = Context.User.Id;
         if (Info.IsUserInQueue(userID))
         {
-            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2);
             return;
         }
 
@@ -782,24 +757,19 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         // Check if batch mode is allowed and if the number of trades exceeds the limit
         if (maxTradesAllowed < 1 || trades.Count > maxTradesAllowed)
         {
-            await ReplyAsync($"You can only process up to {maxTradesAllowed} trades at a time. Please reduce the number of trades in your batch.").ConfigureAwait(false);
-
-            await Task.Delay(5000);
-            await Context.Message.DeleteAsync();
+            _ = ReplyAndDeleteAsync($"You can only process up to {maxTradesAllowed} trades at a time. Please reduce the number of trades in your batch.", 5, Context.Message);
             return;
         }
+
         // Check if the number of trades exceeds the limit
         if (trades.Count > maxTradesAllowed)
         {
-            await ReplyAsync($"You can only process up to {maxTradesAllowed} trades at a time. Please reduce the number of trades in your batch.").ConfigureAwait(false);
-
-            await Task.Delay(2000);
-            await Context.Message.DeleteAsync();
+            _ = ReplyAndDeleteAsync($"You can only process up to {maxTradesAllowed} trades at a time. Please reduce the number of trades in your batch.", 2, Context.Message);
             return;
         }
+
         var batchTradeCode = Info.GetRandomTradeCode(userID);
         int batchTradeNumber = 1;
-        _ = Task.Delay(2000).ContinueWith(async _ => await Context.Message.DeleteAsync());
 
         foreach (var trade in trades)
         {
@@ -826,7 +796,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         // First, check if batch trades are allowed
         if (!SysCord<T>.Runner.Config.Trade.TradeConfiguration.AllowBatchTrades)
         {
-            await ReplyAsync("Batch trades are currently disabled.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("Batch trades are currently disabled.", 2);
             return;
         }
 
@@ -834,43 +804,39 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var userID = Context.User.Id;
         if (Info.IsUserInQueue(userID))
         {
-            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2);
             return;
         }
 
         var attachment = Context.Message.Attachments.FirstOrDefault();
         if (attachment == default)
         {
-            await ReplyAsync("No attachment provided!").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("No attachment provided!", 2);
             return;
         }
 
         if (!attachment.Filename.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
         {
-            await ReplyAsync("Invalid file format. Please provide a .zip file.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("Invalid file format. Please provide a .zip file.", 2);
             return;
         }
 
         var zipBytes = await new HttpClient().GetByteArrayAsync(attachment.Url);
         using var zipStream = new MemoryStream(zipBytes);
         using var archive = new ZipArchive(zipStream, ZipArchiveMode.Read);
-
         var entries = archive.Entries.ToList();
+
         var maxTradesAllowed = 6; // for full team in the zip created
 
         // Check if batch mode is allowed and if the number of trades exceeds the limit
         if (maxTradesAllowed < 1 || entries.Count > maxTradesAllowed)
         {
-            await ReplyAsync($"You can only process up to {maxTradesAllowed} trades at a time. Please reduce the number of Pokémon in your .zip file.").ConfigureAwait(false);
-
-            await Task.Delay(5000);
-            await Context.Message.DeleteAsync();
+            _ = ReplyAndDeleteAsync($"You can only process up to {maxTradesAllowed} trades at a time. Please reduce the number of Pokémon in your .zip file.", 5, Context.Message);
             return;
         }
 
         var batchTradeCode = Info.GetRandomTradeCode(userID);
         int batchTradeNumber = 1;
-        _ = Task.Delay(2000).ContinueWith(async _ => await Context.Message.DeleteAsync());
 
         foreach (var entry in entries)
         {
@@ -1000,7 +966,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         // Check if the events folder path is not set or empty
         if (string.IsNullOrEmpty(eventsFolderPath))
         {
-            await ReplyAsync("This bot does not have this feature set up.");
+            _ = ReplyAndDeleteAsync("This bot does not have this feature set up.", 2, Context.Message);
             return;
         }
 
@@ -1038,6 +1004,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         if (!filteredEventFiles.Any())
         {
             replyMessage = await ReplyAsync($"No events found matching the filter '{filter}'.");
+            _ = DeleteMessagesAfterDelayAsync(replyMessage, Context.Message, 10);
         }
         else
         {
@@ -1075,14 +1042,9 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             {
                 replyMessage = await ReplyAsync("**Error**: Unable to send a DM. Please check your **Server Privacy Settings**.");
             }
-        }
 
-        await Task.Delay(10_000);
-        if (Context.Message is IUserMessage userMessage)
-        {
-            await userMessage.DeleteAsync().ConfigureAwait(false);
+            _ = DeleteMessagesAfterDelayAsync(replyMessage, Context.Message, 10);
         }
-        await replyMessage.DeleteAsync().ConfigureAwait(false);
     }
 
     [Command("eventrequest")]
@@ -1091,37 +1053,38 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
     public async Task EventRequestAsync(int index)
     {
-        // Check if the user is already in the queue
         var userID = Context.User.Id;
+
+        // Check if the user is already in the queue
         if (Info.IsUserInQueue(userID))
         {
-            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2, Context.Message);
             return;
         }
+
         try
         {
             var eventsFolderPath = SysCord<T>.Runner.Config.Trade.RequestFolderSettings.EventsFolder;
             var eventFiles = Directory.GetFiles(eventsFolderPath)
-                                      .Select(Path.GetFileName)
-                                      .OrderBy(x => x)
-                                      .ToList();
+                .Select(Path.GetFileName)
+                .OrderBy(x => x)
+                .ToList();
 
             // Check if the events folder path is not set or empty
             if (string.IsNullOrEmpty(eventsFolderPath))
             {
-                await ReplyAsync("This bot does not have this feature set up.");
+                _ = ReplyAndDeleteAsync("This bot does not have this feature set up.", 2, Context.Message);
                 return;
             }
 
             if (index < 1 || index > eventFiles.Count)
             {
-                await ReplyAsync("Invalid event index. Please use a valid event number from the `.le` command.").ConfigureAwait(false);
+                _ = ReplyAndDeleteAsync("Invalid event index. Please use a valid event number from the `.le` command.", 2, Context.Message);
                 return;
             }
 
             var selectedFile = eventFiles[index - 1]; // Adjust for zero-based indexing
             var fileData = await File.ReadAllBytesAsync(Path.Combine(eventsFolderPath, selectedFile));
-
             var download = new Download<PKM>
             {
                 Data = EntityFormat.GetFromBytes(fileData),
@@ -1131,26 +1094,24 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             var pk = GetRequest(download);
             if (pk == null)
             {
-                await ReplyAsync("Failed to convert event file to the required PKM type.").ConfigureAwait(false);
+                _ = ReplyAndDeleteAsync("Failed to convert event file to the required PKM type.", 2, Context.Message);
                 return;
             }
 
             var code = Info.GetRandomTradeCode(userID);
             var lgcode = Info.GetRandomLGTradeCode();
             var sig = Context.User.GetFavor();
+
             await ReplyAsync($"Event request added to queue.").ConfigureAwait(false);
             await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, lgcode: lgcode).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            await ReplyAsync($"An error occurred: {ex.Message}").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync($"An error occurred: {ex.Message}", 2, Context.Message);
         }
         finally
         {
-            if (Context.Message is IUserMessage userMessage)
-            {
-                await userMessage.DeleteAsync().ConfigureAwait(false);
-            }
+            _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
         }
     }
 
@@ -1166,7 +1127,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         // Check if the battleready folder path is not set or empty
         if (string.IsNullOrEmpty(battleReadyFolderPath))
         {
-            await ReplyAsync("This bot does not have this feature set up.");
+            _ = ReplyAndDeleteAsync("This bot does not have this feature set up.", 2, Context.Message);
             return;
         }
 
@@ -1204,6 +1165,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         if (!filteredBattleReadyFiles.Any())
         {
             replyMessage = await ReplyAsync($"No battle-ready files found matching the filter '{filter}'.");
+            _ = DeleteMessagesAfterDelayAsync(replyMessage, Context.Message, 10);
         }
         else
         {
@@ -1241,14 +1203,9 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             {
                 replyMessage = await ReplyAsync("**Error**: Unable to send a DM. Please check your **Server Privacy Settings**.");
             }
-        }
 
-        await Task.Delay(10_000);
-        if (Context.Message is IUserMessage userMessage)
-        {
-            await userMessage.DeleteAsync().ConfigureAwait(false);
+            _ = DeleteMessagesAfterDelayAsync(replyMessage, Context.Message, 10);
         }
-        await replyMessage.DeleteAsync().ConfigureAwait(false);
     }
 
     [Command("battlereadyrequest")]
@@ -1257,37 +1214,38 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
     public async Task BattleReadyRequestAsync(int index)
     {
-        // Check if the user is already in the queue
         var userID = Context.User.Id;
+
+        // Check if the user is already in the queue
         if (Info.IsUserInQueue(userID))
         {
-            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2, Context.Message);
             return;
         }
+
         try
         {
             var battleReadyFolderPath = SysCord<T>.Runner.Config.Trade.RequestFolderSettings.BattleReadyPKMFolder;
             var battleReadyFiles = Directory.GetFiles(battleReadyFolderPath)
-                                            .Select(Path.GetFileName)
-                                            .OrderBy(x => x)
-                                            .ToList();
+                .Select(Path.GetFileName)
+                .OrderBy(x => x)
+                .ToList();
 
             // Check if the battleready folder path is not set or empty
             if (string.IsNullOrEmpty(battleReadyFolderPath))
             {
-                await ReplyAsync("This bot does not have this feature set up.");
+                _ = ReplyAndDeleteAsync("This bot does not have this feature set up.", 2, Context.Message);
                 return;
             }
 
             if (index < 1 || index > battleReadyFiles.Count)
             {
-                await ReplyAsync("Invalid battle-ready file index. Please use a valid file number from the `.blr` command.").ConfigureAwait(false);
+                _ = ReplyAndDeleteAsync("Invalid battle-ready file index. Please use a valid file number from the `.blr` command.", 2, Context.Message);
                 return;
             }
 
             var selectedFile = battleReadyFiles[index - 1];
             var fileData = await File.ReadAllBytesAsync(Path.Combine(battleReadyFolderPath, selectedFile));
-
             var download = new Download<PKM>
             {
                 Data = EntityFormat.GetFromBytes(fileData),
@@ -1297,26 +1255,24 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             var pk = GetRequest(download);
             if (pk == null)
             {
-                await ReplyAsync("Failed to convert battle-ready file to the required PKM type.").ConfigureAwait(false);
+                _ = ReplyAndDeleteAsync("Failed to convert battle-ready file to the required PKM type.", 2, Context.Message);
                 return;
             }
 
             var code = Info.GetRandomTradeCode(userID);
             var lgcode = Info.GetRandomLGTradeCode();
             var sig = Context.User.GetFavor();
+
             await ReplyAsync($"Battle-ready request added to queue.").ConfigureAwait(false);
             await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, lgcode: lgcode).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            await ReplyAsync($"An error occurred: {ex.Message}").ConfigureAwait(false);
+            _ = ReplyAndDeleteAsync($"An error occurred: {ex.Message}", 2, Context.Message);
         }
         finally
         {
-            if (Context.Message is IUserMessage userMessage)
-            {
-                await userMessage.DeleteAsync().ConfigureAwait(false);
-            }
+            _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
         }
     }
 
@@ -1482,5 +1438,33 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         }
 
         return randomPictocodes;
+    }
+
+    private async Task ReplyAndDeleteAsync(string message, int delaySeconds, IMessage? messageToDelete = null)
+    {
+        try
+        {
+            var sentMessage = await ReplyAsync(message).ConfigureAwait(false);
+            _ = DeleteMessagesAfterDelayAsync(sentMessage, messageToDelete, delaySeconds);
+        }
+        catch (Exception ex)
+        {
+            LogUtil.LogSafe(ex, nameof(TradeModule<T>));
+        }
+    }
+
+    private async Task DeleteMessagesAfterDelayAsync(IMessage sentMessage, IMessage? messageToDelete, int delaySeconds)
+    {
+        try
+        {
+            await Task.Delay(delaySeconds * 1000);
+            await sentMessage.DeleteAsync();
+            if (messageToDelete != null)
+                await messageToDelete.DeleteAsync();
+        }
+        catch (Exception ex)
+        {
+            LogUtil.LogSafe(ex, nameof(TradeModule<T>));
+        }
     }
 }
