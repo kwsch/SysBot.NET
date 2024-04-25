@@ -689,6 +689,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
             _ = ReplyAndDeleteAsync(msg, 2, null);
         }
+        if (Context.Message is IUserMessage userMessage)
+        {
+            _ = DeleteMessagesAfterDelayAsync(userMessage, null, 2);
+        }
     }
 
     [Command("trade")]
