@@ -758,6 +758,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         if (maxTradesAllowed < 1 || trades.Count > maxTradesAllowed)
         {
             _ = ReplyAndDeleteAsync($"You can only process up to {maxTradesAllowed} trades at a time. Please reduce the number of trades in your batch.", 5, Context.Message);
+            _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
             return;
         }
 
@@ -765,6 +766,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         if (trades.Count > maxTradesAllowed)
         {
             _ = ReplyAndDeleteAsync($"You can only process up to {maxTradesAllowed} trades at a time. Please reduce the number of trades in your batch.", 2, Context.Message);
+            _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
             return;
         }
 
@@ -776,6 +778,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ProcessSingleTradeAsync(trade, batchTradeCode, true, batchTradeNumber, trades.Count); // Pass the total number of trades here
             batchTradeNumber++;
         }
+        _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
     }
 
     private static List<string> ParseBatchTradeContent(string content)
