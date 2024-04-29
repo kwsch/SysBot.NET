@@ -82,6 +82,16 @@ public class DetailsExtractor<T> where T : PKM, new()
 
     private static string GetTeraTypeString(PK9 pk9)
     {
+        if (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.UseTeraEmojis)
+        {
+            var teraType = pk9.TeraTypeOverride == (MoveType)TeraTypeUtil.Stellar ? MoveType.Normal : pk9.TeraType;
+            var emojiInfo = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.TeraTypeEmojis.FirstOrDefault(e => e.MoveType == teraType);
+            if (emojiInfo != null && !string.IsNullOrEmpty(emojiInfo.EmojiCode))
+            {
+                return emojiInfo.EmojiCode;
+            }
+        }
+
         if (pk9.TeraTypeOverride == (MoveType)TeraTypeUtil.Stellar)
         {
             return "Stellar";

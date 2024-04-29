@@ -18,30 +18,6 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     private const string EmbedSettings = nameof(EmbedSettings);
     public override string ToString() => "Trade Configuration Settings";
 
-    public class MoveTypeEmojiInfo
-    {
-        [Description("The type of move.")]
-        public MoveType MoveType { get; set; }
-
-        [Description("The Discord emoji string for this move type.")]
-        public string EmojiCode { get; set; }
-
-        public MoveTypeEmojiInfo() { }
-
-        public MoveTypeEmojiInfo(MoveType moveType)
-        {
-            MoveType = moveType;
-        }
-
-        public override string ToString()
-        {
-            if (string.IsNullOrEmpty(EmojiCode))
-                return MoveType.ToString();
-
-            return $"{EmojiCode}";
-        }
-    }
-
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class EmojiInfo
     {
@@ -218,6 +194,32 @@ public class TradeSettings : IBotStateSettings, ICountSettings
 
         [Category(EmbedSettings), Description("The emoji information for displaying the alpha emoji in Legends: Arceus."), DisplayName("Alpha PLA Emoji")]
         public EmojiInfo AlphaPLAEmoji { get; set; } = new EmojiInfo();
+
+        [Category(EmbedSettings), Description("Will show Move Type Icons next to moves in trade embed (Discord only). Requires user to upload the emojis to their server."), DisplayName("Show Tera Type Emojis?")]
+        public bool UseTeraEmojis { get; set; } = true;
+
+        [Category(EmbedSettings), Description("Tera Type Emoji information for the tera types."), DisplayName("Custom Tera Type Emojis")]
+        public List<TeraTypeEmojiInfo> TeraTypeEmojis { get; set; } = new List<TeraTypeEmojiInfo>
+    {
+        new(MoveType.Bug),
+        new(MoveType.Fire),
+        new(MoveType.Flying),
+        new(MoveType.Ground),
+        new(MoveType.Water),
+        new(MoveType.Grass),
+        new(MoveType.Ice),
+        new(MoveType.Rock),
+        new(MoveType.Ghost),
+        new(MoveType.Steel),
+        new(MoveType.Fighting),
+        new(MoveType.Electric),
+        new(MoveType.Dragon),
+        new(MoveType.Psychic),
+        new(MoveType.Dark),
+        new(MoveType.Normal),
+        new(MoveType.Poison),
+        new(MoveType.Fairy),
+    };
 
         [Category(EmbedSettings), Description("Will show Scale in trade embed (SV & Discord only). Requires user to upload the emojis to their server."), DisplayName("Show Scale")]
         public bool ShowScale { get; set; } = true;
@@ -430,5 +432,53 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     {
         Size256x256,
         Size128x128
+    }
+
+    public class MoveTypeEmojiInfo
+    {
+        [Description("The type of move.")]
+        public MoveType MoveType { get; set; }
+
+        [Description("The Discord emoji string for this move type.")]
+        public string EmojiCode { get; set; }
+
+        public MoveTypeEmojiInfo() { }
+
+        public MoveTypeEmojiInfo(MoveType moveType)
+        {
+            MoveType = moveType;
+        }
+
+        public override string ToString()
+        {
+            if (string.IsNullOrEmpty(EmojiCode))
+                return MoveType.ToString();
+
+            return $"{EmojiCode}";
+        }
+    }
+
+    public class TeraTypeEmojiInfo
+    {
+        [Description("The Tera Type.")]
+        public MoveType MoveType { get; set; }
+
+        [Description("The Discord emoji string for this tera type.")]
+        public string EmojiCode { get; set; }
+
+        public TeraTypeEmojiInfo() { }
+
+        public TeraTypeEmojiInfo(MoveType teraType)
+        {
+            MoveType = teraType;
+        }
+
+        public override string ToString()
+        {
+            if (string.IsNullOrEmpty(EmojiCode))
+                return MoveType.ToString();
+
+            return $"{EmojiCode}";
+        }
     }
 }

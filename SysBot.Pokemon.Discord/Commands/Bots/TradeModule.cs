@@ -782,7 +782,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ProcessSingleTradeAsync(trade, batchTradeCode, true, batchTradeNumber, trades.Count); // Pass the total number of trades here
             batchTradeNumber++;
         }
-        _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
+        if (Context.Message is IUserMessage userMessage)
+        {
+            _ = DeleteMessagesAfterDelayAsync(userMessage, null, 2);
+        }
     }
 
     private static List<string> ParseBatchTradeContent(string content)
@@ -856,6 +859,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 await ProcessSingleTradeAsync((T)pk, batchTradeCode, true, batchTradeNumber, entries.Count);
                 batchTradeNumber++;
             }
+        }
+        if (Context.Message is IUserMessage userMessage)
+        {
+            _ = DeleteMessagesAfterDelayAsync(userMessage, null, 2);
         }
     }
 
