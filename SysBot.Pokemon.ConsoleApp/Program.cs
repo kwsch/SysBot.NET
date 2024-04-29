@@ -70,9 +70,29 @@ public static class BotContainer
         LogUtil.Forwarders.Add(ConsoleForwarder.Instance);
         env.StartAll();
         Console.WriteLine($"Started all bots (Count: {prog.Bots.Length}.");
-        Console.WriteLine("Press any key to stop execution and quit. Feel free to minimize this window!");
-        Console.ReadKey();
+        WaitForExit();
         env.StopAll();
+    }
+
+    private static void WaitForExit()
+    {
+        if (Environment.UserInteractive)
+        {
+            Console.WriteLine("Press any key to stop execution and quit. Feel free to minimize this window!");
+            Console.ReadKey();
+            return;
+        }
+
+        Console.WriteLine("Running in non-interactive mode. Waiting for exit signal.");
+
+        bool cancel = false;
+        AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+        {
+            Console.WriteLine("Process exit detected. Stopping all bots.");
+            cancel = true;
+        };
+        while (!cancel)
+            System.Threading.Thread.Sleep(1000);
     }
 
     private static IPokeBotRunner GetRunner(ProgramConfig prog) => prog.Mode switch
