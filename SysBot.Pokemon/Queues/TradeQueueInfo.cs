@@ -116,7 +116,7 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
         bool currentlyProcessing = false;
         bool removedPending = false;
 
-        foreach (var detail in details)
+        foreach (var detail in details.ToList())
         {
             if (detail.Trade.IsProcessing)
             {
@@ -124,14 +124,13 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
                 if (!Hub.Config.Queues.CanDequeueIfProcessing)
                 {
                     removedAll = false;
+                    detail.Trade.IsCanceled = true;
                     continue;
                 }
             }
-            else
-            {
-                if (Remove(detail))
-                    removedPending = true;
-            }
+
+            if (RemoveTradeEntry(detail))
+                removedPending = true;
         }
 
         if (!removedAll && currentlyProcessing && !removedPending)
@@ -144,6 +143,22 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
             return QueueResultRemove.Removed;
 
         return QueueResultRemove.NotInQueue;
+    }
+
+    private bool RemoveTradeEntry(TradeEntry<T> entry)
+    {
+        if (Remove(entry))
+        {
+            var queue = Hub.Queues.GetQueue(entry.Type);
+            var tradeDetail = queue.Queue.FirstOrDefault(x => x.Value.Equals(entry.Trade));
+            if (tradeDetail.Value != null)
+            {
+                if (queue.Remove(tradeDetail.Value) > 0)
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     public IEnumerable<string> GetUserList(string fmt)

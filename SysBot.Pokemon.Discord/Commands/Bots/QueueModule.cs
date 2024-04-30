@@ -1,6 +1,8 @@
 using Discord;
 using Discord.Commands;
 using PKHeX.Core;
+using SysBot.Base;
+using System;
 using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.Discord;
@@ -29,19 +31,7 @@ public class QueueModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             msg = Context.User.Mention + " - You are not currently in the queue.";
         }
 
-        // Send the reply and capture the response message
-        var response = await ReplyAsync(msg).ConfigureAwait(false);
-
-        // Delay for 5 seconds
-        await Task.Delay(5000).ConfigureAwait(false);
-
-        // Delete user message
-        if (Context.Message is IUserMessage userMessage)
-            await userMessage.DeleteAsync().ConfigureAwait(false);
-
-        // Delete bot response
-        if (response is IUserMessage responseMessage)
-            await responseMessage.DeleteAsync().ConfigureAwait(false);
+        await ReplyAndDeleteAsync(msg, 5, Context.Message).ConfigureAwait(false);
     }
 
     [Command("queueClear")]
@@ -49,22 +39,8 @@ public class QueueModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [Summary("Clears the user from the trade queues. Will not remove a user if they are being processed.")]
     public async Task ClearTradeAsync()
     {
-        string msg = ClearTrade();
-
-        // Send the reply and capture the response message
-        var response = await ReplyAsync(msg).ConfigureAwait(false);
-
-        // Wait for 5 seconds
-        await Task.Delay(5000).ConfigureAwait(false);
-
-        // Delete the user's command message if possible
-        if (Context.Message is IUserMessage userMessage)
-        {
-            await userMessage.DeleteAsync().ConfigureAwait(false);
-        }
-
-        // Delete the bot's response message
-        await response.DeleteAsync().ConfigureAwait(false);
+        string msg = ClearTrade(Context.User.Id);
+        await ReplyAndDeleteAsync(msg, 5, Context.Message).ConfigureAwait(false);
     }
 
 
@@ -165,6 +141,34 @@ public class QueueModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         await ReplyAsync(msg).ConfigureAwait(false);
     }
 
+    private async Task ReplyAndDeleteAsync(string message, int delaySeconds, IMessage? messageToDelete = null)
+    {
+        try
+        {
+            var sentMessage = await ReplyAsync(message).ConfigureAwait(false);
+            _ = DeleteMessagesAfterDelayAsync(sentMessage, messageToDelete, delaySeconds);
+        }
+        catch (Exception ex)
+        {
+            LogUtil.LogSafe(ex, nameof(QueueModule<T>));
+        }
+    }
+
+    private async Task DeleteMessagesAfterDelayAsync(IMessage sentMessage, IMessage? messageToDelete, int delaySeconds)
+    {
+        try
+        {
+            await Task.Delay(delaySeconds * 1000);
+            await sentMessage.DeleteAsync();
+            if (messageToDelete != null)
+                await messageToDelete.DeleteAsync();
+        }
+        catch (Exception ex)
+        {
+            LogUtil.LogSafe(ex, nameof(QueueModule<T>));
+        }
+    }
+
     private static string DeleteTradeCode(ulong userID)
     {
         var tradeCodeStorage = new TradeCodeStorage();
@@ -176,58 +180,21 @@ public class QueueModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return "No stored trade code found for your user ID.";
     }
 
-    private string ClearTrade()
-    {
-        var userID = Context.User.Id;
-        return ClearTrade(userID);
-    }
-
-    //private static string ClearTrade(string username)
-    //{
-    //    var result = Info.ClearTrade(username);
-    //    return GetClearTradeMessage(result);
-    //}
-
     private static string ClearTrade(ulong userID)
     {
-        var userEntries = Info.GetIsUserQueued(entry => entry.UserID == userID);
+        var result = Info.ClearTrade(userID);
+        return GetClearTradeMessage(result);
+    }
 
-        if (userEntries.Count == 0)
-            return "Sorry, you are not currently in the queue.";
-
-        bool removedAll = true;
-        bool currentlyProcessing = false;
-        bool removedPending = false;
-
-        foreach (var entry in userEntries)
+    private static string GetClearTradeMessage(QueueResultRemove result)
+    {
+        return result switch
         {
-            if (entry.Trade.IsProcessing)
-            {
-                currentlyProcessing = true;
-                if (!Info.Hub.Config.Queues.CanDequeueIfProcessing)
-                {
-                    removedAll = false;
-                    entry.Trade.IsCanceled = true; // Set the trade as canceled
-                    continue;
-                }
-            }
-            else
-            {
-                entry.Trade.IsCanceled = true; // Set the trade as canceled
-                Info.Remove(entry);
-                removedPending = true;
-            }
-        }
-
-        if (!removedAll && currentlyProcessing && !removedPending)
-            return "Looks like you have trades currently being processed! Did not remove those from the queue.";
-
-        if (currentlyProcessing && removedPending)
-            return "Looks like you have trades currently being processed! Removed other pending trades from the queue.";
-
-        if (removedPending)
-            return "Removed your pending trades from the queue.";
-
-        return "Sorry, you are not currently in the queue.";
+            QueueResultRemove.Removed => "Removed your pending trades from the queue.",
+            QueueResultRemove.CurrentlyProcessing => "Looks like you have trades currently being processed! Did not remove those from the queue.",
+            QueueResultRemove.CurrentlyProcessingRemoved => "Looks like you have trades currently being processed! Removed other pending trades from the queue.",
+            QueueResultRemove.NotInQueue => "Sorry, you are not currently in the queue.",
+            _ => throw new ArgumentOutOfRangeException(nameof(result), result, null),
+        };
     }
 }

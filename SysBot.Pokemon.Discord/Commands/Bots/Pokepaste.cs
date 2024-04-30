@@ -1,6 +1,7 @@
 using Discord;
 using Discord.Commands;
 using PKHeX.Core;
+using SysBot.Base;
 using SysBot.Pokemon.Helpers;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using DiscordColor = Discord.Color;
 
@@ -44,110 +46,120 @@ namespace SysBot.Pokemon.Discord
             var generatingMessage = await ReplyAsync("Generating and sending your Pokepaste team. Please wait...");
             try
             {
-                var pokePasteHtml = await GetPokePasteHtml(pokePasteUrl);
-
-                // Extract title from the Pokepaste HTML
-                var titleMatch = Regex.Match(pokePasteHtml, @"<h1>(.*?)</h1>");
-                var title = titleMatch.Success ? titleMatch.Groups[1].Value : "pokepasteteam";
-                // Sanitize the title to make it a valid filename
-                title = Regex.Replace(title, "[^a-zA-Z0-9_.-]", "").Trim();
-                if (title.Length > 30) title = title[..30]; // Truncate if too long
-
-                var showdownSets = ParseShowdownSets(pokePasteHtml);
-
-                if (showdownSets.Count == 0)
+                await Task.Run(async () =>
                 {
-                    await ReplyAsync($"No valid showdown sets found in the pokepaste URL: {pokePasteUrl}");
-                    return;
-                }
+                    var pokePasteHtml = await Task.Run(() => GetPokePasteHtml(pokePasteUrl)).ConfigureAwait(false);
 
-                var namer = new GengarNamer();
-                var pokemonImages = new List<System.Drawing.Image>();
+                    // Extract title from the Pokepaste HTML
+                    var titleMatch = Regex.Match(pokePasteHtml, @"<h1>(.*?)</h1>");
+                    var title = titleMatch.Success ? titleMatch.Groups[1].Value : "pokepasteteam";
+                    // Sanitize the title to make it a valid filename
+                    title = Regex.Replace(title, "[^a-zA-Z0-9_.-]", "").Trim();
+                    if (title.Length > 30) title = title[..30]; // Truncate if too long
 
-                using var memoryStream = new MemoryStream();
-                using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
-                {
-                    foreach (var set in showdownSets)
+                    var showdownSets = ParseShowdownSets(pokePasteHtml);
+
+                    if (showdownSets.Count == 0)
                     {
-                        try
-                        {
-                            var template = AutoLegalityWrapper.GetTemplate(set);
-                            var sav = AutoLegalityWrapper.GetTrainerInfo<PK9>();
-                            var pkm = sav.GetLegal(template, out var result);
+                        await ReplyAndDeleteAsync($"No valid showdown sets found in the pokepaste URL: {pokePasteUrl}", 10, generatingMessage).ConfigureAwait(false);
+                        return;
+                    }
 
-                            if (pkm is not PK9 pk || !new LegalityAnalysis(pkm).Valid)
+                    var namer = new GengarNamer();
+                    var pokemonImages = new List<System.Drawing.Image>();
+
+                    using var memoryStream = new MemoryStream();
+                    using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
+                    {
+                        foreach (var set in showdownSets)
+                        {
+                            try
                             {
-                                var reason = result == "Timeout" ? $"That {GameInfo.Strings.Species[template.Species]} set took too long to generate." :
-                                             result == "Failed" ? $"I wasn't able to create a {GameInfo.Strings.Species[template.Species]} from that set." :
-                                             "An unknown error occurred.";
+                                var template = AutoLegalityWrapper.GetTemplate(set);
+                                var sav = AutoLegalityWrapper.GetTrainerInfo<PK9>();
 
-                                await ReplyAsync($"Failed to create {GameInfo.Strings.Species[template.Species]}: {reason}");
-                                continue;
+                                PK9? pk = null;
+                                var timeout = TimeSpan.FromSeconds(10); // Adjust the timeout as needed
+                                using (var cts = new CancellationTokenSource(timeout))
+                                {
+                                    try
+                                    {
+                                        pk = (PK9?)await Task.Run(() => sav.GetLegal(template, out _), cts.Token).ConfigureAwait(false);
+                                    }
+                                    catch (OperationCanceledException)
+                                    {
+                                        await ReplyAndDeleteAsync($"Timeout occurred while generating {GameInfo.Strings.Species[template.Species]}. Skipping...", 10, generatingMessage).ConfigureAwait(false);
+                                        continue;
+                                    }
+                                }
+
+                                if (pk == null || !new LegalityAnalysis(pk).Valid)
+                                {
+                                    await ReplyAndDeleteAsync($"Failed to create {GameInfo.Strings.Species[template.Species]}. Skipping...", 10, generatingMessage).ConfigureAwait(false);
+                                    continue;
+                                }
+
+                                var speciesName = GameInfo.GetStrings("en").Species[set.Species];
+                                var fileName = namer.GetName(pk); // Use GengarNamer to generate the file name
+                                var entry = archive.CreateEntry($"{fileName}.{pk.Extension}");
+                                using var entryStream = entry.Open();
+                                await entryStream.WriteAsync(pk.Data.AsMemory(0, pk.Data.Length)).ConfigureAwait(false);
+
+                                string speciesImageUrl = AbstractTrade<PK9>.PokeImg(pk, false, false);
+                                var speciesImage = await Task.Run(() => System.Drawing.Image.FromStream(new HttpClient().GetStreamAsync(speciesImageUrl).Result)).ConfigureAwait(false);
+                                pokemonImages.Add(speciesImage);
                             }
-
-                            var speciesName = GameInfo.GetStrings("en").Species[set.Species];
-                            var fileName = namer.GetName(pk); // Use GengarNamer to generate the file name
-                            var entry = archive.CreateEntry($"{fileName}.{pk.Extension}");
-                            using var entryStream = entry.Open();
-                            await entryStream.WriteAsync(pk.Data.AsMemory(0, pk.Data.Length));
-
-                            string speciesImageUrl = AbstractTrade<PK9>.PokeImg(pk, false, false);
-                            var speciesImage = System.Drawing.Image.FromStream(await new HttpClient().GetStreamAsync(speciesImageUrl));
-                            pokemonImages.Add(speciesImage);
-                        }
-                        catch (Exception ex)
-                        {
-                            var speciesName = GameInfo.GetStrings("en").Species[set.Species];
-                            await ReplyAsync($"An error occurred while processing {speciesName}: {ex.Message}");
+                            catch (Exception ex)
+                            {
+                                var speciesName = GameInfo.GetStrings("en").Species[set.Species];
+                                await ReplyAndDeleteAsync($"An error occurred while processing {speciesName}: {ex.Message}", 10, generatingMessage).ConfigureAwait(false);
+                            }
                         }
                     }
-                }
 
-                var combinedImage = CombineImages(pokemonImages);
+                    var combinedImage = CombineImages(pokemonImages);
 
-                memoryStream.Position = 0;
+                    memoryStream.Position = 0;
 
-                // Send the ZIP file to the user's DM
-                await Context.User.SendFileAsync(memoryStream, $"{title}.zip", text: "Here's your team!");
+                    // Send the ZIP file to the user's DM
+                    await Context.User.SendFileAsync(memoryStream, $"{title}.zip", text: "Here's your team!").ConfigureAwait(false);
 
-                // Save the combined image as a file
-                combinedImage.Save("pokepasteteam.png");
-                using (var imageStream = new MemoryStream())
-                {
-                    combinedImage.Save(imageStream, System.Drawing.Imaging.ImageFormat.Png);
-                    imageStream.Position = 0;
+                    // Save the combined image as a file
+                    combinedImage.Save($"{title}.png");
+                    using (var imageStream = new MemoryStream())
+                    {
+                        combinedImage.Save(imageStream, System.Drawing.Imaging.ImageFormat.Png);
+                        imageStream.Position = 0;
 
-                    // Send the combined image file with an embed to the channel
-                    var embedBuilder = new EmbedBuilder()
-                        .WithColor(GetTypeColor())
-                        .WithAuthor(
-                            author =>
-                            {
-                                author
-                                    .WithName($"{Context.User.Username}'s Generated Team")
-                                    .WithIconUrl(Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl());
-                            })
-                        .WithImageUrl($"attachment://{title}.png")
-                        .WithFooter($"Legalized Team Sent to {Context.User.Username}'s Inbox")
-                        .WithCurrentTimestamp();
+                        // Send the combined image file with an embed to the channel
+                        var embedBuilder = new EmbedBuilder()
+                            .WithColor(GetTypeColor())
+                            .WithAuthor(
+                                author =>
+                                {
+                                    author
+                                        .WithName($"{Context.User.Username}'s Generated Team")
+                                        .WithIconUrl(Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl());
+                                })
+                            .WithImageUrl($"attachment://{title}.png")
+                            .WithFooter($"Legalized Team Sent to {Context.User.Username}'s Inbox")
+                            .WithCurrentTimestamp();
 
-                    var embed = embedBuilder.Build();
+                        var embed = embedBuilder.Build();
 
-                    await Context.Channel.SendFileAsync(imageStream, $"{title}.png", embed: embed);
+                        await Context.Channel.SendFileAsync(imageStream, $"{title}.png", embed: embed).ConfigureAwait(false);
 
-                    // Clean up the messages after 10 seconds
-                    await Task.Delay(10000);
-                    await generatingMessage.DeleteAsync();
-                    if (Context.Message is IUserMessage userMessage)
-                        await userMessage.DeleteAsync().ConfigureAwait(false);
-                }
+                        // Clean up the messages after 10 seconds
+                        await DeleteMessagesAfterDelayAsync(generatingMessage, Context.Message, 10).ConfigureAwait(false);
+                    }
 
-                // Clean up the temporary image file
-                File.Delete($"{title}.png");
+                    // Clean up the temporary image file
+                    File.Delete($"{title}.png");
+                }).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                await ReplyAsync($"Error generating Pokepaste team: {ex.Message}");
+                await ReplyAndDeleteAsync($"Error generating Pokepaste team: {ex.Message}", 10, generatingMessage).ConfigureAwait(false);
             }
         }
 
@@ -177,6 +189,34 @@ namespace SysBot.Pokemon.Discord
         private static DiscordColor GetTypeColor()
         {
             return new DiscordColor(255, 165, 0); // Orange
+        }
+
+        private async Task ReplyAndDeleteAsync(string message, int delaySeconds, IMessage? messageToDelete = null)
+        {
+            try
+            {
+                var sentMessage = await ReplyAsync(message).ConfigureAwait(false);
+                _ = DeleteMessagesAfterDelayAsync(sentMessage, messageToDelete, delaySeconds);
+            }
+            catch (Exception ex)
+            {
+                LogUtil.LogSafe(ex, nameof(Pokepaste));
+            }
+        }
+
+        private async Task DeleteMessagesAfterDelayAsync(IMessage sentMessage, IMessage? messageToDelete, int delaySeconds)
+        {
+            try
+            {
+                await Task.Delay(delaySeconds * 1000).ConfigureAwait(false);
+                await sentMessage.DeleteAsync().ConfigureAwait(false);
+                if (messageToDelete != null)
+                    await messageToDelete.DeleteAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                LogUtil.LogSafe(ex, nameof(Pokepaste));
+            }
         }
     }
 }
