@@ -57,6 +57,10 @@ public sealed partial class ProgramConfigContext : JsonSerializerContext;
 
 public static class BotContainer
 {
+    private static IPokeBotRunner? Environment;
+    private static bool IsRunning => Environment != null;
+    private static bool IsStopping;
+
     public static void RunBots(ProgramConfig prog)
     {
         IPokeBotRunner env = GetRunner(prog);
@@ -69,30 +73,44 @@ public static class BotContainer
 
         LogUtil.Forwarders.Add(ConsoleForwarder.Instance);
         env.StartAll();
-        Console.WriteLine($"Started all bots (Count: {prog.Bots.Length}.");
+        Console.WriteLine($"Started all bots (Count: {prog.Bots.Length}).");
+
+        Environment = env;
         WaitForExit();
-        env.StopAll();
     }
 
     private static void WaitForExit()
     {
-        if (Environment.UserInteractive)
-        {
-            Console.WriteLine("Press any key to stop execution and quit. Feel free to minimize this window!");
-            Console.ReadKey();
-            return;
-        }
+        var msg = Console.IsInputRedirected
+            ? "Running without console input. Waiting for exit signal."
+            : "Press CTRL-C to stop execution. Feel free to minimize this window.";
+        Console.WriteLine(msg);
 
-        Console.WriteLine("Running in non-interactive mode. Waiting for exit signal.");
-
-        bool cancel = false;
         AppDomain.CurrentDomain.ProcessExit += (_, _) =>
         {
-            Console.WriteLine("Process exit detected. Stopping all bots.");
-            cancel = true;
+            if (IsStopping)
+                return; // Already stopping, don't double stop.
+            // Try as best we can to shut down.
+            StopProcess("Process exit detected. Stopping all bots.");
         };
-        while (!cancel)
+        Console.CancelKeyPress += (_, e) =>
+        {
+            if (IsStopping)
+                return; // Already stopping, don't double stop.
+            e.Cancel = true; // Gracefully exit after stopping all bots.
+            StopProcess("Cancel key detected. Stopping all bots.");
+        };
+
+        while (IsRunning)
             System.Threading.Thread.Sleep(1000);
+    }
+
+    private static void StopProcess(string message)
+    {
+        IsStopping = true;
+        Console.WriteLine(message);
+        Environment?.StopAll();
+        Environment = null;
     }
 
     private static IPokeBotRunner GetRunner(ProgramConfig prog) => prog.Mode switch
