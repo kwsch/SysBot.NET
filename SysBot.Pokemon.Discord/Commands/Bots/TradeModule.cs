@@ -384,12 +384,13 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("hidetrade")]
     [Alias("ht")]
-    [Summary("Makes the bot trade you the provided Pokémon file without showing the trade embed details.")]
+    [Summary("Makes the bot trade you a Pokémon converted from the provided Showdown Set without showing the trade embed details.")]
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-    public Task HideTradeAsyncAttach([Summary("Trade Code")] int code)
+    public Task HideTradeAsync([Summary("Showdown Set")][Remainder] string content)
     {
-        var sig = Context.User.GetFavor();
-        return HideTradeAsyncAttach(code, sig, Context.User);
+        var userID = Context.User.Id;
+        var code = Info.GetRandomTradeCode(userID);
+        return HideTradeAsync(code, content);
     }
 
     [Command("hidetrade")]
@@ -526,27 +527,26 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("hidetrade")]
     [Alias("ht")]
-    [Summary("Makes the bot trade you a Pokémon converted from the provided Showdown Set without showing the trade embed details.")]
+    [Summary("Makes the bot trade you the provided Pokémon file without showing the trade embed details.")]
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-    public Task HideTradeAsync([Summary("Showdown Set")][Remainder] string content)
+    public Task HideTradeAsyncAttach(
+        [Summary("Trade Code")] int code,
+        [Summary("Ignore AutoOT")] bool ignoreAutoOT = false)
     {
-        var userID = Context.User.Id;
-        var code = Info.GetRandomTradeCode(userID);
-        return HideTradeAsync(code, content);
+        var sig = Context.User.GetFavor();
+        return HideTradeAsyncAttach(code, sig, Context.User, ignoreAutoOT);
     }
 
     [Command("hidetrade")]
     [Alias("ht")]
     [Summary("Makes the bot trade you the attached file without showing the trade embed details.")]
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-    private async Task HideTradeAsyncAttach()
+    private async Task HideTradeAsyncAttach([Summary("Ignore AutoOT")] bool ignoreAutoOT = false)
     {
         var userID = Context.User.Id;
         var code = Info.GetRandomTradeCode(userID);
         var sig = Context.User.GetFavor();
-
-        await HideTradeAsyncAttach(code, sig, Context.User).ConfigureAwait(false);
-
+        await HideTradeAsyncAttach(code, sig, Context.User, ignoreAutoOT).ConfigureAwait(false);
         if (Context.Message is IUserMessage userMessage)
         {
             _ = DeleteMessagesAfterDelayAsync(userMessage, null, 2);
@@ -555,12 +555,13 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("trade")]
     [Alias("t")]
-    [Summary("Makes the bot trade you the provided Pokémon file.")]
+    [Summary("Makes the bot trade you a Pokémon converted from the provided Showdown Set.")]
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-    public Task TradeAsyncAttach([Summary("Trade Code")] int code)
+    public Task TradeAsync([Summary("Showdown Set")][Remainder] string content)
     {
-        var sig = Context.User.GetFavor();
-        return TradeAsyncAttach(code, sig, Context.User);
+        var userID = Context.User.Id;
+        var code = Info.GetRandomTradeCode(userID);
+        return TradeAsync(code, content);
     }
 
     [Command("trade")]
@@ -697,27 +698,26 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     [Command("trade")]
     [Alias("t")]
-    [Summary("Makes the bot trade you a Pokémon converted from the provided Showdown Set.")]
+    [Summary("Makes the bot trade you the provided Pokémon file.")]
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-    public Task TradeAsync([Summary("Showdown Set")][Remainder] string content)
+    public Task TradeAsyncAttach(
+    [Summary("Trade Code")] int code,
+    [Summary("Ignore AutoOT")] bool ignoreAutoOT = false)
     {
-        var userID = Context.User.Id;
-        var code = Info.GetRandomTradeCode(userID);
-        return TradeAsync(code, content);
+        var sig = Context.User.GetFavor();
+        return TradeAsyncAttach(code, sig, Context.User, ignoreAutoOT);
     }
 
     [Command("trade")]
     [Alias("t")]
     [Summary("Makes the bot trade you the attached file.")]
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-    public async Task TradeAsyncAttach()
+    public async Task TradeAsyncAttach([Summary("Ignore AutoOT")] bool ignoreAutoOT = false)
     {
         var userID = Context.User.Id;
         var code = Info.GetRandomTradeCode(userID);
         var sig = Context.User.GetFavor();
-
-        await TradeAsyncAttach(code, sig, Context.User);
-
+        await TradeAsyncAttach(code, sig, Context.User, ignoreAutoOT);
         if (Context.Message is IUserMessage userMessage)
         {
             _ = DeleteMessagesAfterDelayAsync(userMessage, null, 2);
@@ -1324,7 +1324,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         return TradeAsyncAttachUser(code, _);
     }
 
-    private async Task TradeAsyncAttach(int code, RequestSignificance sig, SocketUser usr)
+    private async Task TradeAsyncAttach(int code, RequestSignificance sig, SocketUser usr, bool ignoreAutoOT = false)
     {
         var attachment = Context.Message.Attachments.FirstOrDefault();
         if (attachment == default)
@@ -1341,10 +1341,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
 
-        await AddTradeToQueueAsync(code, usr.Username, pk, sig, usr).ConfigureAwait(false);
+        await AddTradeToQueueAsync(code, usr.Username, pk, sig, usr, ignoreAutoOT: ignoreAutoOT).ConfigureAwait(false);
     }
 
-    private async Task HideTradeAsyncAttach(int code, RequestSignificance sig, SocketUser usr)
+    private async Task HideTradeAsyncAttach(int code, RequestSignificance sig, SocketUser usr, bool ignoreAutoOT = false)
     {
         var attachment = Context.Message.Attachments.FirstOrDefault();
         if (attachment == default)
@@ -1361,7 +1361,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
 
-        await AddTradeToQueueAsync(code, usr.Username, pk, sig, usr, isHiddenTrade: true).ConfigureAwait(false);
+        await AddTradeToQueueAsync(code, usr.Username, pk, sig, usr, isHiddenTrade: true, ignoreAutoOT: ignoreAutoOT).ConfigureAwait(false);
     }
 
     private static T? GetRequest(Download<PKM> dl)
