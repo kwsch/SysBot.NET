@@ -316,20 +316,11 @@ public sealed class SysCord<T> where T : PKM, new()
                 return;
         }
 
-        await TryHandleMessageAsync(msg, null).ConfigureAwait(false);
+        await TryHandleMessageAsync(msg).ConfigureAwait(false);
     }
 
-    private async Task TryHandleMessageAsync(SocketMessage msg, TradeAbuseSettings? AbuseSettings)
+    private async Task TryHandleMessageAsync(SocketMessage msg)
     {
-        // Check bannedIDs and tell the user to phuck off
-        if (msg.Author is SocketGuildUser user)
-        {
-            if (AbuseSettings.BannedIDs.List.Any(z => z.ID == user.Id))
-            {
-                await msg.Channel.SendMessageAsync("You are banned from using this bot.").ConfigureAwait(false);
-                return;
-            }
-        }
         if (msg.Attachments.Count > 0)
         {
             var mgr = Manager;
@@ -382,6 +373,17 @@ public sealed class SysCord<T> where T : PKM, new()
     {
         // Create a Command Context.
         var context = new SocketCommandContext(_client, msg);
+        var AbuseSettings = Hub.Config.TradeAbuse;
+
+        // Check if the user is in the bannedIDs list
+        if (msg.Author is SocketGuildUser user)
+        {
+            if (AbuseSettings.BannedIDs.List.Any(z => z.ID == user.Id))
+            {
+                await msg.Channel.SendMessageAsync("You are banned from using this bot.").ConfigureAwait(false);
+                return true;
+            }
+        }
 
         // Check Permission
         var mgr = Manager;
