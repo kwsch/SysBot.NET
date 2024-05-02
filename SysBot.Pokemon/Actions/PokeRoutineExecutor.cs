@@ -6,7 +6,6 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using static SysBot.Base.SwitchButton;
 
 namespace SysBot.Pokemon;
 
@@ -132,93 +131,6 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
         }
     }
 
-    protected async Task<PokeTradeResult> CheckPartnerReputation(PokeRoutineExecutor<T> bot, PokeTradeDetail<T> poke, ulong TrainerNID, string TrainerName,
-        TradeAbuseSettings AbuseSettings, CancellationToken token)
-    {
-        bool quit = false;
-        var user = poke.Trainer;
-        var isDistribution = poke.Type == PokeTradeType.Random;
-        var useridmsg = isDistribution ? "" : $" ({user.ID})";
-        var list = isDistribution ? PreviousUsersDistribution : PreviousUsers;
-
-        // Matches to a list of banned NIDs, in case the user ever manages to enter a trade.
-        var entry = AbuseSettings.BannedIDs.List.Find(z => z.ID == TrainerNID);
-        if (entry != null)
-        {
-            if (AbuseSettings.BlockDetectedBannedUser && bot is PokeRoutineExecutor8SWSH)
-                await BlockUser(token).ConfigureAwait(false);
-            return PokeTradeResult.SuspiciousActivity;
-        }
-
-        // Check within the trade type (distribution or non-Distribution).
-        var previous = list.TryGetPreviousNID(TrainerNID);
-        if (previous != null)
-        {
-            var delta = DateTime.Now - previous.Time; // Time that has passed since last trade.
-            Log($"Last traded with {user.TrainerName} {delta.TotalMinutes:F1} minutes ago (OT: {TrainerName}).");
-
-            // Allows setting a cooldown for repeat trades. If the same user is encountered within the cooldown period for the same trade type, the user is warned and the trade will be ignored.
-            var cd = AbuseSettings.TradeCooldown;     // Time they must wait before trading again.
-            if (cd != 0 && TimeSpan.FromMinutes(cd) > delta)
-            {
-                var wait = TimeSpan.FromMinutes(cd) - delta;
-                Log($"Found {user.TrainerName}{useridmsg} ignoring the {cd} minute trade cooldown. Last encountered {delta.TotalMinutes:F1} minutes ago.");
-                return PokeTradeResult.SuspiciousActivity;
-            }
-
-            // For non-Distribution trades, flag users using multiple Discord/Twitch accounts to send to the same in-game player within a time limit.
-            // This is usually to evade a ban or a trade cooldown.
-            if (!isDistribution && previous.NetworkID == TrainerNID && previous.RemoteID != user.ID)
-            {
-                if (delta < TimeSpan.FromMinutes(AbuseSettings.TradeAbuseExpiration) && AbuseSettings.TradeAbuseAction != TradeAbuseAction.Ignore)
-                {
-                    if (AbuseSettings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
-                    {
-                        await BlockUser(token).ConfigureAwait(false);
-                        if (AbuseSettings.BanIDWhenBlockingUser || bot is not PokeRoutineExecutor8SWSH) // Only ban ID if blocking in SWSH, always in other games.
-                        {
-                            AbuseSettings.BannedIDs.AddIfNew([GetReference(TrainerName, TrainerNID, "in-game block for multiple accounts")]);
-                            Log($"Added {TrainerNID} to the BannedIDs list.");
-                        }
-                    }
-                    quit = true;
-                }
-
-                Log($"Found {user.TrainerName}{useridmsg} using multiple accounts.\nPreviously traded with {previous.Name} ({previous.RemoteID}) {delta.TotalMinutes:F1} minutes ago on OT: {TrainerName}.");
-            }
-        }
-
-        // For non-Distribution trades, we can optionally flag users sending to multiple in-game players.
-        // Can trigger if the user gets sniped, but can also catch abusers sending to many people.
-        if (!isDistribution)
-        {
-            var previous_remote = PreviousUsers.TryGetPreviousRemoteID(poke.Trainer.ID);
-            if (previous_remote != null && previous_remote.Name != TrainerName)
-            {
-                if (AbuseSettings.TradeAbuseAction != TradeAbuseAction.Ignore)
-                {
-                    if (AbuseSettings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
-                    {
-                        await BlockUser(token).ConfigureAwait(false);
-                        if (AbuseSettings.BanIDWhenBlockingUser || bot is not PokeRoutineExecutor8SWSH) // Only ban ID if blocking in SWSH, always in other games.
-                        {
-                            AbuseSettings.BannedIDs.AddIfNew([GetReference(TrainerName, TrainerNID, "in-game block for sending to multiple in-game players")]);
-                            Log($"Added {TrainerNID} to the BannedIDs list.");
-                        }
-                    }
-                    quit = true;
-                }
-
-                Log($"Found {user.TrainerName}{useridmsg} sending to multiple in-game players. Previous OT: {previous_remote.Name}, Current OT: {TrainerName}");
-            }
-        }
-
-        if (quit)
-            return PokeTradeResult.SuspiciousActivity;
-
-        return PokeTradeResult.Success;
-    }
-
     public static void LogSuccessfulTrades(PokeTradeDetail<T> poke, ulong TrainerNID, string TrainerName)
     {
         // All users who traded, tracked by whether it was a targeted trade or distribution.
@@ -226,25 +138,5 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
             PreviousUsersDistribution.TryRegister(TrainerNID, TrainerName);
         else
             PreviousUsers.TryRegister(TrainerNID, TrainerName, poke.Trainer.ID);
-    }
-
-    private static RemoteControlAccess GetReference(string name, ulong id, string comment) => new()
-    {
-        ID = id,
-        Name = name,
-        Comment = $"Added automatically on {DateTime.Now:yyyy.MM.dd-hh:mm:ss} ({comment})",
-    };
-
-    // Blocks a user from the box during in-game trades (SWSH).
-    private async Task BlockUser(CancellationToken token)
-    {
-        Log("Blocking user in-game...");
-        await PressAndHold(RSTICK, 0_750, 0, token).ConfigureAwait(false);
-        await Click(DUP, 0_300, token).ConfigureAwait(false);
-        await Click(A, 1_300, token).ConfigureAwait(false);
-        await Click(A, 1_300, token).ConfigureAwait(false);
-        await Click(DUP, 0_300, token).ConfigureAwait(false);
-        await Click(A, 1_100, token).ConfigureAwait(false);
-        await Click(A, 1_100, token).ConfigureAwait(false);
     }
 }

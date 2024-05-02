@@ -336,13 +336,6 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
             tradeCodeStorage.UpdateTradeDetails(poke.Trainer.ID, shouldUpdateOT ? trainerName : existingTradeDetails.OT, shouldUpdateTID ? int.Parse(trainerTID) : existingTradeDetails.TID);
         }
 
-        var partnerCheck = await CheckPartnerReputation(this, poke, trainerNID, trainerName, AbuseSettings, token);
-        if (partnerCheck != PokeTradeResult.Success)
-        {
-            await ExitSeedCheckTrade(token).ConfigureAwait(false);
-            return partnerCheck;
-        }
-
         if (!await IsInBox(token).ConfigureAwait(false))
         {
             await ExitTrade(true, token).ConfigureAwait(false);
