@@ -39,6 +39,9 @@ public class DetailsExtractor<T> where T : PKM, new()
 
         // Display elements
         embedData.IVsDisplay = string.Join("/", embedData.IVs);
+        int[] evs = GetEVs(pk);
+        string evsDisplay = string.Join(" / ", new[] { (evs[0] != 0 ? $"{evs[0]} HP" : ""), (evs[1] != 0 ? $"{evs[1]} Atk" : ""), (evs[2] != 0 ? $"{evs[2]} Def" : ""), (evs[3] != 0 ? $"{evs[3]} SpA" : ""), (evs[4] != 0 ? $"{evs[4]} SpD" : ""), (evs[5] != 0 ? $"{evs[5]} Spe" : "") }.Where(s => !string.IsNullOrEmpty(s)));
+        embedData.EVsDisplay = evsDisplay;
         embedData.MetDate = pk.MetDate.ToString();
         embedData.MovesDisplay = string.Join("\n", embedData.Moves);
         embedData.PokemonDisplayName = pk.IsNicknamed ? pk.Nickname : embedData.SpeciesName;
@@ -213,7 +216,8 @@ public class DetailsExtractor<T> where T : PKM, new()
             (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowMetDate ? $"**Met Date:** {embedData.MetDate}\n" : "") +
             (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowAbility ? $"**Ability:** {embedData.Ability}\n" : "") +
             (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowNature ? $"**Nature**: {embedData.Nature}\n" : "") +
-            (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowIVs ? $"**IVs**: {embedData.IVsDisplay}\n" : "");
+            (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowIVs ? $"**IVs**: {embedData.IVsDisplay}\n" : "") +
+            (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowEVs ? $"**EVs**: {embedData.EVsDisplay}\n" : "");
 
         leftSideContent = leftSideContent.TrimEnd('\n');
         embedBuilder.AddField($"**{embedData.SpeciesName}{(string.IsNullOrEmpty(embedData.FormName) ? "" : $"-{embedData.FormName}")} {embedData.SpecialSymbols}**", leftSideContent, inline: true);
@@ -239,6 +243,13 @@ public class DetailsExtractor<T> where T : PKM, new()
             embedBuilder.WithThumbnailUrl(heldItemUrl);
         }
     }
+
+    private static int[] GetEVs(T pk)
+    {
+        int[] evs = new int[6];
+        pk.GetEVs(evs);
+        return evs;
+    }
 }
 
 public class EmbedData
@@ -256,6 +267,7 @@ public class EmbedData
     public string? HeldItem { get; set; }
     public string? Ball { get; set; }
     public string? IVsDisplay { get; set; }
+    public string? EVsDisplay { get; set; }
     public string? MetDate { get; set; }
     public string? MovesDisplay { get; set; }
     public string? PokemonDisplayName { get; set; }

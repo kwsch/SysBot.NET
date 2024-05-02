@@ -316,11 +316,20 @@ public sealed class SysCord<T> where T : PKM, new()
                 return;
         }
 
-        await TryHandleMessageAsync(msg).ConfigureAwait(false);
+        await TryHandleMessageAsync(msg, null).ConfigureAwait(false);
     }
 
-    private async Task TryHandleMessageAsync(SocketMessage msg)
+    private async Task TryHandleMessageAsync(SocketMessage msg, TradeAbuseSettings? AbuseSettings)
     {
+        // Check bannedIDs and tell the user to phuck off
+        if (msg.Author is SocketGuildUser user)
+        {
+            if (AbuseSettings.BannedIDs.List.Any(z => z.ID == user.Id))
+            {
+                await msg.Channel.SendMessageAsync("You are banned from using this bot.").ConfigureAwait(false);
+                return;
+            }
+        }
         if (msg.Attachments.Count > 0)
         {
             var mgr = Manager;
