@@ -579,9 +579,13 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
 
-        content = ReusableActions.StripCodeBlock(content);
+        // Spellcheck and correct if species name is invalid, then continue to parse showdown set.
+        string correctedContent = PreCorrectShowdown.PerformSpellCheck(content);
+
+        correctedContent = ReusableActions.StripCodeBlock(correctedContent);
         var ignoreAutoOT = content.Contains("OT:") || content.Contains("TID:") || content.Contains("SID:");
-        var set = new ShowdownSet(content);
+
+        var set = new ShowdownSet(correctedContent);
         var template = AutoLegalityWrapper.GetTemplate(set);
         int formArgument = ExtractFormArgument(content);
         if (set.InvalidLines.Count != 0)
@@ -657,20 +661,22 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
                 if (result == "Failed")
                 {
-                    var hint = AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm);
-                    if (hint.Contains("Requested shiny value (ShinyType."))
+                    var legalizationHint = AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm);
+                    if (legalizationHint.Contains("Requested shiny value (ShinyType."))
                     {
-                        hint = $"{spec} **cannot** be shiny. Please try again.";
+                        legalizationHint = $"{spec} **cannot** be shiny. Please try again.";
                     }
-                    embedBuilder.AddField("Hint", hint);
+
+                    if (!string.IsNullOrEmpty(legalizationHint))
+                    {
+                        embedBuilder.AddField("Hint", legalizationHint);
+                    }
                 }
 
                 string userMention = Context.User.Mention;
                 string messageContent = $"{userMention}, here's the report for your request:";
-
                 var message = await Context.Channel.SendMessageAsync(text: messageContent, embed: embedBuilder.Build()).ConfigureAwait(false);
                 _ = DeleteMessagesAfterDelayAsync(message, Context.Message, 30);
-
                 return;
             }
             pk.ResetPartyStats();
