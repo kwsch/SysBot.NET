@@ -1,10 +1,11 @@
 using PKHeX.Core;
 using System;
+using System.Linq;
 using System.Text;
 
 namespace SysBot.Pokemon;
 
-public static class PreCorrectShowdown
+public static class PreCorrectShowdown<T> where T : PKM, new()
 {
     public static string PerformSpellCheck(string content)
     {
@@ -19,36 +20,16 @@ public static class PreCorrectShowdown
             string firstLine = lines[0].Trim();
 
             // Check if the species name is wrapped in parentheses (nicknamed)
-            if (firstLine.Contains("(") && firstLine.Contains(")"))
+            int startIndex = firstLine.IndexOf('(') + 1;
+            int endIndex = firstLine.IndexOf(')');
+            if (startIndex > 0 && endIndex > startIndex)
             {
-                int startIndex = firstLine.IndexOf("(") + 1;
-                int endIndex = firstLine.IndexOf(")", startIndex);
-                if (startIndex > 0 && endIndex > startIndex)
-                {
-                    speciesName = firstLine.Substring(startIndex, endIndex - startIndex).Trim();
-                }
+                speciesName = firstLine.Substring(startIndex, endIndex - startIndex).Trim();
             }
             else
             {
-                // Split the first line by space and take the first part as the species name
-                string[] parts = firstLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length > 0)
-                {
-                    speciesName = parts[0].Trim();
-
-                    // Check if the species name contains a form name
-                    int formIndex = speciesName.IndexOf('-');
-                    if (formIndex > 0)
-                    {
-                        // Include the form name as part of the species name
-                        int endIndex = speciesName.IndexOf(' ', formIndex);
-                        if (endIndex < 0)
-                        {
-                            endIndex = speciesName.Length;
-                        }
-                        speciesName = speciesName.Substring(0, endIndex).Trim();
-                    }
-                }
+                // Split the first line by space and take all parts as the species name
+                speciesName = string.Join("", firstLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
             }
         }
 
@@ -62,18 +43,15 @@ public static class PreCorrectShowdown
                 {
                     // Replace the species name in the first line
                     string firstLine = lines[0];
-                    if (firstLine.Contains("(") && firstLine.Contains(")"))
+                    int startIndex = firstLine.IndexOf('(') + 1;
+                    int endIndex = firstLine.IndexOf(')');
+                    if (startIndex > 0 && endIndex > startIndex)
                     {
-                        int startIndex = firstLine.IndexOf("(") + 1;
-                        int endIndex = firstLine.IndexOf(")", startIndex);
-                        if (startIndex > 0 && endIndex > startIndex)
-                        {
-                            firstLine = firstLine.Substring(0, startIndex) + correctedSpeciesName + firstLine.Substring(endIndex);
-                        }
+                        firstLine = firstLine.Substring(0, startIndex) + correctedSpeciesName + firstLine.Substring(endIndex + 1);
                     }
                     else
                     {
-                        firstLine = string.Concat(correctedSpeciesName, firstLine.AsSpan(speciesName.Length));
+                        firstLine = correctedSpeciesName;
                     }
                     correctedContent.AppendLine(firstLine);
                 }
@@ -96,12 +74,28 @@ public static class PreCorrectShowdown
         int minDistance = int.MaxValue;
         string closestSpecies = null;
 
-        foreach (var species in GameInfo.Strings.Species)
+        var gameStrings = GetGameStrings();
+        var pkms = gameStrings.specieslist.Select(s => new T { Species = (ushort)Array.IndexOf(gameStrings.specieslist, s) });
+        var sortedSpecies = pkms.OrderBySpeciesName(gameStrings.specieslist).Select(p => gameStrings.specieslist[p.Species]);
+
+        // Remove spaces from the user input
+        userSpecies = userSpecies.Replace(" ", "");
+
+        foreach (var species in sortedSpecies)
         {
             if (string.IsNullOrEmpty(species))
                 continue;
 
-            int distance = LevenshteinDistance(userSpecies.ToLower(), species.ToLower());
+            // Remove spaces from the species name
+            string speciesName = species.Replace(" ", "");
+
+            if (speciesName.Equals(userSpecies, StringComparison.OrdinalIgnoreCase))
+            {
+                return species;
+            }
+
+            int distance = LevenshteinDistance(userSpecies.ToLowerInvariant(), speciesName.ToLowerInvariant());
+
             if (distance < minDistance)
             {
                 minDistance = distance;
@@ -110,6 +104,28 @@ public static class PreCorrectShowdown
         }
 
         return minDistance <= 2 ? closestSpecies : null;
+    }
+
+    private static GameStrings GetGameStrings()
+    {
+        if (typeof(T) == typeof(PK8))
+            return GameInfo.GetStrings(GetLanguageIndex(GameVersion.SWSH));
+        if (typeof(T) == typeof(PB8))
+            return GameInfo.GetStrings(GetLanguageIndex(GameVersion.BDSP));
+        if (typeof(T) == typeof(PA8))
+            return GameInfo.GetStrings(GetLanguageIndex(GameVersion.PLA));
+        if (typeof(T) == typeof(PK9))
+            return GameInfo.GetStrings(GetLanguageIndex(GameVersion.SV));
+        if (typeof(T) == typeof(PB7))
+            return GameInfo.GetStrings(GetLanguageIndex(GameVersion.GE));
+
+        throw new ArgumentException("Type does not have recognized game strings.", typeof(T).Name);
+    }
+
+    private static int GetLanguageIndex(GameVersion version)
+    {
+        var language = GameLanguage.DefaultLanguage;
+        return GameLanguage.GetLanguageIndex(language);
     }
 
     public static int LevenshteinDistance(string s, string t)

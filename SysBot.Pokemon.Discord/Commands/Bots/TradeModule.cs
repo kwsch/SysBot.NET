@@ -571,6 +571,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public async Task TradeAsync([Summary("Trade Code")] int code, [Summary("Showdown Set")][Remainder] string content)
     {
         List<Pictocodes>? lgcode = null;
+
         // Check if the user is already in the queue
         var userID = Context.User.Id;
         if (Info.IsUserInQueue(userID))
@@ -579,12 +580,17 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
 
-        // Spellcheck and correct if species name is invalid, then continue to parse showdown set.
-        string correctedContent = PreCorrectShowdown.PerformSpellCheck(content);
+        string correctedContent = content;
+
+        // Perform spell check if it's enabled
+        if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.SpellCheck)
+        {
+            correctedContent = PreCorrectShowdown<T>.PerformSpellCheck(content);
+        }
 
         correctedContent = ReusableActions.StripCodeBlock(correctedContent);
-        var ignoreAutoOT = content.Contains("OT:") || content.Contains("TID:") || content.Contains("SID:");
 
+        var ignoreAutoOT = content.Contains("OT:") || content.Contains("TID:") || content.Contains("SID:");
         var set = new ShowdownSet(correctedContent);
         var template = AutoLegalityWrapper.GetTemplate(set);
         int formArgument = ExtractFormArgument(content);
