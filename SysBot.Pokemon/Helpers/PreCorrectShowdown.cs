@@ -1,5 +1,6 @@
 using PKHeX.Core;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -13,27 +14,21 @@ public static class PreCorrectShowdown<T> where T : PKM, new()
         StringBuilder correctedContent = new StringBuilder();
 
         string speciesName = string.Empty;
+        string formName = string.Empty;
 
-        // Parse the species name from the first line
+        // Parse the species name and form name from the first line
         if (lines.Length > 0)
         {
             string firstLine = lines[0].Trim();
-
-            // Check if the species name is wrapped in parentheses (nicknamed)
-            int startIndex = firstLine.IndexOf('(') + 1;
-            int endIndex = firstLine.IndexOf(')');
-            if (startIndex > 0 && endIndex > startIndex)
-            {
-                speciesName = firstLine.Substring(startIndex, endIndex - startIndex).Trim();
-            }
-            else
-            {
-                // Split the first line by space and take all parts as the species name
-                speciesName = string.Join("", firstLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
-            }
+            string[] parts = firstLine.Split('-');
+            speciesName = parts[0].Trim();
+            formName = parts.Length > 1 ? parts[1].Trim() : string.Empty;
         }
 
+        var gameStrings = GetGameStrings();
         string correctedSpeciesName = GetClosestSpecies(speciesName);
+        ushort speciesIndex = (ushort)Array.IndexOf(gameStrings.specieslist, correctedSpeciesName);
+        string correctedFormName = GetClosestFormName(formName, speciesIndex, gameStrings);
 
         if (!string.IsNullOrEmpty(correctedSpeciesName) && !string.Equals(speciesName, correctedSpeciesName, StringComparison.OrdinalIgnoreCase))
         {
@@ -41,19 +36,15 @@ public static class PreCorrectShowdown<T> where T : PKM, new()
             {
                 if (i == 0)
                 {
-                    // Replace the species name in the first line
-                    string firstLine = lines[0];
-                    int startIndex = firstLine.IndexOf('(') + 1;
-                    int endIndex = firstLine.IndexOf(')');
-                    if (startIndex > 0 && endIndex > startIndex)
+                    // Replace the species name and form name in the first line
+                    if (!string.IsNullOrEmpty(correctedFormName) && !string.Equals(formName, correctedFormName, StringComparison.OrdinalIgnoreCase))
                     {
-                        firstLine = firstLine.Substring(0, startIndex) + correctedSpeciesName + firstLine.Substring(endIndex + 1);
+                        correctedContent.AppendLine($"{correctedSpeciesName}-{correctedFormName}");
                     }
                     else
                     {
-                        firstLine = correctedSpeciesName;
+                        correctedContent.AppendLine($"{correctedSpeciesName}{(string.IsNullOrEmpty(formName) ? string.Empty : $"-{formName}")}");
                     }
-                    correctedContent.AppendLine(firstLine);
                 }
                 else
                 {
@@ -67,6 +58,57 @@ public static class PreCorrectShowdown<T> where T : PKM, new()
         }
 
         return correctedContent.ToString();
+    }
+
+    private static string GetClosestFormName(string userFormName, ushort speciesIndex, GameStrings gameStrings)
+    {
+        int minDistance = int.MaxValue;
+        string closestFormName = null;
+
+        var validFormNames = FormConverter.GetFormList((ushort)speciesIndex, gameStrings.types, gameStrings.forms, new List<string>(), EntityContext.Gen9);
+
+        var userFormParts = userFormName.Split('-');
+
+        foreach (var formName in validFormNames)
+        {
+            if (string.IsNullOrEmpty(formName))
+                continue;
+
+            int distance = CalculateFormDistance(userFormName, formName, speciesIndex);
+
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closestFormName = formName;
+            }
+            else if (distance == minDistance)
+            {
+                // If the distances are equal, keep the longest form name
+                if (formName.Length > closestFormName.Length)
+                {
+                    closestFormName = formName;
+                }
+            }
+        }
+
+        return minDistance <= 2 ? closestFormName : null;
+    }
+
+    private static int CalculateFormDistance(string userFormName, string formName, ushort speciesIndex)
+    {
+        int distance;
+        string showdownFormName = ShowdownParsing.GetShowdownFormName(speciesIndex, formName);
+        distance = LevenshteinDistance(userFormName.ToLowerInvariant(), showdownFormName.ToLowerInvariant());
+
+        // Special case for multi-part form names
+        if (distance > 2 && formName.Contains('-'))
+        {
+            string[] formParts = formName.Split('-');
+            string reconstructedFormName = string.Join("", formParts.Select((part, index) => index == 0 ? part : $"-{part}"));
+            distance = LevenshteinDistance(userFormName.ToLowerInvariant(), reconstructedFormName.ToLowerInvariant());
+        }
+
+        return distance;
     }
 
     private static string GetClosestSpecies(string userSpecies)
@@ -129,6 +171,35 @@ public static class PreCorrectShowdown<T> where T : PKM, new()
     }
 
     public static int LevenshteinDistance(string s, string t)
+    {
+        s = s.Replace("-", "");
+        t = t.Replace("-", "");
+
+        string[] sParts = s.Split(' ');
+        string[] tParts = t.Split(' ');
+
+        int distance = 0;
+
+        for (int i = 0; i < Math.Max(sParts.Length, tParts.Length); i++)
+        {
+            if (i >= sParts.Length)
+            {
+                distance += tParts[i].Length;
+            }
+            else if (i >= tParts.Length)
+            {
+                distance += sParts[i].Length;
+            }
+            else
+            {
+                distance += CalculateLevenshteinDistance(sParts[i], tParts[i]);
+            }
+        }
+
+        return distance;
+    }
+
+    private static int CalculateLevenshteinDistance(string s, string t)
     {
         int n = s.Length;
         int m = t.Length;
