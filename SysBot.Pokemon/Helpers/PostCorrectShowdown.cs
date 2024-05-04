@@ -19,7 +19,8 @@ public static class PostCorrectShowdown<T> where T : PKM, new()
         string formName = string.Empty;
         string abilityName = string.Empty;
         string natureName = string.Empty;
-        string ballName = string.Empty; 
+        string ballName = string.Empty;
+        string levelValue = string.Empty;
 
         // Parse the species name, form name, ability, nature, and ball from the lines
         foreach (string line in lines)
@@ -38,6 +39,10 @@ public static class PostCorrectShowdown<T> where T : PKM, new()
             {
                 ballName = trimmedLine["Ball:".Length..].Trim();
             }
+            else if (trimmedLine.StartsWith("Level:"))
+            {
+                levelValue = trimmedLine["Level:".Length..].Trim();
+            }
             else if (speciesName == string.Empty)
             {
                 string[] parts = trimmedLine.Split('-');
@@ -53,6 +58,8 @@ public static class PostCorrectShowdown<T> where T : PKM, new()
         string correctedAbilityName = GetClosestAbility(abilityName, speciesIndex, gameStrings, GetPersonalInfo(speciesIndex));
         string correctedNatureName = GetClosestNature(natureName, gameStrings);
         string correctedBallName = GetLegalBall(speciesIndex, correctedFormName, ballName, gameStrings, data);
+        var levelVerifier = new LevelVerifier();
+        levelVerifier.Verify(data);
 
         foreach (string line in lines)
         {
@@ -74,7 +81,13 @@ public static class PostCorrectShowdown<T> where T : PKM, new()
             {
                 correctedLine = $"Ball: {correctedBallName}";
             }
-
+            else if (line.StartsWith("Level:"))
+            {
+                if (!data.Valid)
+                    correctedLine = "Level: 99";
+                else
+                    correctedLine = $"Level: {levelValue}";
+            }
             correctedContent.AppendLine(correctedLine);
         }
 
