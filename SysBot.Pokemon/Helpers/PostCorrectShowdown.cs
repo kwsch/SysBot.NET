@@ -27,15 +27,15 @@ public static class PostCorrectShowdown<T> where T : PKM, new()
 
             if (trimmedLine.StartsWith("Ability:"))
             {
-                abilityName = trimmedLine.Substring("Ability:".Length).Trim();
+                abilityName = trimmedLine["Ability:".Length..].Trim();
             }
             else if (trimmedLine.StartsWith("Nature:"))
             {
-                natureName = trimmedLine.Substring("Nature:".Length).Trim();
+                natureName = trimmedLine["Nature:".Length..].Trim();
             }
             else if (trimmedLine.StartsWith("Ball:")) 
             {
-                ballName = trimmedLine.Substring("Ball:".Length).Trim();
+                ballName = trimmedLine["Ball:".Length..].Trim();
             }
             else if (speciesName == string.Empty)
             {

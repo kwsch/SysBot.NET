@@ -139,7 +139,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var sig = Context.User.GetFavor();
 
         await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, new T(), PokeRoutineType.FixOT, PokeTradeType.FixOT, Context.User, false, 1, 1, false, false, lgcode).ConfigureAwait(false);
-        _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
+        if (Context.Message is IUserMessage userMessage)
+        {
+            _ = DeleteMessagesAfterDelayAsync(userMessage, null, 2);
+        }
     }
 
     [Command("fixOT")]
@@ -162,7 +165,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var lgcode = Info.GetRandomLGTradeCode();
 
         await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, new T(), PokeRoutineType.FixOT, PokeTradeType.FixOT, Context.User, false, 1, 1, false, false, lgcode).ConfigureAwait(false);
-        _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
+        if (Context.Message is IUserMessage userMessage)
+        {
+            _ = DeleteMessagesAfterDelayAsync(userMessage, null, 2);
+        }
     }
 
     [Command("fixOTList")]
@@ -198,7 +204,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
         var code = Info.GetRandomTradeCode(userID);
         await DittoTrade(code, keyword, language, nature).ConfigureAwait(false);
-        _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
+        if (Context.Message is IUserMessage userMessage)
+        {
+            _ = DeleteMessagesAfterDelayAsync(userMessage, null, 2);
+        }
     }
 
     [Command("dittoTrade")]
@@ -246,7 +255,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         pk.ResetPartyStats();
         var sig = Context.User.GetFavor();
         await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, pk, PokeRoutineType.LinkTrade, PokeTradeType.Specific).ConfigureAwait(false);
-        _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
+        if (Context.Message is IUserMessage userMessage)
+        {
+            _ = DeleteMessagesAfterDelayAsync(userMessage, null, 2);
+        }
     }
 
     [Command("itemTrade")]
@@ -305,7 +317,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var sig = Context.User.GetFavor();
         await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, pk, PokeRoutineType.LinkTrade, PokeTradeType.Specific).ConfigureAwait(false);
 
-        _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
+        if (Context.Message is IUserMessage userMessage)
+        {
+            _ = DeleteMessagesAfterDelayAsync(userMessage, null, 2);
+        }
     }
 
     [Command("tradeList")]
@@ -379,6 +394,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         {
             LogUtil.LogSafe(ex, nameof(TradeModule<T>));
             _ = ReplyAndDeleteAsync("An error occurred while processing the request.", 2, Context.Message);
+        }
+        if (Context.Message is IUserMessage userMessage)
+        {
+            _ = DeleteMessagesAfterDelayAsync(userMessage, null, 2);
         }
     }
 
@@ -1142,7 +1161,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         }
         finally
         {
-            _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
+            if (Context.Message is IUserMessage userMessage)
+            {
+                _ = DeleteMessagesAfterDelayAsync(userMessage, null, 2);
+            }
         }
     }
 
@@ -1303,7 +1325,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         }
         finally
         {
-            _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
+            if (Context.Message is IUserMessage userMessage)
+            {
+                _ = DeleteMessagesAfterDelayAsync(userMessage, null, 2);
+            }
         }
     }
 
