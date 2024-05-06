@@ -48,7 +48,7 @@ public static class AutoLegalityWrapper
         // As of February 2024, the default setting in PKHeX is Invalid for missing HOME trackers.
         // If the host wants to allow missing HOME trackers, we need to override the default setting.
 
-        if (!cfg.EnableHOMETrackerCheck && cfg.DisallowTracked)
+        if (!cfg.EnableHOMETrackerCheck && !cfg.DisallowTracked)
         {
             ParseSettings.Settings.HOMETransfer.HOMETransferTrackerNotPresent = Severity.Fishy;
         }
