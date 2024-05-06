@@ -50,8 +50,8 @@ public static class AutoLegalityWrapper
         APILegality.AllowHOMETransferGeneration = allowMissingHOME;
         if (!allowMissingHOME)
         {
-            var prop = typeof(ParseSettings).GetProperty(nameof(ParseSettings.HOMETransferTrackerNotPresent));
-            prop?.SetValue(null, Severity.Invalid);
+          /*  var prop = typeof(ParseSettings).GetProperty(nameof(ParseSettings.HOMETransferTrackerNotPresent));
+            prop?.SetValue(null, Severity.Invalid); */
         }
 
     // We need all the encounter types present, so add the missing ones at the end.

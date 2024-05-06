@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using PKHeX.Core;
 using SysBot.Pokemon;
 using SysBot.Pokemon.Helpers;
@@ -9,7 +9,7 @@ namespace SysBot.Tests
 {
     public class TranslatorTests
     {
-        static TranslatorTests() => AutoLegalityWrapper.EnsureInitialized(new LegalitySettings());
+        static TranslatorTests() => AutoLegalityWrapper.EnsureInitialized(new Pokemon.LegalitySettings());
 
         [Theory]
         [InlineData("公肯泰罗携带大师球6V异色努力值252生命全招式异国-泰山压顶", "Tauros (M) @ Master Ball\nShiny: Yes\nIVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe\nEVs: 252 HP \n.RelearnMoves=$suggestAll\nLanguage: Italian\n-Body Slam")]
