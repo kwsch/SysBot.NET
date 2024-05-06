@@ -445,6 +445,56 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         {
             var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
             var pkm = sav.GetLegal(template, out var result);
+            var la = new LegalityAnalysis(pkm);
+            var spec = GameInfo.Strings.Species[template.Species];
+
+            if (pkm is not T pk || !la.Valid)
+            {
+                // Perform auto correct if it's on and send that shit through again
+                if (SysCord<T>.Runner.Config.Trade.AutoCorrectConfig.EnableAutoCorrect)
+                {
+                    var correctedContent = AutoCorrectShowdown<T>.PerformAutoCorrect(content, pkm, la);
+                    set = new ShowdownSet(correctedContent);
+                    template = AutoLegalityWrapper.GetTemplate(set);
+                    pkm = sav.GetLegal(template, out result);
+                    la = new LegalityAnalysis(pkm);
+                }
+
+                if (pkm is not T correctedPk || !la.Valid)
+                {
+                    var reason = result == "Timeout" ? $"That {spec} set took too long to generate." :
+                                 result == "VersionMismatch" ? "Request refused: PKHeX and Auto-Legality Mod version mismatch." :
+                                 $"I wasn't able to create a {spec} from that set.";
+
+                    var embedBuilder = new EmbedBuilder()
+                        .WithTitle("Trade Creation Failed.")
+                        .WithColor(Color.Red)
+                        .AddField("Status", $"Failed to create {spec}.")
+                        .AddField("Reason", reason);
+
+                    if (result == "Failed")
+                    {
+                        var legalizationHint = AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm);
+                        if (legalizationHint.Contains("Requested shiny value (ShinyType."))
+                        {
+                            legalizationHint = $"{spec} **cannot** be shiny. Please try again.";
+                        }
+
+                        if (!string.IsNullOrEmpty(legalizationHint))
+                        {
+                            embedBuilder.AddField("Hint", legalizationHint);
+                        }
+                    }
+
+                    string userMention = Context.User.Mention;
+                    string messageContent = $"{userMention}, here's the report for your request:";
+                    var message = await Context.Channel.SendMessageAsync(text: messageContent, embed: embedBuilder.Build()).ConfigureAwait(false);
+                    _ = DeleteMessagesAfterDelayAsync(message, Context.Message, 30);
+                    return;
+                }
+
+                pk = correctedPk;
+            }
 
             if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.SuggestRelearnMoves)
             {
@@ -489,40 +539,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                         return;
                     }
                 }
-            }
-            var la = new LegalityAnalysis(pkm);
-            var spec = GameInfo.Strings.Species[template.Species];
-            pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
-
-            if (pkm is not T pk || !la.Valid)
-            {
-                var reason = result == "Timeout" ? $"That {spec} set took too long to generate." :
-                             result == "VersionMismatch" ? "Request refused: PKHeX and Auto-Legality Mod version mismatch." :
-                             $"I wasn't able to create a {spec} from that set.";
-
-                var embedBuilder = new EmbedBuilder()
-                    .WithTitle("Trade Creation Failed.")
-                    .WithColor(Color.Red)
-                    .AddField("Status", $"Failed to create {spec}.")
-                    .AddField("Reason", reason);
-
-                if (result == "Failed")
-                {
-                    var hint = AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm);
-                    if (hint.Contains("Requested shiny value (ShinyType."))
-                    {
-                        hint = $"{spec} **cannot** be shiny. Please try again.";
-                    }
-                    embedBuilder.AddField("Hint", hint);
-                }
-
-                string userMention = Context.User.Mention;
-                string messageContent = $"{userMention}, here's the report for your request:";
-
-                var message = await Context.Channel.SendMessageAsync(text: messageContent, embed: embedBuilder.Build()).ConfigureAwait(false);
-                _ = DeleteMessagesAfterDelayAsync(message, Context.Message, 10);
-
-                return;
             }
 
             pk.ResetPartyStats();
@@ -617,12 +633,12 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
 
-            if (pkm is not T pk || !la.Valid)
+            if (pkm is not T pk || !la.Valid || !string.IsNullOrEmpty(set.Form.ToString()))
             {
-                // Perform spellcheck / other legality corrections if SpellCheck is enabled
-                if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.SpellCheck)
+                // Perform auto correct if it's on and send that shit through again
+                if (SysCord<T>.Runner.Config.Trade.AutoCorrectConfig.EnableAutoCorrect)
                 {
-                    var correctedContent = PostCorrectShowdown<T>.PerformSpellCheck(content, la);
+                    var correctedContent = AutoCorrectShowdown<T>.PerformAutoCorrect(content, pkm, la);
                     set = new ShowdownSet(correctedContent);
                     template = AutoLegalityWrapper.GetTemplate(set);
                     pkm = sav.GetLegal(template, out result);

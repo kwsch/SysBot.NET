@@ -12,6 +12,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     private const string CountStats = nameof(CountStats);
     private const string HOMELegality = nameof(HOMELegality);
     private const string TradeConfig = nameof(TradeConfig);
+    private const string AutoCorrectShowdownConfig = nameof(AutoCorrectShowdownConfig);
     private const string VGCPastesConfig = nameof(VGCPastesConfig);
     private const string Miscellaneous = nameof(Miscellaneous);
     private const string RequestFolders = nameof(RequestFolders);
@@ -35,6 +36,9 @@ public class TradeSettings : IBotStateSettings, ICountSettings
 
     [Category(VGCPastesConfig), Description("Settings related to VGCPastes Configuration."), DisplayName("VGC Pastes Configuration"), Browsable(true)]
     public VGCPastesCategory VGCPastesConfiguration { get; set; } = new();
+
+    [Category(AutoCorrectShowdownConfig), Description("Settings related to Auto Correcting Showdown Sets."), DisplayName("Auto Correct Showdown Settings"), Browsable(true)]
+    public AutoCorrectShowdownCategory AutoCorrectConfig { get; set; } = new();
 
     [Category(EmbedSettings), Description("Settings related to the Trade Embed in Discord."), DisplayName("Trade Embed Settings"), Browsable(true)]
     public TradeEmbedSettingsCategory TradeEmbedSettings { get; set; } = new();
@@ -78,9 +82,6 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         [Category(TradeConfig), Description("If set to True, each valid Pokemon will come with all suggested Relearnable Moves without the need for a batch command."), DisplayName("Suggest Relearnable Moves by Default")]
         public bool SuggestRelearnMoves { get; set; } = true;
 
-        [Category(TradeConfig), Description("If set to True, each showdown set will go through a spell check first to make sure species name is correct."), DisplayName("Enable SpellCheck?")]
-        public bool SpellCheck { get; set; } = true;
-
         [Category(TradeConfig), Description("Toggle to allow or disallow batch trades."), DisplayName("Allow Batch Trades")]
         public bool AllowBatchTrades { get; set; } = true;
 
@@ -116,6 +117,39 @@ public class TradeSettings : IBotStateSettings, ICountSettings
             ppMax = 53,
             FreshStartMochi = 2479,
         }
+    }
+
+    [Category(nameof(AutoCorrectShowdownConfig)), TypeConverter(typeof(CategoryConverter<AutoCorrectShowdownCategory>))]
+    public class AutoCorrectShowdownCategory
+    {
+        public override string ToString() => "Auto Correct Showdown Settings";
+
+        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, each failed showdown set will go through auto correction."), DisplayName("Enable Auto Correct")]
+        public bool EnableAutoCorrect { get; set; } = true;
+
+        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong species and form."), DisplayName("Auto Correct Species and Form")]
+        public bool AutoCorrectSpeciesAndForm { get; set; } = true;
+
+        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong held item."), DisplayName("Auto Correct Held Item")]
+        public bool AutoCorrectHeldItem { get; set; } = true;
+
+        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong nature."), DisplayName("Auto Correct Nature")]
+        public bool AutoCorrectNature { get; set; } = true;
+
+        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong ability."), DisplayName("Auto Correct Ability")]
+        public bool AutoCorrectAbility { get; set; } = true;
+
+        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong level."), DisplayName("Auto Correct Level")]
+        public bool AutoCorrectLevel { get; set; } = true;
+
+        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong moves and learnset."), DisplayName("Auto Correct Moves/Learnset")]
+        public bool AutoCorrectMovesLearnset { get; set; } = true;
+
+        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong EVs."), DisplayName("Auto Correct EVs")]
+        public bool AutoCorrectEVs { get; set; } = true;
+
+        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong IVs."), DisplayName("Auto Correct IVs")]
+        public bool AutoCorrectIVs { get; set; } = true;
     }
 
     [Category(EmbedSettings), TypeConverter(typeof(CategoryConverter<TradeEmbedSettingsCategory>))]
