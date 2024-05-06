@@ -43,9 +43,6 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     [Category(EmbedSettings), Description("Settings related to the Trade Embed in Discord."), DisplayName("Trade Embed Settings"), Browsable(true)]
     public TradeEmbedSettingsCategory TradeEmbedSettings { get; set; } = new();
 
-    [Category(HOMELegality), Description("Settings related to HOME Legality."), DisplayName("HOME Legality Settings"), Browsable(true)]
-    public HOMELegalitySettingsCategory HomeLegalitySettings { get; set; } = new();
-
     [Category(RequestFolders), Description("Settings related to Request Folders."), DisplayName("Request Folder Settings"), Browsable(true)]
     public RequestFolderSettingsCategory RequestFolderSettings { get; set; } = new();
 
@@ -293,18 +290,6 @@ public class TradeSettings : IBotStateSettings, ICountSettings
 
         [Category(VGCPastesConfig), Description("GID of Spreadsheet tab you would like to pull from. Hint: https://docs.google.com/spreadsheets/d/ID/gid=1837599752"), DisplayName("GID of Spreadsheet Tab")]
         public int GID { get; set; } = 1837599752; // Reg F Tab
-    }
-
-    [Category(HOMELegality), TypeConverter(typeof(CategoryConverter<HOMELegalitySettingsCategory>))]
-    public class HOMELegalitySettingsCategory
-    {
-        public override string ToString() => "HOME Legality Settings";
-
-        [Category(HOMELegality), Description("Prevents trading Pokémon that require a HOME Tracker, even if the file has one already."), DisplayName("Disallow Non-Native Pokémon")]
-        public bool DisallowNonNatives { get; set; } = false;
-
-        [Category(HOMELegality), Description("Prevents trading Pokémon that already have a HOME Tracker."), DisplayName("Disallow Home Tracked Pokémon")]
-        public bool DisallowTracked { get; set; } = false;
     }
 
     [Category(RequestFolders), TypeConverter(typeof(CategoryConverter<RequestFolderSettingsCategory>))]

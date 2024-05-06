@@ -47,11 +47,14 @@ public static class AutoLegalityWrapper
         ParseSettings.Settings.Nickname.Nickname12 = ParseSettings.Settings.Nickname.Nickname3 = ParseSettings.Settings.Nickname.Nickname4 = ParseSettings.Settings.Nickname.Nickname5 = ParseSettings.Settings.Nickname.Nickname6 = ParseSettings.Settings.Nickname.Nickname7 = ParseSettings.Settings.Nickname.Nickname7b = ParseSettings.Settings.Nickname.Nickname8 = ParseSettings.Settings.Nickname.Nickname8a = ParseSettings.Settings.Nickname.Nickname8b = ParseSettings.Settings.Nickname.Nickname9 = new NicknameRestriction() { NicknamedTrade = Severity.Fishy, NicknamedMysteryGift = Severity.Fishy };
         // As of February 2024, the default setting in PKHeX is Invalid for missing HOME trackers.
         // If the host wants to allow missing HOME trackers, we need to override the default setting.
-        bool allowMissingHOME = !cfg.EnableHOMETrackerCheck;
-        APILegality.AllowHOMETransferGeneration = allowMissingHOME;
-        if (!allowMissingHOME)
+
+        if (!cfg.EnableHOMETrackerCheck && cfg.DisallowTracked)
         {
-            ParseSettings.Settings.HOMETransfer.HOMETransferTrackerNotPresent = allowMissingHOME ? Severity.Fishy : Severity.Invalid;
+            ParseSettings.Settings.HOMETransfer.HOMETransferTrackerNotPresent = Severity.Fishy;
+        }
+        else
+        {
+            ParseSettings.Settings.HOMETransfer.HOMETransferTrackerNotPresent = Severity.Invalid;
         }
 
         // We need all the encounter types present, so add the missing ones at the end.
