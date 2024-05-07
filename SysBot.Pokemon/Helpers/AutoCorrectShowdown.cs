@@ -58,7 +58,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         gender = ValidateGender(pk, gender, speciesName);
 
         if (autoCorrectConfig.AutoCorrectMovesLearnset)
-            ValidateMoves(lines, pk, la, gameStrings, correctedSpeciesName, correctedFormName);
+            ValidateMoves(lines, pk, la, gameStrings);
 
         if (!ValidateIVs(pk, la, lines) && autoCorrectConfig.AutoCorrectIVs)
             RemoveIVLine(lines);
@@ -271,21 +271,30 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         return fuzzyItem.Distance >= 80 ? fuzzyItem.Item : null;
     }
 
-    private static void ValidateMoves(string[] lines, PKM pk, LegalityAnalysis la, GameStrings gameStrings, string speciesName, string formName)
+    private static void ValidateMoves(string[] lines, PKM pk, LegalityAnalysis la, GameStrings gameStrings)
     {
         var moveLines = lines.Where(line => line.StartsWith($"- ")).ToArray();
-        var correctedMoveLines = new List<string>(); // Create a list to store corrected move lines
+        var correctedMoveLines = new List<string>();
 
-        var validMoves = GetValidMoves(pk, gameStrings, speciesName, formName);
+        Span<ushort> validMoves = stackalloc ushort[4];
+        pk.GetMoveSet(validMoves, false);
 
         foreach (var moveLine in moveLines)
         {
             var moveName = moveLine[2..].Trim();
-            var correctedMoveName = GetClosestMove(moveName, validMoves);
+            var move = Array.FindIndex(gameStrings.movelist, m => string.Equals(m, moveName, StringComparison.OrdinalIgnoreCase));
 
-            if (!string.IsNullOrEmpty(correctedMoveName) && !correctedMoveLines.Contains($"- {correctedMoveName}"))
+            if (move != -1 && validMoves.Contains((ushort)move))
             {
-                correctedMoveLines.Add($"- {correctedMoveName}");
+                correctedMoveLines.Add(moveLine);
+            }
+            else
+            {
+                var correctedMove = GetClosestMove(moveName, validMoves, gameStrings);
+                if (correctedMove != 0 && !correctedMoveLines.Contains($"- {gameStrings.movelist[correctedMove]}"))
+                {
+                    correctedMoveLines.Add($"- {gameStrings.movelist[correctedMove]}");
+                }
             }
         }
 
@@ -296,7 +305,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             if (i < correctedMoveLines.Count)
             {
                 lines[Array.IndexOf(lines, moveLine)] = correctedMoveLines[i];
-                LogUtil.LogInfo(correctedMoveLines[i], nameof(AutoCorrectShowdown<T>));
+               // LogUtil.LogInfo(correctedMoveLines[i], nameof(AutoCorrectShowdown<T>));
             }
             else
             {
@@ -305,199 +314,14 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         }
     }
 
-    private static string[] GetValidMoves(PKM pk, GameStrings gameStrings, string speciesName, string formName)
+    private static ushort GetClosestMove(string moveName, Span<ushort> validMoves, GameStrings gameStrings)
     {
-        var speciesIndex = Array.IndexOf(gameStrings.specieslist, speciesName);
-        var form = pk.Form;
-
-        var learnSource = GetLearnSource(pk);
-        var validMoves = new List<string>();
-
-        if (learnSource is LearnSource9SV learnSource9SV)
-        {
-            if (learnSource9SV.TryGetPersonal((ushort)speciesIndex, form, out var personalInfo))
-            {
-                var evo = new EvoCriteria
-                {
-                    Species = (ushort)speciesIndex,
-                    Form = form,
-                    LevelMax = 100,
-                };
-
-                // Level-up moves
-                var learnset = learnSource9SV.GetLearnset((ushort)speciesIndex, form);
-                validMoves.AddRange(learnset.GetMoveRange(evo.LevelMax).ToArray()
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // Egg moves
-                var eggMoves = learnSource9SV.GetEggMoves((ushort)speciesIndex, form).ToArray();
-                validMoves.AddRange(eggMoves
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // Reminder moves
-                var reminderMoves = learnSource9SV.GetReminderMoves((ushort)speciesIndex, form).ToArray();
-                validMoves.AddRange(reminderMoves
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // TM moves
-                var tmMoves = personalInfo.RecordPermitIndexes.ToArray();
-                validMoves.AddRange(tmMoves
-                    .Where(m => personalInfo.GetIsLearnTM(Array.IndexOf(tmMoves, m)))
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-            }
-        }
-        else if (learnSource is LearnSource8BDSP learnSource8BDSP)
-        {
-            if (learnSource8BDSP.TryGetPersonal((ushort)speciesIndex, form, out var personalInfo))
-            {
-                var evo = new EvoCriteria
-                {
-                    Species = (ushort)speciesIndex,
-                    Form = form,
-                    LevelMax = 100,
-                };
-
-                // Level-up moves
-                var learnset = learnSource8BDSP.GetLearnset((ushort)speciesIndex, form);
-                validMoves.AddRange(learnset.GetMoveRange(evo.LevelMax).ToArray()
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // Egg moves
-                var eggMoves = learnSource8BDSP.GetEggMoves((ushort)speciesIndex, form).ToArray();
-                validMoves.AddRange(eggMoves
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // TM moves
-                var tmMoves = LearnSource8BDSP.TMHM_BDSP.ToArray();
-                validMoves.AddRange(tmMoves
-                    .Where(m => personalInfo.GetIsLearnTM(Array.IndexOf(tmMoves, m)))
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-            }
-        }
-        else if (learnSource is LearnSource8LA learnSource8LA)
-        {
-            if (learnSource8LA.TryGetPersonal((ushort)speciesIndex, form, out var personalInfo))
-            {
-                var evo = new EvoCriteria
-                {
-                    Species = (ushort)speciesIndex,
-                    Form = form,
-                    LevelMax = 100,
-                };
-
-                // Level-up moves
-                var learnset = learnSource8LA.GetLearnset((ushort)speciesIndex, form);
-                validMoves.AddRange(learnset.GetMoveRange(evo.LevelMax).ToArray()
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // Move shop (TM) moves
-                var tmMoves = personalInfo.RecordPermitIndexes.ToArray();
-                validMoves.AddRange(tmMoves
-                    .Where(m => personalInfo.GetIsLearnMoveShop(m))
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-            }
-        }
-        else if (learnSource is LearnSource8SWSH learnSource8SWSH)
-        {
-            if (learnSource8SWSH.TryGetPersonal((ushort)speciesIndex, form, out var personalInfo))
-            {
-                var evo = new EvoCriteria
-                {
-                    Species = (ushort)speciesIndex,
-                    Form = form,
-                    LevelMax = 100,
-                };
-
-                // Level-up moves
-                var learnset = learnSource8SWSH.GetLearnset((ushort)speciesIndex, form);
-                validMoves.AddRange(learnset.GetMoveRange(evo.LevelMax).ToArray()
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // Egg moves
-                var eggMoves = learnSource8SWSH.GetEggMoves((ushort)speciesIndex, form).ToArray();
-                validMoves.AddRange(eggMoves
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // TR moves
-                var trMoves = personalInfo.RecordPermitIndexes.ToArray();
-                validMoves.AddRange(trMoves
-                    .Where(m => personalInfo.GetIsLearnTR(Array.IndexOf(trMoves, m)))
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-            }
-        }
-        else if (learnSource is LearnSource7GG learnSource7GG)
-        {
-            if (learnSource7GG.TryGetPersonal((ushort)speciesIndex, form, out var personalInfo))
-            {
-                var evo = new EvoCriteria
-                {
-                    Species = (ushort)speciesIndex,
-                    Form = form,
-                    LevelMax = 100,
-                };
-
-                // Level-up moves (including Move Reminder)
-                var learnset = learnSource7GG.GetLearnset((ushort)speciesIndex, form);
-                validMoves.AddRange(learnset.GetMoveRange(100).ToArray() // 100 is the bonus for Move Reminder in LGPE
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // TM moves and special tutor moves
-                for (int move = 0; move < gameStrings.movelist.Length; move++)
-                {
-                    var learnInfo = learnSource7GG.GetCanLearn(pk, personalInfo, evo, (ushort)move);
-                    if (learnInfo.Method is TMHM or Tutor)
-                    {
-                        var moveName = gameStrings.movelist[move];
-                        if (!string.IsNullOrEmpty(moveName))
-                            validMoves.Add(moveName);
-                    }
-                }
-            }
-        }
-        return validMoves.Distinct().ToArray();
-    }
-
-    private static string GetClosestMove(string userMove, string[] validMoves)
-    {
-        // LogUtil.LogInfo($"User move: {userMove}", nameof(AutoCorrectShowdown<T>)); // Debug Stuff
-        // LogUtil.LogInfo($"Valid moves: {string.Join(", ", validMoves)}", nameof(AutoCorrectShowdown<T>)); // Debug Stuff
-
-        var fuzzyMove = validMoves
-            .Select(m => (Move: m, Distance: Fuzz.Ratio(userMove.ToLower(), m.ToLower())))
+        var closestMove = validMoves.ToArray()
+            .Select(m => (Move: m, Distance: Fuzz.Ratio(moveName.ToLower(), gameStrings.movelist[m].ToLower())))
             .OrderByDescending(m => m.Distance)
             .FirstOrDefault();
 
-        // LogUtil.LogInfo($"Closest move: {fuzzyMove.Move}, Distance: {fuzzyMove.Distance}", nameof(AutoCorrectShowdown<T>)); // Debug Stuff
-
-        return fuzzyMove.Move;
-    }
-
-    private static ILearnSource GetLearnSource(PKM pk)
-    {
-        if (pk is PK9)
-            return LearnSource9SV.Instance;
-        if (pk is PB8)
-            return LearnSource8BDSP.Instance;
-        if (pk is PA8)
-            return LearnSource8LA.Instance;
-        if (pk is PK8)
-            return LearnSource8SWSH.Instance;
-        if (pk is PB7)
-            return LearnSource7GG.Instance;
-        throw new ArgumentException("Unsupported PKM type.", nameof(pk));
+        return closestMove.Move;
     }
 
     private static string? GetClosestAbility(string userAbility, ushort speciesIndex, GameStrings gameStrings, IPersonalAbility12 personalInfo)
