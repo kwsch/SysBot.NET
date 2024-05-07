@@ -54,7 +54,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         var levelVerifier = new LevelVerifier();
         if (autoCorrectConfig.AutoCorrectLevel)
             levelVerifier.Verify(la);
-        if (autoCorrectConfig.AutoCorrectLevel)
+        if (autoCorrectConfig.AutoCorrectGender)
             gender = ValidateGender(pk, gender, speciesName);
 
         if (autoCorrectConfig.AutoCorrectMovesLearnset)

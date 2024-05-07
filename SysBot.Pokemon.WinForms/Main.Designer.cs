@@ -183,11 +183,11 @@ namespace SysBot.Pokemon.WinForms
             // Tab_Hub
             // 
             Tab_Hub.Controls.Add(PG_Hub);
-            Tab_Hub.Location = new Point(4, 38);
+            Tab_Hub.Location = new Point(4, 35);
             Tab_Hub.Margin = new Padding(5, 4, 5, 4);
             Tab_Hub.Name = "Tab_Hub";
             Tab_Hub.Padding = new Padding(5, 4, 5, 4);
-            Tab_Hub.Size = new Size(768, 393);
+            Tab_Hub.Size = new Size(768, 396);
             Tab_Hub.TabIndex = 2;
             Tab_Hub.Text = "Hub";
             Tab_Hub.UseVisualStyleBackColor = true;
@@ -201,15 +201,15 @@ namespace SysBot.Pokemon.WinForms
             PG_Hub.Margin = new Padding(4, 3, 4, 3);
             PG_Hub.Name = "PG_Hub";
             PG_Hub.PropertySort = PropertySort.Categorized;
-            PG_Hub.Size = new Size(758, 385);
+            PG_Hub.Size = new Size(758, 388);
             PG_Hub.TabIndex = 0;
             // 
             // Tab_Logs
             // 
             Tab_Logs.Controls.Add(RTB_Logs);
-            Tab_Logs.Location = new Point(4, 38);
+            Tab_Logs.Location = new Point(4, 35);
             Tab_Logs.Name = "Tab_Logs";
-            Tab_Logs.Size = new Size(768, 393);
+            Tab_Logs.Size = new Size(768, 396);
             Tab_Logs.TabIndex = 1;
             Tab_Logs.Text = "Logs";
             Tab_Logs.UseVisualStyleBackColor = true;
@@ -223,7 +223,7 @@ namespace SysBot.Pokemon.WinForms
             RTB_Logs.Margin = new Padding(5, 4, 5, 4);
             RTB_Logs.Name = "RTB_Logs";
             RTB_Logs.ReadOnly = true;
-            RTB_Logs.Size = new Size(768, 393);
+            RTB_Logs.Size = new Size(768, 396);
             RTB_Logs.TabIndex = 0;
             RTB_Logs.Text = "";
             // 

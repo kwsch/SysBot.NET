@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -96,43 +98,40 @@ namespace SysBot.Pokemon.WinForms
             string downloadUrl = await UpdateChecker.FetchDownloadUrlAsync();
             if (!string.IsNullOrWhiteSpace(downloadUrl))
             {
-                StartDownloadProcess(downloadUrl);
+                string downloadedFilePath = await StartDownloadProcessAsync(downloadUrl);
+                if (!string.IsNullOrEmpty(downloadedFilePath))
+                {
+                    // Close the application
+                    Application.Exit();
+
+                    // Start a new process to replace the executable and restart the application
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "cmd.exe",
+                        Arguments = $"/C timeout /t 1 & move /y \"{downloadedFilePath}\" \"{Application.ExecutablePath}\" & start \"\" \"{Application.ExecutablePath}\"",
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    });
+                }
             }
             else
             {
                 MessageBox.Show("Failed to fetch the download URL. Please check your internet connection and try again.", "Download Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            if (isUpdateRequired)
-            {
-                Application.Exit();
-            }
-            else
-            {
-                MessageBox.Show("An update is available. Please close this program and replace it with the one that just downloaded.", "Update Instructions", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
         }
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            base.OnFormClosing(e);
-            if (isUpdateRequired && e.CloseReason == CloseReason.UserClosing)
-            {
-                // Prevent the form from closing
-                e.Cancel = true;
-                MessageBox.Show("This update is required. Please download and install the new version to continue using the application.", "Update Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-        }
-
-        private static void StartDownloadProcess(string downloadUrl)
+        private static async Task<string> StartDownloadProcessAsync(string downloadUrl)
         {
             Main.IsUpdating = true;
-            // Start the download by opening the URL in the default web browser
-            Process.Start(new ProcessStartInfo
+            string downloadedFilePath = Path.Combine(Application.StartupPath, "SysBot.Pokemon.WinForms.exe");
+            using (var client = new HttpClient())
             {
-                FileName = downloadUrl,
-                UseShellExecute = true
-            });
+                var response = await client.GetAsync(downloadUrl);
+                response.EnsureSuccessStatusCode();
+                var fileBytes = await response.Content.ReadAsByteArrayAsync();
+                await File.WriteAllBytesAsync(downloadedFilePath, fileBytes);
+            }
+            return downloadedFilePath;
         }
     }
 }
