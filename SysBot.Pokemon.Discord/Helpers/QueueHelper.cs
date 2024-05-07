@@ -139,11 +139,7 @@ public static class QueueHelper<T> where T : PKM, new()
                     .WithName(embedData.AuthorName)
                     .WithIconUrl(trader.GetAvatarUrl() ?? trader.GetDefaultAvatarUrl())
                     .WithUrl("https://genpkm.com"));
-            if (setEdited)
-            {
-                embedBuilder.Footer.IconUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/setedited.png";
-                embedBuilder.AddField("Auto Corrected", "Original Showdown Set was invalid.");
-            }
+
             DetailsExtractor<T>.AddAdditionalText(embedBuilder);
 
             if (!isMysteryEgg && type != PokeRoutineType.Clone && type != PokeRoutineType.Dump && type != PokeRoutineType.FixOT && type != PokeRoutineType.SeedCheck)
@@ -153,6 +149,12 @@ public static class QueueHelper<T> where T : PKM, new()
             else
             {
                 DetailsExtractor<T>.AddSpecialTradeFields(embedBuilder, isMysteryEgg, type == PokeRoutineType.SeedCheck, type == PokeRoutineType.Clone, type == PokeRoutineType.FixOT, trader.Mention);
+            }
+
+            if (setEdited && Info.Hub.Config.Trade.AutoCorrectConfig.AutoCorrectEmbedIndicator)
+            {
+                embedBuilder.Footer.IconUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/setedited.png";
+                embedBuilder.AddField("__Your Showdown Set was Invalid__", "Auto Corrected to make legal.");
             }
 
             DetailsExtractor<T>.AddThumbnails(embedBuilder, type == PokeRoutineType.Clone, type == PokeRoutineType.SeedCheck, embedData.HeldItemUrl);
