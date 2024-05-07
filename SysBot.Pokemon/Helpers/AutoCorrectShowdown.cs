@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SysBot.Base;
-using static PKHeX.Core.BallUseLegality;
 using System.Text.RegularExpressions;
 
 namespace SysBot.Pokemon;
@@ -49,7 +48,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         var personalAbilityInfo = GetPersonalInfo(speciesIndex);
         string correctedAbilityName = autoCorrectConfig.AutoCorrectAbility ? GetClosestAbility(abilityName, speciesIndex, gameStrings, personalAbilityInfo) : abilityName;
         string correctedNatureName = autoCorrectConfig.AutoCorrectNature ? GetClosestNature(natureName, gameStrings) : natureName;
-        string correctedBallName = autoCorrectConfig.AutoCorrectBall ? GetLegalBall(speciesIndex, correctedFormName, ballName, gameStrings, la) : ballName;
+        string correctedBallName = autoCorrectConfig.AutoCorrectBall ? GetLegalBall(speciesIndex, correctedFormName, ballName, gameStrings, pk) : ballName;
 
         var levelVerifier = new LevelVerifier();
         if (autoCorrectConfig.AutoCorrectLevel)
@@ -494,29 +493,31 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         return fuzzyNature.Distance >= 80 ? fuzzyNature.Nature : null;
     }
 
-    private static string GetClosestBall(string userBall, GameStrings gameStrings, ulong legalBalls)
+    private static string GetLegalBall(ushort speciesIndex, string formName, string ballName, GameStrings gameStrings, PKM pk)
     {
-        var fuzzyBall = gameStrings.balllist
-            .Where(b => !string.IsNullOrWhiteSpace(b) && IsBallPermitted(legalBalls, (byte)Array.IndexOf(gameStrings.itemlist, b)))
+        var closestBall = GetClosestBall(ballName, gameStrings);
+
+        if (closestBall != null)
+        {
+            pk.Ball = (byte)Array.IndexOf(gameStrings.itemlist, closestBall);
+            if (new LegalityAnalysis(pk).Valid)
+                return closestBall;
+        }
+
+        var legalBall = BallApplicator.ApplyBallLegalByColor(pk);
+        return gameStrings.itemlist[legalBall];
+    }
+
+    private static string GetClosestBall(string userBall, GameStrings gameStrings)
+    {
+        var ballList = gameStrings.balllist.Where(b => !string.IsNullOrWhiteSpace(b)).ToArray();
+
+        var fuzzyBall = ballList
             .Select(b => (BallName: b, Distance: Fuzz.PartialRatio(userBall, b)))
             .OrderByDescending(b => b.Distance)
             .FirstOrDefault();
 
-        return fuzzyBall != default ? fuzzyBall.BallName : gameStrings.itemlist[(int)Ball.Poke];
-    }
-
-    private static string GetLegalBall(ushort speciesIndex, string formName, string ballName, GameStrings gameStrings, LegalityAnalysis la)
-    {
-        var ballVerifier = new BallVerifier();
-        ballVerifier.Verify(la);
-
-        if (la.Valid)
-            return ballName;
-
-        var legalBalls = GetWildBalls(la.Info.Generation, la.EncounterMatch.Version);
-        var closestBall = GetClosestBall(ballName, gameStrings, legalBalls);
-
-        return closestBall ?? gameStrings.itemlist[(int)Ball.Poke];
+        return fuzzyBall != default ? fuzzyBall.BallName : null;
     }
 
     private static GameStrings GetGameStrings()
