@@ -451,7 +451,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             if (pkm is not T pk || !la.Valid)
             {
                 // Perform auto correct if it's on and send that shit through again
-                if (SysCord<T>.Runner.Config.Trade.AutoCorrectConfig.EnableAutoCorrect)
+                if (SysCord<T>.Runner.Config.Trade.AutoCorrectConfig.EnableAutoCorrect && !la.Valid)
                 {
                     var correctedContent = AutoCorrectShowdown<T>.PerformAutoCorrect(content, pkm, la);
                     set = new ShowdownSet(correctedContent);
@@ -636,7 +636,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             if (pkm is not T pk || !la.Valid || !string.IsNullOrEmpty(set.Form.ToString()))
             {
                 // Perform auto correct if it's on and send that shit through again
-                if (SysCord<T>.Runner.Config.Trade.AutoCorrectConfig.EnableAutoCorrect)
+                if (SysCord<T>.Runner.Config.Trade.AutoCorrectConfig.EnableAutoCorrect && !la.Valid)
                 {
                     var correctedContent = AutoCorrectShowdown<T>.PerformAutoCorrect(content, pkm, la);
                     set = new ShowdownSet(correctedContent);
