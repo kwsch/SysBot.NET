@@ -49,7 +49,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         var personalAbilityInfo = GetPersonalInfo(speciesIndex);
         string correctedAbilityName = autoCorrectConfig.AutoCorrectAbility ? GetClosestAbility(abilityName, speciesIndex, gameStrings, personalAbilityInfo) : abilityName;
         string correctedNatureName = autoCorrectConfig.AutoCorrectNature ? GetClosestNature(natureName, gameStrings) : natureName;
-        string correctedBallName = GetLegalBall(speciesIndex, correctedFormName, ballName, gameStrings, la);
+        string correctedBallName = autoCorrectConfig.AutoCorrectBall ? GetLegalBall(speciesIndex, correctedFormName, ballName, gameStrings, la) : ballName;
 
         var levelVerifier = new LevelVerifier();
         if (autoCorrectConfig.AutoCorrectLevel)
