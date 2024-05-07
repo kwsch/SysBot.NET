@@ -12,6 +12,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static SysBot.Pokemon.TradeSettings.TradeSettingsCategory;
@@ -957,14 +958,11 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     private async Task ProcessSingleTradeAsync(string tradeContent, int batchTradeCode, bool isBatchTrade, int batchTradeNumber, int totalBatchTrades)
     {
-        // Strip any code block formatting and parse the Showdown set
         tradeContent = ReusableActions.StripCodeBlock(tradeContent);
         var set = new ShowdownSet(tradeContent);
         var ignoreAutoOT = tradeContent.Contains("OT:") || tradeContent.Contains("TID:") || tradeContent.Contains("SID:");
-        // Get the template for the Pokémon
         var template = AutoLegalityWrapper.GetTemplate(set);
 
-        // Handle invalid lines (if any)
         if (set.InvalidLines.Count != 0)
         {
             var msg = $"Unable to parse Showdown Set:\n{string.Join("\n", set.InvalidLines)}";
@@ -974,46 +972,115 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
         try
         {
-            // Get the trainer information and generate the Pokémon
             var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
             var pkm = sav.GetLegal(template, out var result);
-            if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.SuggestRelearnMoves)
-            {
-                if (pkm is ITechRecord tr)
-                    tr.SetRecordFlagsAll();
-            }
-            // Perform legality analysis
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
-            pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
-
-            if (pkm is not T pk || !la.Valid)
+            bool setEdited = false;
+            if (pkm is not T pk || !la.Valid || !string.IsNullOrEmpty(set.Form.ToString()))
             {
-                var reason = result switch
+                // Perform auto correct if it's on and send that shit through again
+                if (SysCord<T>.Runner.Config.Trade.AutoCorrectConfig.EnableAutoCorrect && !la.Valid)
                 {
-                    "Timeout" => $"That {spec} set took too long to generate.",
-                    "VersionMismatch" => "Request refused: PKHeX and Auto-Legality Mod version mismatch.",
-                    _ => $"I wasn't able to create a {spec} from that set."
-                };
+                    var correctedContent = AutoCorrectShowdown<T>.PerformAutoCorrect(tradeContent, pkm, la);
+                    set = new ShowdownSet(correctedContent);
+                    template = AutoLegalityWrapper.GetTemplate(set);
+                    pkm = sav.GetLegal(template, out result);
+                    la = new LegalityAnalysis(pkm);
+                    setEdited = true;
+                }
 
-                var imsg = $"Oops! {reason}";
-                if (result == "Failed")
-                    imsg += $"\n{AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm)}";
+                if (pkm is not T correctedPk || !la.Valid)
+                {
+                    var reason = result == "Timeout" ? $"That {spec} set took too long to generate." :
+                                 result == "VersionMismatch" ? "Request refused: PKHeX and Auto-Legality Mod version mismatch." :
+                                 $"I wasn't able to create a {spec} from that set.";
 
-                await ReplyAsync(imsg).ConfigureAwait(false);
-                return;
+                    var embedBuilder = new EmbedBuilder()
+                        .WithTitle("Trade Creation Failed.")
+                        .WithColor(Color.Red)
+                        .AddField("Status", $"Failed to create {spec}.")
+                        .AddField("Reason", reason);
+
+                    if (result == "Failed")
+                    {
+                        var legalizationHint = AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm);
+                        if (legalizationHint.Contains("Requested shiny value (ShinyType."))
+                        {
+                            legalizationHint = $"{spec} **cannot** be shiny. Please try again.";
+                        }
+
+                        if (!string.IsNullOrEmpty(legalizationHint))
+                        {
+                            embedBuilder.AddField("Hint", legalizationHint);
+                        }
+                    }
+
+                    string userMention = Context.User.Mention;
+                    string messageContent = $"{userMention}, here's the report for your request:";
+                    var message = await Context.Channel.SendMessageAsync(text: messageContent, embed: embedBuilder.Build()).ConfigureAwait(false);
+                    _ = DeleteMessagesAfterDelayAsync(message, Context.Message, 30);
+                    return;
+                }
+
+                pk = correctedPk;
             }
 
+            if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.SuggestRelearnMoves)
+            {
+                if (pkm is PK9 pk9)
+                {
+                    pk9.SetRecordFlagsAll();
+                }
+                else if (pkm is PK8 pk8)
+                {
+                    pk8.SetRecordFlagsAll();
+                }
+                else if (pkm is PB8 pb8)
+                {
+                    pb8.SetRecordFlagsAll();
+                }
+                else if (pkm is PB7 pb7)
+                {
+                    // not applicable for PB7 (LGPE)
+                }
+                else if (pkm is PA8 pa8)
+                {
+                    // not applicable for PA8 (Legends: Arceus)
+                }
+            }
+
+            if (pkm is PA8)
+            {
+                pkm.HeldItem = (int)HeldItem.None; // Set to None for "Legends: Arceus" Pokémon
+            }
+            else if (pkm.HeldItem == 0 && !pkm.IsEgg)
+            {
+                pkm.HeldItem = (int)SysCord<T>.Runner.Config.Trade.TradeConfiguration.DefaultHeldItem;
+            }
+
+            if (pkm is PB7)
+            {
+                if (pkm.Species == (int)Species.Mew)
+                {
+                    if (pkm.IsShiny)
+                    {
+                        await ReplyAsync("Mew can **not** be Shiny in LGPE. PoGo Mew does not transfer and Pokeball Plus Mew is shiny locked.");
+                        return;
+                    }
+                }
+            }
             pk.ResetPartyStats();
 
-            // Use a predefined or random trade code
             var userID = Context.User.Id;
             var code = Info.GetRandomTradeCode(userID);
             var lgcode = Info.GetRandomLGTradeCode();
-
-            // Add the trade to the queue
+            if (pkm is PB7)
+            {
+                lgcode = TradeModule<T>.GenerateRandomPictocodes(3);
+            }
             var sig = Context.User.GetFavor();
-            await AddTradeToQueueAsync(batchTradeCode, Context.User.Username, pk, sig, Context.User, isBatchTrade, batchTradeNumber, totalBatchTrades, lgcode: lgcode, tradeType: PokeTradeType.Batch, ignoreAutoOT: ignoreAutoOT).ConfigureAwait(false);
+            await AddTradeToQueueAsync(batchTradeCode, Context.User.Username, pk, sig, Context.User, isBatchTrade, batchTradeNumber, totalBatchTrades, lgcode: lgcode, tradeType: PokeTradeType.Batch, ignoreAutoOT: ignoreAutoOT, setEdited: setEdited).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
