@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SysBot.Base;
 using System.Text.RegularExpressions;
+using static PKHeX.Core.LearnMethod;
 
 namespace SysBot.Pokemon;
 
@@ -436,6 +437,36 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
                     .Where(m => !string.IsNullOrEmpty(m)));
             }
         }
+        else if (learnSource is LearnSource7GG learnSource7GG)
+        {
+            if (learnSource7GG.TryGetPersonal((ushort)speciesIndex, form, out var personalInfo))
+            {
+                var evo = new EvoCriteria
+                {
+                    Species = (ushort)speciesIndex,
+                    Form = form,
+                    LevelMax = 100,
+                };
+
+                // Level-up moves (including Move Reminder)
+                var learnset = learnSource7GG.GetLearnset((ushort)speciesIndex, form);
+                validMoves.AddRange(learnset.GetMoveRange(100).ToArray() // 100 is the bonus for Move Reminder in LGPE
+                    .Select(m => gameStrings.movelist[m])
+                    .Where(m => !string.IsNullOrEmpty(m)));
+
+                // TM moves and special tutor moves
+                for (int move = 0; move < gameStrings.movelist.Length; move++)
+                {
+                    var learnInfo = learnSource7GG.GetCanLearn(pk, personalInfo, evo, (ushort)move);
+                    if (learnInfo.Method is TMHM or Tutor)
+                    {
+                        var moveName = gameStrings.movelist[move];
+                        if (!string.IsNullOrEmpty(moveName))
+                            validMoves.Add(moveName);
+                    }
+                }
+            }
+        }
         return validMoves.Distinct().ToArray();
     }
 
@@ -464,7 +495,8 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             return LearnSource8LA.Instance;
         if (pk is PK8)
             return LearnSource8SWSH.Instance;
-
+        if (pk is PB7)
+            return LearnSource7GG.Instance;
         throw new ArgumentException("Unsupported PKM type.", nameof(pk));
     }
 
