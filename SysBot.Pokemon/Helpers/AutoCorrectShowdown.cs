@@ -70,6 +70,17 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 
         string[] correctedLines = lines.Select((line, i) => CorrectLine(line, i, speciesName, correctedSpeciesName, correctedFormName, gender, correctedHeldItem, correctedAbilityName, correctedNatureName, correctedBallName, levelValue, la, nickname)).ToArray();
 
+        if (autoCorrectConfig.AutoCorrectNickname)
+        {
+            var nicknameVerifier = new NicknameVerifier();
+            nicknameVerifier.Verify(la);
+            if (!la.Valid)
+            {
+                string fixedNickname = autoCorrectConfig.FixedNickname;
+                correctedLines[0] = CorrectLine(correctedLines[0], 0, speciesName, correctedSpeciesName, correctedFormName, gender, correctedHeldItem, correctedAbilityName, correctedNatureName, correctedBallName, levelValue, la, fixedNickname);
+            }
+        }
+
         string finalShowdownSet = string.Join(Environment.NewLine, correctedLines);
 
         LogUtil.LogInfo($"Final Showdown Set:\n{finalShowdownSet}", nameof(AutoCorrectShowdown<T>));
