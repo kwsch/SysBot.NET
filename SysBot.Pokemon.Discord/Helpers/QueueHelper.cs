@@ -46,7 +46,7 @@ public static class QueueHelper<T> where T : PKM, new()
                 }
                 else
                 {
-                    await trader.SendMessageAsync($"Your trade code will be: **{code:0000 0000}**.\nI will DM you when your trade is about to start.").ConfigureAwait(false);
+                    await EmbedHelper.SendTradeCodeEmbedAsync(trader, code).ConfigureAwait(false);
                 }
             }
 
