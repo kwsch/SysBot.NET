@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.Net;
 using Discord.WebSocket;
 using PKHeX.Core;
+using PKHeX.Core.AutoMod;
 using SysBot.Base;
 using SysBot.Pokemon.Helpers;
 using System;
@@ -449,7 +450,43 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
 
-            if (pkm is not T pk || !la.Valid)
+            if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.SuggestRelearnMoves)
+            {
+                switch (pkm)
+                {
+                    case PK9 pk9:
+                        pk9.SetRecordFlagsAll();
+                        break;
+                    case PK8 pk8:
+                        pk8.SetRecordFlagsAll();
+                        break;
+                    case PB8 pb8:
+                        pb8.SetRecordFlagsAll();
+                        break;
+                    case PB7 pb7:
+                    case PA8 pa8:
+                        break;
+                }
+            }
+
+            pkm.HeldItem = pkm switch
+            {
+                PA8 => (int)HeldItem.None,
+                _ when pkm.HeldItem == 0 && !pkm.IsEgg => (int)SysCord<T>.Runner.Config.Trade.TradeConfiguration.DefaultHeldItem,
+                _ => pkm.HeldItem
+            };
+
+            if (pkm is PB7)
+            {
+                lgcode = TradeModule<T>.GenerateRandomPictocodes(3);
+                if (pkm.Species == (int)Species.Mew && pkm.IsShiny)
+                {
+                    await ReplyAsync("Mew can **not** be Shiny in LGPE. PoGo Mew does not transfer and Pokeball Plus Mew is shiny locked.");
+                    return;
+                }
+            }
+            bool setEdited = false;
+            if (pkm is not T pk || !la.Valid || !string.IsNullOrEmpty(set.Form.ToString()))
             {
                 // Perform auto correct if it's on and send that shit through again
                 if (SysCord<T>.Runner.Config.Trade.AutoCorrectConfig.EnableAutoCorrect && !la.Valid)
@@ -459,6 +496,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                     template = AutoLegalityWrapper.GetTemplate(set);
                     pkm = sav.GetLegal(template, out result);
                     la = new LegalityAnalysis(pkm);
+                    setEdited = true;
                 }
 
                 if (pkm is not T correctedPk || !la.Valid)
@@ -493,64 +531,12 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                     _ = DeleteMessagesAfterDelayAsync(message, Context.Message, 30);
                     return;
                 }
-
                 pk = correctedPk;
             }
-
-            if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.SuggestRelearnMoves)
-            {
-                if (pkm is PK9 pk9)
-                {
-                    pk9.SetRecordFlagsAll();
-                }
-                else if (pkm is PK8 pk8)
-                {
-                    pk8.SetRecordFlagsAll();
-                }
-                else if (pkm is PB8 pb8)
-                {
-                    pb8.SetRecordFlagsAll();
-                }
-                else if (pkm is PB7 pb7)
-                {
-                    // not applicable for PB7 (LGPE)
-                }
-                else if (pkm is PA8 pa8)
-                {
-                    // not applicable for PA8 (Legends: Arceus)
-                }
-            }
-
-            if (pkm is PA8)
-            {
-                pkm.HeldItem = (int)HeldItem.None; // Set to None for "Legends: Arceus" Pokémon
-            }
-            else if (pkm.HeldItem == 0 && !pkm.IsEgg)
-            {
-                pkm.HeldItem = (int)SysCord<T>.Runner.Config.Trade.TradeConfiguration.DefaultHeldItem;
-            }
-
-            if (pkm is PB7)
-            {
-                if (pkm.Species == (int)Species.Mew)
-                {
-                    if (pkm.IsShiny)
-                    {
-                        await ReplyAsync("Mew can **not** be Shiny in LGPE. PoGo Mew does not transfer and Pokeball Plus Mew is shiny locked.");
-                        return;
-                    }
-                }
-            }
-
             pk.ResetPartyStats();
 
-            if (pkm is PB7)
-            {
-                lgcode = TradeModule<T>.GenerateRandomPictocodes(3);
-            }
-
             var sig = Context.User.GetFavor();
-            await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, isBatchTrade: false, batchTradeNumber: 1, totalBatchTrades: 1, true, false, lgcode: lgcode, ignoreAutoOT: ignoreAutoOT).ConfigureAwait(false);
+            await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, isBatchTrade: false, batchTradeNumber: 1, totalBatchTrades: 1, true, false, lgcode: lgcode, ignoreAutoOT: ignoreAutoOT, setEdited: setEdited).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -633,6 +619,41 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             var pkm = sav.GetLegal(template, out var result);
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
+            if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.SuggestRelearnMoves)
+            {
+                switch (pkm)
+                {
+                    case PK9 pk9:
+                        pk9.SetRecordFlagsAll();
+                        break;
+                    case PK8 pk8:
+                        pk8.SetRecordFlagsAll();
+                        break;
+                    case PB8 pb8:
+                        pb8.SetRecordFlagsAll();
+                        break;
+                    case PB7 pb7:
+                    case PA8 pa8:
+                        break;
+                }
+            }
+
+            pkm.HeldItem = pkm switch
+            {
+                PA8 => (int)HeldItem.None,
+                _ when pkm.HeldItem == 0 && !pkm.IsEgg => (int)SysCord<T>.Runner.Config.Trade.TradeConfiguration.DefaultHeldItem,
+                _ => pkm.HeldItem
+            };
+
+            if (pkm is PB7)
+            {
+                lgcode = TradeModule<T>.GenerateRandomPictocodes(3);
+                if (pkm.Species == (int)Species.Mew && pkm.IsShiny)
+                {
+                    await ReplyAsync("Mew can **not** be Shiny in LGPE. PoGo Mew does not transfer and Pokeball Plus Mew is shiny locked.");
+                    return;
+                }
+            }
             bool setEdited = false;
             if (pkm is not T pk || !la.Valid || !string.IsNullOrEmpty(set.Form.ToString()))
             {
@@ -679,60 +700,9 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                     _ = DeleteMessagesAfterDelayAsync(message, Context.Message, 30);
                     return;
                 }
-
                 pk = correctedPk;
             }
-
-            if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.SuggestRelearnMoves)
-            {
-                if (pkm is PK9 pk9)
-                {
-                    pk9.SetRecordFlagsAll();
-                }
-                else if (pkm is PK8 pk8)
-                {
-                    pk8.SetRecordFlagsAll();
-                }
-                else if (pkm is PB8 pb8)
-                {
-                    pb8.SetRecordFlagsAll();
-                }
-                else if (pkm is PB7 pb7)
-                {
-                    // not applicable for PB7 (LGPE)
-                }
-                else if (pkm is PA8 pa8)
-                {
-                    // not applicable for PA8 (Legends: Arceus)
-                }
-            }
-
-            if (pkm is PA8)
-            {
-                pkm.HeldItem = (int)HeldItem.None; // Set to None for "Legends: Arceus" Pokémon
-            }
-            else if (pkm.HeldItem == 0 && !pkm.IsEgg)
-            {
-                pkm.HeldItem = (int)SysCord<T>.Runner.Config.Trade.TradeConfiguration.DefaultHeldItem;
-            }
-
-            if (pkm is PB7)
-            {
-                if (pkm.Species == (int)Species.Mew)
-                {
-                    if (pkm.IsShiny)
-                    {
-                        await ReplyAsync("Mew can **not** be Shiny in LGPE. PoGo Mew does not transfer and Pokeball Plus Mew is shiny locked.");
-                        return;
-                    }
-                }
-            }
             pk.ResetPartyStats();
-
-            if (pkm is PB7)
-            {
-                lgcode = TradeModule<T>.GenerateRandomPictocodes(3);
-            }
 
             var sig = Context.User.GetFavor();
             await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, isBatchTrade: false, batchTradeNumber: 1, totalBatchTrades: 1, lgcode: lgcode, ignoreAutoOT: ignoreAutoOT, setEdited: setEdited).ConfigureAwait(false);

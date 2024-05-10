@@ -16,7 +16,6 @@ public class DetailsExtractor<T> where T : PKM, new()
         var embedData = new EmbedData
         {
             // Basic Pokémon details
-            IVs = pk.IVs,
             Moves = GetMoveNames(pk),
             Level = pk.CurrentLevel
         };
@@ -38,9 +37,34 @@ public class DetailsExtractor<T> where T : PKM, new()
         embedData.Ball = strings.balllist[pk.Ball];
 
         // Display elements
-        embedData.IVsDisplay = string.Join("/", embedData.IVs);
+        int[] ivs = pk.IVs;
+        string ivsDisplay;
+        if (ivs.All(iv => iv == 31))
+        {
+            ivsDisplay = "6IV";
+        }
+        else
+        {
+            ivsDisplay = string.Join("/", [
+                ivs[0].ToString(),
+                ivs[1].ToString(),
+                ivs[2].ToString(),
+                ivs[4].ToString(),
+                ivs[5].ToString(),
+                ivs[3].ToString()
+            ]);
+        }
+        embedData.IVsDisplay = ivsDisplay;
+
         int[] evs = GetEVs(pk);
-        string evsDisplay = string.Join(" / ", new[] { (evs[0] != 0 ? $"{evs[0]} HP" : ""), (evs[1] != 0 ? $"{evs[1]} Atk" : ""), (evs[2] != 0 ? $"{evs[2]} Def" : ""), (evs[3] != 0 ? $"{evs[3]} SpA" : ""), (evs[4] != 0 ? $"{evs[4]} SpD" : ""), (evs[5] != 0 ? $"{evs[5]} Spe" : "") }.Where(s => !string.IsNullOrEmpty(s)));
+        string evsDisplay = string.Join(" / ", new[] {
+            (evs[0] != 0 ? $"{evs[0]} HP" : ""),
+            (evs[1] != 0 ? $"{evs[1]} Atk" : ""),
+            (evs[2] != 0 ? $"{evs[2]} Def" : ""),
+            (evs[4] != 0 ? $"{evs[4]} SpA" : ""),
+            (evs[5] != 0 ? $"{evs[5]} SpD" : ""),
+            (evs[3] != 0 ? $"{evs[3]} Spe" : "") // correct pkhex/ALM ordering of stats
+        }.Where(s => !string.IsNullOrEmpty(s)));
         embedData.EVsDisplay = evsDisplay;
         embedData.MetDate = pk.MetDate.ToString();
         embedData.MovesDisplay = string.Join("\n", embedData.Moves);
@@ -254,7 +278,6 @@ public class DetailsExtractor<T> where T : PKM, new()
 
 public class EmbedData
 {
-    public int[]? IVs { get; set; }
     public List<string>? Moves { get; set; }
     public int Level { get; set; }
     public string? TeraType { get; set; }
