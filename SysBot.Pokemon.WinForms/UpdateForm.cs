@@ -94,7 +94,6 @@ namespace SysBot.Pokemon.WinForms
 
         private async void ButtonDownload_Click(object sender, EventArgs e)
         {
-            _ = new UpdateChecker();
             string downloadUrl = await UpdateChecker.FetchDownloadUrlAsync();
             if (!string.IsNullOrWhiteSpace(downloadUrl))
             {

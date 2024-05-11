@@ -30,7 +30,6 @@ public sealed partial class Main : Form
         InitializeComponent();
         comboBox1.SelectedIndexChanged += new EventHandler(ComboBox1_SelectedIndexChanged);
         Load += async (sender, e) => await InitializeAsync();
-
     }
 
     private async Task InitializeAsync()
@@ -177,7 +176,7 @@ public sealed partial class Main : Form
 
     private ProgramConfig GetCurrentConfiguration()
     {
-        Config.Bots = Bots.ToArray();
+        Config.Bots = [.. Bots];
         return Config;
     }
 
@@ -340,6 +339,20 @@ public sealed partial class Main : Form
             return;
         }
         System.Media.SystemSounds.Asterisk.Play();
+    }
+
+    private async void Updater_Click(object sender, EventArgs e)
+    {
+        var (updateAvailable, updateRequired, newVersion) = await UpdateChecker.CheckForUpdatesAsync();
+        if (updateAvailable)
+        {
+            UpdateForm updateForm = new UpdateForm(updateRequired, newVersion);
+            updateForm.ShowDialog();
+        }
+        else
+        {
+            MessageBox.Show("No updates are available.", "Update Check", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
     }
 
     private bool AddBot(PokeBotState cfg)
@@ -530,24 +543,23 @@ public sealed partial class Main : Form
     private void ApplyGengarTheme()
     {
         // Define Gengar-theme colors
-        Color GengarPurple = Color.FromArgb(88, 88, 120);  // A muted purple, the main color of Gengar
-        Color DarkShadow = Color.FromArgb(40, 40, 60);     // A deeper shade for shadowing and contrast
-        Color GhostlyGrey = Color.FromArgb(200, 200, 215); // A soft grey for text and borders
-        Color HauntingBlue = Color.FromArgb(80, 80, 160);  // A haunting blue for accenting and highlights
-        Color MidnightBlack = Color.FromArgb(25, 25, 35);  // A near-black for the darkest areas
-        Color ElegantWhite = Color.FromArgb(255, 255, 255);// An elegant white for background and contrast
-        Color StartGreen = Color.FromArgb(10, 74, 27);// Start Button
-        Color StopRed = Color.FromArgb(74, 10, 10);// Stop Button
-        Color RebootBlue = Color.FromArgb(10, 35, 74);// Reboot Button
+        Color MainPurple = Color.FromArgb(60, 0, 60); // A dark, deep, scary purple for the main UI
+        Color DarkShadow = Color.FromArgb(30, 0, 30); // A deeper shade for shadowing and contrast
+        Color LightText = Color.FromArgb(230, 230, 230); // A light color for fonts and text
+        Color HauntingBlue = Color.FromArgb(80, 80, 160); // A haunting blue for accenting and highlights
+        Color MidnightBlack = Color.FromArgb(25, 25, 35); // A near-black for the darkest areas
+        Color StartGreen = Color.FromArgb(10, 74, 27); // Start Button
+        Color StopRed = Color.FromArgb(74, 10, 10); // Stop Button
+        Color RebootBlue = Color.FromArgb(10, 35, 74); // Reboot Button
 
         // Set the background color of the form
         BackColor = MidnightBlack;
 
         // Set the foreground color of the form (text color)
-        ForeColor = GhostlyGrey;
+        ForeColor = LightText;
 
         // Set the background color of the tab control
-        TC_Main.BackColor = GengarPurple;
+        TC_Main.BackColor = MainPurple;
 
         // Set the background color of each tab page
         foreach (TabPage page in TC_Main.TabPages)
@@ -558,46 +570,37 @@ public sealed partial class Main : Form
         // Set the background color of the property grid
         PG_Hub.BackColor = DarkShadow;
         PG_Hub.LineColor = HauntingBlue;
-        PG_Hub.CategoryForeColor = GhostlyGrey;
+        PG_Hub.CategoryForeColor = LightText;
         PG_Hub.CategorySplitterColor = HauntingBlue;
         PG_Hub.HelpBackColor = DarkShadow;
-        PG_Hub.HelpForeColor = GhostlyGrey;
+        PG_Hub.HelpForeColor = LightText;
         PG_Hub.ViewBackColor = DarkShadow;
-        PG_Hub.ViewForeColor = GhostlyGrey;
+        PG_Hub.ViewForeColor = LightText;
 
         // Set the background color of the rich text box
         RTB_Logs.BackColor = MidnightBlack;
-        RTB_Logs.ForeColor = GhostlyGrey;
+        RTB_Logs.ForeColor = LightText;
 
         // Set colors for other controls
-        TB_IP.BackColor = GengarPurple;
-        TB_IP.ForeColor = GhostlyGrey;
-
-        CB_Routine.BackColor = GengarPurple;
-        CB_Routine.ForeColor = GhostlyGrey;
-
-        NUD_Port.BackColor = GengarPurple;
-        NUD_Port.ForeColor = GhostlyGrey;
-
+        TB_IP.BackColor = MainPurple;
+        TB_IP.ForeColor = LightText;
+        CB_Routine.BackColor = MainPurple;
+        CB_Routine.ForeColor = LightText;
+        NUD_Port.BackColor = MainPurple;
+        NUD_Port.ForeColor = LightText;
         B_New.BackColor = HauntingBlue;
-        B_New.ForeColor = GhostlyGrey;
-
+        B_New.ForeColor = LightText;
         FLP_Bots.BackColor = DarkShadow;
-
-        CB_Protocol.BackColor = GengarPurple;
-        CB_Protocol.ForeColor = GhostlyGrey;
-
-        comboBox1.BackColor = GengarPurple;
-        comboBox1.ForeColor = GhostlyGrey;
-
+        CB_Protocol.BackColor = MainPurple;
+        CB_Protocol.ForeColor = LightText;
+        comboBox1.BackColor = MainPurple;
+        comboBox1.ForeColor = LightText;
         B_Stop.BackColor = StopRed;
-        B_Stop.ForeColor = ElegantWhite;
-
+        B_Stop.ForeColor = LightText;
         B_Start.BackColor = StartGreen;
-        B_Start.ForeColor = ElegantWhite;
-
+        B_Start.ForeColor = LightText;
         B_RebootStop.BackColor = RebootBlue;
-        B_RebootStop.ForeColor = ElegantWhite;
+        B_RebootStop.ForeColor = LightText;
     }
 
     private void ApplyLightTheme()

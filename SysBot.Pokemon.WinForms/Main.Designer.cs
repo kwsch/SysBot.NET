@@ -32,16 +32,17 @@ namespace SysBot.Pokemon.WinForms
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             TC_Main = new TabControl();
             Tab_Bots = new TabPage();
             comboBox2 = new ComboBox();
             comboBox1 = new ComboBox();
             CB_Protocol = new ComboBox();
-            FLP_Bots = new FlowLayoutPanel();
             TB_IP = new TextBox();
             CB_Routine = new ComboBox();
             NUD_Port = new NumericUpDown();
             B_New = new Button();
+            FLP_Bots = new FlowLayoutPanel();
             Tab_Hub = new TabPage();
             PG_Hub = new PropertyGrid();
             Tab_Logs = new TabPage();
@@ -50,6 +51,7 @@ namespace SysBot.Pokemon.WinForms
             B_Start = new Button();
             B_RebootStop = new Button();
             ButtonPanel = new Panel();
+            updater = new Button();
             TC_Main.SuspendLayout();
             Tab_Bots.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)NUD_Port).BeginInit();
@@ -70,7 +72,7 @@ namespace SysBot.Pokemon.WinForms
             TC_Main.Name = "TC_Main";
             TC_Main.Padding = new Point(20, 7);
             TC_Main.SelectedIndex = 0;
-            TC_Main.Size = new Size(776, 435);
+            TC_Main.Size = new Size(776, 483);
             TC_Main.TabIndex = 3;
             // 
             // Tab_Bots
@@ -78,14 +80,14 @@ namespace SysBot.Pokemon.WinForms
             Tab_Bots.Controls.Add(comboBox2);
             Tab_Bots.Controls.Add(comboBox1);
             Tab_Bots.Controls.Add(CB_Protocol);
-            Tab_Bots.Controls.Add(FLP_Bots);
             Tab_Bots.Controls.Add(TB_IP);
             Tab_Bots.Controls.Add(CB_Routine);
             Tab_Bots.Controls.Add(NUD_Port);
             Tab_Bots.Controls.Add(B_New);
+            Tab_Bots.Controls.Add(FLP_Bots);
             Tab_Bots.Location = new Point(4, 38);
             Tab_Bots.Name = "Tab_Bots";
-            Tab_Bots.Size = new Size(768, 393);
+            Tab_Bots.Size = new Size(768, 441);
             Tab_Bots.TabIndex = 0;
             Tab_Bots.Text = "Bots";
             Tab_Bots.UseVisualStyleBackColor = true;
@@ -122,19 +124,6 @@ namespace SysBot.Pokemon.WinForms
             CB_Protocol.Size = new Size(76, 26);
             CB_Protocol.TabIndex = 10;
             CB_Protocol.SelectedIndexChanged += CB_Protocol_SelectedIndexChanged;
-            // 
-            // FLP_Bots
-            // 
-            FLP_Bots.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            FLP_Bots.BackColor = Color.Transparent;
-            FLP_Bots.BackgroundImageLayout = ImageLayout.Center;
-            FLP_Bots.BorderStyle = BorderStyle.FixedSingle;
-            FLP_Bots.Location = new Point(0, 44);
-            FLP_Bots.Margin = new Padding(0);
-            FLP_Bots.Name = "FLP_Bots";
-            FLP_Bots.Size = new Size(768, 365);
-            FLP_Bots.TabIndex = 9;
-            FLP_Bots.Resize += FLP_Bots_Resize;
             // 
             // TB_IP
             // 
@@ -180,6 +169,19 @@ namespace SysBot.Pokemon.WinForms
             B_New.UseVisualStyleBackColor = true;
             B_New.Click += B_New_Click;
             // 
+            // FLP_Bots
+            // 
+            FLP_Bots.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            FLP_Bots.BackColor = Color.Transparent;
+            FLP_Bots.BackgroundImageLayout = ImageLayout.Center;
+            FLP_Bots.BorderStyle = BorderStyle.FixedSingle;
+            FLP_Bots.Location = new Point(0, 44);
+            FLP_Bots.Margin = new Padding(0);
+            FLP_Bots.Name = "FLP_Bots";
+            FLP_Bots.Size = new Size(768, 392);
+            FLP_Bots.TabIndex = 9;
+            FLP_Bots.Resize += FLP_Bots_Resize;
+            // 
             // Tab_Hub
             // 
             Tab_Hub.Controls.Add(PG_Hub);
@@ -187,7 +189,7 @@ namespace SysBot.Pokemon.WinForms
             Tab_Hub.Margin = new Padding(5, 4, 5, 4);
             Tab_Hub.Name = "Tab_Hub";
             Tab_Hub.Padding = new Padding(5, 4, 5, 4);
-            Tab_Hub.Size = new Size(768, 396);
+            Tab_Hub.Size = new Size(768, 444);
             Tab_Hub.TabIndex = 2;
             Tab_Hub.Text = "Hub";
             Tab_Hub.UseVisualStyleBackColor = true;
@@ -201,7 +203,7 @@ namespace SysBot.Pokemon.WinForms
             PG_Hub.Margin = new Padding(4, 3, 4, 3);
             PG_Hub.Name = "PG_Hub";
             PG_Hub.PropertySort = PropertySort.Categorized;
-            PG_Hub.Size = new Size(758, 388);
+            PG_Hub.Size = new Size(758, 436);
             PG_Hub.TabIndex = 0;
             // 
             // Tab_Logs
@@ -209,7 +211,7 @@ namespace SysBot.Pokemon.WinForms
             Tab_Logs.Controls.Add(RTB_Logs);
             Tab_Logs.Location = new Point(4, 35);
             Tab_Logs.Name = "Tab_Logs";
-            Tab_Logs.Size = new Size(768, 396);
+            Tab_Logs.Size = new Size(768, 444);
             Tab_Logs.TabIndex = 1;
             Tab_Logs.Text = "Logs";
             Tab_Logs.UseVisualStyleBackColor = true;
@@ -223,7 +225,7 @@ namespace SysBot.Pokemon.WinForms
             RTB_Logs.Margin = new Padding(5, 4, 5, 4);
             RTB_Logs.Name = "RTB_Logs";
             RTB_Logs.ReadOnly = true;
-            RTB_Logs.Size = new Size(768, 396);
+            RTB_Logs.Size = new Size(768, 444);
             RTB_Logs.TabIndex = 0;
             RTB_Logs.Text = "";
             // 
@@ -233,12 +235,12 @@ namespace SysBot.Pokemon.WinForms
             B_Stop.FlatStyle = FlatStyle.Flat;
             B_Stop.Font = new Font("Calibri", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             B_Stop.ForeColor = SystemColors.ControlLightLight;
-            B_Stop.Location = new Point(263, 0);
+            B_Stop.Location = new Point(74, 0);
             B_Stop.Margin = new Padding(3, 4, 3, 4);
             B_Stop.Name = "B_Stop";
-            B_Stop.Size = new Size(283, 48);
+            B_Stop.Size = new Size(75, 40);
             B_Stop.TabIndex = 1;
-            B_Stop.Text = "Stop All";
+            B_Stop.Text = "Stop";
             B_Stop.UseVisualStyleBackColor = false;
             B_Stop.Click += B_Stop_Click;
             // 
@@ -251,9 +253,9 @@ namespace SysBot.Pokemon.WinForms
             B_Start.Location = new Point(0, 0);
             B_Start.Margin = new Padding(3, 4, 3, 4);
             B_Start.Name = "B_Start";
-            B_Start.Size = new Size(265, 48);
+            B_Start.Size = new Size(75, 40);
             B_Start.TabIndex = 0;
-            B_Start.Text = "Start All";
+            B_Start.Text = "Start";
             B_Start.UseVisualStyleBackColor = false;
             B_Start.Click += B_Start_Click;
             // 
@@ -263,27 +265,45 @@ namespace SysBot.Pokemon.WinForms
             B_RebootStop.FlatStyle = FlatStyle.Flat;
             B_RebootStop.Font = new Font("Calibri", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             B_RebootStop.ForeColor = SystemColors.ControlLightLight;
-            B_RebootStop.Location = new Point(545, 0);
+            B_RebootStop.Location = new Point(144, 0);
             B_RebootStop.Margin = new Padding(3, 4, 3, 4);
             B_RebootStop.Name = "B_RebootStop";
-            B_RebootStop.Size = new Size(231, 48);
+            B_RebootStop.Size = new Size(75, 40);
             B_RebootStop.TabIndex = 2;
-            B_RebootStop.Text = "Reboot And Stop";
+            B_RebootStop.Text = "Restart";
             B_RebootStop.UseVisualStyleBackColor = false;
             B_RebootStop.Click += B_RebootStop_Click;
             // 
             // ButtonPanel
             // 
-            ButtonPanel.BackColor = Color.Transparent;
+            ButtonPanel.BackColor = SystemColors.Control;
+            ButtonPanel.Controls.Add(updater);
             ButtonPanel.Controls.Add(B_RebootStop);
             ButtonPanel.Controls.Add(B_Stop);
             ButtonPanel.Controls.Add(B_Start);
-            ButtonPanel.Dock = DockStyle.Bottom;
-            ButtonPanel.Location = new Point(0, 435);
+            ButtonPanel.Location = new Point(334, 0);
             ButtonPanel.Margin = new Padding(3, 4, 3, 4);
             ButtonPanel.Name = "ButtonPanel";
-            ButtonPanel.Size = new Size(776, 48);
+            ButtonPanel.Size = new Size(426, 38);
             ButtonPanel.TabIndex = 0;
+            // 
+            // updater
+            // 
+            updater.BackColor = Color.AliceBlue;
+            updater.FlatStyle = FlatStyle.Flat;
+            updater.Font = new Font("Calibri", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            updater.ForeColor = Color.SteelBlue;
+            updater.Image = (Image)resources.GetObject("updater.Image");
+            updater.ImageAlign = ContentAlignment.MiddleLeft;
+            updater.Location = new Point(329, -1);
+            updater.Margin = new Padding(3, 4, 3, 4);
+            updater.Name = "updater";
+            updater.Size = new Size(97, 42);
+            updater.TabIndex = 3;
+            updater.Text = "Update";
+            updater.TextAlign = ContentAlignment.MiddleRight;
+            updater.UseVisualStyleBackColor = false;
+            updater.Click += Updater_Click;
             // 
             // Main
             // 
@@ -293,8 +313,8 @@ namespace SysBot.Pokemon.WinForms
             BackColor = SystemColors.Desktop;
             CancelButton = B_Stop;
             ClientSize = new Size(776, 483);
-            Controls.Add(TC_Main);
             Controls.Add(ButtonPanel);
+            Controls.Add(TC_Main);
             Font = new Font("Calibri", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
             Icon = Resources.icon;
             Margin = new Padding(5, 4, 5, 4);
@@ -331,6 +351,7 @@ namespace SysBot.Pokemon.WinForms
         private System.Windows.Forms.ComboBox comboBox2;
         private System.Windows.Forms.Button B_RebootStop;
         private System.Windows.Forms.Panel ButtonPanel;
+        private Button updater;
     }
 }
 
