@@ -269,27 +269,15 @@ public sealed partial class Main : Form
 
     private void UpdateBackgroundImage(ProgramMode mode)
     {
-        switch (mode)
+        FLP_Bots.BackgroundImage = mode switch
         {
-            case ProgramMode.SV:
-                FLP_Bots.BackgroundImage = Resources.sv_mode_image;
-                break;
-            case ProgramMode.SWSH:
-                FLP_Bots.BackgroundImage = Resources.swsh_mode_image;
-                break;
-            case ProgramMode.BDSP:
-                FLP_Bots.BackgroundImage = Resources.bdsp_mode_image;
-                break;
-            case ProgramMode.LA:
-                FLP_Bots.BackgroundImage = Resources.pla_mode_image;
-                break;
-            case ProgramMode.LGPE:
-                FLP_Bots.BackgroundImage = Resources.lgpe_mode_image;
-                break;
-            default:
-                FLP_Bots.BackgroundImage = null;
-                break;
-        }
+            ProgramMode.SV => Resources.sv_mode_image,
+            ProgramMode.SWSH => Resources.swsh_mode_image,
+            ProgramMode.BDSP => Resources.bdsp_mode_image,
+            ProgramMode.LA => Resources.pla_mode_image,
+            ProgramMode.LGPE => Resources.lgpe_mode_image,
+            _ => null,
+        };
         FLP_Bots.BackgroundImageLayout = ImageLayout.Center;
     }
 
@@ -436,7 +424,7 @@ public sealed partial class Main : Form
         TB_IP.Visible = CB_Protocol.SelectedIndex == 0;
     }
 
-    private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+    private void ComboBox2_SelectedIndexChanged(object sender, EventArgs e)
     {
         if (sender is ComboBox comboBox)
         {

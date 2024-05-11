@@ -101,7 +101,7 @@ namespace SysBot.Pokemon.WinForms
             comboBox2.Name = "comboBox2";
             comboBox2.Size = new Size(130, 26);
             comboBox2.TabIndex = 12;
-            comboBox2.SelectedIndexChanged += comboBox2_SelectedIndexChanged;
+            comboBox2.SelectedIndexChanged += ComboBox2_SelectedIndexChanged;
             // 
             // comboBox1
             // 
@@ -232,45 +232,55 @@ namespace SysBot.Pokemon.WinForms
             // B_Stop
             // 
             B_Stop.BackColor = Color.Maroon;
+            B_Stop.BackgroundImageLayout = ImageLayout.None;
             B_Stop.FlatStyle = FlatStyle.Flat;
             B_Stop.Font = new Font("Calibri", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             B_Stop.ForeColor = SystemColors.ControlLightLight;
-            B_Stop.Location = new Point(74, 0);
+            B_Stop.Image = (Image)resources.GetObject("B_Stop.Image");
+            B_Stop.ImageAlign = ContentAlignment.MiddleLeft;
+            B_Stop.Location = new Point(125, 5);
             B_Stop.Margin = new Padding(3, 4, 3, 4);
             B_Stop.Name = "B_Stop";
-            B_Stop.Size = new Size(75, 40);
+            B_Stop.Size = new Size(97, 29);
             B_Stop.TabIndex = 1;
-            B_Stop.Text = "Stop";
+            B_Stop.Text = "Stop Bots";
+            B_Stop.TextAlign = ContentAlignment.MiddleRight;
             B_Stop.UseVisualStyleBackColor = false;
             B_Stop.Click += B_Stop_Click;
             // 
             // B_Start
             // 
-            B_Start.BackColor = Color.ForestGreen;
+            B_Start.BackColor = Color.FromArgb(192, 255, 192);
             B_Start.FlatStyle = FlatStyle.Flat;
             B_Start.Font = new Font("Calibri", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            B_Start.ForeColor = SystemColors.ControlLightLight;
-            B_Start.Location = new Point(0, 0);
+            B_Start.ForeColor = Color.ForestGreen;
+            B_Start.Image = (Image)resources.GetObject("B_Start.Image");
+            B_Start.ImageAlign = ContentAlignment.MiddleLeft;
+            B_Start.Location = new Point(25, 5);
             B_Start.Margin = new Padding(3, 4, 3, 4);
             B_Start.Name = "B_Start";
-            B_Start.Size = new Size(75, 40);
+            B_Start.Size = new Size(97, 29);
             B_Start.TabIndex = 0;
-            B_Start.Text = "Start";
+            B_Start.Text = "Start Bots";
+            B_Start.TextAlign = ContentAlignment.MiddleRight;
             B_Start.UseVisualStyleBackColor = false;
             B_Start.Click += B_Start_Click;
             // 
             // B_RebootStop
             // 
-            B_RebootStop.BackColor = Color.SteelBlue;
+            B_RebootStop.BackColor = Color.PowderBlue;
             B_RebootStop.FlatStyle = FlatStyle.Flat;
             B_RebootStop.Font = new Font("Calibri", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            B_RebootStop.ForeColor = SystemColors.ControlLightLight;
-            B_RebootStop.Location = new Point(144, 0);
+            B_RebootStop.ForeColor = Color.SteelBlue;
+            B_RebootStop.Image = (Image)resources.GetObject("B_RebootStop.Image");
+            B_RebootStop.ImageAlign = ContentAlignment.MiddleLeft;
+            B_RebootStop.Location = new Point(225, 5);
             B_RebootStop.Margin = new Padding(3, 4, 3, 4);
             B_RebootStop.Name = "B_RebootStop";
-            B_RebootStop.Size = new Size(75, 40);
+            B_RebootStop.Size = new Size(97, 29);
             B_RebootStop.TabIndex = 2;
             B_RebootStop.Text = "Restart";
+            B_RebootStop.TextAlign = ContentAlignment.MiddleRight;
             B_RebootStop.UseVisualStyleBackColor = false;
             B_RebootStop.Click += B_RebootStop_Click;
             // 
@@ -289,16 +299,16 @@ namespace SysBot.Pokemon.WinForms
             // 
             // updater
             // 
-            updater.BackColor = Color.AliceBlue;
+            updater.BackColor = Color.Gray;
             updater.FlatStyle = FlatStyle.Flat;
             updater.Font = new Font("Calibri", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            updater.ForeColor = Color.SteelBlue;
+            updater.ForeColor = Color.Gainsboro;
             updater.Image = (Image)resources.GetObject("updater.Image");
             updater.ImageAlign = ContentAlignment.MiddleLeft;
-            updater.Location = new Point(329, -1);
+            updater.Location = new Point(325, 5);
             updater.Margin = new Padding(3, 4, 3, 4);
             updater.Name = "updater";
-            updater.Size = new Size(97, 42);
+            updater.Size = new Size(97, 29);
             updater.TabIndex = 3;
             updater.Text = "Update";
             updater.TextAlign = ContentAlignment.MiddleRight;

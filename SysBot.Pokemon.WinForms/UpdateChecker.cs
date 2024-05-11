@@ -47,7 +47,7 @@ namespace SysBot.Pokemon.WinForms
             if (latestRelease == null)
                 return null;
 
-            string downloadUrl = latestRelease.Assets.FirstOrDefault(a => a.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))?.BrowserDownloadUrl;
+            string? downloadUrl = latestRelease.Assets.FirstOrDefault(a => a.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))?.BrowserDownloadUrl;
 
             return downloadUrl;
         }
