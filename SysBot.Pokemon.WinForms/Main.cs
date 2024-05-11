@@ -467,6 +467,7 @@ public sealed partial class Main : Form
         Color StartGreen = Color.FromArgb(10, 74, 27);// Start Button
         Color StopRed = Color.FromArgb(74, 10, 10);// Stop Button
         Color RebootBlue = Color.FromArgb(10, 35, 74);// Reboot Button
+        Color UpdateGray = Color.FromArgb(54, 69, 79); // Update Button
 
         // Set the background color of the form
         BackColor = ElegantWhite;
@@ -526,6 +527,9 @@ public sealed partial class Main : Form
 
         B_RebootStop.BackColor = RebootBlue;
         B_RebootStop.ForeColor = ElegantWhite;
+
+        updater.BackColor = UpdateGray;
+        updater.ForeColor = ElegantWhite;
     }
 
     private void ApplyGengarTheme()
@@ -539,6 +543,7 @@ public sealed partial class Main : Form
         Color StartGreen = Color.FromArgb(10, 74, 27); // Start Button
         Color StopRed = Color.FromArgb(74, 10, 10); // Stop Button
         Color RebootBlue = Color.FromArgb(10, 35, 74); // Reboot Button
+        Color UpdateGray = Color.FromArgb(54, 69, 79); // Update Button
 
         // Set the background color of the form
         BackColor = MidnightBlack;
@@ -589,6 +594,8 @@ public sealed partial class Main : Form
         B_Start.ForeColor = LightText;
         B_RebootStop.BackColor = RebootBlue;
         B_RebootStop.ForeColor = LightText;
+        updater.BackColor = UpdateGray;
+        updater.ForeColor = LightText;
     }
 
     private void ApplyLightTheme()
@@ -601,6 +608,7 @@ public sealed partial class Main : Form
         Color StartGreen = Color.FromArgb(10, 74, 27);// Start Button
         Color StopRed = Color.FromArgb(74, 10, 10);// Stop Button
         Color RebootBlue = Color.FromArgb(10, 35, 74);// Reboot Button
+        Color UpdateGray = Color.FromArgb(54, 69, 79); // Update Button
 
         // Set the background color of the form
         BackColor = GentleGrey;
@@ -660,6 +668,9 @@ public sealed partial class Main : Form
 
         B_RebootStop.BackColor = RebootBlue;
         B_RebootStop.ForeColor = ElegantWhite;
+
+        updater.BackColor = UpdateGray;
+        updater.ForeColor = ElegantWhite;
     }
 
     private void ApplyPokemonTheme()
@@ -674,6 +685,7 @@ public sealed partial class Main : Form
         Color StartGreen = Color.FromArgb(10, 74, 27);// Start Button
         Color StopRed = Color.FromArgb(74, 10, 10);// Stop Button
         Color RebootBlue = Color.FromArgb(10, 35, 74);// Reboot Button
+        Color UpdateGray = Color.FromArgb(54, 69, 79);// Update Button
 
         // Set the background color of the form
         BackColor = SleekGrey;
@@ -733,6 +745,9 @@ public sealed partial class Main : Form
 
         B_RebootStop.BackColor = RebootBlue;
         B_RebootStop.ForeColor = ElegantWhite;
+
+        updater.BackColor = UpdateGray;
+        updater.ForeColor = ElegantWhite;
     }
 
     private void ApplyDarkTheme()
@@ -746,6 +761,7 @@ public sealed partial class Main : Form
         Color StartGreen = Color.FromArgb(10, 74, 27);// Start Button
         Color StopRed = Color.FromArgb(74, 10, 10);// Stop Button
         Color RebootBlue = Color.FromArgb(10, 35, 74);// Reboot Button
+        Color UpdateGray = Color.FromArgb(54, 69, 79);// Update Button
 
         // Set the background color of the form
         BackColor = DarkGrey;
@@ -805,6 +821,9 @@ public sealed partial class Main : Form
 
         B_RebootStop.BackColor = RebootBlue;
         B_RebootStop.ForeColor = ElegantWhite;
+
+        updater.BackColor = UpdateGray;
+        updater.ForeColor = ElegantWhite;
     }
 }
 
