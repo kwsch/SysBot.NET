@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using PKHeX.Core;
 using SysBot.Pokemon;
 using Xunit;
@@ -7,7 +7,7 @@ namespace SysBot.Tests;
 
 public class GenerateTests
 {
-    static GenerateTests() => AutoLegalityWrapper.EnsureInitialized(new LegalitySettings());
+    static GenerateTests() => AutoLegalityWrapper.EnsureInitialized(new Pokemon.LegalitySettings());
 
     [Theory]
     [InlineData(Gengar)]

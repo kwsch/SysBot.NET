@@ -44,16 +44,17 @@ public static class AutoLegalityWrapper
         APILegality.SetBattleVersion = cfg.SetBattleVersion;
         APILegality.Timeout = cfg.Timeout;
 
+        var settings = ParseSettings.Settings;
+
         // As of February 2024, the default setting in PKHeX is Invalid for missing HOME trackers.
         // If the host wants to allow missing HOME trackers, we need to override the default setting.
         bool allowMissingHOME = !cfg.EnableHOMETrackerCheck;
         APILegality.AllowHOMETransferGeneration = allowMissingHOME;
         if (allowMissingHOME)
-        {
-            // Property setter is private; need to use reflection to manually set the value.
-            var prop = typeof(ParseSettings).GetProperty(nameof(ParseSettings.HOMETransferTrackerNotPresent));
-            prop?.SetValue(null, Severity.Fishy);
-        }
+            settings.HOMETransfer.HOMETransferTrackerNotPresent = Severity.Fishy;
+
+        settings.Handler.CheckActiveHandler = false;
+        settings.Nickname.Disable();
 
         // We need all the encounter types present, so add the missing ones at the end.
         var missing = EncounterPriority.Except(cfg.PrioritizeEncounters);
