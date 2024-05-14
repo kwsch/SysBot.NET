@@ -1,5 +1,6 @@
 using Discord;
 using Discord.Commands;
+using SysBot.Pokemon.Helpers;
 using System;
 using System.Diagnostics;
 using System.Globalization;
@@ -43,6 +44,7 @@ public class InfoModule : ModuleBase<SocketCommandContext>
             $"- {Format.Bold("Runtime")}: {RuntimeInformation.FrameworkDescription} {RuntimeInformation.ProcessArchitecture} " +
             $"({RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture})\n" +
             $"- {Format.Bold("Buildtime")}: {GetVersionInfo("SysBot.Base", false)}\n" +
+            $"- {Format.Bold("Mergebot Version")}: {TradeBot.Version}\n" +
             $"- {Format.Bold("Core Version")}: {GetVersionInfo("PKHeX.Core")}\n" +
             $"- {Format.Bold("AutoLegality Version")}: {GetVersionInfo("PKHeX.Core.AutoMod")}\n"
         );
