@@ -58,8 +58,8 @@ public class TradeQueueManager<T> where T : PKM, new()
         var code = cfg.RandomCode ? Hub.Config.Trade.GetRandomTradeCode() : cfg.TradeCode;
 
         // Retrieve the trade code from the pool if it exists
-        var filename = Hub.Ledy.Pool.Files.FirstOrDefault(x => x.Value.RequestInfo.Equals(random)).Key;
-        if (filename != null && Hub.Ledy.Pool.TradeCodes.TryGetValue(filename, out int storedCode))
+        var filenameEntry = Hub.Ledy.Pool.Files.FirstOrDefault(x => x.Value.Request.RequestInfo.Equals(random));
+        if (filenameEntry.Value.Request != null && Hub.Ledy.Pool.TradeCodes.TryGetValue(filenameEntry.Value.OriginalFileName, out int storedCode))
         {
             code = storedCode;
         }

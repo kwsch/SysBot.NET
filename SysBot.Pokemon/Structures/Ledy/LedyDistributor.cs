@@ -1,20 +1,24 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using System.Collections.Generic;
 
 namespace SysBot.Pokemon;
 
 public class LedyDistributor<T> where T : PKM, new()
 {
-    public readonly Dictionary<string, LedyRequest<T>> UserRequests = [];
+    public readonly Dictionary<string, LedyRequest<T>> UserRequests = new();
     public readonly Dictionary<string, LedyRequest<T>> Distribution;
     public readonly PokemonPool<T> Pool;
 
-    private readonly List<LedyUser> Previous = [];
+    private readonly List<LedyUser> Previous = new();
 
     public LedyDistributor(PokemonPool<T> pool)
     {
         Pool = pool;
-        Distribution = Pool.Files;
+        Distribution = new Dictionary<string, LedyRequest<T>>();
+        foreach (var kvp in Pool.Files)
+        {
+            Distribution[kvp.Key] = kvp.Value.Request;
+        }
     }
 
     private const Species NoMatchSpecies = Species.None;

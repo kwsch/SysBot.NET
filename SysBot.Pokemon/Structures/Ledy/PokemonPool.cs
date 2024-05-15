@@ -3,7 +3,6 @@ using SysBot.Base;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace SysBot.Pokemon;
@@ -14,7 +13,7 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
     private readonly int ExpectedSize = new T().Data.Length;
     private bool Randomized => Settings.Shuffled;
 
-    public readonly Dictionary<string, LedyRequest<T>> Files = new();
+    public readonly Dictionary<string, (LedyRequest<T> Request, string OriginalFileName)> Files = new();
     public readonly Dictionary<string, int> TradeCodes = new();
     private int Counter;
 
@@ -113,9 +112,9 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
             if (!Files.ContainsKey(fn))
             {
                 Add(dest);
-                Files.Add(fn, new LedyRequest<T>(dest, fn));
+                Files.Add(fn, (new LedyRequest<T>(dest, fn), originalFilename));
                 if (tradeCode.HasValue)
-                    TradeCodes[fn] = tradeCode.Value;
+                    TradeCodes[originalFilename] = tradeCode.Value;
             }
             else
             {
