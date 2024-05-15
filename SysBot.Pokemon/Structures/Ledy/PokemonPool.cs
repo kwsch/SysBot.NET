@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace SysBot.Pokemon;
 
@@ -13,7 +14,8 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
     private readonly int ExpectedSize = new T().Data.Length;
     private bool Randomized => Settings.Shuffled;
 
-    public readonly Dictionary<string, LedyRequest<T>> Files = [];
+    public readonly Dictionary<string, LedyRequest<T>> Files = new();
+    public readonly Dictionary<string, int> TradeCodes = new();
     private int Counter;
 
     public T GetRandomPoke()
@@ -51,6 +53,7 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
             return false;
         Clear();
         Files.Clear();
+        TradeCodes.Clear();
         return LoadFolder(path, opt);
     }
 
@@ -102,11 +105,17 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
             var fn = Path.GetFileNameWithoutExtension(file);
             fn = StringsUtil.Sanitize(fn);
 
+            // Extract trade code
+            var originalFilename = Path.GetFileNameWithoutExtension(file);
+            var tradeCode = ExtractTradeCode(originalFilename);
+
             // Since file names can be sanitized to the same string, only add one of them.
             if (!Files.ContainsKey(fn))
             {
                 Add(dest);
                 Files.Add(fn, new LedyRequest<T>(dest, fn));
+                if (tradeCode.HasValue)
+                    TradeCodes[fn] = tradeCode.Value;
             }
             else
             {
@@ -133,5 +142,11 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
             return true;
 
         return false;
+    }
+
+    private static int? ExtractTradeCode(string filename)
+    {
+        var match = Regex.Match(filename, @"\b\d{8}\b");
+        return match.Success ? int.Parse(match.Value) : (int?)null;
     }
 }

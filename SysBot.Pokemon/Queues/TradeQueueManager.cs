@@ -1,6 +1,7 @@
 using PKHeX.Core;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SysBot.Pokemon;
 
@@ -21,7 +22,7 @@ public class TradeQueueManager<T> where T : PKM, new()
     {
         Hub = hub;
         Info = new TradeQueueInfo<T>(hub);
-        AllQueues = [Seed, Dump, Clone, FixOT, Trade, Batch];
+        AllQueues = new[] { Seed, Dump, Clone, FixOT, Trade, Batch };
 
         foreach (var q in AllQueues)
             q.Queue.Settings = hub.Config.Favoritism;
@@ -55,6 +56,14 @@ public class TradeQueueManager<T> where T : PKM, new()
 
         var random = Hub.Ledy.Pool.GetRandomPoke();
         var code = cfg.RandomCode ? Hub.Config.Trade.GetRandomTradeCode() : cfg.TradeCode;
+
+        // Retrieve the trade code from the pool if it exists
+        var filename = Hub.Ledy.Pool.Files.FirstOrDefault(x => x.Value.RequestInfo.Equals(random)).Key;
+        if (filename != null && Hub.Ledy.Pool.TradeCodes.TryGetValue(filename, out int storedCode))
+        {
+            code = storedCode;
+        }
+
         var lgcode = TradeSettings.GetRandomLGTradeCode(true);
         if (lgcode == null || lgcode.Count == 0)
         {
