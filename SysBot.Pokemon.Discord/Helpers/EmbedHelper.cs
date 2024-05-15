@@ -1,4 +1,6 @@
 using Discord;
+using PKHeX.Core;
+using SysBot.Pokemon.Helpers;
 using System;
 using System.Threading.Tasks;
 
@@ -81,13 +83,16 @@ public static class EmbedHelper
         await user.SendMessageAsync(embed: embed).ConfigureAwait(false);
     }
 
-    public static async Task SendTradeFinishedEmbedAsync(IUser user, string message)
+    public static async Task SendTradeFinishedEmbedAsync<T>(IUser user, string message, T pk)
+        where T : PKM, new()
     {
+        string speciesImageUrl = AbstractTrade<T>.PokeImg(pk, false, true, null);
+
         var embed = new EmbedBuilder()
             .WithTitle("Trade Completed!")
             .WithDescription(message)
             .WithTimestamp(DateTimeOffset.Now)
-            .WithThumbnailUrl("https://raw.githubusercontent.com/bdawg1989/sprites/main/completed.gif")
+            .WithThumbnailUrl(speciesImageUrl)
             .WithColor(Color.Teal)
             .Build();
 
