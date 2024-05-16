@@ -318,7 +318,6 @@ namespace SysBot.Pokemon.WinForms
             // 
             AutoScaleDimensions = new SizeF(8F, 18F);
             AutoScaleMode = AutoScaleMode.Font;
-            AutoSizeMode = AutoSizeMode.GrowAndShrink;
             BackColor = SystemColors.Desktop;
             CancelButton = B_Stop;
             ClientSize = new Size(776, 483);
@@ -328,6 +327,7 @@ namespace SysBot.Pokemon.WinForms
             Icon = Resources.icon;
             Margin = new Padding(5, 4, 5, 4);
             Name = "Main";
+            SizeGripStyle = SizeGripStyle.Show;
             StartPosition = FormStartPosition.CenterScreen;
             Text = "NotPaldea.net";
             FormClosing += Main_FormClosing;
