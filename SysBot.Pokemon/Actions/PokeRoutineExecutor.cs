@@ -131,6 +131,54 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
         }
     }
 
+    protected PokeTradeResult CheckPartnerReputation(PokeRoutineExecutor<T> bot, PokeTradeDetail<T> poke, ulong TrainerNID, string TrainerName,
+        TradeAbuseSettings AbuseSettings, CancellationToken token)
+    {
+        bool quit = false;
+        var user = poke.Trainer;
+        var isDistribution = poke.Type == PokeTradeType.Random;
+        var list = isDistribution ? PreviousUsersDistribution : PreviousUsers;
+
+        // Matches to a list of banned NIDs, in case the user ever manages to enter a trade.
+        var entry = AbuseSettings.BannedIDs.List.Find(z => z.ID == TrainerNID);
+        if (entry != null)
+        {
+            return PokeTradeResult.SuspiciousActivity;
+        }
+
+        // Check within the trade type (distribution or non-Distribution).
+        var previous = list.TryGetPreviousNID(TrainerNID);
+        if (previous != null)
+        {
+            var delta = DateTime.Now - previous.Time; // Time that has passed since last trade.
+            Log($"Last traded with {user.TrainerName} {delta.TotalMinutes:F1} minutes ago (OT: {TrainerName}).");
+
+            // Allows setting a cooldown for repeat trades. If the same user is encountered within the cooldown period for the same trade type, the user is warned and the trade will be ignored.
+            var cd = AbuseSettings.TradeCooldown; // Time they must wait before trading again.
+            if (cd != 0 && TimeSpan.FromMinutes(cd) > delta)
+            {
+                Log($"Found {user.TrainerName} ignoring the {cd} minute trade cooldown. Last encountered {delta.TotalMinutes:F1} minutes ago.");
+                return PokeTradeResult.SuspiciousActivity;
+            }
+
+            // For distribution trades only, flag users using multiple Discord/Twitch accounts to send to the same in-game player within the TradeAbuseExpiration time limit.
+            // This is usually to evade a ban or a trade cooldown.
+            if (isDistribution && previous.NetworkID == TrainerNID && previous.RemoteID != user.ID)
+            {
+                if (delta < TimeSpan.FromMinutes(AbuseSettings.TradeAbuseExpiration))
+                {
+                    quit = true;
+                    Log($"Found {user.TrainerName} using multiple accounts.\nPreviously traded with {previous.Name} ({previous.RemoteID}) {delta.TotalMinutes:F1} minutes ago on OT: {TrainerName}.");
+                }
+            }
+        }
+
+        if (quit)
+            return PokeTradeResult.SuspiciousActivity;
+
+        return PokeTradeResult.Success;
+    }
+
     public static void LogSuccessfulTrades(PokeTradeDetail<T> poke, ulong TrainerNID, string TrainerName)
     {
         // All users who traded, tracked by whether it was a targeted trade or distribution.
