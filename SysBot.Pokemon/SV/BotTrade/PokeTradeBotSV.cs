@@ -278,35 +278,17 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         Log("Selecting Link Trade.");
         await Click(A, 1_500, token).ConfigureAwait(false);
 
-        // Always clear Link Codes and enter a new one for PokeTradeType.Random
-        if (poke.Type == PokeTradeType.Random)
-        {
-            await Click(X, 1_000, token).ConfigureAwait(false);
-            await Click(PLUS, 1_000, token).ConfigureAwait(false);
-            await Task.Delay(Hub.Config.Timings.ExtraTimeOpenCodeEntry, token).ConfigureAwait(false);
+        // Always clear Link Codes and enter a new one based on the current trade type
+        await Click(X, 1_000, token).ConfigureAwait(false);
+        await Click(PLUS, 1_000, token).ConfigureAwait(false);
+        await Task.Delay(Hub.Config.Timings.ExtraTimeOpenCodeEntry, token).ConfigureAwait(false);
 
-            var code = poke.Code;
-            Log($"Entering Link Trade code: {code:0000 0000}...");
-            await EnterLinkCode(code, Hub.Config, token).ConfigureAwait(false);
-            await Click(PLUS, 3_000, token).ConfigureAwait(false);
-        }
-        else if (!LastTradeDistributionFixed)
-        {
-            await Click(X, 1_000, token).ConfigureAwait(false);
-            await Click(PLUS, 1_000, token).ConfigureAwait(false);
-
-            // Loading code entry.
-            Hub.Config.Stream.StartEnterCode(this);
-            await Task.Delay(Hub.Config.Timings.ExtraTimeOpenCodeEntry, token).ConfigureAwait(false);
-
-            var code = poke.Code;
-            Log($"Entering Link Trade code: {code:0000 0000}...");
-            await EnterLinkCode(code, Hub.Config, token).ConfigureAwait(false);
-            await Click(PLUS, 3_000, token).ConfigureAwait(false);
-        }
+        var code = poke.Code;
+        Log($"Entering Link Trade code: {code:0000 0000}...");
+        await EnterLinkCode(code, Hub.Config, token).ConfigureAwait(false);
+        await Click(PLUS, 3_000, token).ConfigureAwait(false);
 
         StartFromOverworld = false;
-        LastTradeDistributionFixed = poke.Type == PokeTradeType.Random && !Hub.Config.Distribution.RandomCode;
 
         if (poke.Type == PokeTradeType.Batch)
         {

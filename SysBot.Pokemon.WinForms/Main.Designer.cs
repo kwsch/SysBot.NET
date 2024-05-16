@@ -32,7 +32,6 @@ namespace SysBot.Pokemon.WinForms
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             TC_Main = new TabControl();
             Tab_Bots = new TabPage();
             comboBox2 = new ComboBox();
@@ -235,13 +234,13 @@ namespace SysBot.Pokemon.WinForms
             B_Stop.BackgroundImageLayout = ImageLayout.None;
             B_Stop.FlatStyle = FlatStyle.Flat;
             B_Stop.Font = new Font("Calibri", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            B_Stop.ForeColor = SystemColors.ControlLightLight;
-            B_Stop.Image = (Image)resources.GetObject("B_Stop.Image");
+            B_Stop.ForeColor = Color.WhiteSmoke;
+            B_Stop.Image = Resources.stopall;
             B_Stop.ImageAlign = ContentAlignment.MiddleLeft;
-            B_Stop.Location = new Point(125, 2);
-            B_Stop.Margin = new Padding(3, 4, 3, 4);
+            B_Stop.Location = new Point(115, 2);
+            B_Stop.Margin = new Padding(0);
             B_Stop.Name = "B_Stop";
-            B_Stop.Size = new Size(97, 35);
+            B_Stop.Size = new Size(107, 35);
             B_Stop.TabIndex = 1;
             B_Stop.Text = "Stop Bots";
             B_Stop.TextAlign = ContentAlignment.MiddleRight;
@@ -254,12 +253,12 @@ namespace SysBot.Pokemon.WinForms
             B_Start.FlatStyle = FlatStyle.Flat;
             B_Start.Font = new Font("Calibri", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             B_Start.ForeColor = Color.ForestGreen;
-            B_Start.Image = (Image)resources.GetObject("B_Start.Image");
+            B_Start.Image = Resources.startall;
             B_Start.ImageAlign = ContentAlignment.MiddleLeft;
-            B_Start.Location = new Point(25, 2);
-            B_Start.Margin = new Padding(3, 4, 3, 4);
+            B_Start.Location = new Point(3, 2);
+            B_Start.Margin = new Padding(0);
             B_Start.Name = "B_Start";
-            B_Start.Size = new Size(97, 35);
+            B_Start.Size = new Size(107, 35);
             B_Start.TabIndex = 0;
             B_Start.Text = "Start Bots";
             B_Start.TextAlign = ContentAlignment.MiddleRight;
@@ -272,10 +271,10 @@ namespace SysBot.Pokemon.WinForms
             B_RebootStop.FlatStyle = FlatStyle.Flat;
             B_RebootStop.Font = new Font("Calibri", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             B_RebootStop.ForeColor = Color.SteelBlue;
-            B_RebootStop.Image = (Image)resources.GetObject("B_RebootStop.Image");
+            B_RebootStop.Image = Resources.refresh;
             B_RebootStop.ImageAlign = ContentAlignment.MiddleLeft;
             B_RebootStop.Location = new Point(225, 2);
-            B_RebootStop.Margin = new Padding(3, 4, 3, 4);
+            B_RebootStop.Margin = new Padding(0);
             B_RebootStop.Name = "B_RebootStop";
             B_RebootStop.Size = new Size(97, 35);
             B_RebootStop.TabIndex = 2;
@@ -303,7 +302,7 @@ namespace SysBot.Pokemon.WinForms
             updater.FlatStyle = FlatStyle.Flat;
             updater.Font = new Font("Calibri", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             updater.ForeColor = Color.Gainsboro;
-            updater.Image = (Image)resources.GetObject("updater.Image");
+            updater.Image = Resources.update;
             updater.ImageAlign = ContentAlignment.MiddleLeft;
             updater.Location = new Point(325, 2);
             updater.Margin = new Padding(3, 4, 3, 4);
