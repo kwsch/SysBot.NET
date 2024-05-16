@@ -232,7 +232,7 @@ namespace SysBot.Pokemon.WinForms
             // 
             B_Stop.BackColor = Color.Maroon;
             B_Stop.BackgroundImageLayout = ImageLayout.None;
-            B_Stop.FlatStyle = FlatStyle.Flat;
+            B_Stop.FlatStyle = FlatStyle.Popup;
             B_Stop.Font = new Font("Calibri", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             B_Stop.ForeColor = Color.WhiteSmoke;
             B_Stop.Image = Resources.stopall;
@@ -240,7 +240,7 @@ namespace SysBot.Pokemon.WinForms
             B_Stop.Location = new Point(115, 2);
             B_Stop.Margin = new Padding(0);
             B_Stop.Name = "B_Stop";
-            B_Stop.Size = new Size(107, 35);
+            B_Stop.Size = new Size(107, 30);
             B_Stop.TabIndex = 1;
             B_Stop.Text = "Stop Bots";
             B_Stop.TextAlign = ContentAlignment.MiddleRight;
@@ -250,7 +250,7 @@ namespace SysBot.Pokemon.WinForms
             // B_Start
             // 
             B_Start.BackColor = Color.FromArgb(192, 255, 192);
-            B_Start.FlatStyle = FlatStyle.Flat;
+            B_Start.FlatStyle = FlatStyle.Popup;
             B_Start.Font = new Font("Calibri", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             B_Start.ForeColor = Color.ForestGreen;
             B_Start.Image = Resources.startall;
@@ -258,7 +258,7 @@ namespace SysBot.Pokemon.WinForms
             B_Start.Location = new Point(5, 2);
             B_Start.Margin = new Padding(0);
             B_Start.Name = "B_Start";
-            B_Start.Size = new Size(107, 35);
+            B_Start.Size = new Size(107, 30);
             B_Start.TabIndex = 0;
             B_Start.Text = "Start Bots";
             B_Start.TextAlign = ContentAlignment.MiddleRight;
@@ -268,7 +268,7 @@ namespace SysBot.Pokemon.WinForms
             // B_RebootStop
             // 
             B_RebootStop.BackColor = Color.PowderBlue;
-            B_RebootStop.FlatStyle = FlatStyle.Flat;
+            B_RebootStop.FlatStyle = FlatStyle.Popup;
             B_RebootStop.Font = new Font("Calibri", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             B_RebootStop.ForeColor = Color.SteelBlue;
             B_RebootStop.Image = Resources.refresh;
@@ -276,7 +276,7 @@ namespace SysBot.Pokemon.WinForms
             B_RebootStop.Location = new Point(225, 2);
             B_RebootStop.Margin = new Padding(0);
             B_RebootStop.Name = "B_RebootStop";
-            B_RebootStop.Size = new Size(97, 35);
+            B_RebootStop.Size = new Size(97, 30);
             B_RebootStop.TabIndex = 2;
             B_RebootStop.Text = "Restart";
             B_RebootStop.TextAlign = ContentAlignment.MiddleRight;
@@ -299,7 +299,7 @@ namespace SysBot.Pokemon.WinForms
             // updater
             // 
             updater.BackColor = Color.Gray;
-            updater.FlatStyle = FlatStyle.Flat;
+            updater.FlatStyle = FlatStyle.Popup;
             updater.Font = new Font("Calibri", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             updater.ForeColor = Color.Gainsboro;
             updater.Image = Resources.update;
@@ -307,7 +307,7 @@ namespace SysBot.Pokemon.WinForms
             updater.Location = new Point(325, 2);
             updater.Margin = new Padding(3, 4, 3, 4);
             updater.Name = "updater";
-            updater.Size = new Size(97, 35);
+            updater.Size = new Size(97, 30);
             updater.TabIndex = 3;
             updater.Text = "Update";
             updater.TextAlign = ContentAlignment.MiddleRight;
