@@ -45,7 +45,8 @@ public static class AutoLegalityWrapper
         APILegality.Timeout = cfg.Timeout;
         var settings = ParseSettings.Settings;
         settings.Handler.CheckActiveHandler = false;
-        settings.Nickname.Disable();
+        var validRestriction = new NicknameRestriction { NicknamedTrade = Severity.Fishy, NicknamedMysteryGift = Severity.Fishy };
+        settings.Nickname.SetAllTo(validRestriction);
 
         // As of February 2024, the default setting in PKHeX is Invalid for missing HOME trackers.
         // If the host wants to allow missing HOME trackers, we need to override the default setting.
