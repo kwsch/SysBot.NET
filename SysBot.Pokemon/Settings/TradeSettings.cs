@@ -227,6 +227,14 @@ public class TradeSettings : IBotStateSettings, ICountSettings
             get => EnableAutoCorrect && _autoCorrectIVs;
             set => _autoCorrectIVs = value;
         }
+
+        private bool _autoCorrectMarks = true;
+        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong Marks/Ribbons."), DisplayName("Auto Correct Marks/Ribbons")]
+        public bool AutoCorrectMarks
+        {
+            get => EnableAutoCorrect && _autoCorrectMarks;
+            set => _autoCorrectMarks = value;
+        }
     }
 
     [Category(EmbedSettings), TypeConverter(typeof(CategoryConverter<TradeEmbedSettingsCategory>))]

@@ -7,6 +7,9 @@ using System.Linq;
 using SysBot.Base;
 using System.Text.RegularExpressions;
 using static PKHeX.Core.LearnMethod;
+using static PKHeX.Core.RibbonIndex;
+using System.Threading.Tasks;
+using System.Text;
 
 namespace SysBot.Pokemon;
 
@@ -14,7 +17,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 {
     private static readonly char[] separator = new[] { '\r', '\n' };
 
-    public static string PerformAutoCorrect(string content, PKM originalPk, LegalityAnalysis originalLa)
+    public static async Task<string> PerformAutoCorrect(string content, PKM originalPk, LegalityAnalysis originalLa)
     {
         var autoCorrectConfig = new TradeSettings.AutoCorrectShowdownCategory();
         if (!autoCorrectConfig.EnableAutoCorrect)
@@ -27,10 +30,10 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 
         (string speciesName, string formName, string gender, string heldItem, string nickname) = ParseSpeciesLine(lines[0]);
 
-        string correctedSpeciesName = autoCorrectConfig.AutoCorrectSpeciesAndForm ? GetClosestSpecies(speciesName) ?? speciesName : speciesName;
+        string correctedSpeciesName = autoCorrectConfig.AutoCorrectSpeciesAndForm ? await GetClosestSpecies(speciesName).ConfigureAwait(false) ?? speciesName : speciesName;
         ushort speciesIndex = (ushort)Array.IndexOf(gameStrings.specieslist, correctedSpeciesName);
         string[] formNames = FormConverter.GetFormList(speciesIndex, gameStrings.types, gameStrings.forms, new List<string>(), generation);
-        string correctedFormName = autoCorrectConfig.AutoCorrectSpeciesAndForm ? GetClosestFormName(formName, formNames) ?? formName : formName;
+        string correctedFormName = autoCorrectConfig.AutoCorrectSpeciesAndForm ? await GetClosestFormName(formName, formNames).ConfigureAwait(false) ?? formName : formName;
 
         PKM pk = originalPk.Clone();
         LegalityAnalysis la = originalLa;
@@ -39,23 +42,27 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         if (speciesOrFormCorrected)
         {
             pk.Species = speciesIndex;
-            var personalFormInfo = GetPersonalFormInfo(speciesIndex);
+            var personalFormInfo = await Task.Run(() => GetPersonalFormInfo(speciesIndex)).ConfigureAwait(false);
             pk.Form = correctedFormName != null ? (byte)personalFormInfo.FormIndex(speciesIndex, (byte)Array.IndexOf(formNames, correctedFormName)) : (byte)0;
             la = new LegalityAnalysis(pk);
         }
 
         (string abilityName, string natureName, string ballName, string levelValue) = ParseLines(lines);
 
-        var personalAbilityInfo = GetPersonalInfo(speciesIndex);
-        string correctedAbilityName = autoCorrectConfig.AutoCorrectAbility ? GetClosestAbility(abilityName, speciesIndex, gameStrings, personalAbilityInfo) : abilityName;
-        string correctedNatureName = autoCorrectConfig.AutoCorrectNature ? GetClosestNature(natureName, gameStrings) : natureName;
-        string correctedBallName = autoCorrectConfig.AutoCorrectBall ? GetLegalBall(speciesIndex, correctedFormName, ballName, gameStrings, pk) : ballName;
+        var personalAbilityInfoTask = Task.Run(() => GetPersonalInfo(speciesIndex));
+        var closestAbilityTask = GetClosestAbility(abilityName, speciesIndex, gameStrings, await personalAbilityInfoTask);
+        var closestNatureTask = GetClosestNature(natureName, gameStrings);
+        var legalBallTask = GetLegalBall(speciesIndex, correctedFormName, ballName, gameStrings, pk);
+
+        string correctedAbilityName = autoCorrectConfig.AutoCorrectAbility ? await closestAbilityTask : abilityName;
+        string correctedNatureName = autoCorrectConfig.AutoCorrectNature ? await closestNatureTask : natureName;
+        string correctedBallName = autoCorrectConfig.AutoCorrectBall ? await legalBallTask : ballName;
 
         var levelVerifier = new LevelVerifier();
         if (autoCorrectConfig.AutoCorrectLevel)
             levelVerifier.Verify(la);
         if (autoCorrectConfig.AutoCorrectGender)
-            gender = ValidateGender(pk, gender, speciesName);
+            gender = await ValidateGender(pk, gender, speciesName);
 
         if (autoCorrectConfig.AutoCorrectMovesLearnset)
             ValidateMoves(lines, pk, la, gameStrings, correctedSpeciesName, correctedFormName);
@@ -66,9 +73,41 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         if (!ValidateEVs(lines) && autoCorrectConfig.AutoCorrectEVs)
             RemoveEVLine(lines);
 
+        string markLine = null;
+        if (autoCorrectConfig.AutoCorrectMarks)
+        {
+            var markVerifier = new MarkVerifier();
+            markVerifier.Verify(la);
+            if (!la.Valid)
+                markLine = await CorrectMarks(pk, la.EncounterOriginal, lines);
+        }
+
         string correctedHeldItem = autoCorrectConfig.AutoCorrectHeldItem ? ValidateHeldItem(lines, pk, itemlist, heldItem) : heldItem;
 
         string[] correctedLines = lines.Select((line, i) => CorrectLine(line, i, speciesName, correctedSpeciesName, correctedFormName, gender, correctedHeldItem, correctedAbilityName, correctedNatureName, correctedBallName, levelValue, la, nickname)).ToArray();
+
+        // Find the index of the first move line
+        int moveSetIndex = Array.FindIndex(correctedLines, line => line.StartsWith("- "));
+
+        // Insert the mark line above the move set if it exists, otherwise add it at the end
+        if (!string.IsNullOrEmpty(markLine))
+        {
+            if (moveSetIndex != -1)
+            {
+                var updatedLines = new List<string>(correctedLines);
+                updatedLines.Insert(moveSetIndex, markLine);
+                correctedLines = updatedLines.ToArray();
+            }
+            else
+            {
+                // Replace the invalid mark line with the corrected line
+                int invalidMarkIndex = Array.FindIndex(correctedLines, line => line.StartsWith(".RibbonMark"));
+                if (invalidMarkIndex != -1)
+                    correctedLines[invalidMarkIndex] = markLine;
+                else
+                    correctedLines = correctedLines.Append(markLine).ToArray();
+            }
+        }
 
         if (autoCorrectConfig.AutoCorrectNickname)
         {
@@ -83,7 +122,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 
         string finalShowdownSet = string.Join(Environment.NewLine, correctedLines);
 
-        LogUtil.LogInfo($"Final Showdown Set:\n{finalShowdownSet}", nameof(AutoCorrectShowdown<T>));
+        await Task.Run(() => LogUtil.LogInfo($"Final Showdown Set:\n{finalShowdownSet}", nameof(AutoCorrectShowdown<T>)));
 
         return finalShowdownSet;
     }
@@ -153,38 +192,60 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 
     private static string CorrectLine(string line, int index, string speciesName, string correctedSpeciesName, string correctedFormName, string gender, string correctedHeldItem, string correctedAbilityName, string correctedNatureName, string correctedBallName, string levelValue, LegalityAnalysis la, string nickname)
     {
-        string correctedLine = line;
-
         if (index == 0) // Species line
         {
+            StringBuilder sb = new StringBuilder();
+
             if (!string.IsNullOrEmpty(nickname))
             {
-                correctedLine = $"{nickname} ({correctedSpeciesName}{(string.IsNullOrEmpty(correctedFormName) ? string.Empty : $"-{correctedFormName}")})";
+                sb.Append(nickname);
+                sb.Append(" (");
+                sb.Append(correctedSpeciesName);
+                if (!string.IsNullOrEmpty(correctedFormName))
+                {
+                    sb.Append("-");
+                    sb.Append(correctedFormName);
+                }
+                sb.Append(")");
             }
             else
             {
-                correctedLine = $"{correctedSpeciesName}{(string.IsNullOrEmpty(correctedFormName) ? string.Empty : $"-{correctedFormName}")}";
+                sb.Append(correctedSpeciesName);
+                if (!string.IsNullOrEmpty(correctedFormName))
+                {
+                    sb.Append("-");
+                    sb.Append(correctedFormName);
+                }
             }
 
             if (!string.IsNullOrEmpty(gender))
-                correctedLine += $" ({gender})";
+            {
+                sb.Append(" (");
+                sb.Append(gender);
+                sb.Append(")");
+            }
 
             if (!string.IsNullOrEmpty(correctedHeldItem))
-                correctedLine += $" @ {correctedHeldItem}";
+            {
+                sb.Append(" @ ");
+                sb.Append(correctedHeldItem);
+            }
+
+            return sb.ToString();
         }
         else if (line.StartsWith("Ability:"))
-            correctedLine = $"Ability: {correctedAbilityName}";
+            return $"Ability: {correctedAbilityName}";
         else if (line.EndsWith(" Nature"))
-            correctedLine = $"{correctedNatureName} Nature";
+            return $"{correctedNatureName} Nature";
         else if (line.StartsWith("Ball:"))
-            correctedLine = $"Ball: {correctedBallName}";
+            return $"Ball: {correctedBallName}";
         else if (line.StartsWith("Level:"))
-            correctedLine = !la.Valid ? "Level: 100" : $"Level: {levelValue}";
+            return !la.Valid ? "Level: 100" : $"Level: {levelValue}";
 
-        return correctedLine;
+        return line;
     }
 
-    private static string? GetClosestSpecies(string userSpecies)
+    private static async Task<string>? GetClosestSpecies(string userSpecies)
     {
         var gameStrings = GetGameStrings();
         var pkms = gameStrings.specieslist.Select(s => new T { Species = (ushort)Array.IndexOf(gameStrings.specieslist, s) });
@@ -201,7 +262,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         return fuzzySpecies.Distance >= 80 ? fuzzySpecies.Species : null;
     }
 
-    private static string? GetClosestFormName(string userFormName, string[] validFormNames)
+    private static async Task<string>? GetClosestFormName(string userFormName, string[] validFormNames)
     {
         var fuzzyFormName = validFormNames
             .Where(f => !string.IsNullOrEmpty(f))
@@ -511,7 +572,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         throw new ArgumentException("Unsupported PKM type.", nameof(pk));
     }
 
-    private static string? GetClosestAbility(string userAbility, ushort speciesIndex, GameStrings gameStrings, IPersonalAbility12 personalInfo)
+    private static async Task<string>? GetClosestAbility(string userAbility, ushort speciesIndex, GameStrings gameStrings, IPersonalAbility12 personalInfo)
     {
         var abilities = Enumerable.Range(0, personalInfo.AbilityCount)
             .Select(i => gameStrings.abilitylist[personalInfo.GetAbilityAtIndex(i)])
@@ -525,7 +586,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         return fuzzyAbility.Distance >= 80 ? fuzzyAbility.Ability : null;
     }
 
-    private static string? GetClosestNature(string userNature, GameStrings gameStrings)
+    private static async Task<string>? GetClosestNature(string userNature, GameStrings gameStrings)
     {
         var fuzzyNature = gameStrings.natures
             .Where(n => !string.IsNullOrEmpty(n))
@@ -536,7 +597,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         return fuzzyNature.Distance >= 80 ? fuzzyNature.Nature : null;
     }
 
-    private static string GetLegalBall(ushort speciesIndex, string formName, string ballName, GameStrings gameStrings, PKM pk)
+    private static async Task<string>? GetLegalBall(ushort speciesIndex, string formName, string ballName, GameStrings gameStrings, PKM pk)
     {
         var closestBall = GetClosestBall(ballName, gameStrings);
 
@@ -695,7 +756,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         return true;
     }
 
-    private static string ValidateGender(PKM pk, string gender, string speciesName)
+    private static async Task<string>? ValidateGender(PKM pk, string gender, string speciesName)
     {
         if (!string.IsNullOrEmpty(gender))
         {
@@ -734,5 +795,74 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
                 break;
             }
         }
+    }
+
+    private static async Task<string>? CorrectMarks(PKM pk, IEncounterTemplate encounter, string[] lines)
+    {
+        if (pk is not IRibbonIndex m)
+        {
+            LogUtil.LogInfo("PKM does not implement IRibbonIndex. Correcting to '.Ribbons=$SuggestAll'.", nameof(AutoCorrectShowdown<T>));
+            return ".Ribbons=$SuggestAll";
+        }
+
+        // Find the existing mark line in the input showdown set
+        string existingMarkLine = lines.FirstOrDefault(line => line.StartsWith(".RibbonMark"));
+
+        if (!string.IsNullOrEmpty(existingMarkLine))
+        {
+            // Extract the mark name from the existing mark line
+            string markName = existingMarkLine.Split('=')[0].Replace(".RibbonMark", string.Empty);
+
+            // Find the corresponding RibbonIndex based on the mark name
+            if (Enum.TryParse($"Mark{markName}", out RibbonIndex markIndex))
+            {
+                // Check if the mark is valid based on the encounter and the Pokémon
+                if (MarkRules.IsEncounterMarkValid(markIndex, pk, encounter))
+                {
+                    m.SetRibbon((int)markIndex, true);
+                    LogUtil.LogInfo($"Found valid mark: {markIndex}. Keeping the existing mark line: {existingMarkLine}", nameof(AutoCorrectShowdown<T>));
+                    return existingMarkLine;
+                }
+                else
+                {
+                    LogUtil.LogInfo($"Mark {markIndex} is not valid for the encounter. Correcting to '.Ribbons=$SuggestAll'.", nameof(AutoCorrectShowdown<T>));
+                }
+            }
+            else
+            {
+                LogUtil.LogInfo($"Invalid mark name: {markName}. Correcting to '.Ribbons=$SuggestAll'.", nameof(AutoCorrectShowdown<T>));
+            }
+        }
+
+        // Apply valid marks based on the encounter if no valid mark is found
+        if (MarkRules.IsEncounterMarkAllowed(encounter, pk))
+        {
+            LogUtil.LogInfo("Encounter allows marks. Searching for valid marks.", nameof(AutoCorrectShowdown<T>));
+            for (var mark = MarkLunchtime; mark <= MarkSlump; mark++)
+            {
+                if (MarkRules.IsEncounterMarkValid(mark, pk, encounter))
+                {
+                    m.SetRibbon((int)mark, true);
+                    LogUtil.LogInfo($"Found valid mark: {mark}. Setting the mark line to '.RibbonMark{GetRibbonNameSafe(mark)}=True'.", nameof(AutoCorrectShowdown<T>));
+                    return $".RibbonMark{GetRibbonNameSafe(mark)}=True";
+                }
+            }
+        }
+        else
+        {
+            LogUtil.LogInfo("Encounter does not allow marks. Correcting to '.Ribbons=$SuggestAll'.", nameof(AutoCorrectShowdown<T>));
+        }
+
+        // If no valid mark is found, correct the line to ".Ribbons=$SuggestAll"
+        LogUtil.LogInfo("No valid marks found. Correcting to '.Ribbons=$SuggestAll'.", nameof(AutoCorrectShowdown<T>));
+        return ".Ribbons=$SuggestAll";
+    }
+
+    private static string GetRibbonNameSafe(RibbonIndex index)
+    {
+        if (index >= MAX_COUNT)
+            return index.ToString();
+        var expect = $"Ribbon{index}";
+        return RibbonStrings.GetName(expect);
     }
 }
