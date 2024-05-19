@@ -61,15 +61,7 @@ public class LegalitySettings
     public bool EnableHOMETrackerCheck { get; set; } = false;
 
     [Category(Generate), Description("Prevents trading Pokémon that require a HOME Tracker, even if the file has one already."), DisplayName("Disallow Non-Native Pokémon")]
-    public bool DisallowNonNatives
-    {
-        get => EnableHOMETrackerCheck;
-        set
-        {
-            if (!EnableHOMETrackerCheck)
-                _ = EnableHOMETrackerCheck;
-        }
-    }
+    public bool DisallowNonNatives { get; set; } = false;
 
     [Category(Generate), Description("Prevents trading Pokémon that already have a HOME Tracker."), DisplayName("Disallow Home Tracked Pokémon")]
     public bool DisallowTracked { get; set; } = false;
