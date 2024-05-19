@@ -545,6 +545,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
             _ = ReplyAndDeleteAsync(msg, 2, Context.Message);
         }
+        if (Context.Message is IUserMessage userMessage)
+        {
+            _ = DeleteMessagesAfterDelayAsync(userMessage, null, 0);
+        }
     }
 
     [Command("hidetrade")]
