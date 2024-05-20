@@ -1,142 +1,272 @@
-# Welcome to MergeBot!
-For support and suggestions, join my Discord Hangout - https://notpaldea.net
+<h1 align="center">
+    <a href="https://amplication.com/#gh-light-mode-only">
+    <img src="https://github.com/bdawg1989/MergeBot/assets/80122551/6f75fec2-fa54-47e5-ab22-c2097031ec40">
+    </a>
+    <a href="https://amplication.com/#gh-dark-mode-only">
+    <img src="https://github.com/bdawg1989/MergeBot/assets/80122551/6f75fec2-fa54-47e5-ab22-c2097031ec40">
+    </a>
+</h1>
 
-## This sysBot offers all of the features you could ever want <3
+<p align="center">
+  <i align="center">A community-driven and inspired SysBot.NET project, uniting code from everyone!</i>
+</p>
 
-### Shoutout to all the amazing devs of SysBot!  
+<h4 align="center">
+  <a href="https://notpaldea.net">
+    <img src="https://i.imgur.com/wbWzI2u.png" alt="discord" style="height: 20px;">
+  </a>
+  <a href="https://ko-fi.com/gengar1989">
+    <img src="https://i.imgur.com/nDO4SgL.png" alt="ko-fi" style="height: 20px;">
+  </a>
+</h4>
 
-[@kwsch](https://github.com/kwsch), [@Lusamine](https://github.com/Lusamine), [@Koi-3088](https://github.com/Koi-3088), [@easyworld](https://github.com/easyworld), [@santacrab2](https://github.com/santacrab2), [@zyro670](https://github.com/zyro670), [@xiaolong11123](https://github.com/xiaolong11123), and everyone else that contributed, thank you for your hard work <3
+<div align="center">
+  <h2>Tons of Advanced Options!</h2>
+  <img src="https://github.com/bdawg1989/MergeBot/assets/80122551/3af07e26-e732-4439-8b80-3f83a7ce9076" alt="Recording #23">
+</div>
+<div align="center">
+  <h2>Theme and Mode Selection</h2>
+  <img src="https://github.com/bdawg1989/MergeBot/assets/80122551/3670e7c2-fa06-4b69-960e-6360e360ba9f" alt="Recording #25">
+</div>
 
-### Supports The Following Games:  SV/BDSP/PLA/SWSH/LGPE
-**__Please don't charge people to use this free program. Be nice <3__**
+<h1>MergeBot - The Ultimate Discord Trading Bot / SysBot for Pokémon!</h1>
+<p>Introducing MergeBot, the ultimate Discord trading bot designed specifically for Pokémon enthusiasts! Whether you're a passionate collector, a competitive battler, or simply love everything about these adorable creatures, MergeBot is here to revolutionize your Pokémon trading experience on Discord.</p>
+<h2>Key Features</h2>
+<ul>
+  <li><strong>Seamless Pokémon Trading:</strong> Engage in effortless Pokémon trading with MergeBot using intuitive commands. Request specific Pokémon, items, or even mystery eggs to expand your collection!</li>
+  <li><strong>Legality Verification:</strong> Ensure the legitimacy of your Pokémon with MergeBot's advanced legality checking feature. Verify if a Pokémon is legal and compliant with game rules, giving you peace of mind in your trades.</li>
+  <li><strong>Pokémon Cloning and Dumping:</strong> Easily clone your cherished Pokémon or dump Pokémon data for analysis and sharing with fellow trainers.</li>
+  <li><strong>Exclusive Event Pokémon:</strong> Gain access to rare and exclusive event Pokémon by requesting them from MergeBot's extensive event database. Never miss out on limited-time Pokémon events again!</li>
+  <li><strong>Battle-Ready Pokémon:</strong> Obtain battle-ready Pokémon with optimized stats, moves, and abilities through MergeBot, giving you a competitive edge in battles.</li>
+  <li><strong>Customizable Announcements:</strong> Set up personalized announcements and notifications for trades, server events, or any other important messages, keeping your community informed and engaged.</li>
+  <li><strong>Seed Checking and Shiny Hunting:</strong> Utilize MergeBot's seed checking feature to determine the seed of your Pokémon and discover the next shiny frame, increasing your chances of encountering that elusive shiny Pokémon!</li>
+  <li><strong>VGC Team Generation:</strong> Generate random VGC teams from a specified pool of Pokémon using MergeBot, providing inspiration for your next competitive team composition.</li>
+  <li><strong>Comprehensive Bot Management:</strong> Seamlessly manage MergeBot's settings, including blacklists, whitelists, logging, and more, ensuring a tailored and smooth experience for your Discord server.</li>
+</ul>
+<p>With its extensive array of commands and modules, MergeBot provides a comprehensive solution for all your Pokémon trading and management needs within Discord. It combines convenience, reliability, and user-friendliness to deliver an unparalleled Pokémon experience.</p>
+<p>Trade, collect, and battle your way to becoming the ultimate Pokémon master with MergeBot by your side!</p>
+<p>Explore the detailed command list below to discover the full potential of MergeBot and elevate your Pokémon trading experience to new heights.</p>
 
-## __Beautiful Embeds__
-  
-![image](https://github.com/bdawg1989/MergeBot/assets/80122551/561fc354-aa6b-47ac-aec0-4b788ec7a650)
-
-## __Additional Embed Text__
-  
-You can add any text you want for your embeds that will show above the pokemon info.
-
-![image](https://github.com/bdawg1989/MergeBot/assets/80122551/6b45b883-427c-410b-9dc0-2edeb9c83efe)
-
-## __Batch Trading__
-This feature allows your users to batch trade pokemon.  You can set how many you'd like to allow in the settings, or turn it off completely.
-```
-.bt
-[Showdown Template]
----
-[Showdown Template]
----
-[Showdown Template]
-```
-
-## __Mystery Eggs__
-Who doesn't like a good mystery?
-All of the Mystery Eggs are always Shiny, Perfect IVs, and have the Hidden Ability.  What Egg will you hatch?
-Command:  `me` or `mysteryegg`.
-
-## __Egg Trades__
-Thanks to Koi, I have implemented Egg Trades in this as well.
-To request an egg, you will type `egg <species>` instead of `trade`.
-Example:  
-```
-.Egg Charmander
-Shiny: Yes
-```
-
-![image](https://github.com/bdawg1989/MergeBot/assets/80122551/cd7158f9-3d05-4306-8ad9-5d7e97d28c5d)
-
-## __Announcements__
-Announcements allow the bot owner to broadcast a single announcement to every server the bot is in, allowing you to turn the bot off and on without having to worry about letting every server you share your bot in know what's going on.
-
-![image](https://github.com/bdawg1989/MergeBot/assets/80122551/2367d387-0642-4691-ab55-02be03535742)
-
-![image](https://github.com/bdawg1989/MergeBot/assets/80122551/367d78c5-5e9b-4df7-b1b4-8562b6e3044b)
-
-There are many different settings that allows you to customize your Announcement embed the way **You** want!  You can choose from premade thumbnail images of cute Pokémon holding megaphones, pick your own embed color, or completely use your own custom thumbnail images via settings.
-
-![image](https://github.com/bdawg1989/MergeBot/assets/80122551/83266efa-0449-4f9d-8212-4d197cad119c)
-
-### Set up
-First, let's sync your whitelist channels with the announcechannels.  Run the `sch` command and all of the channels in your ChannelWhitelist settings will be copied over.
-
-If you don't have any whitelist channels set up, you will need to run the `aec` command in the discord channel that you want the announcements to show up in..
-
-Then, run the `announce` command along with your chosen message, and it will send that announcement to all of your defined channels at once.
-
-## __Server Blacklisting & Management__
-Do you share your bot in several servers?  Is your bot a public bot where you allow anyone to add your bot?
-Our advanced Server Management features allow you to easily blacklist any server.
-Command `bls <serverid>` and `ubls <serverid>` to unblacklist them.
-When you blacklist a server, this bot will automatically leave the server.  Adios!
-
-## __Default Held Items__
-Choose a popular default held item if the user doesn't provide one.  Choose from popular items like Ability Patch, Rare Candy, Fresh-Start Mochi, and more!
-
-## __Events & BattleReady Folder__
-If you would like to provide your amazing members with Home Tracked Battle-Ready Legendaries and Event Pokemon, just add the files to a folder on your local machine, and provide the path in the settings under **Trade > EventsFolder/BattleReadyPKMFolder**
-You can download Home Tracked and Battle Ready Pokemon from my website that are ready to go!  (all .pk9 files)  Also, Thanks to all my discord users that contributed to these!  (Maddison, Marnie, Fly, Reedy, Newfie, Joseph11024)
-
-Events: https://genpkm.com/tradebot/events.zip
-
-BattleReady:  https://genpkm.com/tradebot/battleready.zip
-
-Home Tracked Database (Various Generations provided by Joseph11024)
-https://drive.google.com/drive/folders/1-6Z2A75-MRbxxsjT3GNvgtPKubeQLXgC
-
-For your users to request, they will use the following commands:
-
-`le` will list all the events.  This is filterable, too.  So you can do `le 2` for page 2 of the Events List, or, you can do `le <species>` for all the specific species events. Example:  `le mewtwo 2` will give me page 2 of the mewtwo events.
-`brl` will list all of the Battle Ready Pokemon in your folder for users to choose from.  The same filter applies to this command as above.
-
-The user will be DM'd a list and given the correct command with your bots prefix to allow them to request it.
-
-![image](https://github.com/bdawg1989/MergeBot/assets/80122551/fd43fb3e-6bfc-472c-ac26-d55e59f94abf)
-
-![image](https://github.com/bdawg1989/MergeBot/assets/80122551/107d3f4b-0f6a-4145-aaff-deebead6a09c)
-
-## Utilizing VGCPastes Bot Commands
-
-This guide is designed to help users efficiently utilize the commands introduced in our latest release. With these commands, users can generate Random VGC Teams directly from VGCPastes, enhancing their Pokémon battling experience.
-
-# Generating a Random VGC Team
-
-### Command:
-- `.randomteam` or `.rt`
-
-### Description:
-Generates a random VGC team from the [VGCPastes spreadsheet](https://docs.google.com/spreadsheets/d/1axlwmzPA49rYkqXh7zHvAtSP-TKbM0ijGYBPRflLSWw/edit#gid=1837599752). The bot will create an embed with detailed information about the team, including the Team Description, Trainer Name, Date Shared, and a conditional display of the Rental Code—if available.
-
-### Embed Display Features:
-- **Team Description**: Offers an overview of the team's theme or strategy.
-- **Trainer Name**: Indicates who created the team.
-- **Date Shared**: Shows the recency of the team's share date.
-- **Rental Code**: Provides a direct in-game access code, displayed only if available.
-
-## Generating Full Teams from PokePaste URLs
-
-### Command:
-- `.pp` or `.Pokepaste`
-
-### Description:
-Allows users to generate full Pokémon VGC teams directly from PokePaste URLs. This feature streamlines the process of sharing and using teams.
-
-### How to Use:
-Type the command followed by the PokePaste URL containing the team you wish to use. For example:
-```
-.pp <PokePaste URL>
-```
-
-This command simplifies team sharing within your community or for personal exploration of new team builds.  Users can upload the .zip file to the trade channel with command `btz` (if **AllowBatchTrades** is on) and the bot will batch trade the full team.
-
-### Support and Feedback
-
-If you encounter any issues or have suggestions for improvement, please don't hesitate to reach out to us through our support channels. Your feedback is invaluable as we strive to enhance your experience with the bot.
-
-**Happy Battling!**
+<h2>GIF Showcase</h2>
+<table>
+  <tr>
+    <td>
+      <img src="https://github.com/bdawg1989/MergeBot/assets/80122551/bb0d7926-5651-428f-9c4e-c9e4214aedfe" alt="PokePaste Team Generation">
+      <p><strong>PokePaste Team Generation</strong></p>
+    </td>
+    <td>
+      <img src="https://github.com/bdawg1989/MergeBot/assets/80122551/665df90b-88ce-4271-bb3a-04cdb4bda783" alt="VGC Team Generation">
+      <p><strong>VGC Team Generation</strong></p>
+    </td>
+    <td>
+      <img src="https://github.com/bdawg1989/MergeBot/assets/80122551/1f23f635-6b6d-40bb-bacf-fb7bd414850c" alt="Auto Correct Showdown Sets">
+      <p><strong>Auto Correct Showdown Sets</strong></p>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/bdawg1989/MergeBot/assets/80122551/360e67b2-80bc-4fd6-94ba-5793903ec8a4" alt="Mystery Eggs">
+      <p><strong>Mystery Eggs</strong></p>
+    </td>
+    <td>
+      <img src="https://github.com/bdawg1989/MergeBot/assets/80122551/50be37f2-c2b1-4f0c-94d2-dc8de2218f9b" alt="Mystery Gift Requests">
+      <p><strong>Mystery Gift Requests</strong></p>
+    </td>
+    <td>
+      <img src="https://github.com/bdawg1989/MergeBot/assets/80122551/60d214ed-0e31-4d76-adc9-154dff48eb5c" alt="Batch Trading">
+      <p><strong>Batch Trading</strong></p>
+    </td>
+  </tr>
+</table>
 
 
+<h2>Available Commands</h2>
+<h3>TradeModule</h3>
+<ul>
+  <li><code>fixOT</code> - Fixes OT and Nickname of a Pokémon you show via Link Trade if an advert is detected.</li>
+  <li><code>fixOTList</code> - Prints the users in the FixOT queue.</li>
+  <li><code>dittoTrade</code> - Makes the bot trade you a Ditto with a requested stat spread and language.</li>
+  <li><code>itemTrade</code> - Makes the bot trade you a Pokémon holding the requested item, or Ditto if stat spread keyword is provided.</li>
+  <li><code>tradeList</code> - Prints the users in the trade queues.</li>
+  <li><code>egg</code> - Trades an egg generated from the provided Pokémon name.</li>
+  <li><code>hidetrade</code> - Makes the bot trade you a Pokémon converted from the provided Showdown Set without showing the trade embed details.</li>
+  <li><code>trade</code> - Makes the bot trade you a Pokémon converted from the provided Showdown Set.</li>
+  <li><code>batchTrade</code> - Makes the bot trade multiple Pokémon from the provided list, up to a maximum of 3 trades.</li>
+  <li><code>batchtradezip</code> - Makes the bot trade multiple Pokémon from the provided .zip file, up to a maximum of 6 trades.</li>
+  <li><code>listevents</code> - Lists available event files, filtered by a specific letter or substring, and sends the list via DM.</li>
+  <li><code>eventrequest</code> - Downloads event attachments from the specified EventsFolder and adds to trade queue.</li>
+  <li><code>battlereadylist</code> - Lists available battle-ready files, filtered by a specific letter or substring, and sends the list via DM.</li>
+  <li><code>battlereadyrequest</code> - Downloads battle-ready attachments from the specified folder and adds to trade queue.</li>
+  <li><code>tradeUser</code> - Makes the bot trade the mentioned user the attached file.</li>
+</ul>
+<h3>BotAvatar</h3>
+<ul>
+  <li><code>setavatar</code> - Sets the bot's avatar to a specified GIF.</li>
+</ul>
+<h3>BotModule</h3>
+<ul>
+  <li><code>botStatus</code> - Gets the status of the bots.</li>
+  <li><code>botStart</code> - Starts the currently running bot.</li>
+  <li><code>botStop</code> - Stops the currently running bot.</li>
+  <li><code>botIdle</code> - Commands the currently running bot to Idle.</li>
+  <li><code>botChange</code> - Changes the routine of the currently running bot (trades).</li>
+  <li><code>botRestart</code> - Restarts the currently running bot(s).</li>
+</ul>
+<h3>CloneModule</h3>
+<ul>
+  <li><code>clone</code> - Clones the Pokémon you show via Link Trade.</li>
+  <li><code>cloneList</code> - Prints the users in the Clone queue.</li>
+</ul>
+<h3>DumpModule</h3>
+<ul>
+  <li><code>dump</code> - Dumps the Pokémon you show via Link Trade.</li>
+  <li><code>dumpList</code> - Prints the users in the Dump queue.</li>
+</ul>
+<h3>EchoModule</h3>
+<ul>
+  <li><code>Announce</code> - Sends an announcement to all EchoChannels added by the aec command.</li>
+  <li><code>addEmbedChannel</code> - Makes the bot post raid embeds to the channel.</li>
+  <li><code>echoInfo</code> - Dumps the special message (Echo) settings.</li>
+  <li><code>echoClear</code> - Clears the special message echo settings in that specific channel.</li>
+  <li><code>echoClearAll</code> - Clears all the special message Echo channel settings.</li>
+</ul>
+<h3>HelloModule</h3>
+<ul>
+  <li><code>hello</code> - Say hello to the bot and get a response.</li>
+</ul>
+<h3>HelpModule</h3>
+<ul>
+  <li><code>help</code> - Shows the available commands.</li>
+</ul>
+<h3>HubModule</h3>
+<ul>
+  <li><code>status</code> - Gets the status of the bot environment.</li>
+</ul>
+<h3>InfoModule</h3>
+<ul>
+  <li><code>info</code> - No description available.</li>
+</ul>
+<h3>LegalityCheckModule</h3>
+<ul>
+  <li><code>lc</code> - Verifies the attachment for legality.</li>
+  <li><code>lcv</code> - Verifies the attachment for legality with a verbose output.</li>
+</ul>
+<h3>LegalizerModule</h3>
+<ul>
+  <li><code>legalize</code> - Tries to legalize the attached pkm data.</li>
+  <li><code>convert</code> - Tries to convert the Showdown Set to pkm data.</li>
+</ul>
+<h3>LogModule</h3>
+<ul>
+  <li><code>logHere</code> - Makes the bot log to the channel.</li>
+  <li><code>logInfo</code> - Dumps the logging settings.</li>
+  <li><code>logClear</code> - Clears the logging settings in that specific channel.</li>
+  <li><code>logClearAll</code> - Clears all the logging settings.</li>
+</ul>
+<h3>MysteryEggModule</h3>
+<ul>
+  <li><code>mysteryegg</code> - Trades an egg generated from the provided Pokémon name.</li>
+</ul>
+<h3>OwnerModule</h3>
+<ul>
+  <li><code>listguilds</code> - Lists all guilds the bot is part of.</li>
+  <li><code>blacklistserver</code> - Adds a server ID to the bot's server blacklist.</li>
+  <li><code>unblacklistserver</code> - Removes a server ID from the bot's server blacklist.</li>
+  <li><code>addSudo</code> - Adds mentioned user to global sudo</li>
+  <li><code>removeSudo</code> - Removes mentioned user from global sudo</li>
+  <li><code>addChannel</code> - Adds a channel to the list of channels that are accepting commands.</li>
+  <li><code>syncChannels</code> - Copies all channels from ChannelWhitelist to AnnouncementChannel.</li>
+  <li><code>removeChannel</code> - Removes a channel from the list of channels that are accepting commands.</li>
+  <li><code>leave</code> - Leaves the current server.</li>
+  <li><code>leaveguild</code> - Leaves guild based on supplied ID.</li>
+  <li><code>leaveall</code> - Leaves all servers the bot is currently in.</li>
+  <li><code>repeek</code> - Take and send a screenshot from the currently configured Switch.</li>
+  <li><code>video</code> - Take and send a GIF from the currently configured Switch.</li>
+  <li><code>kill</code> - Causes the entire process to end itself!</li>
+  <li><code>dm</code> - Sends a direct message to a specified user.</li>
+  <li><code>say</code> - Sends a message to a specified channel.</li>
+  <li><code>blacklist</code> - Blacklists a mentioned Discord user.</li>
+  <li><code>blacklistComment</code> - Adds a comment for a blacklisted Discord user ID.</li>
+  <li><code>unblacklist</code> - Removes a mentioned Discord user from the blacklist.</li>
+  <li><code>blacklistId</code> - Blacklists Discord user IDs. (Useful if user is not in the server).</li>
+  <li><code>unBlacklistId</code> - Removes Discord user IDs from the blacklist. (Useful if user is not in the server).</li>
+  <li><code>blacklistSummary</code> - Prints the list of blacklisted Discord users.</li>
+  <li><code>banID</code> - Bans online user IDs.</li>
+  <li><code>bannedIDComment</code> - Adds a comment for a banned online user ID.</li>
+  <li><code>unbanID</code> - Bans online user IDs.</li>
+  <li><code>bannedIDSummary</code> - Prints the list of banned online IDs.</li>
+  <li><code>forgetUser</code> - Forgets users that were previously encountered.</li>
+  <li><code>previousUserSummary</code> - Prints a list of previously encountered users.</li>
+</ul>
+<h3>PingModule</h3>
+<ul>
+  <li><code>ping</code> - Makes the bot respond, indicating that it is running.</li>
+</ul>
+<h3>Pokepaste</h3>
+<ul>
+  <li><code>pokepaste</code> - Generates a team from a specified pokepaste URL and sends it as files via DM.</li>
+</ul>
+<h3>PoolModule</h3>
+<ul>
+  <li><code>poolReload</code> - Reloads the bot pool from the setting's folder.</li>
+  <li><code>pool</code> - Displays the details of Pokémon files in the random pool.</li>
+</ul>
+<h3>QueueModule</h3>
+<ul>
+  <li><code>queueStatus</code> - Checks the user's position in the queue.</li>
+  <li><code>queueClear</code> - Clears the user from the trade queues. Will not remove a user if they are being processed.</li>
+  <li><code>queueClearUser</code> - Clears the user from the trade queues. Will not remove a user if they are being processed.</li>
+  <li><code>queueClearAll</code> - Clears all users from the trade queues.</li>
+  <li><code>queueToggle</code> - Toggles on/off the ability to join the trade queue.</li>
+  <li><code>queueMode</code> - Changes how queueing is controlled (manual/threshold/interval).</li>
+  <li><code>queueList</code> - Private messages the list of users in the queue.</li>
+  <li><code>deleteTradeCode</code> - Deletes the stored trade code for the user.</li>
+</ul>
+<h3>RemoteControlModule</h3>
+<ul>
+  <li><code>click</code> - Clicks the specified button.</li>
+  <li><code>setStick</code> - Sets the stick to the specified position.</li>
+  <li><code>setScreenOn</code> - Turns the screen on</li>
+  <li><code>setScreenOff</code> - Turns the screen off</li>
+</ul>
+<h3>SeedCheckModule</h3>
+<ul>
+  <li><code>seedCheck</code> - Checks the seed for a Pokémon.</li>
+  <li><code>seedList</code> - Prints the users in the Seed Check queue.</li>
+  <li><code>findFrame</code> - Prints the next shiny frame from the provided seed.</li>
+</ul>
+<h3>SpecialRequestModule</h3>
+<ul>
+  <li><code>specialrequestpokemon</code> - Lists available wondercard events from the specified generation or game or requests a specific event if a number is provided.</li>
+</ul>
+<h3>SudoModule</h3>
+<ul>
+  <li><code>blacklist</code> - Blacklists a mentioned Discord user.</li>
+  <li><code>blacklistComment</code> - Adds a comment for a blacklisted Discord user ID.</li>
+  <li><code>unblacklist</code> - Removes a mentioned Discord user from the blacklist.</li>
+  <li><code>blacklistId</code> - Blacklists Discord user IDs. (Useful if user is not in the server).</li>
+  <li><code>unBlacklistId</code> - Removes Discord user IDs from the blacklist. (Useful if user is not in the server).</li>
+  <li><code>blacklistSummary</code> - Prints the list of blacklisted Discord users.</li>
+  <li><code>banID</code> - Bans online user IDs.</li>
+  <li><code>bannedIDComment</code> - Adds a comment for a banned online user ID.</li>
+  <li><code>unbanID</code> - Bans online user IDs.</li>
+  <li><code>bannedIDSummary</code> - Prints the list of banned online IDs.</li>
+  <li><code>forgetUser</code> - Forgets users that were previously encountered.</li>
+  <li><code>previousUserSummary</code> - Prints a list of previously encountered users.</li>
+</ul>
+<h3>TradeStartModule</h3>
+<ul>
+  <li><code>startHere</code> - Makes the bot log trade starts to the channel.</li>
+  <li><code>startInfo</code> - Dumps the Start Notification settings.</li>
+  <li><code>startClear</code> - Clears the Start Notification settings in that specific channel.</li>
+  <li><code>startClearAll</code> - Clears all the Start Notification settings.</li>
+</ul>
+<h3>VGCPastes</h3>
+<ul>
+  <li><code>randomteam</code> - Generates a random VGC team from the specified Google Spreadsheet and sends it as files via DM.</li>
+</ul>
+
+<hr>
 
 # All of my Projects
 
