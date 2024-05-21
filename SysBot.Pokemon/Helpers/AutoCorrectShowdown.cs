@@ -245,7 +245,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         return line;
     }
 
-    private static async Task<string>? GetClosestSpecies(string userSpecies)
+    private static Task<string>? GetClosestSpecies(string userSpecies)
     {
         var gameStrings = GetGameStrings();
         var pkms = gameStrings.specieslist.Select(s => new T { Species = (ushort)Array.IndexOf(gameStrings.specieslist, s) });
@@ -259,10 +259,10 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             .OrderByDescending(s => s.Distance)
             .FirstOrDefault();
 
-        return fuzzySpecies.Distance >= 80 ? fuzzySpecies.Species : null;
+        return Task.FromResult<string>(fuzzySpecies.Distance >= 80 ? fuzzySpecies.Species : null);
     }
 
-    private static async Task<string>? GetClosestFormName(string userFormName, string[] validFormNames)
+    private static Task<string>? GetClosestFormName(string userFormName, string[] validFormNames)
     {
         var fuzzyFormName = validFormNames
             .Where(f => !string.IsNullOrEmpty(f))
@@ -271,7 +271,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             .ThenBy(f => f.FormName.Length)
             .FirstOrDefault();
 
-        return fuzzyFormName.Distance >= 80 ? fuzzyFormName.FormName : null;
+        return Task.FromResult<string>(fuzzyFormName.Distance >= 80 ? fuzzyFormName.FormName : null);
     }
 
     private static string ValidateHeldItem(string[] lines, PKM pk, string[] itemlist, string heldItem)
@@ -572,7 +572,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         throw new ArgumentException("Unsupported PKM type.", nameof(pk));
     }
 
-    private static async Task<string>? GetClosestAbility(string userAbility, ushort speciesIndex, GameStrings gameStrings, IPersonalAbility12 personalInfo)
+    private static Task<string>? GetClosestAbility(string userAbility, ushort speciesIndex, GameStrings gameStrings, IPersonalAbility12 personalInfo)
     {
         var abilities = Enumerable.Range(0, personalInfo.AbilityCount)
             .Select(i => gameStrings.abilitylist[personalInfo.GetAbilityAtIndex(i)])
@@ -583,10 +583,10 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             .OrderByDescending(a => a.Distance)
             .FirstOrDefault();
 
-        return fuzzyAbility.Distance >= 80 ? fuzzyAbility.Ability : null;
+        return Task.FromResult<string>(fuzzyAbility.Distance >= 80 ? fuzzyAbility.Ability : null);
     }
 
-    private static async Task<string>? GetClosestNature(string userNature, GameStrings gameStrings)
+    private static Task<string>? GetClosestNature(string userNature, GameStrings gameStrings)
     {
         var fuzzyNature = gameStrings.natures
             .Where(n => !string.IsNullOrEmpty(n))
@@ -594,10 +594,10 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             .OrderByDescending(n => n.Distance)
             .FirstOrDefault();
 
-        return fuzzyNature.Distance >= 80 ? fuzzyNature.Nature : null;
+        return Task.FromResult<string>(fuzzyNature.Distance >= 80 ? fuzzyNature.Nature : null);
     }
 
-    private static async Task<string>? GetLegalBall(ushort speciesIndex, string formName, string ballName, GameStrings gameStrings, PKM pk)
+    private static Task<string>? GetLegalBall(ushort speciesIndex, string formName, string ballName, GameStrings gameStrings, PKM pk)
     {
         var closestBall = GetClosestBall(ballName, gameStrings);
 
@@ -605,11 +605,11 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         {
             pk.Ball = (byte)Array.IndexOf(gameStrings.itemlist, closestBall);
             if (new LegalityAnalysis(pk).Valid)
-                return closestBall;
+                return Task.FromResult(closestBall);
         }
 
         var legalBall = BallApplicator.ApplyBallLegalByColor(pk);
-        return gameStrings.itemlist[legalBall];
+        return Task.FromResult(gameStrings.itemlist[legalBall]);
     }
 
     private static string GetClosestBall(string userBall, GameStrings gameStrings)
@@ -756,7 +756,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         return true;
     }
 
-    private static async Task<string>? ValidateGender(PKM pk, string gender, string speciesName)
+    private static Task<string>? ValidateGender(PKM pk, string gender, string speciesName)
     {
         if (!string.IsNullOrEmpty(gender))
         {
@@ -770,7 +770,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             }
         }
 
-        return gender;
+        return Task.FromResult(gender);
     }
 
     private static void RemoveIVLine(string[] lines)
@@ -797,12 +797,12 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         }
     }
 
-    private static async Task<string>? CorrectMarks(PKM pk, IEncounterTemplate encounter, string[] lines)
+    private static Task<string>? CorrectMarks(PKM pk, IEncounterTemplate encounter, string[] lines)
     {
         if (pk is not IRibbonIndex m)
         {
             LogUtil.LogInfo("PKM does not implement IRibbonIndex. Correcting to '.Ribbons=$SuggestAll'.", nameof(AutoCorrectShowdown<T>));
-            return ".Ribbons=$SuggestAll";
+            return Task.FromResult(".Ribbons=$SuggestAll");
         }
 
         // Find the existing mark line in the input showdown set
@@ -821,7 +821,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
                 {
                     m.SetRibbon((int)markIndex, true);
                     LogUtil.LogInfo($"Found valid mark: {markIndex}. Keeping the existing mark line: {existingMarkLine}", nameof(AutoCorrectShowdown<T>));
-                    return existingMarkLine;
+                    return Task.FromResult(existingMarkLine);
                 }
                 else
                 {
@@ -844,7 +844,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
                 {
                     m.SetRibbon((int)mark, true);
                     LogUtil.LogInfo($"Found valid mark: {mark}. Setting the mark line to '.RibbonMark{GetRibbonNameSafe(mark)}=True'.", nameof(AutoCorrectShowdown<T>));
-                    return $".RibbonMark{GetRibbonNameSafe(mark)}=True";
+                    return Task.FromResult($".RibbonMark{GetRibbonNameSafe(mark)}=True");
                 }
             }
         }
@@ -855,7 +855,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 
         // If no valid mark is found, correct the line to ".Ribbons=$SuggestAll"
         LogUtil.LogInfo("No valid marks found. Correcting to '.Ribbons=$SuggestAll'.", nameof(AutoCorrectShowdown<T>));
-        return ".Ribbons=$SuggestAll";
+        return Task.FromResult(".Ribbons=$SuggestAll");
     }
 
     private static string GetRibbonNameSafe(RibbonIndex index)
