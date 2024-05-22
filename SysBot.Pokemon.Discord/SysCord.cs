@@ -307,7 +307,7 @@ public sealed class SysCord<T> where T : PKM, new()
         string thanksText = msg.Content.ToLower();
         if (SysCordSettings.Settings.ReplyToThanks && (thanksText.Contains("thank") || thanksText.Contains("thx")))
         {
-            await SysCord<T>.RespondToThanksMessage(msg);
+            await SysCord<T>.RespondToThanksMessage(msg).ConfigureAwait(false);
             return;
         }
 
