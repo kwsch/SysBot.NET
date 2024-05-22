@@ -47,6 +47,9 @@ public class DiscordSettings
     [Category(Startup), Description("Indicates the Discord presence status color only considering bots that are Trade-type.")]
     public bool BotColorStatusTradeOnly { get; set; } = true;
 
+    [Category(Operation), Description("Will send a random response to a user that thanks the bot.")]
+    public bool ReplyToThanks { get; set; } = true;
+
     [Category(Operation), Description("Additional text to add to the beginning of the embed description.")]
     public string[] AdditionalEmbedText { get; set; } = Array.Empty<string>();
 
