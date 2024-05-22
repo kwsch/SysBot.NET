@@ -26,6 +26,15 @@ public class DiscordSettings
     [Category(Startup), Description("Will send a status Embed for Online/Offline to all Whitelisted Channels.")]
     public bool BotEmbedStatus { get; set; } = true;
 
+    [Category(Startup), Description("Will add online/offline emoji to channel name based on current status.  Whitelisted channels only.")]
+    public bool ChannelStatus { get; set; } = true;
+
+    [Category(Startup), Description("Custom emoji to use when the bot is online.")]
+    public string OnlineEmoji { get; set; } = "✅";
+
+    [Category(Startup), Description("Custom emoji to use when the bot is offline.")]
+    public string OfflineEmoji { get; set; } = "❌";
+
     [Category(Startup), Description("List of modules that will not be loaded when the bot is started (comma separated).")]
     public string ModuleBlacklist { get; set; } = string.Empty;
 

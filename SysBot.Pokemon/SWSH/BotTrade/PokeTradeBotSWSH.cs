@@ -3,7 +3,6 @@ using PKHeX.Core.Searching;
 using SysBot.Base;
 using SysBot.Pokemon.Helpers;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -14,13 +13,24 @@ using static SysBot.Pokemon.PokeDataOffsetsSWSH;
 
 namespace SysBot.Pokemon;
 
-public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : PokeRoutineExecutor8SWSH(Config), ICountBot
+public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : PokeRoutineExecutor8SWSH(Config), ICountBot, ITradeBot
 {
     public static ISeedSearchHandler<PK8> SeedChecker { get; set; } = new NoSeedSearchHandler<PK8>();
 
     private readonly TradeSettings TradeSettings = hub.Config.Trade;
     private readonly PokeTradeHub<PK8> Hub;
     private readonly TradeAbuseSettings AbuseSettings = hub.Config.TradeAbuse;
+    public event EventHandler<Exception>? ConnectionError;
+    public event EventHandler? ConnectionSuccess;
+
+    private void OnConnectionError(Exception ex)
+    {
+        ConnectionError?.Invoke(this, ex);
+    }
+    private void OnConnectionSuccess()
+    {
+        ConnectionSuccess?.Invoke(this, EventArgs.Empty);
+    }
 
     public ICountSettings Counts => TradeSettings;
 
@@ -53,13 +63,14 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
             RecentTrainerCache.SetRecentTrainer(sav);
             await InitializeSessionOffsets(token).ConfigureAwait(false);
-
+            OnConnectionSuccess();
             Log($"Starting main {nameof(PokeTradeBotSWSH)} loop.");
             await InnerLoop(sav, token).ConfigureAwait(false);
         }
         catch (Exception e)
         {
-            Log(e.Message);
+            OnConnectionError(e);
+            throw;
         }
 
         Log($"Ending {nameof(PokeTradeBotSWSH)} loop.");

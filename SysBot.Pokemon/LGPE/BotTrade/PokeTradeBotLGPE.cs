@@ -14,10 +14,21 @@ using static SysBot.Pokemon.PokeDataOffsetsLGPE;
 
 namespace SysBot.Pokemon;
 
-public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : PokeRoutineExecutor7LGPE(Config), ICountBot
+public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : PokeRoutineExecutor7LGPE(Config), ICountBot, ITradeBot
 {
     private readonly TradeSettings TradeSettings = Hub.Config.Trade;
     public readonly TradeAbuseSettings AbuseSettings = Hub.Config.TradeAbuse;
+    public event EventHandler<Exception>? ConnectionError;
+    public event EventHandler? ConnectionSuccess;
+
+    private void OnConnectionError(Exception ex)
+    {
+        ConnectionError?.Invoke(this, ex);
+    }
+    private void OnConnectionSuccess()
+    {
+        ConnectionSuccess?.Invoke(this, EventArgs.Empty);
+    }
 
     public ICountSettings Counts => TradeSettings;
 
@@ -48,13 +59,14 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
             RecentTrainerCache.SetRecentTrainer(sav);
 
-
+            OnConnectionSuccess();
             Log($"Starting main {nameof(PokeTradeBotLGPE)} loop.");
             await InnerLoop(sav, token).ConfigureAwait(false);
         }
         catch (Exception e)
         {
-            Log(e.Message);
+            OnConnectionError(e);
+            throw;
         }
 
         Log($"Ending {nameof(PokeTradeBotLGPE)} loop.");

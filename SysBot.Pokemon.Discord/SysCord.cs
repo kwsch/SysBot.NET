@@ -43,7 +43,14 @@ public sealed class SysCord<T> where T : PKM, new()
         Runner = runner;
         Hub = runner.Hub;
         Manager = new DiscordManager(Hub.Config.Discord);
-
+        foreach (var bot in runner.Hub.Bots.ToArray())
+        {
+            if (bot is ITradeBot tradeBot)
+            {
+                tradeBot.ConnectionError += async (sender, ex) => await HandleBotStop();
+                tradeBot.ConnectionSuccess += async (sender, e) => await HandleBotStart();
+            }
+        }
         SysCordSettings.Manager = Manager;
         SysCordSettings.HubConfig = Hub.Config;
 
@@ -62,11 +69,9 @@ public sealed class SysCord<T> where T : PKM, new()
         {
             // Again, log level:
             LogLevel = LogSeverity.Info,
-
             // This makes commands get run on the task thread pool instead on the websocket read thread.
             // This ensures long-running logic can't block the websocket connection.
             DefaultRunMode = Hub.Config.Discord.AsyncCommands ? RunMode.Async : RunMode.Sync,
-
             // There's a few more properties you can set,
             // for example, case-insensitive commands.
             CaseSensitiveCommands = false,
@@ -80,29 +85,11 @@ public sealed class SysCord<T> where T : PKM, new()
         _services = ConfigureServices();
 
         _client.PresenceUpdated += Client_PresenceUpdated;
-
-        // Subscribe to the BotStopped event
-        runner.BotStopped += async (sender, e) => await HandleBotStop();
     }
 
-    public void SetupEventListeners(DiscordSocketClient client)
+    public async Task HandleBotStart()
     {
-        client.Connected += Client_Connected;
-        client.Disconnected += Client_Disconnected;
-    }
-
-    private async Task Client_Connected()
-    {
-        LogUtil.LogText("Client_Connected: Bot is connecting...");
         await AnnounceBotStatus("Online", EmbedColorOption.Green);
-        LogUtil.LogText("Client_Connected: Connection handling completed.");
-    }
-
-    private async Task Client_Disconnected(Exception arg)
-    {
-        LogUtil.LogText($"Client_Disconnected: Bot is disconnecting... Exception: {arg.Message}");
-        await AnnounceBotStatus("Offline", EmbedColorOption.Red);
-        LogUtil.LogText("Client_Disconnected: Disconnection handling completed.");
     }
 
     public async Task HandleBotStop()
@@ -120,16 +107,16 @@ public sealed class SysCord<T> where T : PKM, new()
 
         var botName = SysCordSettings.HubConfig.BotName;
         if (string.IsNullOrEmpty(botName))
-            botName = "Bot";
+            botName = "SysBot";
 
-        var fullStatusMessage = $"# {botName} is {status}!";
+        var fullStatusMessage = $"**Status**: {botName} is {status}!";
 
         var thumbnailUrl = status == "Online"
             ? "https://raw.githubusercontent.com/bdawg1989/sprites/main/botgo.png"
             : "https://raw.githubusercontent.com/bdawg1989/sprites/main/botstop.png";
 
         var embed = new EmbedBuilder()
-            .WithTitle($"{botName} Status")
+            .WithTitle($"Bot Status Report")
             .WithDescription(fullStatusMessage)
             .WithColor(EmbedColorConverter.ToDiscordColor(color))
             .WithThumbnailUrl(thumbnailUrl)
@@ -171,6 +158,15 @@ public sealed class SysCord<T> where T : PKM, new()
                 var message = await channel.SendMessageAsync(embed: embed);
                 _announcementMessageIds[channelId] = message.Id;
                 LogUtil.LogText($"AnnounceBotStatus: {fullStatusMessage} announced in channel {channelId}.");
+
+                // Update channel name with emoji based on bot status
+                if (SysCordSettings.Settings.ChannelStatus)
+                {
+                    var emoji = status == "Online" ? SysCordSettings.Settings.OnlineEmoji : SysCordSettings.Settings.OfflineEmoji;
+                    var channelName = ((ITextChannel)channel).Name;
+                    var updatedChannelName = $"{emoji}{channelName.TrimStart('✅').TrimStart('❌').Trim()}";
+                    await ((ITextChannel)channel).ModifyAsync(x => x.Name = updatedChannelName);
+                }
             }
             catch (Exception ex)
             {
@@ -224,9 +220,6 @@ public sealed class SysCord<T> where T : PKM, new()
     {
         // Centralize the logic for commands into a separate method.
         await InitCommands().ConfigureAwait(false);
-
-        // Setup event listeners for the Discord client.
-        SetupEventListeners(_client);
 
         // Login and connect.
         await _client.LoginAsync(TokenType.Bot, apiToken).ConfigureAwait(false);
