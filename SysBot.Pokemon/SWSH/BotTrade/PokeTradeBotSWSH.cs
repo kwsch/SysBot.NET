@@ -18,7 +18,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
     public static ISeedSearchHandler<PK8> SeedChecker { get; set; } = new NoSeedSearchHandler<PK8>();
 
     private readonly TradeSettings TradeSettings = hub.Config.Trade;
-    private readonly PokeTradeHub<PK8> Hub;
+    private readonly PokeTradeHub<PK8>? Hub;
     private readonly TradeAbuseSettings AbuseSettings = hub.Config.TradeAbuse;
     public event EventHandler<Exception>? ConnectionError;
     public event EventHandler? ConnectionSuccess;

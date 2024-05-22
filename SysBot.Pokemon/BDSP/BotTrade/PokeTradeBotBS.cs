@@ -4,7 +4,6 @@ using SysBot.Base;
 using SysBot.Pokemon.Helpers;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
