@@ -164,7 +164,7 @@ public sealed class SysCord<T> where T : PKM, new()
                 {
                     var emoji = status == "Online" ? SysCordSettings.Settings.OnlineEmoji : SysCordSettings.Settings.OfflineEmoji;
                     var channelName = ((ITextChannel)channel).Name;
-                    var updatedChannelName = $"{emoji}{channelName.TrimStart('✅').TrimStart('❌').Trim()}";
+                    var updatedChannelName = $"{emoji}{SysCord<T>.TrimStatusEmoji(channelName)}";
                     await ((ITextChannel)channel).ModifyAsync(x => x.Name = updatedChannelName);
                 }
             }
@@ -471,5 +471,23 @@ public sealed class SysCord<T> where T : PKM, new()
         var game = Hub.Config.Discord.BotGameStatus;
         if (!string.IsNullOrWhiteSpace(game))
             await _client.SetGameAsync(game).ConfigureAwait(false);
+    }
+
+    private static string TrimStatusEmoji(string channelName)
+    {
+        var onlineEmoji = SysCordSettings.Settings.OnlineEmoji;
+        var offlineEmoji = SysCordSettings.Settings.OfflineEmoji;
+
+        if (channelName.StartsWith(onlineEmoji))
+        {
+            return channelName[onlineEmoji.Length..].Trim();
+        }
+
+        if (channelName.StartsWith(offlineEmoji))
+        {
+            return channelName[offlineEmoji.Length..].Trim();
+        }
+
+        return channelName.Trim();
     }
 }
