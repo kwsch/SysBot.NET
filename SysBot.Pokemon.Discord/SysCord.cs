@@ -304,9 +304,16 @@ public sealed class SysCord<T> where T : PKM, new()
         if (msg.Author.Id == _client.CurrentUser.Id || msg.Author.IsBot)
             return;
 
+        string thanksText = msg.Content.ToLower();
+        if (thanksText.Contains("thank") || thanksText.Contains("thx"))
+        {
+            await SysCord<T>.RespondToThanksMessage(msg);
+            return;
+        }
+
         var correctPrefix = SysCordSettings.Settings.CommandPrefix;
         var content = msg.Content;
-        var command = content.Split(' ')[0][1..];
+        var command = content.Split(' ')[0][1..]; 
         var prefix = content[0].ToString();
 
         if (_validCommands.Contains(command))
@@ -330,6 +337,32 @@ public sealed class SysCord<T> where T : PKM, new()
         var context = new SocketCommandContext(_client, msg);
         await TryHandleCommandAsync(msg, context, argPos);
         await TryHandleMessageAsync(msg).ConfigureAwait(false);
+    }
+
+    private static async Task RespondToThanksMessage(SocketUserMessage msg)
+    {
+        var channel = msg.Channel;
+        await channel.TriggerTypingAsync();
+        await Task.Delay(1500);
+
+        var responses = new List<string>
+    {
+        "You're welcome! ❤️",
+        "No problem at all!",
+        "Anytime, glad to help!",
+        "It's my pleasure! ❤️",
+        "Not a problem! You're welcome!",
+        "Always here to help!",
+        "Glad I could assist!",
+        "Happy to serve!",
+        "Of course! You're welcome!",
+        "Sure thing!"
+    };
+
+        var randomResponse = responses[new Random().Next(responses.Count)];
+        var finalResponse = $"{randomResponse}";
+
+        await msg.Channel.SendMessageAsync(finalResponse).ConfigureAwait(false);
     }
 
     private async Task<bool> TryHandleCommandAsync(SocketUserMessage msg, SocketCommandContext context, int pos)
@@ -389,34 +422,6 @@ public sealed class SysCord<T> where T : PKM, new()
                         await msg.Channel.RepostPKMAsShowdownAsync(att, userMessage).ConfigureAwait(false);
                 }
             }
-        }
-        // fun little trick for users that like to thank the bot after a trade
-        string thanksText = msg.Content.ToLower();
-        if (thanksText.Contains("thank") || thanksText.Contains("thx"))
-        {
-            var channel = msg.Channel;
-            await channel.TriggerTypingAsync();
-            await Task.Delay(1_500);
-
-            var responses = new List<string>
-            {
-                "You're welcome! ❤️",
-                "No problem at all!",
-                "Anytime, glad to help!",
-                "It's my pleasure! ❤️",
-                "Not a problem! You're welcome!",
-                "Always here to help!",
-                "Glad I could assist!",
-                "Happy to serve!",
-                "Of course! You're welcome!",
-                "Sure thing!"
-            };
-
-            var randomResponse = responses[new Random().Next(responses.Count)];
-            var finalResponse = $"{randomResponse}";
-
-            await msg.Channel.SendMessageAsync(finalResponse).ConfigureAwait(false);
-            return;
         }
     }
 
