@@ -284,7 +284,7 @@ public sealed partial class Main : Form
     private void SendAll(BotControlCommand cmd)
     {
         foreach (var c in FLP_Bots.Controls.OfType<BotController>())
-            c.SendCommand(cmd, false);
+            c.SendCommand(cmd);
     }
 
     private void B_Stop_Click(object sender, EventArgs e)

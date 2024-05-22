@@ -142,7 +142,7 @@ public partial class BotController : UserControl
         Remove?.Invoke(this, EventArgs.Empty);
     }
 
-    public void SendCommand(BotControlCommand cmd, bool echo = true)
+    public void SendCommand(BotControlCommand cmd)
     {
         if (Runner?.Config.SkipConsoleBotCreation != false)
         {
