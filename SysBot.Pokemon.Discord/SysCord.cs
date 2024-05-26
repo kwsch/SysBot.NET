@@ -301,6 +301,7 @@ public sealed class SysCord<T> where T : PKM, new()
                 return;
             }
         }
+
         if (msg.Author.Id == _client.CurrentUser.Id || msg.Author.IsBot)
             return;
 
@@ -313,62 +314,24 @@ public sealed class SysCord<T> where T : PKM, new()
 
         var correctPrefix = SysCordSettings.Settings.CommandPrefix;
         var content = msg.Content;
-        var command = content.Split(' ')[0][1..]; 
-        var prefix = content[0].ToString();
+        var argPos = 0;
 
-        if (_validCommands.Contains(command))
+        if (msg.HasMentionPrefix(_client.CurrentUser, ref argPos) || msg.HasStringPrefix(correctPrefix, ref argPos))
         {
-            if (prefix != correctPrefix)
-            {
-                var response = await msg.Channel.SendMessageAsync($"Incorrect prefix! The correct command is **{correctPrefix}{command}**").ConfigureAwait(false);
-                _ = Task.Delay(5000).ContinueWith(async _ =>
-                {
-                    await msg.DeleteAsync().ConfigureAwait(false);
-                    await response.DeleteAsync().ConfigureAwait(false);
-                });
+            var context = new SocketCommandContext(_client, msg);
+            var handled = await TryHandleCommandAsync(msg, context, argPos);
+            if (handled)
                 return;
-            }
         }
 
-        var argPos = 0;
-        if (!msg.HasMentionPrefix(_client.CurrentUser, ref argPos) && !msg.HasStringPrefix(correctPrefix, ref argPos))
-            return;
-
-        var context = new SocketCommandContext(_client, msg);
-        await TryHandleCommandAsync(msg, context, argPos);
-        await TryHandleMessageAsync(msg).ConfigureAwait(false);
-    }
-
-    private static async Task RespondToThanksMessage(SocketUserMessage msg)
-    {
-        var channel = msg.Channel;
-        await channel.TriggerTypingAsync();
-        await Task.Delay(1500);
-
-        var responses = new List<string>
-    {
-        "You're welcome! ❤️",
-        "No problem at all!",
-        "Anytime, glad to help!",
-        "It's my pleasure! ❤️",
-        "Not a problem! You're welcome!",
-        "Always here to help!",
-        "Glad I could assist!",
-        "Happy to serve!",
-        "Of course! You're welcome!",
-        "Sure thing!"
-    };
-
-        var randomResponse = responses[new Random().Next(responses.Count)];
-        var finalResponse = $"{randomResponse}";
-
-        await msg.Channel.SendMessageAsync(finalResponse).ConfigureAwait(false);
+        if (msg.Attachments.Count > 0)
+        {
+            await TryHandleAttachmentAsync(msg).ConfigureAwait(false);
+        }
     }
 
     private async Task<bool> TryHandleCommandAsync(SocketUserMessage msg, SocketCommandContext context, int pos)
     {
-        // Create a Command Context.
-        var contextprefix = new SocketCommandContext(_client, msg);
         var AbuseSettings = Hub.Config.TradeAbuse;
 
         // Check if the user is in the bannedIDs list
@@ -381,7 +344,6 @@ public sealed class SysCord<T> where T : PKM, new()
             }
         }
 
-        // Check Permission
         var mgr = Manager;
         if (!mgr.CanUseCommandUser(msg.Author.Id))
         {
@@ -395,7 +357,6 @@ public sealed class SysCord<T> where T : PKM, new()
             return true;
         }
 
-        // Execute the command.
         var guild = msg.Channel is SocketGuildChannel g ? g.Guild.Name : "Unknown Guild";
         await Log(new LogMessage(LogSeverity.Info, "Command", $"Executing command from {guild}#{msg.Channel.Name}:@{msg.Author.Username}. Content: {msg}")).ConfigureAwait(false);
         var result = await _commands.ExecuteAsync(context, pos, _services).ConfigureAwait(false);
@@ -408,21 +369,44 @@ public sealed class SysCord<T> where T : PKM, new()
         return true;
     }
 
-    private async Task TryHandleMessageAsync(SocketMessage msg)
+    private async Task TryHandleAttachmentAsync(SocketMessage msg)
     {
-        if (msg.Attachments.Count > 0)
+        var mgr = Manager;
+        var cfg = mgr.Config;
+        if (cfg.ConvertPKMToShowdownSet && (cfg.ConvertPKMReplyAnyChannel || mgr.CanUseCommandChannel(msg.Channel.Id)))
         {
-            var mgr = Manager;
-            var cfg = mgr.Config;
-            if (cfg.ConvertPKMToShowdownSet && (cfg.ConvertPKMReplyAnyChannel || mgr.CanUseCommandChannel(msg.Channel.Id)))
+            if (msg is SocketUserMessage userMessage)
             {
-                if (msg is SocketUserMessage userMessage)
-                {
-                    foreach (var att in msg.Attachments)
-                        await msg.Channel.RepostPKMAsShowdownAsync(att, userMessage).ConfigureAwait(false);
-                }
+                foreach (var att in msg.Attachments)
+                    await msg.Channel.RepostPKMAsShowdownAsync(att, userMessage).ConfigureAwait(false);
             }
         }
+    }
+
+    private static async Task RespondToThanksMessage(SocketUserMessage msg)
+    {
+        var channel = msg.Channel;
+        await channel.TriggerTypingAsync();
+        await Task.Delay(1500);
+
+        var responses = new List<string>
+        {
+            "You're welcome! ❤️",
+            "No problem at all!",
+            "Anytime, glad to help!",
+            "It's my pleasure! ❤️",
+            "Not a problem! You're welcome!",
+            "Always here to help!",
+            "Glad I could assist!",
+            "Happy to serve!",
+            "Of course! You're welcome!",
+            "Sure thing!"
+        };
+
+        var randomResponse = responses[new Random().Next(responses.Count)];
+        var finalResponse = $"{randomResponse}";
+
+        await msg.Channel.SendMessageAsync(finalResponse).ConfigureAwait(false);
     }
 
     private Task Client_PresenceUpdated(SocketUser user, SocketPresence before, SocketPresence after)

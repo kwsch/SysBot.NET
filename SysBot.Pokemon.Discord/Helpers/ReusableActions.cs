@@ -76,13 +76,20 @@ public static class ReusableActions
 
         var botMessage = await channel.SendMessageAsync(embed: embed).ConfigureAwait(false); // Send the embed
         var warningMessage = await channel.SendMessageAsync("This message will self-destruct in 15 seconds. Please copy your data.").ConfigureAwait(false);
-        await Task.Delay(2000).ConfigureAwait(false);
-        await userMessage.DeleteAsync().ConfigureAwait(false);
-        await Task.Delay(20000).ConfigureAwait(false);
-        await botMessage.DeleteAsync().ConfigureAwait(false);
-        await warningMessage.DeleteAsync().ConfigureAwait(false);
-    }
 
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(2000).ConfigureAwait(false);
+            await userMessage.DeleteAsync().ConfigureAwait(false);
+        });
+
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(20000).ConfigureAwait(false);
+            await botMessage.DeleteAsync().ConfigureAwait(false);
+            await warningMessage.DeleteAsync().ConfigureAwait(false);
+        });
+    }
 
     public static string GetFormattedShowdownText(PKM pkm)
     {
