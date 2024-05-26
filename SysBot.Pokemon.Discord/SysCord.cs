@@ -323,6 +323,22 @@ public sealed class SysCord<T> where T : PKM, new()
             if (handled)
                 return;
         }
+        else if (content.Length > 1 && content[0] != correctPrefix[0])
+        {
+            var potentialPrefix = content[0].ToString();
+            var command = content.Split(' ')[0][1..];
+
+            if (_validCommands.Contains(command))
+            {
+                var response = await msg.Channel.SendMessageAsync($"Incorrect prefix! The correct command is **{correctPrefix}{command}**").ConfigureAwait(false);
+                _ = Task.Delay(5000).ContinueWith(async _ =>
+                {
+                    await msg.DeleteAsync().ConfigureAwait(false);
+                    await response.DeleteAsync().ConfigureAwait(false);
+                });
+                return;
+            }
+        }
 
         if (msg.Attachments.Count > 0)
         {
