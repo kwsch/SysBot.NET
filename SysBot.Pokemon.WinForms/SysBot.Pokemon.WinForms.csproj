@@ -5,11 +5,11 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <RuntimeIdentifier>win-x86</RuntimeIdentifier>
     <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>MergeBot</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup>
     <PackageId>SysBot.Pokemon.WinForms</PackageId>
-    <AssemblyName>SysBot</AssemblyName>
     <Description>Nintendo Switch Pokémon Bot Manager</Description>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <StartupObject>SysBot.Pokemon.WinForms.Program</StartupObject>
