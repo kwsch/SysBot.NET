@@ -21,16 +21,16 @@
     <EmbedAllSources>true</EmbedAllSources>
     <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
     <PublishTrimmed>false</PublishTrimmed>
-    <SelfContained>false</SelfContained>
+    <SelfContained>true</SelfContained>
     <Authors>Kaphotics, Gengar</Authors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
