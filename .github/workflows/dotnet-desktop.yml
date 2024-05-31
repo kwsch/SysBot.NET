@@ -2,9 +2,9 @@ name: .NET Core Desktop
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "main" ]
 
 jobs:
 
@@ -48,7 +48,7 @@ jobs:
         configuration: [Release]
     runs-on: windows-latest
     env:
-      Solution_Name: MergeBot.sln
+      Solution_Name: SysBot.NET.sln
     steps:
     - name: Checkout
       uses: actions/checkout@v4
