@@ -88,10 +88,15 @@ jobs:
         id: recent_changes
         run: |
           LAST_VERSION=${{ secrets.LAST_KNOWN_VERSION }}
-          RECENT_CHANGES=$(git log --pretty=format:"- %s" $LAST_VERSION..HEAD)
-          echo "RECENT_CHANGES<<EOF" >> $GITHUB_ENV
-          echo "$RECENT_CHANGES" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          if [ -z "$LAST_VERSION" ]; then
+            echo "LAST_VERSION is not set"
+            echo "RECENT_CHANGES=" >> $GITHUB_ENV
+          else
+            RECENT_CHANGES=$(git log --pretty=format:"- %s" $LAST_VERSION..HEAD)
+            echo "RECENT_CHANGES<<EOF" >> $GITHUB_ENV
+            echo "$RECENT_CHANGES" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+          fi
       - name: Download build artifacts
         uses: actions/download-artifact@v3
         with:
