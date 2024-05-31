@@ -62,7 +62,7 @@ jobs:
       - name: Build
         run: dotnet build ${{ env.Project_Name }} --configuration Release --no-restore
       - name: Publish
-        run: dotnet publish ${{ env.Project_Name }} --configuration Release --output ./publish --self-contained --runtime win-x86 --no-restore
+        run: dotnet publish ${{ env.Project_Name }} --configuration Release --output ./publish --self-contained false --runtime win-x86 --publish-single-file
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
