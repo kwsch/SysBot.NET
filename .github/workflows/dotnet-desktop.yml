@@ -43,90 +43,91 @@ jobs:
   build:
     needs: version-check
     if: needs.version-check.outputs.version_changed == 'true'
-    strategy:
-      matrix:
-        configuration: [Release]
     runs-on: windows-latest
     env:
-      Solution_Name: SysBot.NET.sln
+      Project_Name: SysBot.Pokemon.WinForms/SysBot.Pokemon.WinForms.csproj
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-    - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v2
-    - name: Restore dependencies
-      run: dotnet restore ${{ env.Solution_Name }}
-    - name: Build
-      run: dotnet build ${{ env.Solution_Name }} --configuration ${{ matrix.configuration }} --no-restore
-    - name: Publish
-      run: dotnet publish ${{ env.Solution_Name }} --configuration ${{ matrix.configuration }} --output ./publish --self-contained --runtime win-x86 --no-restore
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: MergeBot
-        path: ./publish/MergeBot.exe
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Setup MSBuild.exe
+        uses: microsoft/setup-msbuild@v2
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.Project_Name }} --runtime win-x86
+      - name: Build
+        run: dotnet build ${{ env.Project_Name }} --configuration Release --no-restore
+      - name: Publish
+        run: dotnet publish ${{ env.Project_Name }} --configuration Release --output ./publish --self-contained --runtime win-x86 --no-restore
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: MergeBot
+          path: ./publish
 
   create-release:
     needs: [version-check, build]
     if: needs.version-check.outputs.version_changed == 'true'
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: Read Current Version
-      id: read_version
-      run: |
-        CURRENT_VERSION=$(grep 'public const string Version' SysBot.Pokemon/Helpers/TradeBot.cs | sed 's/.*Version = "\(.*\)";/\1/')
-        echo "Current version is $CURRENT_VERSION"
-        echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
-    - name: Get Recent Changes
-      id: recent_changes
-      run: |
-        LAST_VERSION=${{ secrets.LAST_KNOWN_VERSION }}
-        RECENT_CHANGES=$(git log --pretty=format:"- %s" $LAST_VERSION..HEAD)
-        echo "RECENT_CHANGES<<EOF" >> $GITHUB_ENV
-        echo "$RECENT_CHANGES" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
-    - name: Download build artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: MergeBot
-        path: ./publish
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-      with:
-        tag_name: ${{ env.CURRENT_VERSION }}
-        release_name: Release ${{ env.CURRENT_VERSION }}
-        body: |
-          ## Recent Changes
-          ${{ env.RECENT_CHANGES }}
-        draft: false
-        prerelease: false
-    - name: Upload Release Asset
-      id: upload-release-asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./publish/MergeBot.exe
-        asset_name: MergeBot.exe
-        asset_content_type: application/octet-stream
-    - name: Update Last Known Version
-      if: success()
-      env:
-        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-      run: |
-        gh secret set LAST_KNOWN_VERSION -b"${{ env.CURRENT_VERSION }}"
-        echo "LAST_KNOWN_VERSION updated to $CURRENT_VERSION"
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Read Current Version
+        id: read_version
+        run: |
+          CURRENT_VERSION=$(grep 'public const string Version' SysBot.Pokemon/Helpers/TradeBot.cs | sed 's/.*Version = "\(.*\)";/\1/')
+          echo "Current version is $CURRENT_VERSION"
+          echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
+      - name: Get Recent Changes
+        id: recent_changes
+        run: |
+          LAST_VERSION=${{ secrets.LAST_KNOWN_VERSION }}
+          if [ -z "$LAST_VERSION" ] || ! git rev-parse "$LAST_VERSION" >/dev/null 2>&1; then
+            echo "LAST_VERSION is not set or not found, using initial commit"
+            LAST_VERSION=$(git rev-list --max-parents=0 HEAD)
+          fi
+          RECENT_CHANGES=$(git log --pretty=format:"- %s" $LAST_VERSION..HEAD)
+          echo "RECENT_CHANGES<<EOF" >> $GITHUB_ENV
+          echo "$RECENT_CHANGES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: MergeBot
+          path: ./publish
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        with:
+          tag_name: ${{ env.CURRENT_VERSION }}
+          release_name: Release ${{ env.CURRENT_VERSION }}
+          body: |
+            ## Recent Changes
+            ${{ env.RECENT_CHANGES }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./publish/MergeBot.exe
+          asset_name: MergeBot.exe
+          asset_content_type: application/octet-stream
+      - name: Update Last Known Version
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          gh secret set LAST_KNOWN_VERSION -b"${{ env.CURRENT_VERSION }}"
+          echo "LAST_KNOWN_VERSION updated to $CURRENT_VERSION"
