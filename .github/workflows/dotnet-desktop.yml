@@ -38,6 +38,7 @@ jobs:
             echo "Version change detected."
             echo "version_changed=true" >> $GITHUB_ENV
             echo "version_changed=true" >> $GITHUB_OUTPUT
+          fi
 
   build:
     needs: version-check
@@ -65,7 +66,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: SysBot.Pokemon.WinForms
+          name: MergeBot
           path: ./publish
 
   create-release:
@@ -94,7 +95,7 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v3
         with:
-          name: SysBot.Pokemon.WinForms
+          name: MergeBot
           path: ./publish
       - name: Create Release
         id: create_release
@@ -116,8 +117,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./publish/SysBot.Pokemon.WinForms.exe
-          asset_name: SysBot.Pokemon.WinForms.exe
+          asset_path: ./publish/MergeBot.exe
+          asset_name: MergeBot.exe
           asset_content_type: application/octet-stream
       - name: Update Last Known Version
         if: success()
