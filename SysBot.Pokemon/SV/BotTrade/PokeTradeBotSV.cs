@@ -1376,14 +1376,16 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         if (!toSend.IsNicknamed)
             cln.ClearNickname();
 
-        // thanks @Wanghaoran86
         if (toSend.MetLocation == Locations.TeraCavern9 && toSend.IsShiny)
         {
-            cln.PID = (((uint)(cln.TID16 ^ cln.SID16) ^ (cln.PID & 0xFFFF) ^ 1u) << 16) | (cln.PID & 0xFFFF);
+            cln.PID = ShinyUtil.GetShinyPID(cln.TID16, cln.SID16, cln.PID, 1u);
         }
         else if (toSend.IsShiny)
         {
-            cln.SetShiny();
+            uint id32 = (uint)((cln.TID16) | (cln.SID16 << 16));
+            uint pid = cln.PID;
+            ShinyUtil.ForceShinyState(true, ref pid, id32, 1u);
+            cln.PID = pid;
         }
 
         cln.RefreshChecksum();
