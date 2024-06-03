@@ -5,20 +5,16 @@ namespace SysBot.Pokemon;
 
 public class LedyDistributor<T> where T : PKM, new()
 {
-    public readonly Dictionary<string, LedyRequest<T>> UserRequests = new();
+    public readonly Dictionary<string, LedyRequest<T>> UserRequests = [];
     public readonly Dictionary<string, LedyRequest<T>> Distribution;
     public readonly PokemonPool<T> Pool;
 
-    private readonly List<LedyUser> Previous = new();
+    private readonly List<LedyUser> Previous = [];
 
     public LedyDistributor(PokemonPool<T> pool)
     {
         Pool = pool;
-        Distribution = new Dictionary<string, LedyRequest<T>>();
-        foreach (var kvp in Pool.Files)
-        {
-            Distribution[kvp.Key] = kvp.Value.Request;
-        }
+        Distribution = Pool.Files;
     }
 
     private const Species NoMatchSpecies = Species.None;

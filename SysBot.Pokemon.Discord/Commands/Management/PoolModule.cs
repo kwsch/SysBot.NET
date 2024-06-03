@@ -34,7 +34,7 @@ public class PoolModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
         var count = pool.Count;
         if (count is > 0 and < 20)
         {
-            var lines = pool.Files.Select((z, i) => $"{i + 1:00}: {z.Key} = {(Species)z.Value.Request.RequestInfo.Species}");
+            var lines = pool.Files.Select((z, i) => $"{i + 1:00}: {z.Key} = {(Species)z.Value.RequestInfo.Species}");
             var msg = string.Join("\n", lines);
 
             var embed = new EmbedBuilder();
