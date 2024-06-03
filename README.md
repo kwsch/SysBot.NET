@@ -12,6 +12,12 @@
 </p>
 
 <h4 align="center">
+  <a href="https://github.com/Daiivr/DaiBot.NET">
+    <i>Versión en Español mantenida por Daiivr</i>
+  </a>
+</h4>
+
+<h4 align="center">
   <a href="https://notpaldea.net">
     <img src="https://i.imgur.com/wbWzI2u.png" alt="discord" style="height: 20px;">
   </a>
