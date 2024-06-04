@@ -15,7 +15,7 @@ namespace SysBot.Pokemon;
 
 public static class AutoCorrectShowdown<T> where T : PKM, new()
 {
-    private static readonly char[] separator = new[] { '\r', '\n' };
+    private static readonly char[] separator = ['\r', '\n'];
 
     public static async Task<string> PerformAutoCorrect(string content, PKM originalPk, LegalityAnalysis originalLa)
     {
@@ -155,7 +155,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
                 gender = match.Groups[4].Value.Trim();
         }
 
-        string[] speciesParts = speciesName.Split(new[] { '-' }, 2);
+        string[] speciesParts = speciesName.Split(['-'], 2);
         speciesName = speciesParts[0].Trim();
 
         if (speciesParts.Length > 1)
@@ -716,7 +716,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
                 originalEVs = line;
                 string[] evParts = line.Replace("EVs:", "").Split('/');
                 int[] evValues = new int[6];
-                string[] statNames = { "HP", "Atk", "Def", "SpA", "SpD", "Spe" };
+                string[] statNames = ["HP", "Atk", "Def", "SpA", "SpD", "Spe"];
 
                 foreach (string evPart in evParts)
                 {

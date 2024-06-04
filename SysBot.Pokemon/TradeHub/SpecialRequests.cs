@@ -123,7 +123,7 @@ namespace SysBot.Pokemon
                     if (pk.HeldItem == 19 || pk.HeldItem == 21 || pk.IsEgg) // burn heal or awakening
                         type = Shiny.AlwaysSquare;
                     if (pk.HeldItem == 20 || pk.HeldItem == 21) // ice heal or awakening or fh 
-                        pk.IVs = new int[] { 31, 31, 31, 31, 31, 31 };
+                        pk.IVs = [31, 31, 31, 31, 31, 31];
 
                     CommonEdits.SetShiny(pk, type);
                 }
@@ -140,21 +140,21 @@ namespace SysBot.Pokemon
             else if ((pk.HeldItem >= 30 && pk.HeldItem <= 32) || pk.HeldItem == 27 || pk.HeldItem == 28 || pk.HeldItem == 63) // fresh water/pop/lemonade <> full heal(27) <> revive(28) <> pokedoll(63)
             {
                 if (pk.HeldItem == 27)
-                    pk.IVs = new int[] { 31, 31, 31, 31, 31, 31 };
+                    pk.IVs = [31, 31, 31, 31, 31, 31];
                 if (pk.HeldItem == 28)
-                    pk.IVs = new int[] { 31, 0, 31, 0, 31, 31 };
+                    pk.IVs = [31, 0, 31, 0, 31, 31];
                 if (pk.HeldItem == 30)
-                    pk.IVs = new int[] { 31, 0, 31, 31, 31, 31 };
+                    pk.IVs = [31, 0, 31, 31, 31, 31];
                 if (pk.HeldItem == 31)
                     pk.CurrentLevel = 100;
                 if (pk.HeldItem == 32)
                 {
-                    pk.IVs = new int[] { 31, 31, 31, 31, 31, 31 };
+                    pk.IVs = [31, 31, 31, 31, 31, 31];
                     pk.CurrentLevel = 100;
                 }
 
                 if (pk.HeldItem == 63)
-                    pk.IVs = new int[] { 31, 31, 31, 0, 31, 31 };
+                    pk.IVs = [31, 31, 31, 0, 31, 31];
 
                 // clear hyper training from IV switched mons
                 if (pk is IHyperTrain iht)

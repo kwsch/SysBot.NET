@@ -5,9 +5,9 @@ namespace SysBot.Pokemon.YouTube;
 
 internal static class Scopes
 {
-    public static readonly IReadOnlyList<OAuthClientScopeEnum> scopes = new[]
-    {
+    public static readonly IReadOnlyList<OAuthClientScopeEnum> scopes =
+    [
         OAuthClientScopeEnum.ManageAccount,
         OAuthClientScopeEnum.ManageData,
-    };
+    ];
 }

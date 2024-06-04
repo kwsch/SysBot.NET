@@ -62,9 +62,9 @@ namespace SysBot.Pokemon
         #endregion
 
         #region RAM
-        public static IReadOnlyList<long> LGPEBirdRNGPointer { get; } = new long[] { 0x160E410, 0x50, 0x90, 0x80, 0x110, 0x90 };
+        public static IReadOnlyList<long> LGPEBirdRNGPointer { get; } = [0x160E410, 0x50, 0x90, 0x80, 0x110, 0x90];
 
-        public static IReadOnlyList<long> LGPECoordinatesPointer { get; } = new long[] { 0x16174C8, 0, 0x4, 0x58, 0xF0, 0x398, 0x60, 0x60 };
+        public static IReadOnlyList<long> LGPECoordinatesPointer { get; } = [0x16174C8, 0, 0x4, 0x58, 0xF0, 0x398, 0x60, 0x60];
         #endregion
     }
 }

@@ -745,7 +745,7 @@ namespace SysBot.Pokemon.Helpers
             pk.HandlingTrainerFriendship = 0;
             pk.ClearMemories();
             pk.StatNature = pk.Nature;
-            pk.SetEVs(new int[] { 0, 0, 0, 0, 0, 0 });
+            pk.SetEVs([0, 0, 0, 0, 0, 0]);
 
             MarkingApplicator.SetMarkings(pk);
 

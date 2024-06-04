@@ -72,7 +72,7 @@ public class PokeDataOffsetsSWSH
 
     #region ScreenDetection
     // Stable overworld detection. Value is 1 on overworld and 0 otherwise.
-    public IReadOnlyList<long> OverworldPointer { get; } = new long[] { 0x2636678, 0xC0, 0x80 };
+    public IReadOnlyList<long> OverworldPointer { get; } = [0x2636678, 0xC0, 0x80];
 
     // For detecting when we're on the in-battle menu, so we can flee.
     public const uint BattleMenuOffset = 0x6B578EDC;
