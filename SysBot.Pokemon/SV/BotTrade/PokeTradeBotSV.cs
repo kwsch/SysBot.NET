@@ -1338,69 +1338,137 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
     {
         if (toSend.Species == (ushort)Species.Ditto)
         {
-            Log($"Do nothing to trade Pokemon, since pokemon is Ditto");
+            Log($"No changes needed for Ditto.");
             return false;
         }
-        var cln = toSend.Clone();
-        cln.OriginalTrainerGender = (byte)tradePartner.Gender;
-        cln.TrainerTID7 = (uint)Math.Abs(tradePartner.DisplayTID);
-        cln.TrainerSID7 = (uint)Math.Abs(tradePartner.DisplaySID);
-        cln.Language = tradePartner.Language;
-        cln.OriginalTrainerName = tradePartner.OT;
 
-        // copied from https://github.com/Wanghaoran86/TransFireBot/commit/f7c5b39ce2952818177a97babb8b3df027e673fb
-        ushort species = toSend.Species;
-        GameVersion version;
+        var cln = toSend.Clone();
+
+        // Set all trainer details cleanly
+        UpdateTrainerDetails(cln, tradePartner);
+
+        // Adjust game version based on species and trading partner details
+        cln.Version = DetermineVersion(cln.Species, cln.Form, tradePartner);
+
+        // Handle nickname and shininess
+        ClearNicknameIfNeeded(cln);
+        UpdateShininess(cln);
+
+        // Calculate checksum for the modified data
+        cln.RefreshChecksum();
+
+        // Check legality of the modified Pokémon
+        var tradeSV = new LegalityAnalysis(cln);
+        if (tradeSV.Valid)
+        {
+            Log($"Pokemon is valid, updating Pokemon with Trade Partner Info.");
+            await SetBoxPokemonAbsolute(BoxStartOffset, cln, token, sav).ConfigureAwait(false);
+            return true;
+        }
+        else
+        {
+            Log($"Modified Pokemon with Trade Partner Info applied does not pass legality checks.");
+            return false;
+        }
+    }
+
+    private static void UpdateTrainerDetails(PK9 pokemon, TradeMyStatus tradePartner)
+    {
+        pokemon.OriginalTrainerGender = (byte)tradePartner.Gender;
+        pokemon.TrainerTID7 = (uint)Math.Abs(tradePartner.DisplayTID);
+        pokemon.TrainerSID7 = (uint)Math.Abs(tradePartner.DisplaySID);
+        pokemon.Language = tradePartner.Language;
+        pokemon.OriginalTrainerName = tradePartner.OT;
+    }
+
+    private GameVersion DetermineVersion(ushort species, ushort form, TradeMyStatus tradePartner)
+    {
         switch (species)
         {
             case (ushort)Species.Koraidon:
             case (ushort)Species.GougingFire:
             case (ushort)Species.RagingBolt:
-                version = GameVersion.SL;
+            case (ushort)Species.Armarouge:
+            case (ushort)Species.Larvitar:
+            case (ushort)Species.Pupitar:
+            case (ushort)Species.Tyranitar:
+            case (ushort)Species.Stonjourner:
+            case (ushort)Species.Drifloon:
+            case (ushort)Species.Drifblim:
+            case (ushort)Species.Oranguru:
+            case (ushort)Species.Stunky:
+            case (ushort)Species.Skuntank:
+            case (ushort)Species.Skrelp:
+            case (ushort)Species.Dragalge:
+            case (ushort)Species.Deino:
+            case (ushort)Species.Zweilous:
+            case (ushort)Species.Hydreigon:
+            case (ushort)Species.Gligar:
+            case (ushort)Species.Gliscor:
+            case (ushort)Species.Cramorant:
                 Log("Scarlet version exclusive Pokémon, changing the version to Scarlet.");
-                break;
+                return GameVersion.SL;
 
             case (ushort)Species.Miraidon:
             case (ushort)Species.IronCrown:
             case (ushort)Species.IronBoulder:
-                version = GameVersion.VL;
+            case (ushort)Species.Ceruledge:
+            case (ushort)Species.IronTreads:
+            case (ushort)Species.IronBundle:
+            case (ushort)Species.IronHands:
+            case (ushort)Species.IronJugulis:
+            case (ushort)Species.IronMoth:
+            case (ushort)Species.IronThorns:
+            case (ushort)Species.IronValiant:
+            case (ushort)Species.Misdreavus:
+            case (ushort)Species.Gulpin:
+            case (ushort)Species.Swalot:
+            case (ushort)Species.Bagon:
+            case (ushort)Species.Shelgon:
+            case (ushort)Species.Salamence:
+            case (ushort)Species.Mismagius:
+            case (ushort)Species.Clauncher:
+            case (ushort)Species.Clawitzer:
+            case (ushort)Species.Passimian:
+            case (ushort)Species.Eiscue:
+            case (ushort)Species.Dreepy:
+            case (ushort)Species.Drakloak:
+            case (ushort)Species.Dragapult:
                 Log("Violet version exclusive Pokémon, changing the version to Violet.");
-                break;
+                return GameVersion.VL;
+
+            case (ushort)Species.Tauros:
+                switch (form)
+                {
+                    case 2: 
+                        Log("Scarlet version exclusive Tauros (Blaze form), changing the version to Scarlet.");
+                        return GameVersion.SL;
+                    case 3:
+                        Log("Violet version exclusive Tauros (Aqua form), changing the version to Violet.");
+                        return GameVersion.VL;
+                    default:
+                        return (GameVersion)tradePartner.Game;
+                }
 
             default:
-                version = (GameVersion)tradePartner.Game;
-                break;
+                return (GameVersion)tradePartner.Game;
         }
-        cln.Version = version;
+    }
 
-        if (!toSend.IsNicknamed)
-            cln.ClearNickname();
+    private static void ClearNicknameIfNeeded(PK9 pokemon)
+    {
+        if (!pokemon.IsNicknamed)
+            pokemon.ClearNickname();
+    }
 
-        if (toSend.MetLocation == Locations.TeraCavern9 && toSend.IsShiny)
+    private static void UpdateShininess(PK9 pokemon)
+    {
+        if (pokemon.IsShiny)
         {
-            cln.PID = ShinyUtil.GetShinyPID(cln.TID16, cln.SID16, cln.PID, 1u);
-        }
-        else if (toSend.IsShiny)
-        {
-            uint id32 = (uint)((cln.TID16) | (cln.SID16 << 16));
-            uint pid = cln.PID;
+            uint id32 = (uint)((pokemon.TID16) | (pokemon.SID16 << 16));
+            uint pid = pokemon.PID;
             ShinyUtil.ForceShinyState(true, ref pid, id32, 1u);
-            cln.PID = pid;
+            pokemon.PID = pid;
         }
-
-        cln.RefreshChecksum();
-
-        var tradeSV = new LegalityAnalysis(cln);
-        if (tradeSV.Valid)
-        {
-            Log($"Pokemon is valid, using trade partner info (AutoOT).");
-            await SetBoxPokemonAbsolute(BoxStartOffset, cln, token, sav).ConfigureAwait(false);
-        }
-        else
-        {
-            Log($"Trade Pokemon can't have AutoOT applied.");
-        }
-
-        return tradeSV.Valid;
     }
 }
