@@ -47,7 +47,7 @@ public class EchoModule : ModuleBase<SocketCommandContext>
         AddEchoChannel(c, cid);
 
         // Add to discord global loggers (saves on program close)
-        SysCordSettings.Settings.EchoChannels.AddIfNew(new[] { GetReference(Context.Channel) });
+        SysCordSettings.Settings.EchoChannels.AddIfNew([GetReference(Context.Channel)]);
         await ReplyAsync("Added Echo output to this channel!").ConfigureAwait(false);
     }
 

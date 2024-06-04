@@ -40,7 +40,7 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
     public async Task AddChannel()
     {
         var obj = GetReference(Context.Message.Channel);
-        SysCordSettings.Settings.ChannelWhitelist.AddIfNew(new[] { obj });
+        SysCordSettings.Settings.ChannelWhitelist.AddIfNew([obj]);
         await ReplyAsync("Done.").ConfigureAwait(false);
     }
 

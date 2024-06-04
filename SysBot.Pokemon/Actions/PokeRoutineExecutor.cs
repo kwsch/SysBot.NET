@@ -190,7 +190,7 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
                         await BlockUser(token).ConfigureAwait(false);
                         if (AbuseSettings.BanIDWhenBlockingUser || bot is not PokeRoutineExecutor8SWSH) // Only ban ID if blocking in SWSH, always in other games.
                         {
-                            AbuseSettings.BannedIDs.AddIfNew(new[] { GetReference(TrainerName, TrainerNID, "in-game block for multiple accounts") });
+                            AbuseSettings.BannedIDs.AddIfNew([GetReference(TrainerName, TrainerNID, "in-game block for multiple accounts")]);
                             Log($"Added {TrainerNID} to the BannedIDs list.");
                         }
                     }
@@ -220,7 +220,7 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
                         await BlockUser(token).ConfigureAwait(false);
                         if (AbuseSettings.BanIDWhenBlockingUser || bot is not PokeRoutineExecutor8SWSH) // Only ban ID if blocking in SWSH, always in other games.
                         {
-                            AbuseSettings.BannedIDs.AddIfNew(new[] { GetReference(TrainerName, TrainerNID, "in-game block for sending to multiple in-game players") });
+                            AbuseSettings.BannedIDs.AddIfNew([GetReference(TrainerName, TrainerNID, "in-game block for sending to multiple in-game players")]);
                             Log($"Added {TrainerNID} to the BannedIDs list.");
                         }
                     }

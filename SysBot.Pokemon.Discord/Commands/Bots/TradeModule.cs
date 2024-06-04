@@ -111,7 +111,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [RequireSudo]
     public async Task BanTradeAsync([Summary("Online ID")] ulong nnid, string comment)
     {
-        SysCordSettings.HubConfig.TradeAbuse.BannedIDs.AddIfNew(new[] { GetReference(nnid, comment) });
+        SysCordSettings.HubConfig.TradeAbuse.BannedIDs.AddIfNew([GetReference(nnid, comment)]);
         await ReplyAsync("Done.").ConfigureAwait(false);
     }
 

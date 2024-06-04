@@ -57,7 +57,7 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
         AddLogChannel(c, cid);
 
         // Add to discord global loggers (saves on program close)
-        SysCordSettings.Settings.TradeStartingChannels.AddIfNew(new[] { GetReference(Context.Channel) });
+        SysCordSettings.Settings.TradeStartingChannels.AddIfNew([GetReference(Context.Channel)]);
         await ReplyAsync("Added Start Notification output to this channel!").ConfigureAwait(false);
     }
 
