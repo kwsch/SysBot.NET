@@ -836,31 +836,49 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
     private async Task<bool> SetBoxPkmWithSwappedIDDetailsPLA(PA8 toSend, TradePartnerLA tradePartner, SAV8LA sav, CancellationToken token)
     {
         var cln = (PA8)toSend.Clone();
-        cln.OriginalTrainerGender = tradePartner.Gender;
-        cln.TrainerTID7 = uint.Parse(tradePartner.TID7);
-        cln.TrainerSID7 = uint.Parse(tradePartner.SID7);
-        cln.Language = tradePartner.Language;
-        cln.OriginalTrainerName = tradePartner.TrainerName;
-
+        UpdateTrainerDetails(cln, tradePartner);
         if (!toSend.IsNicknamed)
             cln.ClearNickname();
-
         if (toSend.IsShiny)
             cln.SetShiny();
-
         cln.RefreshChecksum();
-
         var tradela = new LegalityAnalysis(cln);
         if (tradela.Valid)
         {
-            Log($"Pokemon is valid, applying AutoOT.");
+            Log($"Pokemon is valid with Trade Partner Info applied.  Swapping details.");
             await SetBoxPokemonAbsolute(BoxStartOffset, cln, token, sav).ConfigureAwait(false);
         }
         else
         {
-            Log($"Pokemon not valid, can't apply AutoOT.");
+            Log($"Pokemon not valid after using Trade Partner Info, keeping original object.");
+        }
+        return tradela.Valid;
+    }
+
+    private static void UpdateTrainerDetails(PA8 pokemon, TradePartnerLA tradePartner)
+    {
+        pokemon.OriginalTrainerGender = tradePartner.Gender;
+        pokemon.TrainerTID7 = uint.Parse(tradePartner.TID7);
+        pokemon.TrainerSID7 = uint.Parse(tradePartner.SID7);
+        pokemon.Language = tradePartner.Language;
+
+        Span<byte> trash = pokemon.OriginalTrainerTrash;
+        trash.Clear();
+
+        int maxLength = trash.Length / 2;
+        int actualLength = Math.Min(tradePartner.TrainerName.Length, maxLength);
+
+        for (int i = 0; i < actualLength; i++)
+        {
+            char value = tradePartner.TrainerName[i];
+            trash[i * 2] = (byte)value;
+            trash[i * 2 + 1] = (byte)(value >> 8);
         }
 
-        return tradela.Valid;
+        if (actualLength < maxLength)
+        {
+            trash[actualLength * 2] = 0xFF;
+            trash[actualLength * 2 + 1] = 0xFF;
+        }
     }
 }

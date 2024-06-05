@@ -1344,30 +1344,21 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
 
         var cln = toSend.Clone();
 
-        // Set all trainer details cleanly
         UpdateTrainerDetails(cln, tradePartner);
-
-        // Adjust game version based on species and trading partner details
         cln.Version = DetermineVersion(cln.Species, cln.Form, tradePartner);
-
-        // Handle nickname and shininess
         ClearNicknameIfNeeded(cln);
         UpdateShininess(cln);
-
-        // Calculate checksum for the modified data
         cln.RefreshChecksum();
-
-        // Check legality of the modified Pokémon
         var tradeSV = new LegalityAnalysis(cln);
         if (tradeSV.Valid)
         {
-            Log($"Pokemon is valid, updating Pokemon with Trade Partner Info.");
+            Log($"Pokemon is valid with Trade Partner Info applied.  Swapping details.");
             await SetBoxPokemonAbsolute(BoxStartOffset, cln, token, sav).ConfigureAwait(false);
             return true;
         }
         else
         {
-            Log($"Modified Pokemon with Trade Partner Info applied does not pass legality checks.");
+            Log($"Pokemon not valid after using Trade Partner Info, keeping original object.");
             return false;
         }
     }
@@ -1378,7 +1369,26 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         pokemon.TrainerTID7 = (uint)Math.Abs(tradePartner.DisplayTID);
         pokemon.TrainerSID7 = (uint)Math.Abs(tradePartner.DisplaySID);
         pokemon.Language = tradePartner.Language;
-        pokemon.OriginalTrainerName = tradePartner.OT;
+
+        Span<byte> trash = pokemon.OriginalTrainerTrash;
+        trash.Clear();
+
+        string name = tradePartner.OT;
+        int maxLength = trash.Length / 2; 
+        int actualLength = Math.Min(name.Length, maxLength);
+
+        for (int i = 0; i < actualLength; i++)
+        {
+            char value = name[i];
+            trash[i * 2] = (byte)value;
+            trash[i * 2 + 1] = (byte)(value >> 8);
+        }
+
+        if (actualLength < maxLength)
+        {
+            trash[actualLength * 2] = 0xFF;
+            trash[actualLength * 2 + 1] = 0xFF;
+        }
     }
 
     private GameVersion DetermineVersion(ushort species, ushort form, TradeMyStatus tradePartner)

@@ -1118,31 +1118,49 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         var data = await Connection.ReadBytesAsync(LinkTradePartnerNameOffset - 0x8, 8, token).ConfigureAwait(false);
         var tidsid = BitConverter.ToUInt32(data, 0);
         var cln = (PK8)toSend.Clone();
-        cln.OriginalTrainerGender = data[6];
-        cln.TrainerTID7 = tidsid % 1_000_000;
-        cln.TrainerSID7 = tidsid / 1_000_000;
-        cln.Language = data[5];
-        cln.OriginalTrainerName = trainerName;
-
+        UpdateTrainerDetails(cln, data, trainerName, tidsid);
         if (!toSend.IsNicknamed)
             cln.ClearNickname();
-
         if (toSend.IsShiny)
             cln.SetShiny();
-
         cln.RefreshChecksum();
-
         var tradeswsh = new LegalityAnalysis(cln);
         if (tradeswsh.Valid)
         {
-            Log($"Pokemon is valid, use trade partnerInfo");
+            Log($"Pokemon is valid with Trade Partner Info applied.  Swapping details.");
             await SetBoxPokemon(cln, 0, 0, token, sav).ConfigureAwait(false);
         }
         else
         {
-            Log($"Pokemon not valid, do nothing to trade Pokemon");
+            Log($"Pokemon not valid after using Trade Partner Info, keeping original object.");
+        }
+        return tradeswsh.Valid;
+    }
+
+    private static void UpdateTrainerDetails(PK8 pokemon, byte[] data, string trainerName, uint tidsid)
+    {
+        pokemon.OriginalTrainerGender = data[6];
+        pokemon.TrainerTID7 = tidsid % 1_000_000;
+        pokemon.TrainerSID7 = tidsid / 1_000_000;
+        pokemon.Language = data[5];
+
+        Span<byte> trash = pokemon.OriginalTrainerTrash;
+        trash.Clear();
+
+        int maxLength = trash.Length / 2;
+        int actualLength = Math.Min(trainerName.Length, maxLength);
+
+        for (int i = 0; i < actualLength; i++)
+        {
+            char value = trainerName[i];
+            trash[i * 2] = (byte)value;
+            trash[i * 2 + 1] = (byte)(value >> 8);
         }
 
-        return tradeswsh.Valid;
+        if (actualLength < maxLength)
+        {
+            trash[actualLength * 2] = 0xFF;
+            trash[actualLength * 2 + 1] = 0xFF;
+        }
     }
 }

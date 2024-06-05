@@ -808,33 +808,51 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
     private async Task<bool> SetBoxPkmWithSwappedIDDetailsBDSP(PB8 toSend, PB8 offered, SAV8BS sav, string tradePartner, CancellationToken token)
     {
         var cln = toSend.Clone();
-        cln.OriginalTrainerGender = offered.OriginalTrainerGender;
-        cln.TrainerTID7 = offered.TrainerTID7;
-        cln.TrainerSID7 = offered.TrainerSID7;
-        cln.Language = offered.Language;
-        cln.OriginalTrainerName = tradePartner;
-
+        UpdateTrainerDetails(cln, offered, tradePartner);
         if (!toSend.IsNicknamed)
             cln.ClearNickname();
-
         if (toSend.IsShiny)
             cln.SetShiny();
-
         cln.RefreshChecksum();
-
         var tradela = new LegalityAnalysis(cln);
         if (tradela.Valid)
         {
-            Log($"Pokemon is vaild, changing now");
-
+            Log($"Pokemon is valid with Trade Partner Info applied.  Swapping details.");
             await SetBoxPokemonAbsolute(BoxStartOffset, cln, token, sav).ConfigureAwait(false);
         }
         else
         {
-            Log($"Pokemon not vaild, something went wrong. Still trying to trade Pokemon");
+            Log($"Pokemon not valid after using Trade Partner Info, keeping original object.");
             await SetBoxPokemonAbsolute(BoxStartOffset, cln, token, sav).ConfigureAwait(false);
         }
         return tradela.Valid;
+    }
+
+    private static void UpdateTrainerDetails(PB8 pokemon, PB8 offered, string tradePartner)
+    {
+        pokemon.OriginalTrainerGender = offered.OriginalTrainerGender;
+        pokemon.TrainerTID7 = offered.TrainerTID7;
+        pokemon.TrainerSID7 = offered.TrainerSID7;
+        pokemon.Language = offered.Language;
+
+        Span<byte> trash = pokemon.OriginalTrainerTrash;
+        trash.Clear();
+
+        int maxLength = trash.Length / 2;
+        int actualLength = Math.Min(tradePartner.Length, maxLength);
+
+        for (int i = 0; i < actualLength; i++)
+        {
+            char value = tradePartner[i];
+            trash[i * 2] = (byte)value;
+            trash[i * 2 + 1] = (byte)(value >> 8);
+        }
+
+        if (actualLength < maxLength)
+        {
+            trash[actualLength * 2] = 0xFF;
+            trash[actualLength * 2 + 1] = 0xFF;
+        }
     }
 
     private void WaitAtBarrierIfApplicable(CancellationToken token)
