@@ -1347,7 +1347,17 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         UpdateTrainerDetails(cln, tradePartner);
         cln.Version = DetermineVersion(cln.Species, cln.Form, tradePartner);
         ClearNicknameIfNeeded(cln);
-        UpdateShininess(cln);
+        if (toSend.MetLocation == Locations.TeraCavern9 && toSend.IsShiny)
+        {
+            uint id32 = (uint)((cln.TID16) | (cln.SID16 << 16));
+            uint pid = cln.PID;
+            ShinyUtil.ForceShinyState(true, ref pid, id32, 1u);
+            cln.PID = pid;
+        }
+        else if (toSend.IsShiny)
+        {
+            cln.SetShiny();
+        }
         cln.RefreshChecksum();
         var tradeSV = new LegalityAnalysis(cln);
         if (tradeSV.Valid)
@@ -1369,25 +1379,21 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         pokemon.TrainerTID7 = (uint)Math.Abs(tradePartner.DisplayTID);
         pokemon.TrainerSID7 = (uint)Math.Abs(tradePartner.DisplaySID);
         pokemon.Language = tradePartner.Language;
-
         Span<byte> trash = pokemon.OriginalTrainerTrash;
         trash.Clear();
-
         string name = tradePartner.OT;
-        int maxLength = trash.Length / 2; 
+        int maxLength = trash.Length / 2;
         int actualLength = Math.Min(name.Length, maxLength);
-
         for (int i = 0; i < actualLength; i++)
         {
             char value = name[i];
             trash[i * 2] = (byte)value;
             trash[i * 2 + 1] = (byte)(value >> 8);
         }
-
         if (actualLength < maxLength)
         {
-            trash[actualLength * 2] = 0xFF;
-            trash[actualLength * 2 + 1] = 0xFF;
+            trash[actualLength * 2] = 0x00;
+            trash[actualLength * 2 + 1] = 0x00;
         }
     }
 
@@ -1469,16 +1475,5 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
     {
         if (!pokemon.IsNicknamed)
             pokemon.ClearNickname();
-    }
-
-    private static void UpdateShininess(PK9 pokemon)
-    {
-        if (pokemon.IsShiny)
-        {
-            uint id32 = (uint)((pokemon.TID16) | (pokemon.SID16 << 16));
-            uint pid = pokemon.PID;
-            ShinyUtil.ForceShinyState(true, ref pid, id32, 1u);
-            pokemon.PID = pid;
-        }
     }
 }

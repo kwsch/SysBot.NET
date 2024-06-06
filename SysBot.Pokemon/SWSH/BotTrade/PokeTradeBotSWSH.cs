@@ -1159,8 +1159,8 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
 
         if (actualLength < maxLength)
         {
-            trash[actualLength * 2] = 0xFF;
-            trash[actualLength * 2 + 1] = 0xFF;
+            trash[actualLength * 2] = 0x00;
+            trash[actualLength * 2 + 1] = 0x00;
         }
     }
 }

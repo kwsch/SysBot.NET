@@ -877,8 +877,8 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 
         if (actualLength < maxLength)
         {
-            trash[actualLength * 2] = 0xFF;
-            trash[actualLength * 2 + 1] = 0xFF;
+            trash[actualLength * 2] = 0x00;
+            trash[actualLength * 2 + 1] = 0x00;
         }
     }
 }
