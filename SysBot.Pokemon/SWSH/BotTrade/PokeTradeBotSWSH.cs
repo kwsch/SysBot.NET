@@ -1138,6 +1138,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         if (!toSend.IsNicknamed)
             cln.ClearNickname();
         cln.OriginalTrainerName = trainerName;
+        ClearOTTrash(cln, trainerName); // If Generated OT is longer than partner OT, expect Trash.
         cln.DisplayTID = save.DisplayTID;
         cln.DisplaySID = save.DisplaySID;
         cln.RefreshChecksum();
@@ -1153,6 +1154,25 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
             Log("Pokemon not valid after using Trade Partner Info.");
             Log(tradeswsh.Report());
             return false;
+        }
+    }
+
+    private void ClearOTTrash(PK8 pokemon, string trainerName)
+    {
+        Span<byte> trash = pokemon.OriginalTrainerTrash;
+        trash.Clear();
+        int maxLength = trash.Length / 2;
+        int actualLength = Math.Min(trainerName.Length, maxLength);
+        for (int i = 0; i < actualLength; i++)
+        {
+            char value = trainerName[i];
+            trash[i * 2] = (byte)value;
+            trash[i * 2 + 1] = (byte)(value >> 8);
+        }
+        if (actualLength < maxLength)
+        {
+            trash[actualLength * 2] = 0x00;
+            trash[actualLength * 2 + 1] = 0x00;
         }
     }
 }
