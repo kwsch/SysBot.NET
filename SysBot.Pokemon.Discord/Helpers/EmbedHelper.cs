@@ -83,16 +83,25 @@ public static class EmbedHelper
         await user.SendMessageAsync(embed: embed).ConfigureAwait(false);
     }
 
-    public static async Task SendTradeFinishedEmbedAsync<T>(IUser user, string message, T pk)
+    public static async Task SendTradeFinishedEmbedAsync<T>(IUser user, string message, T pk, bool isMysteryEgg)
         where T : PKM, new()
     {
-        string speciesImageUrl = AbstractTrade<T>.PokeImg(pk, false, true, null);
+        string thumbnailUrl;
+
+        if (isMysteryEgg)
+        {
+            thumbnailUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/mysteryegg2.png";
+        }
+        else
+        {
+            thumbnailUrl = AbstractTrade<T>.PokeImg(pk, false, true, null);
+        }
 
         var embed = new EmbedBuilder()
             .WithTitle("Trade Completed!")
             .WithDescription(message)
             .WithTimestamp(DateTimeOffset.Now)
-            .WithThumbnailUrl(speciesImageUrl)
+            .WithThumbnailUrl(thumbnailUrl)
             .WithColor(Color.Teal)
             .Build();
 

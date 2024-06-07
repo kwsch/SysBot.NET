@@ -45,41 +45,45 @@ namespace SysBot.Pokemon.Discord
                 await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
                 return;
             }
-
             try
             {
                 var gameVersion = GetGameVersion();
                 var speciesList = GetBreedableSpecies(gameVersion, "en");
-
-                var randomIndex = new Random().Next(speciesList.Count);
-                ushort speciesId = speciesList[randomIndex];
-                var speciesName = GameInfo.GetStrings("en").specieslist[speciesId];
-
-                var showdownSet = new ShowdownSet(speciesName);
-                var template = AutoLegalityWrapper.GetTemplate(showdownSet);
-
-                var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
-                var pkm = sav.GetLegal(template, out var result);
-
-                SetPerfectIVsAndShiny(pkm);
-
-                pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
-
-                if (pkm is not T pk)
+                int attempts = 0;
+                while (attempts < 5)
                 {
-                    await ReplyAsync($"Oops! I wasn't able to create a mystery egg for that.").ConfigureAwait(false);
-                    return;
+                    var randomIndex = new Random().Next(speciesList.Count);
+                    ushort speciesId = speciesList[randomIndex];
+                    var speciesName = GameInfo.GetStrings("en").specieslist[speciesId];
+                    var showdownSet = new ShowdownSet(speciesName);
+                    var template = AutoLegalityWrapper.GetTemplate(showdownSet);
+                    var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
+                    var pk = sav.GetLegal(template, out var result);
+                    if (pk != null)
+                    {
+                        pk = EntityConverter.ConvertToType(pk, typeof(T), out _) ?? pk;
+                        if (pk is T validPk)
+                        {
+                            var la = new LegalityAnalysis(validPk);
+                            if (la.Valid)
+                            {
+                                AbstractTrade<T>.EggTrade(validPk, template);
+                                SetHaX(validPk);
+                                var sig = Context.User.GetFavor();
+                                await AddTradeToQueueAsync(code, Context.User.Username, validPk, sig, Context.User, isMysteryEgg: true).ConfigureAwait(false);
+
+                                if (Context.Message is IUserMessage userMessage)
+                                {
+                                    await DeleteMessageAfterDelay(userMessage, 2000).ConfigureAwait(false);
+                                }
+
+                                return;
+                            }
+                        }
+                    }
+                    attempts++;
                 }
-
-                AbstractTrade<T>.EggTrade(pk, template);
-
-                var sig = Context.User.GetFavor();
-                await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, isMysteryEgg: true).ConfigureAwait(false);
-
-                if (Context.Message is IUserMessage userMessage)
-                {
-                    _ = DeleteMessageAfterDelay(userMessage, 2000);
-                }
+                await ReplyAsync("Failed to generate a legal mystery egg after 5 attempts. Please try again later.").ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -94,11 +98,13 @@ namespace SysBot.Pokemon.Discord
             await message.DeleteAsync().ConfigureAwait(false);
         }
 
-        private static void SetPerfectIVsAndShiny(PKM pk)
+        private static void SetHaX(PKM pk)
         {
             pk.IVs = [31, 31, 31, 31, 31, 31];
             pk.SetShiny();
             pk.RefreshAbility(2);
+            pk.MaximizeFriendship();
+            pk.RefreshChecksum();
         }
 
         private static GameVersion GetGameVersion()

@@ -322,7 +322,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         bool shouldUpdateTID = existingTradeDetails?.TID != int.Parse(tradePartner.TID7);
         bool shouldUpdateSID = existingTradeDetails?.SID != int.Parse(tradePartner.SID7);
 
-        if (shouldUpdateOT || shouldUpdateTID)
+        if (shouldUpdateOT || shouldUpdateTID || shouldUpdateSID)
         {
             tradeCodeStorage.UpdateTradeDetails(poke.Trainer.ID, shouldUpdateOT ? tradePartner.TrainerName : existingTradeDetails.OT, shouldUpdateTID ? int.Parse(tradePartner.TID7) : existingTradeDetails.TID, shouldUpdateSID ? int.Parse(tradePartner.SID7) : existingTradeDetails.SID);
         }
@@ -391,7 +391,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
             //lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
             if (Hub.Config.Legality.UseTradePartnerInfo && !poke.IgnoreAutoOT)
             {
-                await SetBoxPkmWithSwappedIDDetailsBDSP(toSend, offered, sav, tradePartner.TrainerName, token);
+                await ApplyAutoOT(toSend, tradePartner, sav, token);
             }
             PokeTradeResult update;
             var trainer = new PartnerDataHolder(0, tradePartner.TrainerName, tradePartner.TID7);
@@ -806,53 +806,32 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         return (toSend, PokeTradeResult.Success);
     }
 
-    private async Task<bool> SetBoxPkmWithSwappedIDDetailsBDSP(PB8 toSend, PB8 offered, SAV8BS sav, string tradePartner, CancellationToken token)
+    private async Task<bool> ApplyAutoOT(PB8 toSend, TradePartnerBS tradePartner, SAV8BS sav, CancellationToken token)
     {
+        var save = SaveUtil.GetBlankSAV(GameVersion.BD, tradePartner.TrainerName);
+        save.SetDisplayID(tradePartner.TrainerID % 1_000_000, tradePartner.TrainerID / 1_000_000);
         var cln = toSend.Clone();
-        UpdateTrainerDetails(cln, offered, tradePartner);
-        if (!toSend.IsNicknamed)
-            cln.ClearNickname();
         if (toSend.IsShiny)
             cln.SetShiny();
+        if (!toSend.IsNicknamed)
+            cln.ClearNickname();
+
+        cln.OriginalTrainerName = tradePartner.TrainerName;
+        cln.DisplayTID = save.DisplayTID;
+        cln.DisplaySID = save.DisplaySID;
         cln.RefreshChecksum();
-        var tradela = new LegalityAnalysis(cln);
-        if (tradela.Valid)
+        var tradeBS = new LegalityAnalysis(cln);
+        if (tradeBS.Valid)
         {
-            Log($"Pokemon is valid with Trade Partner Info applied.  Swapping details.");
+            Log($"Pokemon is valid with Trade Partner Info applied. Swapping details.");
             await SetBoxPokemonAbsolute(BoxStartOffset, cln, token, sav).ConfigureAwait(false);
+            return true;
         }
         else
         {
-            Log($"Pokemon not valid after using Trade Partner Info, keeping original object.");
-            await SetBoxPokemonAbsolute(BoxStartOffset, cln, token, sav).ConfigureAwait(false);
-        }
-        return tradela.Valid;
-    }
-
-    private static void UpdateTrainerDetails(PB8 pokemon, PB8 offered, string tradePartner)
-    {
-        pokemon.OriginalTrainerGender = offered.OriginalTrainerGender;
-        pokemon.TrainerTID7 = offered.TrainerTID7;
-        pokemon.TrainerSID7 = offered.TrainerSID7;
-        pokemon.Language = offered.Language;
-
-        Span<byte> trash = pokemon.OriginalTrainerTrash;
-        trash.Clear();
-
-        int maxLength = trash.Length / 2;
-        int actualLength = Math.Min(tradePartner.Length, maxLength);
-
-        for (int i = 0; i < actualLength; i++)
-        {
-            char value = tradePartner[i];
-            trash[i * 2] = (byte)value;
-            trash[i * 2 + 1] = (byte)(value >> 8);
-        }
-
-        if (actualLength < maxLength)
-        {
-            trash[actualLength * 2] = 0x00;
-            trash[actualLength * 2 + 1] = 0x00;
+            Log("Pokemon not valid after using Trade Partner Info.");
+            Log(tradeBS.Report());
+            return false;
         }
     }
 

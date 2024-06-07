@@ -306,7 +306,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         bool shouldUpdateTID = existingTradeDetails?.TID != int.Parse(tradePartner.TID7);
         bool shouldUpdateSID = existingTradeDetails?.SID != int.Parse(tradePartner.SID7);
 
-        if (shouldUpdateOT || shouldUpdateTID)
+        if (shouldUpdateOT || shouldUpdateTID || shouldUpdateSID)
         {
             tradeCodeStorage.UpdateTradeDetails(poke.Trainer.ID, shouldUpdateOT ? tradePartner.TrainerName : existingTradeDetails.OT, shouldUpdateTID ? int.Parse(tradePartner.TID7) : existingTradeDetails.TID, shouldUpdateSID ? int.Parse(tradePartner.SID7) : existingTradeDetails.SID);
         }
@@ -357,7 +357,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 
         if (Hub.Config.Legality.UseTradePartnerInfo && !poke.IgnoreAutoOT)
         {
-            await SetBoxPkmWithSwappedIDDetailsPLA(toSend, tradePartner, sav, token);
+            await ApplyAutoOT(toSend, tradePartner, sav, token);
         }
 
         Log("Confirming trade.");
@@ -832,54 +832,33 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         return (clone, PokeTradeResult.Success);
     }
 
-    // based on https://github.com/Muchacho13Scripts/SysBot.NET/commit/f7879386f33bcdbd95c7a56e7add897273867106
-    // and https://github.com/berichan/SysBot.PLA/commit/84042d4716007dc6ff3100ad4be4a483d622ccf8
-    private async Task<bool> SetBoxPkmWithSwappedIDDetailsPLA(PA8 toSend, TradePartnerLA tradePartner, SAV8LA sav, CancellationToken token)
+    private async Task<bool> ApplyAutoOT(PA8 toSend, TradePartnerLA tradePartner, SAV8LA sav, CancellationToken token)
     {
-        var cln = (PA8)toSend.Clone();
-        UpdateTrainerDetails(cln, tradePartner);
-        if (!toSend.IsNicknamed)
-            cln.ClearNickname();
+        var save = SaveUtil.GetBlankSAV((GameVersion)tradePartner.Game, tradePartner.TrainerName, (LanguageID)tradePartner.Language);
+        save.SetDisplayID(uint.Parse(tradePartner.TID7), uint.Parse(tradePartner.SID7));
+        var cln = toSend.Clone();
         if (toSend.IsShiny)
             cln.SetShiny();
+        if (!toSend.IsNicknamed)
+            cln.ClearNickname();
+        cln.OriginalTrainerName = tradePartner.TrainerName;
+        cln.DisplayTID = save.DisplayTID;
+        cln.DisplaySID = save.DisplaySID;
+        cln.OriginalTrainerGender = tradePartner.Gender;
+        cln.Language = tradePartner.Language;
         cln.RefreshChecksum();
         var tradela = new LegalityAnalysis(cln);
         if (tradela.Valid)
         {
-            Log($"Pokemon is valid with Trade Partner Info applied.  Swapping details.");
+            Log($"Pokemon is valid with Trade Partner Info applied. Swapping details.");
             await SetBoxPokemonAbsolute(BoxStartOffset, cln, token, sav).ConfigureAwait(false);
+            return true;
         }
         else
         {
-            Log($"Pokemon not valid after using Trade Partner Info, keeping original object.");
-        }
-        return tradela.Valid;
-    }
-
-    private static void UpdateTrainerDetails(PA8 pokemon, TradePartnerLA tradePartner)
-    {
-        pokemon.OriginalTrainerGender = tradePartner.Gender;
-        pokemon.TrainerTID7 = uint.Parse(tradePartner.TID7);
-        pokemon.TrainerSID7 = uint.Parse(tradePartner.SID7);
-        pokemon.Language = tradePartner.Language;
-
-        Span<byte> trash = pokemon.OriginalTrainerTrash;
-        trash.Clear();
-
-        int maxLength = trash.Length / 2;
-        int actualLength = Math.Min(tradePartner.TrainerName.Length, maxLength);
-
-        for (int i = 0; i < actualLength; i++)
-        {
-            char value = tradePartner.TrainerName[i];
-            trash[i * 2] = (byte)value;
-            trash[i * 2 + 1] = (byte)(value >> 8);
-        }
-
-        if (actualLength < maxLength)
-        {
-            trash[actualLength * 2] = 0x00;
-            trash[actualLength * 2 + 1] = 0x00;
+            Log("Pokemon not valid after using Trade Partner Info.");
+            Log(tradela.Report());
+            return false;
         }
     }
 }
