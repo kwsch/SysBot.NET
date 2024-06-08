@@ -218,12 +218,29 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
             detail.TradeCanceled(this, result);
         }
     }
+
     private async Task<PokeTradeResult> PerformLinkCodeTrade(SAV7b sav, PokeTradeDetail<PB7> poke, CancellationToken token)
     {
         UpdateBarrier(poke.IsSynchronized);
         poke.TradeInitialize(this);
         Hub.Config.Stream.EndEnterCode(this);
         var toSend = poke.TradeData;
+        if (Hub.Config.Legality.UseTradePartnerInfo && !poke.IgnoreAutoOT)
+        {
+            var trainerID = poke.Trainer.ID;
+            var tradeCodeStorage1 = new TradeCodeStorage();
+            var tradeDetails = tradeCodeStorage1.GetTradeDetails(trainerID);
+            if (tradeDetails != null && tradeDetails.TID != 0 && tradeDetails.SID != 0)
+            {
+                Log($"Applying AutoOT to the Pokémon using Trainer OT: {tradeDetails.OT}, TID: {tradeDetails.TID}, SID: {tradeDetails.SID}");
+                var updatedToSend = await ApplyAutoOT(toSend, trainerID);
+                if (updatedToSend != null)
+                {
+                    toSend = updatedToSend;
+                    poke.TradeData = updatedToSend;
+                }
+            }
+        }
         if (toSend.Species != 0)
             await WriteBoxPokemon(toSend, 0, 0, token);
         if (!await IsOnOverworldStandard(token))
@@ -268,7 +285,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
 
 
         }
-        await Task.Delay(2000);
+        await Task.Delay(2000, token).ConfigureAwait(false);
         Log("Selecting Faraway Connection......");
 
         await SetStick(SwitchStick.RIGHT, 0, -30000, 0, token).ConfigureAwait(false);
@@ -279,13 +296,13 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
         await EnterLinkCodeLG(poke, token);
         poke.TradeSearching(this);
         Log($"Searching for user {poke.Trainer.TrainerName}");
-        await Task.Delay(3000);
+        await Task.Delay(3000, token).ConfigureAwait(false);
         var btimeout = new Stopwatch();
         btimeout.Restart();
 
         while (await LGIsinwaitingScreen(token))
         {
-            await Task.Delay(100);
+            await Task.Delay(100, token);
             if (btimeout.ElapsedMilliseconds >= 45_000)
             {
                 poke.TradeCanceled(this, PokeTradeResult.NoTrainerFound);
@@ -298,7 +315,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
             }
         }
         Log($"{poke.Trainer.TrainerName} Found");
-        await Task.Delay(10000);
+        await Task.Delay(10000, token).ConfigureAwait(false);
         var tradepartnersav = new SAV7b();
         var tradepartnersav2 = new SAV7b();
         var tpsarray = await SwitchConnection.ReadBytesAsync(TradePartnerData, 0x168, token);
@@ -306,26 +323,21 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
         var tpsarray2 = await SwitchConnection.ReadBytesAsync(TradePartnerData2, 0x168, token);
         tpsarray2.CopyTo(tradepartnersav2.Blocks.Status.Data);
 
+        var tradeCodeStorage = new TradeCodeStorage();
+
         if (tradepartnersav.OT != sav.OT)
         {
             Log($"Found Link Trade Partner: {tradepartnersav.OT}, TID: {tradepartnersav.TID16}, SID: {tradepartnersav.SID16}, Game: {(GameVersion)tradepartnersav.Version}");
-            var modifiedPokemon = await SetPkmWithTradePartnerDetails(toSend, tradepartnersav, token);
-            if (modifiedPokemon != null)
-            {
-                poke.TradeData = modifiedPokemon; // Update the Pokémon to be traded with the modified version
-                poke.SendNotification(this, $"Found Link Trade Partner: {tradepartnersav.OT}, TID: {tradepartnersav.TID16}, SID: {tradepartnersav.SID16}, Game: {(GameVersion)tradepartnersav.Version}");
-            }
+            // Save the OT, TID, and SID information in the TradeCodeStorage for tradepartnersav
+            tradeCodeStorage.UpdateTradeDetails(poke.Trainer.ID, tradepartnersav.OT, tradepartnersav.TID16, tradepartnersav.SID16);
+
         }
 
         if (tradepartnersav2.OT != sav.OT)
         {
             Log($"Found Link Trade Partner: {tradepartnersav2.OT}, TID: {tradepartnersav2.TID16}, SID: {tradepartnersav2.SID16}");
-            var modifiedPokemon = await SetPkmWithTradePartnerDetails(toSend, tradepartnersav2, token); 
-            if (modifiedPokemon != null)
-            {
-                poke.TradeData = modifiedPokemon; // Update the Pokémon to be traded with the modified version
-                poke.SendNotification(this, $"Found Link Trade Partner: {tradepartnersav2.OT}, TID: {tradepartnersav2.TID16}, SID: {tradepartnersav2.SID16}, Game: {(GameVersion)tradepartnersav.Version}");
-            }
+            // Save the OT, TID, and SID information in the TradeCodeStorage for tradepartnersav2
+            tradeCodeStorage.UpdateTradeDetails(poke.Trainer.ID, tradepartnersav2.OT, tradepartnersav2.TID16, tradepartnersav2.SID16);
         }
 
         if (poke.Type == PokeTradeType.Dump)
@@ -715,29 +727,59 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
         }
     }
 
-    private async Task<PB7> SetPkmWithTradePartnerDetails(PB7 toSend, SAV7b tradePartnerSav, CancellationToken token)
+    private async Task<PB7?> ApplyAutoOT(PB7 toSend, ulong trainerID)
     {
-        var cln = (PB7)toSend.Clone();
-
-        cln.OriginalTrainerName = tradePartnerSav.OT;
-        cln.TID16 = tradePartnerSav.TID16;
-        cln.SID16 = tradePartnerSav.SID16;
-        cln.Language = tradePartnerSav.Language;
-        cln.ClearNickname();
-        cln.RefreshChecksum();
-
-        var tradelgpe = new LegalityAnalysis(cln);
-        if (tradelgpe.Valid)
+        var tradeCodeStorage = new TradeCodeStorage();
+        var tradeDetails = tradeCodeStorage.GetTradeDetails(trainerID);
+        if (tradeDetails != null)
         {
-            Log("Pokemon is valid, applying AutoOT.");
-            return cln; // Return the modified clone for use in the trade
+            var cln = toSend.Clone();
+            cln.OriginalTrainerName = tradeDetails.OT;
+            ClearOTTrash(cln, tradeDetails);
+            cln.SetDisplayTID((uint)tradeDetails.TID);
+            cln.SetDisplaySID((uint)tradeDetails.SID);
+            cln.Language = (int)LanguageID.English; // Set the appropriate language ID
+            if (!toSend.IsNicknamed)
+                cln.ClearNickname();
+            cln.RefreshChecksum();
+            var tradelgpe = new LegalityAnalysis(cln);
+            if (tradelgpe.Valid)
+            {
+                Log("Pokemon is valid, applying AutoOT.");
+                return cln;
+            }
+            else
+            {
+                Log("Pokemon not valid, not applying AutoOT.");
+                Log(tradelgpe.Report());
+                return null;
+            }
         }
         else
         {
-            Log("Pokemon not valid, not applying AutoOT.");
+            Log("Trade details not found for the given trainer OT.");
             return null;
         }
     }
 
+    private static void ClearOTTrash(PB7 pokemon, TradeCodeStorage.TradeCodeDetails tradeDetails)
+    {
+        Span<byte> trash = pokemon.OriginalTrainerTrash;
+        trash.Clear();
+        string name = tradeDetails.OT;
+        int maxLength = trash.Length / 2;
+        int actualLength = Math.Min(name.Length, maxLength);
+        for (int i = 0; i < actualLength; i++)
+        {
+            char value = name[i];
+            trash[i * 2] = (byte)value;
+            trash[i * 2 + 1] = (byte)(value >> 8);
+        }
+        if (actualLength < maxLength)
+        {
+            trash[actualLength * 2] = 0x00;
+            trash[actualLength * 2 + 1] = 0x00;
+        }
     }
+}
 
