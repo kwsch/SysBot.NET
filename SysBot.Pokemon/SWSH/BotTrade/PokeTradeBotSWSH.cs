@@ -362,13 +362,6 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
             return PokeTradeResult.RecoverOpenBox;
         }
 
-        if (hub.Config.Legality.UseTradePartnerInfo && !poke.IgnoreAutoOT)
-        {
-            uint trainerTIDValue = uint.Parse(trainerTID);
-            uint trainerSIDValue = uint.Parse(trainerSID);
-            await ApplyAutoOT(toSend, trainerName, trainerTIDValue, trainerSIDValue, sav, token).ConfigureAwait(false);
-        }
-
         // Confirm Box 1 Slot 1
         if (poke.Type == PokeTradeType.Specific)
         {
@@ -1126,53 +1119,5 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
             await Click(A, 0_500, token).ConfigureAwait(false);
 
         return (clone, PokeTradeResult.Success);
-    }
-
-    private async Task<bool> ApplyAutoOT(PK8 toSend, string trainerName, uint trainerTID, uint trainerSID, SAV8SWSH sav, CancellationToken token)
-    {
-        var save = SaveUtil.GetBlankSAV(GameVersion.SW, trainerName, (LanguageID)toSend.Language);
-        save.SetDisplayID(trainerTID, trainerSID);
-        var cln = toSend.Clone();
-        if (toSend.IsShiny)
-            cln.SetShiny();
-        if (!toSend.IsNicknamed)
-            cln.ClearNickname();
-        cln.OriginalTrainerName = trainerName;
-        ClearOTTrash(cln, trainerName); // If Generated OT is longer than partner OT, expect Trash.
-        cln.DisplayTID = save.DisplayTID;
-        cln.DisplaySID = save.DisplaySID;
-        cln.RefreshChecksum();
-        var tradeswsh = new LegalityAnalysis(cln);
-        if (tradeswsh.Valid)
-        {
-            Log($"Pokemon is valid with Trade Partner Info applied. Swapping details.");
-            await SetBoxPokemon(cln, 0, 0, token, sav).ConfigureAwait(false);
-            return true;
-        }
-        else
-        {
-            Log("Pokemon not valid after using Trade Partner Info.");
-            Log(tradeswsh.Report());
-            return false;
-        }
-    }
-
-    private void ClearOTTrash(PK8 pokemon, string trainerName)
-    {
-        Span<byte> trash = pokemon.OriginalTrainerTrash;
-        trash.Clear();
-        int maxLength = trash.Length / 2;
-        int actualLength = Math.Min(trainerName.Length, maxLength);
-        for (int i = 0; i < actualLength; i++)
-        {
-            char value = trainerName[i];
-            trash[i * 2] = (byte)value;
-            trash[i * 2 + 1] = (byte)(value >> 8);
-        }
-        if (actualLength < maxLength)
-        {
-            trash[actualLength * 2] = 0x00;
-            trash[actualLength * 2 + 1] = 0x00;
-        }
     }
 }

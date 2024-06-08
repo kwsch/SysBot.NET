@@ -389,10 +389,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
                 return PokeTradeResult.TrainerTooSlow;
             }
             //lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
-            if (Hub.Config.Legality.UseTradePartnerInfo && !poke.IgnoreAutoOT)
-            {
-                await ApplyAutoOT(toSend, tradePartner, sav, token);
-            }
             PokeTradeResult update;
             var trainer = new PartnerDataHolder(0, tradePartner.TrainerName, tradePartner.TID7);
             (toSend, update) = await GetEntityToSend(sav, poke, offered, toSend, trainer, token).ConfigureAwait(false);
@@ -804,54 +800,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         }
 
         return (toSend, PokeTradeResult.Success);
-    }
-
-    private async Task<bool> ApplyAutoOT(PB8 toSend, TradePartnerBS tradePartner, SAV8BS sav, CancellationToken token)
-    {
-        var save = SaveUtil.GetBlankSAV(GameVersion.BD, tradePartner.TrainerName);
-        save.SetDisplayID(tradePartner.TrainerID % 1_000_000, tradePartner.TrainerID / 1_000_000);
-        var cln = toSend.Clone();
-        if (toSend.IsShiny)
-            cln.SetShiny();
-        if (!toSend.IsNicknamed)
-            cln.ClearNickname();
-        cln.OriginalTrainerName = tradePartner.TrainerName;
-        ClearOTTrash(cln, tradePartner.TrainerName); // If Generated OT is longer than partner OT, expect Trash.
-        cln.DisplayTID = save.DisplayTID;
-        cln.DisplaySID = save.DisplaySID;
-        cln.RefreshChecksum();
-        var tradeBS = new LegalityAnalysis(cln);
-        if (tradeBS.Valid)
-        {
-            Log($"Pokemon is valid with Trade Partner Info applied. Swapping details.");
-            await SetBoxPokemonAbsolute(BoxStartOffset, cln, token, sav).ConfigureAwait(false);
-            return true;
-        }
-        else
-        {
-            Log("Pokemon not valid after using Trade Partner Info.");
-            Log(tradeBS.Report());
-            return false;
-        }
-    }
-
-    private static void ClearOTTrash(PB8 pokemon, string trainerName)
-    {
-        Span<byte> trash = pokemon.OriginalTrainerTrash;
-        trash.Clear();
-        int maxLength = trash.Length / 2;
-        int actualLength = Math.Min(trainerName.Length, maxLength);
-        for (int i = 0; i < actualLength; i++)
-        {
-            char value = trainerName[i];
-            trash[i * 2] = (byte)value;
-            trash[i * 2 + 1] = (byte)(value >> 8);
-        }
-        if (actualLength < maxLength)
-        {
-            trash[actualLength * 2] = 0x00;
-            trash[actualLength * 2 + 1] = 0x00;
-        }
     }
 
     private void WaitAtBarrierIfApplicable(CancellationToken token)

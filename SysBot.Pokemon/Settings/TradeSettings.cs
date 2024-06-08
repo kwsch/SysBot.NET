@@ -62,7 +62,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         public int MaxTradeCode { get; set; } = 9999_9999;
 
         [Category(TradeConfig), Description("If set to True, Discord Users trade code will be stored and used repeatedly without changing."), DisplayName("Store and Reuse Trade Codes")]
-        public bool StoreTradeCodes { get; set; } = false;
+        public bool StoreTradeCodes { get; set; } = true;
 
         [Category(TradeConfig), Description("Time to wait for a trade partner in seconds."), DisplayName("Trade Partner Wait Time (seconds)")]
         public int TradeWaitTime { get; set; } = 30;

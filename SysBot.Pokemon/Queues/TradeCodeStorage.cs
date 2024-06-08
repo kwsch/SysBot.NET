@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.IO;
-using PKHeX.Core;
 
 namespace SysBot.Pokemon;
 

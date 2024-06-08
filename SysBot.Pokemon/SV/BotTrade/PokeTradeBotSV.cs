@@ -413,10 +413,6 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             await ExitTradeToPortal(false, token).ConfigureAwait(false);
             return result;
         }
-        if (Hub.Config.Legality.UseTradePartnerInfo && !poke.IgnoreAutoOT)
-        {
-            await ApplyAutoOT(toSend, tradePartnerFullInfo, sav, token);
-        }
         // Wait for user input...
         var offered = await ReadUntilPresent(TradePartnerOfferedOffset, 25_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
         var oldEC = await SwitchConnection.ReadBytesAbsoluteAsync(TradePartnerOfferedOffset, 8, token).ConfigureAwait(false);
@@ -607,10 +603,6 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
 
             poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. **TID**: {tradePartner.TID7} **SID**: {tradePartner.SID7} Waiting for a Pokémon...");
 
-            if (Hub.Config.Legality.UseTradePartnerInfo && !poke.IgnoreAutoOT)
-            {
-                await ApplyAutoOT(toSend, tradePartnerFullInfo, sav, token);
-            }
             // Wait for user input...
             var offered = await ReadUntilPresent(TradePartnerOfferedOffset, 25_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
             var oldEC = await SwitchConnection.ReadBytesAbsoluteAsync(TradePartnerOfferedOffset, 8, token).ConfigureAwait(false);
@@ -1335,57 +1327,5 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         await SetBoxPokemonAbsolute(BoxStartOffset, clone, token, sav).ConfigureAwait(false);
 
         return (clone, PokeTradeResult.Success);
-    }
-
-    private async Task<bool> ApplyAutoOT(PK9 toSend, TradeMyStatus tradePartner, SAV9SV sav, CancellationToken token)
-    {
-        var save = SaveUtil.GetBlankSAV((GameVersion)tradePartner.Game, tradePartner.OT, (LanguageID)tradePartner.Language);
-        var tradePartnerSV = new TradePartnerSV(tradePartner);
-        save.SetDisplayID(uint.Parse(tradePartnerSV.TID7), uint.Parse(tradePartnerSV.SID7));
-        var cln = toSend.Clone();
-        cln.OriginalTrainerName = tradePartner.OT;
-        ClearOTTrash(cln, tradePartner);  // If Generated OT is longer than partner OT, expect Trash.
-        cln.DisplayTID = save.DisplayTID;
-        cln.DisplaySID = save.DisplaySID;
-        cln.OriginalTrainerGender = (byte)tradePartner.Gender;
-        cln.Language = tradePartner.Language;
-        if (toSend.IsShiny)
-            cln.SetShiny();
-        if (!toSend.IsNicknamed)
-            cln.ClearNickname();
-        cln.RefreshChecksum();
-        var tradeSV = new LegalityAnalysis(cln);
-        if (tradeSV.Valid)
-        {
-            Log($"Pokemon is valid with Trade Partner Info applied. Swapping details.");
-            await SetBoxPokemonAbsolute(BoxStartOffset, cln, token, sav).ConfigureAwait(false);
-            return true;
-        }
-        else
-        {
-            Log("Pokemon not valid after using Trade Partner Info.");
-            Log(tradeSV.Report());
-            return false;
-        }
-    }
-
-    private static void ClearOTTrash(PK9 pokemon, TradeMyStatus tradePartner)
-    {
-        Span<byte> trash = pokemon.OriginalTrainerTrash;
-        trash.Clear();
-        string name = tradePartner.OT;
-        int maxLength = trash.Length / 2;
-        int actualLength = Math.Min(name.Length, maxLength);
-        for (int i = 0; i < actualLength; i++)
-        {
-            char value = name[i];
-            trash[i * 2] = (byte)value;
-            trash[i * 2 + 1] = (byte)(value >> 8);
-        }
-        if (actualLength < maxLength)
-        {
-            trash[actualLength * 2] = 0x00;
-            trash[actualLength * 2 + 1] = 0x00;
-        }
     }
 }
