@@ -330,9 +330,21 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
 
                     using (var ms = new MemoryStream(bytes))
                     {
+#pragma warning disable CA1416 // Validate platform compatibility
                         using var bitmap = new Bitmap(ms);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                         var frame = bitmap.Clone(new Rectangle(0, 0, bitmap.Width, bitmap.Height), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                         gifFrames.Add(frame);
+#pragma warning restore CA1416 // Validate platform compatibility
                     }
 
                     await Task.Delay(screenshotInterval).ConfigureAwait(false);
@@ -345,7 +357,9 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
                         foreach (var frame in gifFrames)
                         {
                             gif.AddFrame(frame);
+#pragma warning disable CA1416 // Validate platform compatibility
                             frame.Dispose();
+#pragma warning restore CA1416 // Validate platform compatibility
                         }
                     }
 
@@ -359,9 +373,13 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
 
                 foreach (var frame in gifFrames)
                 {
+#pragma warning disable CA1416 // Validate platform compatibility
                     frame.Dispose();
+#pragma warning restore CA1416 // Validate platform compatibility
                 }
+#pragma warning disable CA1416 // Validate platform compatibility
                 gifFrames.Clear();
+#pragma warning restore CA1416 // Validate platform compatibility
             }
             catch (Exception ex)
             {
@@ -377,7 +395,15 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
             var jsonData = File.ReadAllText(TradeBot.ConfigPath);
             var config = JObject.Parse(jsonData);
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             var ip = config["Bots"][0]["Connection"]["IP"].ToString();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
             return ip;
         }
         catch (Exception ex)

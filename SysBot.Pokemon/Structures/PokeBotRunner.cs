@@ -35,13 +35,17 @@ public abstract class PokeBotRunner<T> : BotRunner<PokeBotState>, IPokeBotRunner
 
     public PokeTradeHubConfig Config => Hub.Config;
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     protected PokeBotRunner(PokeTradeHub<T> hub, BotFactory<T> factory)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
         Hub = hub;
         Factory = factory;
     }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     protected PokeBotRunner(PokeTradeHubConfig config, BotFactory<T> factory)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
         Factory = factory;
         Hub = new PokeTradeHub<T>(config);

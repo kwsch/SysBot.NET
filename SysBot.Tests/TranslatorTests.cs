@@ -31,7 +31,9 @@ namespace SysBot.Tests
             var setstring = ShowdownTranslator<PK9>.Chinese2Showdown(input);
             var set = ShowdownUtil.ConvertToShowdown(setstring);
             set.Should().NotBeNull();
+#pragma warning disable CS8604 // Possible null reference argument.
             var template = AutoLegalityWrapper.GetTemplate(set);
+#pragma warning restore CS8604 // Possible null reference argument.
             template.Species.Should().BeGreaterThan(0);
             var sav = AutoLegalityWrapper.GetTrainerInfo<PK9>();
             var pkm = sav.GetLegal(template, out var result);

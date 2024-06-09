@@ -77,7 +77,9 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
         {
             if (detail.Type == PokeTradeType.Random) return;
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             var user = _discordClient.GetUser(detail.Trainer.ID);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
             if (user == null) { Console.WriteLine($"User not found for ID {detail.Trainer.ID}."); return; }
 
             string speciesName = detail.TradeData != null ? GameInfo.Strings.Species[detail.TradeData.Species] : "";
@@ -182,11 +184,15 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
             Bitmap image = await LoadImageAsync(imagePath);
 
             var colorCount = new Dictionary<Color, int>();
+#pragma warning disable CA1416 // Validate platform compatibility
             for (int y = 0; y < image.Height; y++)
             {
+#pragma warning disable CA1416 // Validate platform compatibility
                 for (int x = 0; x < image.Width; x++)
                 {
+#pragma warning disable CA1416 // Validate platform compatibility
                     var pixelColor = image.GetPixel(x, y);
+#pragma warning restore CA1416 // Validate platform compatibility
 
                     if (pixelColor.A < 128 || pixelColor.GetBrightness() > 0.9) continue;
 
@@ -209,9 +215,13 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
                         colorCount[quantizedColor] = combinedFactor;
                     }
                 }
+#pragma warning restore CA1416 // Validate platform compatibility
             }
+#pragma warning restore CA1416 // Validate platform compatibility
 
+#pragma warning disable CA1416 // Validate platform compatibility
             image.Dispose();
+#pragma warning restore CA1416 // Validate platform compatibility
 
             if (colorCount.Count == 0)
                 return (255, 255, 255);
@@ -234,11 +244,15 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
             using var httpClient = new HttpClient();
             using var response = await httpClient.GetAsync(imagePath);
             using var stream = await response.Content.ReadAsStreamAsync();
+#pragma warning disable CA1416 // Validate platform compatibility
             return new Bitmap(stream);
+#pragma warning restore CA1416 // Validate platform compatibility
         }
         else
         {
+#pragma warning disable CA1416 // Validate platform compatibility
             return new Bitmap(imagePath);
+#pragma warning restore CA1416 // Validate platform compatibility
         }
     }
 }

@@ -39,7 +39,15 @@ namespace SysBot.Pokemon.Discord
                 var config = JObject.Parse(jsonData);
 
                 // Access the IP address from the first bot in the Bots array
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 var ip = config["Bots"][0]["Connection"]["IP"].ToString();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
                 return ip;
             }
             catch (Exception ex)
@@ -58,7 +66,7 @@ namespace SysBot.Pokemon.Discord
         [Command("botStart")]
         [Summary("Starts the currently running bot.")]
         [RequireSudo]
-        public async Task StartBotAsync([Summary("IP address of the bot")] string ip = null)
+        public async Task StartBotAsync([Summary("IP address of the bot")] string? ip = null)
         {
             if (ip == null)
                 ip = BotModule<T>.GetBotIPFromJsonConfig();
@@ -77,7 +85,7 @@ namespace SysBot.Pokemon.Discord
         [Command("botStop")]
         [Summary("Stops the currently running bot.")]
         [RequireSudo]
-        public async Task StopBotAsync([Summary("IP address of the bot")] string ip = null)
+        public async Task StopBotAsync([Summary("IP address of the bot")] string? ip = null)
         {
             if (ip == null)
                 ip = BotModule<T>.GetBotIPFromJsonConfig();
@@ -97,7 +105,7 @@ namespace SysBot.Pokemon.Discord
         [Alias("botPause")]
         [Summary("Commands the currently running bot to Idle.")]
         [RequireSudo]
-        public async Task IdleBotAsync([Summary("IP address of the bot")] string ip = null)
+        public async Task IdleBotAsync([Summary("IP address of the bot")] string? ip = null)
         {
             if (ip == null)
                 ip = BotModule<T>.GetBotIPFromJsonConfig();
@@ -116,7 +124,7 @@ namespace SysBot.Pokemon.Discord
         [Command("botChange")]
         [Summary("Changes the routine of the currently running bot (trades).")]
         [RequireSudo]
-        public async Task ChangeTaskAsync([Summary("Routine enum name")] PokeRoutineType task, [Summary("IP address of the bot")] string ip = null)
+        public async Task ChangeTaskAsync([Summary("Routine enum name")] PokeRoutineType task, [Summary("IP address of the bot")] string? ip = null)
         {
             if (ip == null)
                 ip = BotModule<T>.GetBotIPFromJsonConfig();
@@ -135,7 +143,7 @@ namespace SysBot.Pokemon.Discord
         [Command("botRestart")]
         [Summary("Restarts the currently running bot(s).")]
         [RequireSudo]
-        public async Task RestartBotAsync([Summary("IP address of the bot")] string ip = null)
+        public async Task RestartBotAsync([Summary("IP address of the bot")] string? ip = null)
         {
             if (ip == null)
                 ip = BotModule<T>.GetBotIPFromJsonConfig();

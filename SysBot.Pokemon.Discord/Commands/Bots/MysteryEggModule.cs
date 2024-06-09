@@ -174,10 +174,12 @@ namespace SysBot.Pokemon.Discord
             };
         }
 
-        private async Task AddTradeToQueueAsync(int code, string trainerName, T? pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, bool isHiddenTrade = false, bool isMysteryEgg = false, List<Pictocodes> lgcode = null, PokeTradeType tradeType = PokeTradeType.Specific, bool ignoreAutoOT = false)
+        private async Task AddTradeToQueueAsync(int code, string trainerName, T? pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, bool isHiddenTrade = false, bool isMysteryEgg = false, List<Pictocodes>? lgcode = null, PokeTradeType tradeType = PokeTradeType.Specific, bool ignoreAutoOT = false)
         {
             lgcode ??= GenerateRandomPictocodes(3);
+#pragma warning disable CS8604 // Possible null reference argument.
             var la = new LegalityAnalysis(pk);
+#pragma warning restore CS8604 // Possible null reference argument.
             if (!la.Valid)
             {
                 string responseMessage;
@@ -217,7 +219,9 @@ namespace SysBot.Pokemon.Discord
 
             for (int i = 0; i < count; i++)
             {
+#pragma warning disable CS8605 // Unboxing a possibly null value.
                 Pictocodes randomPictocode = (Pictocodes)pictocodeValues.GetValue(rnd.Next(pictocodeValues.Length));
+#pragma warning restore CS8605 // Unboxing a possibly null value.
                 randomPictocodes.Add(randomPictocode);
             }
 

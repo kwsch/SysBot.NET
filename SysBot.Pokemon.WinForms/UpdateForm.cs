@@ -17,7 +17,13 @@ namespace SysBot.Pokemon.WinForms
         private readonly bool isUpdateRequired;
         private readonly string newVersion;
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public UpdateForm(bool updateRequired, string newVersion)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             isUpdateRequired = updateRequired;
             this.newVersion = newVersion;
@@ -25,7 +31,9 @@ namespace SysBot.Pokemon.WinForms
             Load += async (sender, e) => await FetchAndDisplayChangelog();
             if (isUpdateRequired)
             {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 labelUpdateInfo.Text = "A required update is available. You must update to continue using this application.";
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
                 // Optionally, you can also disable the close button on the form if the update is required
                 ControlBox = false;
             }
@@ -92,9 +100,9 @@ namespace SysBot.Pokemon.WinForms
             textBoxChangelog.Text = changelog;
         }
 
-        private async void ButtonDownload_Click(object sender, EventArgs e)
+        private async void ButtonDownload_Click(object? sender, EventArgs? e)
         {
-            string downloadUrl = await UpdateChecker.FetchDownloadUrlAsync();
+            string? downloadUrl = await UpdateChecker.FetchDownloadUrlAsync();
             if (!string.IsNullOrWhiteSpace(downloadUrl))
             {
                 string downloadedFilePath = await StartDownloadProcessAsync(downloadUrl);

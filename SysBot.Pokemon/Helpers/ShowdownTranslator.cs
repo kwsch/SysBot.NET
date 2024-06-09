@@ -31,7 +31,10 @@ namespace SysBot.Pokemon
             // 特殊性别差异
             // 29-尼多兰F，32-尼多朗M，678-超能妙喵F，876-爱管侍F，902-幽尾玄鱼F, 916-飘香豚
             if (((Species)specieNo is Species.Meowstic or Species.Indeedee or Species.Basculegion or Species.Oinkologne)
-                && zh.Contains("母")) result += "-F";
+                && zh.Contains("母"))
+            {
+                result += "-F";
+            }
 
 
             // 识别地区形态

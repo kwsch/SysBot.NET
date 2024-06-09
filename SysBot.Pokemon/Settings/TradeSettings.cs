@@ -555,9 +555,13 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         [Description("The Discord emoji string for this move type.")]
         public string EmojiCode { get; set; }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public MoveTypeEmojiInfo() { }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public MoveTypeEmojiInfo(MoveType moveType)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             MoveType = moveType;
         }
@@ -579,9 +583,13 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         [Description("The Discord emoji string for this tera type.")]
         public string EmojiCode { get; set; }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public TeraTypeEmojiInfo() { }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public TeraTypeEmojiInfo(MoveType teraType)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             MoveType = teraType;
         }

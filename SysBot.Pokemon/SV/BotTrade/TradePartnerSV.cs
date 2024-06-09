@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using System;
 using System.Buffers.Binary;
 
@@ -9,6 +9,9 @@ public sealed class TradePartnerSV(TradeMyStatus Info)
     public string TID7 { get; } = Info.DisplayTID.ToString("D6");
     public string SID7 { get; } = Info.DisplaySID.ToString("D4");
     public string TrainerName { get; } = Info.OT;
+    public int Language { get; } = Info.Language;
+    public int Gender { get; } = Info.Gender;
+    public int Game {  get; } = Info.Game;
 }
 
 public sealed class TradeMyStatus

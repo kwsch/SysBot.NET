@@ -74,7 +74,9 @@ namespace SysBot.Pokemon.Discord
         {
             var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             var formattedTimestamp = $"<t:{unixTimestamp}:F>";
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             var embedColor = Settings.AnnouncementSettings.RandomAnnouncementColor ? GetRandomColor() : Settings.AnnouncementSettings.AnnouncementEmbedColor.ToDiscordColor();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
             var thumbnailUrl = Settings.AnnouncementSettings.RandomAnnouncementThumbnail ? GetRandomThumbnail() : GetSelectedThumbnail();
 
             var embedDescription = $"## {announcement}\n\n**Sent: {formattedTimestamp}**";
@@ -138,6 +140,7 @@ namespace SysBot.Pokemon.Discord
 
         private static string GetSelectedThumbnail()
         {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             if (!string.IsNullOrEmpty(Settings.AnnouncementSettings.CustomAnnouncementThumbnailUrl))
             {
                 return Settings.AnnouncementSettings.CustomAnnouncementThumbnailUrl;
@@ -146,6 +149,7 @@ namespace SysBot.Pokemon.Discord
             {
                 return GetUrlFromThumbnailOption(Settings.AnnouncementSettings.AnnouncementThumbnailOption);
             }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
 
         private static string GetUrlFromThumbnailOption(ThumbnailOption option)

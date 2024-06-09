@@ -445,7 +445,9 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
             var newoffereddata = await SwitchConnection.ReadBytesAsync(OfferedPokemon, 0x104, token);
             var newofferedpbm = new PB7(newoffereddata);
             if (clonelist.Any(z => SearchUtil.HashByDetails(z) == SearchUtil.HashByDetails(newofferedpbm)))
+            {
                 continue;
+            }
             else
             {
                 clonelist.Add(newofferedpbm);

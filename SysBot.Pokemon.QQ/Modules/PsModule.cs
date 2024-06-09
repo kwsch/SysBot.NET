@@ -52,7 +52,9 @@ namespace SysBot.Pokemon.QQ
             LogUtil.LogInfo($"收到中文ps代码:\n{text}", nameof(PsModule<T>));
             var pss = text.Split("+");
             if (pss.Length > 1)
+            {
                 new MiraiQQTrade<T>(qq, nickName).StartTradeMultiChinesePs(text);
+            }
             else
             {
                 new MiraiQQTrade<T>(qq, nickName).StartTradeChinesePs(text);

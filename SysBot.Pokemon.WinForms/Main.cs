@@ -25,7 +25,10 @@ public sealed partial class Main : Form
     public static bool IsUpdating { get; set; } = false;
 
     private bool _isFormLoading = true;
+
+#pragma warning disable CS8618
     public Main()
+#pragma warning restore CS8618
     {
         InitializeComponent();
         comboBox1.SelectedIndexChanged += new EventHandler(ComboBox1_SelectedIndexChanged);
@@ -66,7 +69,7 @@ public sealed partial class Main : Form
         RTB_Logs.MaxLength = 32_767; // character length
         LoadControls();
         Text = $"{(string.IsNullOrEmpty(Config.Hub.BotName) ? "NotPaldea.net" : Config.Hub.BotName)} {TradeBot.Version} ({Config.Mode})";
-        Task.Run(BotMonitor);
+        await Task.Run(BotMonitor).ConfigureAwait(false);
         InitUtil.InitializeStubs(Config.Mode);
         _isFormLoading = false;
         UpdateBackgroundImage(Config.Mode);
@@ -214,7 +217,7 @@ public sealed partial class Main : Form
     [JsonSerializable(typeof(ProgramConfig))]
     [JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
     public sealed partial class ProgramConfigContext : JsonSerializerContext;
-    private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
+    private void ComboBox1_SelectedIndexChanged(object? sender, EventArgs e)
     {
         if (_isFormLoading) return; // Check to avoid processing during form loading
 
@@ -428,8 +431,14 @@ public sealed partial class Main : Form
     {
         if (sender is ComboBox comboBox)
         {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
             string selectedTheme = comboBox.SelectedItem.ToString();
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8601 // Possible null reference assignment.
             Config.Hub.ThemeOption = selectedTheme;  // Save the selected theme to the config
+#pragma warning restore CS8601 // Possible null reference assignment.
             SaveCurrentConfig();  // Save the config to file
 
             switch (selectedTheme)

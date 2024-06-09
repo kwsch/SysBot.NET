@@ -38,7 +38,7 @@ namespace SysBot.Pokemon.Discord
             return data;
         }
 
-        private static List<(string TrainerName, string PokePasteUrl, string TeamDescription, string DateShared, string RentalCode)> ParsePokePasteData(List<List<string>> data, string pokemonName = null)
+        private static List<(string TrainerName, string PokePasteUrl, string TeamDescription, string DateShared, string RentalCode)> ParsePokePasteData(List<List<string>> data, string? pokemonName = null)
         {
             var pokePasteData = new List<(string TrainerName, string PokePasteUrl, string TeamDescription, string DateShared, string RentalCode)>();
             for (int i = 3; i < data.Count; i++)
@@ -77,7 +77,7 @@ namespace SysBot.Pokemon.Discord
             return pokePasteData;
         }
 
-        private (string PokePasteUrl, List<string> RowData) SelectRandomPokePasteUrl(List<List<string>> data, string pokemonName = null)
+        private (string PokePasteUrl, List<string> RowData) SelectRandomPokePasteUrl(List<List<string>> data, string? pokemonName = null)
         {
             var filteredData = data.Where(row => row.Count > 40 && Uri.IsWellFormedUriString(row[24]?.Trim('"'), UriKind.Absolute));
 
@@ -90,21 +90,25 @@ namespace SysBot.Pokemon.Discord
 
             var validPokePastes = filteredData.ToList();
 
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
             if (validPokePastes.Count == 0) return (null, null);
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
 
             var random = new Random();
             var randomIndex = random.Next(validPokePastes.Count);
             var selectedRow = validPokePastes[randomIndex];
             var pokePasteUrl = selectedRow[24]?.Trim('"');
 
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
             return (pokePasteUrl, selectedRow);
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
         }
 
         // Adjusted command method to use the new selection logic with Pokémon name filtering
         [Command("randomteam")]
         [Alias("rt", "RandomTeam", "Rt")]
         [Summary("Generates a random VGC team from the specified Google Spreadsheet and sends it as files via DM.")]
-        public async Task GenerateSpreadsheetTeamAsync(string pokemonName = null)
+        public async Task GenerateSpreadsheetTeamAsync(string? pokemonName = null)
         {
             if (!SysCord<T>.Runner.Config.Trade.VGCPastesConfiguration.AllowRequests)
             {
@@ -144,9 +148,13 @@ namespace SysBot.Pokemon.Discord
                 }
 
                 var namer = new GengarNamer();
+#pragma warning disable CA1416 // Validate platform compatibility
                 var pokemonImages = new List<System.Drawing.Image>();
+#pragma warning restore CA1416 // Validate platform compatibility
 
+#pragma warning disable CS8604 // Possible null reference argument.
                 var sanitizedTeamDescription = SanitizeFileName(teamDescription);
+#pragma warning restore CS8604 // Possible null reference argument.
                 using var memoryStream = new MemoryStream();
                 using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
                 {
@@ -175,8 +183,12 @@ namespace SysBot.Pokemon.Discord
                             await entryStream.WriteAsync(pk.Data.AsMemory(0, pk.Data.Length));
 
                             string speciesImageUrl = AbstractTrade<PK9>.PokeImg(pk, false, false);
+#pragma warning disable CA1416 // Validate platform compatibility
                             var speciesImage = System.Drawing.Image.FromStream(await new HttpClient().GetStreamAsync(speciesImageUrl));
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                             pokemonImages.Add(speciesImage);
+#pragma warning restore CA1416 // Validate platform compatibility
                         }
                         catch (Exception ex)
                         {
@@ -195,10 +207,16 @@ namespace SysBot.Pokemon.Discord
                 await Context.User.SendFileAsync(memoryStream, zipFileName);
 
                 // Save the combined image as a file
+#pragma warning disable CA1416 // Validate platform compatibility
                 combinedImage.Save("spreadsheetteam.png");
+#pragma warning restore CA1416 // Validate platform compatibility
                 using (var imageStream = new MemoryStream())
                 {
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                     combinedImage.Save(imageStream, System.Drawing.Imaging.ImageFormat.Png);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
                     imageStream.Position = 0;
 
                     var embedBuilder = new EmbedBuilder()
@@ -268,19 +286,35 @@ namespace SysBot.Pokemon.Discord
 
         private static System.Drawing.Image CombineImages(List<System.Drawing.Image> images)
         {
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
             int width = images.Sum(img => img.Width);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
             int height = images.Max(img => img.Height);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 
+#pragma warning disable CA1416 // Validate platform compatibility
             Bitmap combinedImage = new Bitmap(width, height);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
             using (Graphics g = Graphics.FromImage(combinedImage))
             {
                 int offset = 0;
                 foreach (System.Drawing.Image img in images)
                 {
+#pragma warning disable CA1416 // Validate platform compatibility
                     g.DrawImage(img, offset, 0);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                     offset += img.Width;
+#pragma warning restore CA1416 // Validate platform compatibility
                 }
             }
+#pragma warning restore CA1416 // Validate platform compatibility
 
             return combinedImage;
         }

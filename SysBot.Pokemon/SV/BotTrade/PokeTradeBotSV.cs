@@ -6,7 +6,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;
@@ -378,14 +377,34 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
 
         var tradeCodeStorage = new TradeCodeStorage();
         var existingTradeDetails = tradeCodeStorage.GetTradeDetails(poke.Trainer.ID);
-
         bool shouldUpdateOT = existingTradeDetails?.OT != tradePartner.TrainerName;
         bool shouldUpdateTID = existingTradeDetails?.TID != int.Parse(tradePartner.TID7);
         bool shouldUpdateSID = existingTradeDetails?.SID != int.Parse(tradePartner.SID7);
+        bool shouldUpdateLanguage = existingTradeDetails?.Language != tradePartner.Language;
+        bool shouldUpdateOriginalTrainerGender = existingTradeDetails?.OriginalTrainerGender != tradePartner.Gender;
 
-        if (shouldUpdateOT || shouldUpdateTID || shouldUpdateSID)
+        if (shouldUpdateOT || shouldUpdateTID || shouldUpdateSID || shouldUpdateLanguage || shouldUpdateOriginalTrainerGender)
         {
-            tradeCodeStorage.UpdateTradeDetails(poke.Trainer.ID, shouldUpdateOT ? tradePartner.TrainerName : existingTradeDetails.OT, shouldUpdateTID ? int.Parse(tradePartner.TID7) : existingTradeDetails.TID, shouldUpdateSID ? int.Parse(tradePartner.SID7) : existingTradeDetails.SID);
+#pragma warning disable CS8604 // Possible null reference argument.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+            tradeCodeStorage.UpdateTradeDetails(
+                poke.Trainer.ID,
+                shouldUpdateOT ? tradePartner.TrainerName : existingTradeDetails.OT,
+                shouldUpdateTID ? int.Parse(tradePartner.TID7) : existingTradeDetails.TID,
+                shouldUpdateSID ? int.Parse(tradePartner.SID7) : existingTradeDetails.SID,
+                shouldUpdateLanguage ? tradePartner.Language : existingTradeDetails.Language,
+                shouldUpdateOriginalTrainerGender ? tradePartner.Gender : existingTradeDetails.OriginalTrainerGender
+            );
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8604 // Possible null reference argument.
         }
 
         var partnerCheck = CheckPartnerReputation(this, poke, trainerNID, tradePartner.TrainerName, AbuseSettings, token);
@@ -574,14 +593,26 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
 
             var tradeCodeStorage = new TradeCodeStorage();
             var existingTradeDetails = tradeCodeStorage.GetTradeDetails(poke.Trainer.ID);
-
             bool shouldUpdateOT = existingTradeDetails?.OT != tradePartner.TrainerName;
             bool shouldUpdateTID = existingTradeDetails?.TID != int.Parse(tradePartner.TID7);
             bool shouldUpdateSID = existingTradeDetails?.SID != int.Parse(tradePartner.SID7);
+            bool shouldUpdateLanguage = existingTradeDetails?.Language != tradePartner.Language;
+            bool shouldUpdateOriginalTrainerGender = existingTradeDetails?.OriginalTrainerGender != tradePartner.Gender;
 
-            if (shouldUpdateOT || shouldUpdateTID || shouldUpdateSID)
+            if (shouldUpdateOT || shouldUpdateTID || shouldUpdateSID || shouldUpdateLanguage || shouldUpdateOriginalTrainerGender)
             {
-                tradeCodeStorage.UpdateTradeDetails(poke.Trainer.ID, shouldUpdateOT ? tradePartner.TrainerName : existingTradeDetails.OT, shouldUpdateTID ? int.Parse(tradePartner.TID7) : existingTradeDetails.TID, shouldUpdateSID ? int.Parse(tradePartner.SID7) : existingTradeDetails.SID);
+#pragma warning disable CS8604 // Possible null reference argument.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                tradeCodeStorage.UpdateTradeDetails(
+                    poke.Trainer.ID,
+                    shouldUpdateOT ? tradePartner.TrainerName : existingTradeDetails.OT,
+                    shouldUpdateTID ? int.Parse(tradePartner.TID7) : existingTradeDetails.TID,
+                    shouldUpdateSID ? int.Parse(tradePartner.SID7) : existingTradeDetails.SID,
+                    shouldUpdateLanguage ? tradePartner.Language : existingTradeDetails.Language,
+                    shouldUpdateOriginalTrainerGender ? tradePartner.Gender : existingTradeDetails.OriginalTrainerGender
+                );
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8604 // Possible null reference argument.
             }
 
             var partnerCheck = CheckPartnerReputation(this, poke, trainerNID, tradePartner.TrainerName, AbuseSettings, token);

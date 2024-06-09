@@ -15,6 +15,7 @@ public class TradeCodeStorage
         public string? OT { get; set; }
         public int TID { get; set; }
         public int SID { get; set; }
+        public int Language { get; set; } = 2;
         public int TradeCount { get; set; }
     }
 
@@ -24,7 +25,9 @@ public class TradeCodeStorage
         WriteIndented = true
     };
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     public TradeCodeStorage()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
         LoadFromFile();
     }
@@ -57,7 +60,9 @@ public class TradeCodeStorage
         if (File.Exists(FileName))
         {
             string json = File.ReadAllText(FileName);
+#pragma warning disable CS8601 // Possible null reference assignment.
             _tradeCodeDetails = JsonSerializer.Deserialize<Dictionary<ulong, TradeCodeDetails>>(json, SerializerOptions);
+#pragma warning restore CS8601 // Possible null reference assignment.
         }
         else
         {
@@ -94,7 +99,7 @@ public class TradeCodeStorage
         return 0;
     }
 
-    public TradeCodeDetails GetTradeDetails(ulong trainerID)
+    public TradeCodeDetails? GetTradeDetails(ulong trainerID)
     {
         LoadFromFile();
 
@@ -105,15 +110,16 @@ public class TradeCodeStorage
         return null;
     }
 
-    public void UpdateTradeDetails(ulong trainerID, string ot, int tid, int sid)
+    public void UpdateTradeDetails(ulong trainerID, string ot, int tid, int sid, int language = 2)
     {
-        LoadFromFile(); 
-
+        LoadFromFile();
         if (_tradeCodeDetails.TryGetValue(trainerID, out var details))
         {
             details.OT = ot;
             details.TID = tid;
             details.SID = sid;
+            if (language != -1)
+                details.Language = language;
             SaveToFile();
         }
     }

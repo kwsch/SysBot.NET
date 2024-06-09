@@ -30,10 +30,14 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 
         (string speciesName, string formName, string gender, string heldItem, string nickname) = ParseSpeciesLine(lines[0]);
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
         string correctedSpeciesName = autoCorrectConfig.AutoCorrectSpeciesAndForm ? await GetClosestSpecies(speciesName).ConfigureAwait(false) ?? speciesName : speciesName;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
         ushort speciesIndex = (ushort)Array.IndexOf(gameStrings.specieslist, correctedSpeciesName);
         string[] formNames = FormConverter.GetFormList(speciesIndex, gameStrings.types, gameStrings.forms, new List<string>(), generation);
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
         string correctedFormName = autoCorrectConfig.AutoCorrectSpeciesAndForm ? await GetClosestFormName(formName, formNames).ConfigureAwait(false) ?? formName : formName;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
         PKM pk = originalPk.Clone();
         LegalityAnalysis la = originalLa;
@@ -52,17 +56,27 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         var personalAbilityInfoTask = Task.Run(() => GetPersonalInfo(speciesIndex));
         var closestAbilityTask = GetClosestAbility(abilityName, speciesIndex, gameStrings, await personalAbilityInfoTask);
         var closestNatureTask = GetClosestNature(natureName, gameStrings);
+#pragma warning disable CS8604 // Possible null reference argument.
         var legalBallTask = GetLegalBall(speciesIndex, correctedFormName, ballName, gameStrings, pk);
+#pragma warning restore CS8604 // Possible null reference argument.
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
         string correctedAbilityName = autoCorrectConfig.AutoCorrectAbility ? await closestAbilityTask : abilityName;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
         string correctedNatureName = autoCorrectConfig.AutoCorrectNature ? await closestNatureTask : natureName;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
         string correctedBallName = autoCorrectConfig.AutoCorrectBall ? await legalBallTask : ballName;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
         var levelVerifier = new LevelVerifier();
         if (autoCorrectConfig.AutoCorrectLevel)
             levelVerifier.Verify(la);
         if (autoCorrectConfig.AutoCorrectGender)
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             gender = await ValidateGender(pk, gender, speciesName);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
         if (autoCorrectConfig.AutoCorrectMovesLearnset)
             ValidateMoves(lines, pk, la, gameStrings, correctedSpeciesName, correctedFormName);
@@ -73,13 +87,17 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         if (!ValidateEVs(lines) && autoCorrectConfig.AutoCorrectEVs)
             RemoveEVLine(lines);
 
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
         string markLine = null;
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
         if (autoCorrectConfig.AutoCorrectMarks)
         {
             var markVerifier = new MarkVerifier();
             markVerifier.Verify(la);
             if (!la.Valid)
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 markLine = await CorrectMarks(pk, la.EncounterOriginal, lines);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
 
         string correctedHeldItem = autoCorrectConfig.AutoCorrectHeldItem ? ValidateHeldItem(lines, pk, itemlist, heldItem) : heldItem;
@@ -234,13 +252,21 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             return sb.ToString();
         }
         else if (line.StartsWith("Ability:"))
+        {
             return $"Ability: {correctedAbilityName}";
+        }
         else if (line.EndsWith(" Nature"))
+        {
             return $"{correctedNatureName} Nature";
+        }
         else if (line.StartsWith("Ball:"))
+        {
             return $"Ball: {correctedBallName}";
+        }
         else if (line.StartsWith("Level:"))
+        {
             return !la.Valid ? "Level: 100" : $"Level: {levelValue}";
+        }
 
         return line;
     }
@@ -259,7 +285,9 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             .OrderByDescending(s => s.Distance)
             .FirstOrDefault();
 
+#pragma warning disable CS8604 // Possible null reference argument.
         return Task.FromResult<string>(fuzzySpecies.Distance >= 80 ? fuzzySpecies.Species : null);
+#pragma warning restore CS8604 // Possible null reference argument.
     }
 
     private static Task<string>? GetClosestFormName(string userFormName, string[] validFormNames)
@@ -271,7 +299,9 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             .ThenBy(f => f.FormName.Length)
             .FirstOrDefault();
 
+#pragma warning disable CS8604 // Possible null reference argument.
         return Task.FromResult<string>(fuzzyFormName.Distance >= 80 ? fuzzyFormName.FormName : null);
+#pragma warning restore CS8604 // Possible null reference argument.
     }
 
     private static string ValidateHeldItem(string[] lines, PKM pk, string[] itemlist, string heldItem)
@@ -280,7 +310,9 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 
         if (!string.IsNullOrEmpty(heldItem))
         {
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
             string correctedHeldItem = GetClosestItem(heldItem, itemlist);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
             // LogUtil.LogInfo($"Corrected held item: {correctedHeldItem}", nameof(AutoCorrectShowdown<T>));
 
             if (correctedHeldItem != null)
@@ -583,7 +615,9 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             .OrderByDescending(a => a.Distance)
             .FirstOrDefault();
 
+#pragma warning disable CS8604 // Possible null reference argument.
         return Task.FromResult<string>(fuzzyAbility.Distance >= 80 ? fuzzyAbility.Ability : null);
+#pragma warning restore CS8604 // Possible null reference argument.
     }
 
     private static Task<string>? GetClosestNature(string userNature, GameStrings gameStrings)
@@ -594,7 +628,9 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             .OrderByDescending(n => n.Distance)
             .FirstOrDefault();
 
+#pragma warning disable CS8604 // Possible null reference argument.
         return Task.FromResult<string>(fuzzyNature.Distance >= 80 ? fuzzyNature.Nature : null);
+#pragma warning restore CS8604 // Possible null reference argument.
     }
 
     private static Task<string>? GetLegalBall(ushort speciesIndex, string formName, string ballName, GameStrings gameStrings, PKM pk)
@@ -612,7 +648,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         return Task.FromResult(gameStrings.itemlist[legalBall]);
     }
 
-    private static string GetClosestBall(string userBall, GameStrings gameStrings)
+    private static string? GetClosestBall(string userBall, GameStrings gameStrings)
     {
         var ballList = gameStrings.balllist.Where(b => !string.IsNullOrWhiteSpace(b)).ToArray();
 
@@ -806,7 +842,9 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         }
 
         // Find the existing mark line in the input showdown set
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
         string existingMarkLine = lines.FirstOrDefault(line => line.StartsWith(".RibbonMark"));
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
         if (!string.IsNullOrEmpty(existingMarkLine))
         {

@@ -17,7 +17,9 @@ namespace SysBot.Pokemon.Dodo
         private static readonly string LogIdentity = "DodoBot";
         private static readonly string Welcome = "at我并尝试对我说：\n皮卡丘\nps代码\n或者直接拖一个文件进来";
         private readonly string _channelId;
+#pragma warning disable IDE0044 // Add readonly modifier
         private DodoSettings _dodoSettings;
+#pragma warning restore IDE0044 // Add readonly modifier
         private string _botDodoSourceId = default!;
 
         public PokemonProcessService(OpenApiService openApiService, DodoSettings settings)

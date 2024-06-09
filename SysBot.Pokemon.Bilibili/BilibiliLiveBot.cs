@@ -12,7 +12,11 @@ namespace SysBot.Pokemon.Bilibili
     {
         // private readonly BilibiliSettings Settings;
         private static PokeTradeHub<T> Hub = default!;
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+#pragma warning disable IDE0044 // Add readonly modifier
         private static System.Collections.Generic.List<Pictocodes> lgcode;
+#pragma warning restore IDE0044 // Add readonly modifier
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         internal static TradeQueueInfo<T> Info => Hub.Queues.Info;
 

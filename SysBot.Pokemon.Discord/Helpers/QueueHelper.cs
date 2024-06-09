@@ -70,7 +70,9 @@ public static class QueueHelper<T> where T : PKM, new()
         var name = user.Username;
 
         var trainer = new PokeTradeTrainerInfo(trainerName, userID);
+#pragma warning disable CS8604 // Possible null reference argument.
         var notifier = new DiscordTradeNotifier<T>(pk, trainer, code, trader, batchTradeNumber, totalBatchTrades, isMysteryEgg, lgcode: lgcode);
+#pragma warning restore CS8604 // Possible null reference argument.
         var uniqueTradeID = GenerateUniqueTradeID();
         var detail = new PokeTradeDetail<T>(pk, trainer, notifier, t, code, sig == RequestSignificance.Favored, lgcode, batchTradeNumber, totalBatchTrades, isMysteryEgg, uniqueTradeID, ignoreAutoOT, setEdited);
         var trade = new TradeEntry<T>(detail, userID, PokeRoutineType.LinkTrade, name, uniqueTradeID);
@@ -236,7 +238,11 @@ public static class QueueHelper<T> where T : PKM, new()
         string filePath = Path.Combine(imagesFolderPath, $"image_{Guid.NewGuid()}.png");
 
         // Save the image to the specified path
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
         image.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 
         return filePath;
     }
@@ -277,15 +283,29 @@ public static class QueueHelper<T> where T : PKM, new()
         if (Uri.TryCreate(embedImageUrl, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeFile)
         {
             // Load local image directly
+#pragma warning disable CA1416 // Validate platform compatibility
             using var localImage = System.Drawing.Image.FromFile(uri.LocalPath);
+#pragma warning restore CA1416 // Validate platform compatibility
             using var ballImage = await LoadImageFromUrl(ballImgUrl);
             if (ballImage != null)
             {
+#pragma warning disable CA1416 // Validate platform compatibility
                 using (var graphics = Graphics.FromImage(localImage))
                 {
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                     var ballPosition = new Point(localImage.Width - ballImage.Width, localImage.Height - ballImage.Height);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                     graphics.DrawImage(ballImage, ballPosition);
+#pragma warning restore CA1416 // Validate platform compatibility
                 }
+#pragma warning restore CA1416 // Validate platform compatibility
                 embedImageUrl = SaveImageLocally(localImage);
             }
         }
@@ -312,59 +332,130 @@ public static class QueueHelper<T> where T : PKM, new()
             if (speciesImage == null)
             {
                 Console.WriteLine("Species image could not be loaded.");
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
                 return (null, false);
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
             }
 
             var ballImage = await LoadImageFromUrl(ballImageUrl);
             if (ballImage == null)
             {
                 Console.WriteLine($"Ball image could not be loaded: {ballImageUrl}");
+#pragma warning disable CA1416 // Validate platform compatibility
                 return ((System.Drawing.Image)speciesImage.Clone(), false);
+#pragma warning restore CA1416 // Validate platform compatibility
             }
 
             using (ballImage)
             {
+#pragma warning disable CA1416 // Validate platform compatibility
                 using (var graphics = Graphics.FromImage(speciesImage))
                 {
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                     var ballPosition = new Point(speciesImage.Width - ballImage.Width, speciesImage.Height - ballImage.Height);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                     graphics.DrawImage(ballImage, ballPosition);
+#pragma warning restore CA1416 // Validate platform compatibility
                 }
+#pragma warning restore CA1416 // Validate platform compatibility
 
+#pragma warning disable CA1416 // Validate platform compatibility
                 return ((System.Drawing.Image)speciesImage.Clone(), true);
+#pragma warning restore CA1416 // Validate platform compatibility
             }
         }
     }
     private static async Task<System.Drawing.Image> OverlaySpeciesOnEgg(string eggImageUrl, string speciesImageUrl)
     {
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
         System.Drawing.Image eggImage = await LoadImageFromUrl(eggImageUrl);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
         System.Drawing.Image speciesImage = await LoadImageFromUrl(speciesImageUrl);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
         double scaleRatio = Math.Min((double)eggImage.Width / speciesImage.Width, (double)eggImage.Height / speciesImage.Height);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
         Size newSize = new Size((int)(speciesImage.Width * scaleRatio), (int)(speciesImage.Height * scaleRatio));
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
         System.Drawing.Image resizedSpeciesImage = new Bitmap(speciesImage, newSize);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
         using (Graphics g = Graphics.FromImage(eggImage))
         {
             // Calculate the position to center the species image on the egg image
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
             int speciesX = (eggImage.Width - resizedSpeciesImage.Width) / 2;
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
             int speciesY = (eggImage.Height - resizedSpeciesImage.Height) / 2;
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 
             // Draw the resized and centered species image over the egg image
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
             g.DrawImage(resizedSpeciesImage, speciesX, speciesY, resizedSpeciesImage.Width, resizedSpeciesImage.Height);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
         }
+#pragma warning restore CA1416 // Validate platform compatibility
 
         // Dispose of the species image and the resized species image if they're no longer needed
+#pragma warning disable CA1416 // Validate platform compatibility
         speciesImage.Dispose();
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
         resizedSpeciesImage.Dispose();
+#pragma warning restore CA1416 // Validate platform compatibility
 
         // Calculate scale factor for resizing while maintaining aspect ratio
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
         double scale = Math.Min(128.0 / eggImage.Width, 128.0 / eggImage.Height);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 
         // Calculate new dimensions
+#pragma warning disable CA1416 // Validate platform compatibility
         int newWidth = (int)(eggImage.Width * scale);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
         int newHeight = (int)(eggImage.Height * scale);
+#pragma warning restore CA1416 // Validate platform compatibility
 
+#pragma warning disable CA1416 // Validate platform compatibility
         Bitmap finalImage = new Bitmap(128, 128);
+#pragma warning restore CA1416 // Validate platform compatibility
 
         // Draw the resized egg image onto the new bitmap, centered
+#pragma warning disable CA1416 // Validate platform compatibility
         using (Graphics g = Graphics.FromImage(finalImage))
         {
             // Calculate centering position
@@ -372,9 +463,14 @@ public static class QueueHelper<T> where T : PKM, new()
             int y = (128 - newHeight) / 2;
 
             // Draw the image
+#pragma warning disable CA1416 // Validate platform compatibility
             g.DrawImage(eggImage, x, y, newWidth, newHeight);
+#pragma warning restore CA1416 // Validate platform compatibility
         }
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
         eggImage.Dispose();
+#pragma warning restore CA1416 // Validate platform compatibility
         return finalImage;
     }
 
@@ -397,7 +493,9 @@ public static class QueueHelper<T> where T : PKM, new()
 
         try
         {
+#pragma warning disable CA1416 // Validate platform compatibility
             return System.Drawing.Image.FromStream(stream);
+#pragma warning restore CA1416 // Validate platform compatibility
         }
         catch (ArgumentException ex)
         {
@@ -473,11 +571,15 @@ public static class QueueHelper<T> where T : PKM, new()
             Bitmap image = await LoadImageAsync(imagePath);
 
             var colorCount = new Dictionary<Color, int>();
+#pragma warning disable CA1416 // Validate platform compatibility
             for (int y = 0; y < image.Height; y++)
             {
+#pragma warning disable CA1416 // Validate platform compatibility
                 for (int x = 0; x < image.Width; x++)
                 {
+#pragma warning disable CA1416 // Validate platform compatibility
                     var pixelColor = image.GetPixel(x, y);
+#pragma warning restore CA1416 // Validate platform compatibility
 
                     if (pixelColor.A < 128 || pixelColor.GetBrightness() > 0.9) continue;
 
@@ -500,9 +602,13 @@ public static class QueueHelper<T> where T : PKM, new()
                         colorCount[quantizedColor] = combinedFactor;
                     }
                 }
+#pragma warning restore CA1416 // Validate platform compatibility
             }
+#pragma warning restore CA1416 // Validate platform compatibility
 
+#pragma warning disable CA1416 // Validate platform compatibility
             image.Dispose();
+#pragma warning restore CA1416 // Validate platform compatibility
 
             if (colorCount.Count == 0)
                 return (255, 255, 255);
@@ -525,11 +631,15 @@ public static class QueueHelper<T> where T : PKM, new()
             using var httpClient = new HttpClient();
             using var response = await httpClient.GetAsync(imagePath);
             using var stream = await response.Content.ReadAsStreamAsync();
+#pragma warning disable CA1416 // Validate platform compatibility
             return new Bitmap(stream);
+#pragma warning restore CA1416 // Validate platform compatibility
         }
         else
         {
+#pragma warning disable CA1416 // Validate platform compatibility
             return new Bitmap(imagePath);
+#pragma warning restore CA1416 // Validate platform compatibility
         }
     }
 
@@ -582,44 +692,156 @@ public static class QueueHelper<T> where T : PKM, new()
             var showdown = new ShowdownSet(cd.ToString());
             var sav = SaveUtil.GetBlankSAV(EntityContext.Gen7b, "pip");
             PKM pk = sav.GetLegalFromSet(showdown).Created;
+#pragma warning disable CA1416 // Validate platform compatibility
             System.Drawing.Image png = pk.Sprite();
+#pragma warning restore CA1416 // Validate platform compatibility
             var destRect = new Rectangle(-40, -65, 137, 130);
+#pragma warning disable CA1416 // Validate platform compatibility
             var destImage = new Bitmap(137, 130);
+#pragma warning restore CA1416 // Validate platform compatibility
 
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
             destImage.SetResolution(png.HorizontalResolution, png.VerticalResolution);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 
+#pragma warning disable CA1416 // Validate platform compatibility
             using (var graphics = Graphics.FromImage(destImage))
             {
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                 graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                 graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                 graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                 graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                 graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                 graphics.DrawImage(png, destRect, 0, 0, png.Width, png.Height, GraphicsUnit.Pixel);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 
             }
+#pragma warning restore CA1416 // Validate platform compatibility
             png = destImage;
+#pragma warning disable CA1416 // Validate platform compatibility
             spritearray.Add(png);
+#pragma warning restore CA1416 // Validate platform compatibility
             codecount++;
         }
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
         int outputImageWidth = spritearray[0].Width + 20;
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
         int outputImageHeight = spritearray[0].Height - 65;
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
         Bitmap outputImage = new Bitmap(outputImageWidth, outputImageHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 
+#pragma warning disable CA1416 // Validate platform compatibility
         using (Graphics graphics = Graphics.FromImage(outputImage))
         {
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
             graphics.DrawImage(spritearray[0], new Rectangle(0, 0, spritearray[0].Width, spritearray[0].Height),
                 new Rectangle(new Point(), spritearray[0].Size), GraphicsUnit.Pixel);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
             graphics.DrawImage(spritearray[1], new Rectangle(50, 0, spritearray[1].Width, spritearray[1].Height),
                 new Rectangle(new Point(), spritearray[1].Size), GraphicsUnit.Pixel);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
             graphics.DrawImage(spritearray[2], new Rectangle(100, 0, spritearray[2].Width, spritearray[2].Height),
                 new Rectangle(new Point(), spritearray[2].Size), GraphicsUnit.Pixel);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
         }
+#pragma warning restore CA1416 // Validate platform compatibility
         System.Drawing.Image finalembedpic = outputImage;
         var filename = $"{Directory.GetCurrentDirectory()}//finalcode.png";
+#pragma warning disable CA1416 // Validate platform compatibility
         finalembedpic.Save(filename);
+#pragma warning restore CA1416 // Validate platform compatibility
         filename = Path.GetFileName($"{Directory.GetCurrentDirectory()}//finalcode.png");
         Embed returnembed = new EmbedBuilder().WithTitle($"{lgcode[0]}, {lgcode[1]}, {lgcode[2]}").WithImageUrl($"attachment://{filename}").Build();
         return (filename, returnembed);
