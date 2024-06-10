@@ -275,16 +275,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2);
             return;
         }
-        bool ignoreAutoOT = content.Contains("OT:") || content.Contains("TID:") || content.Contains("SID:");
-        bool useTradePartnerInfo = SysCord<T>.Runner.Config.Legality.UseTradePartnerInfo;
-        bool storeTradeCodes = SysCord<T>.Runner.Config.Trade.TradeConfiguration.StoreTradeCodes;
-
-        if (useTradePartnerInfo && storeTradeCodes)
-        {
-            useTradePartnerInfo = true;
-            storeTradeCodes = true;
-            content = TrainerInfoHelper.AddTrainerDetails(content, userID, ignoreAutoOT);
-        }
         content = ReusableActions.StripCodeBlock(content);
         var set = new ShowdownSet(content);
         var template = AutoLegalityWrapper.GetTemplate(set);
@@ -347,16 +337,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2);
             return;
         }
-        bool ignoreAutoOT = content.Contains("OT:") || content.Contains("TID:") || content.Contains("SID:");
-        bool useTradePartnerInfo = SysCord<T>.Runner.Config.Legality.UseTradePartnerInfo;
-        bool storeTradeCodes = SysCord<T>.Runner.Config.Trade.TradeConfiguration.StoreTradeCodes;
-
-        if (useTradePartnerInfo && storeTradeCodes)
-        {
-            useTradePartnerInfo = true;
-            storeTradeCodes = true;
-            content = TrainerInfoHelper.AddTrainerDetails(content, userID, ignoreAutoOT);
-        }
+        var ignoreAutoOT = content.Contains("OT:") || content.Contains("TID:") || content.Contains("SID:");
         content = ReusableActions.StripCodeBlock(content);
         var set = new ShowdownSet(content);
         var template = AutoLegalityWrapper.GetTemplate(set);
@@ -530,16 +511,8 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2, null);
             return;
         }
-        bool ignoreAutoOT = content.Contains("OT:") || content.Contains("TID:") || content.Contains("SID:");
-        bool useTradePartnerInfo = SysCord<T>.Runner.Config.Legality.UseTradePartnerInfo;
-        bool storeTradeCodes = SysCord<T>.Runner.Config.Trade.TradeConfiguration.StoreTradeCodes;
 
-        if (useTradePartnerInfo && storeTradeCodes)
-        {
-            useTradePartnerInfo = true;
-            storeTradeCodes = true;
-            content = TrainerInfoHelper.AddTrainerDetails(content, userID, ignoreAutoOT);
-        }
+        var ignoreAutoOT = content.Contains("OT:") || content.Contains("TID:") || content.Contains("SID:");
         content = ReusableActions.StripCodeBlock(content);
         var set = new ShowdownSet(content);
         var template = AutoLegalityWrapper.GetTemplate(set);
@@ -714,16 +687,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         {
             _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2);
             return;
-        }
-        bool ignoreAutoOT = content.Contains("OT:") || content.Contains("TID:") || content.Contains("SID:");
-        bool useTradePartnerInfo = SysCord<T>.Runner.Config.Legality.UseTradePartnerInfo;
-        bool storeTradeCodes = SysCord<T>.Runner.Config.Trade.TradeConfiguration.StoreTradeCodes;
-
-        if (useTradePartnerInfo && storeTradeCodes)
-        {
-            useTradePartnerInfo = true;
-            storeTradeCodes = true;
-            content = TrainerInfoHelper.AddTrainerDetails(content, userID, ignoreAutoOT);
         }
         content = ReusableActions.StripCodeBlock(content);
         var trades = TradeModule<T>.ParseBatchTradeContent(content);
@@ -1390,10 +1353,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ReplyAsync("Attachment provided is not compatible with this module!").ConfigureAwait(false);
             return;
         }
-        if (!ignoreAutoOT)
-        {
-            pk = (T)ModifyPKMWithTrainerInfo(pk, usr.Id);
-        }
         await AddTradeToQueueAsync(code, usr.Username, pk, sig, usr).ConfigureAwait(false);
     }
 
@@ -1412,10 +1371,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         {
             await ReplyAsync("Attachment provided is not compatible with this module!").ConfigureAwait(false);
             return;
-        }
-        if (!ignoreAutoOT)
-        {
-            pk = (T)ModifyPKMWithTrainerInfo(pk, usr.Id);
         }
         await AddTradeToQueueAsync(code, usr.Username, pk, sig, usr, isHiddenTrade: true, ignoreAutoOT: ignoreAutoOT).ConfigureAwait(false);
     }
@@ -1511,34 +1466,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         }
 
         return randomPictocodes;
-    }
-
-    public static PKM ModifyPKMWithTrainerInfo(PKM pkm, ulong userID)
-    {
-        // Convert File to showdown format
-        var showdownSet = ReusableActions.GetFormattedShowdownText(pkm);
-
-        var useTradePartnerInfo = SysCord<T>.Runner.Config.Legality.UseTradePartnerInfo;
-        var storeTradeCodes = SysCord<T>.Runner.Config.Trade.TradeConfiguration.StoreTradeCodes;
-        if (useTradePartnerInfo && storeTradeCodes)
-        {
-            showdownSet = TrainerInfoHelper.ModifyShowdownSetTrainerInfo(showdownSet, userID);
-        }
-
-        // Convert the modified showdown set back to File with new trainer info applied
-        showdownSet = ReusableActions.StripCodeBlock(showdownSet);
-        var set = new ShowdownSet(showdownSet);
-        var template = AutoLegalityWrapper.GetTemplate(set);
-
-        var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
-        var updatedPKM = sav.GetLegal(template, out _);
-        var la = new LegalityAnalysis(updatedPKM);
-        if (updatedPKM == null || !la.Valid)
-        {
-            LogUtil.LogError("AutoOT", "The modified PKM is not valid.");
-            throw new Exception("The modified PKM is not valid.");
-        }
-        return updatedPKM;
     }
 
     private async Task ReplyAndDeleteAsync(string message, int delaySeconds, IMessage? messageToDelete = null)

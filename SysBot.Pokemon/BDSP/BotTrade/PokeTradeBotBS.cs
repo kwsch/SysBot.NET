@@ -201,7 +201,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         {
             result = await PerformLinkCodeTrade(sav, detail, token).ConfigureAwait(false);
             if (result == PokeTradeResult.Success)
-            return;
+                return;
         }
         catch (SocketException socket)
         {
@@ -313,26 +313,29 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         var tradePartner = await GetTradePartnerInfo(token).ConfigureAwait(false);
         var trainerNID = GetFakeNID(tradePartner.TrainerName, tradePartner.TrainerID);
         RecordUtil<PokeTradeBotSWSH>.Record($"Initiating\t{trainerNID:X16}\t{tradePartner.TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
-        Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7} (ID: {trainerNID}");
+        Log($"Found Link Trade partner: {tradePartner.TrainerName}-{trainerNID})");
 
         var tradeCodeStorage = new TradeCodeStorage();
         var existingTradeDetails = tradeCodeStorage.GetTradeDetails(poke.Trainer.ID);
 
-        bool shouldUpdateOT = existingTradeDetails?.OT != tradePartner.TrainerName;
-        bool shouldUpdateTID = existingTradeDetails?.TID != int.Parse(tradePartner.TID7);
-        bool shouldUpdateSID = existingTradeDetails?.SID != int.Parse(tradePartner.SID7);
+        string ot = tradePartner.TrainerName;
+        int tid = int.Parse(tradePartner.TID7);
+        int sid = int.Parse(tradePartner.SID7);
 
-        if (shouldUpdateOT || shouldUpdateTID || shouldUpdateSID)
+        if (existingTradeDetails != null)
         {
-#pragma warning disable CS8604 // Possible null reference argument.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-            tradeCodeStorage.UpdateTradeDetails(poke.Trainer.ID, shouldUpdateOT ? tradePartner.TrainerName : existingTradeDetails.OT, shouldUpdateTID ? int.Parse(tradePartner.TID7) : existingTradeDetails.TID, shouldUpdateSID ? int.Parse(tradePartner.SID7) : existingTradeDetails.SID);
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-#pragma warning restore CS8604 // Possible null reference argument.
+            bool shouldUpdateOT = existingTradeDetails.OT != tradePartner.TrainerName;
+            bool shouldUpdateTID = existingTradeDetails.TID != tid;
+            bool shouldUpdateSID = existingTradeDetails.SID != sid;
+
+            ot = shouldUpdateOT ? tradePartner.TrainerName : existingTradeDetails.OT ?? tradePartner.TrainerName;
+            tid = shouldUpdateTID ? tid : existingTradeDetails.TID;
+            sid = shouldUpdateSID ? sid : existingTradeDetails.SID;
+        }
+
+        if (ot != null)
+        {
+            tradeCodeStorage.UpdateTradeDetails(poke.Trainer.ID, ot, tid, sid);
         }
 
         var partnerCheck = CheckPartnerReputation(this, poke, trainerNID, tradePartner.TrainerName, AbuseSettings, token);
@@ -377,7 +380,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         }
 
         List<PB8> ls = new List<PB8>();
-            ls.Add(poke.TradeData);
+        ls.Add(poke.TradeData);
 
         PB8 offered = toSend;
         int counting = 0;
@@ -397,6 +400,10 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
                 return PokeTradeResult.TrainerTooSlow;
             }
             //lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
+            if (Hub.Config.Legality.UseTradePartnerInfo && !poke.IgnoreAutoOT)
+            {
+                await ApplyAutoOT(toSend, offered, sav, tradePartner.TrainerName, token);
+            }
             PokeTradeResult update;
             var trainer = new PartnerDataHolder(0, tradePartner.TrainerName, tradePartner.TID7);
             (toSend, update) = await GetEntityToSend(sav, poke, offered, toSend, trainer, token).ConfigureAwait(false);
@@ -808,6 +815,58 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         }
 
         return (toSend, PokeTradeResult.Success);
+    }
+
+    private async Task<bool> ApplyAutoOT(PB8 toSend, PB8 offered, SAV8BS sav, string tradePartner, CancellationToken token)
+    {
+        var cln = toSend.Clone();
+        cln.OriginalTrainerGender = offered.OriginalTrainerGender;
+        cln.TrainerTID7 = offered.TrainerTID7;
+        cln.TrainerSID7 = offered.TrainerSID7;
+        cln.Language = offered.Language;
+        cln.OriginalTrainerName = tradePartner;
+        ClearOTTrash(cln, tradePartner);
+
+        if (!toSend.IsNicknamed)
+            cln.ClearNickname();
+
+        if (toSend.IsShiny)
+            cln.SetShiny();
+
+        cln.RefreshChecksum();
+
+        var tradeBS = new LegalityAnalysis(cln);
+        if (tradeBS.Valid)
+        {
+            Log($"Pokemon is valid with Trade Partner Info applied. Swapping details.");
+
+            await SetBoxPokemonAbsolute(BoxStartOffset, cln, token, sav).ConfigureAwait(false);
+        }
+        else
+        {
+            Log($"Pokemon not valid after using Trade Partner Info.");
+            await SetBoxPokemonAbsolute(BoxStartOffset, cln, token, sav).ConfigureAwait(false);
+        }
+        return tradeBS.Valid;
+    }
+
+    private static void ClearOTTrash(PB8 pokemon, string trainerName)
+    {
+        Span<byte> trash = pokemon.OriginalTrainerTrash;
+        trash.Clear();
+        int maxLength = trash.Length / 2;
+        int actualLength = Math.Min(trainerName.Length, maxLength);
+        for (int i = 0; i < actualLength; i++)
+        {
+            char value = trainerName[i];
+            trash[i * 2] = (byte)value;
+            trash[i * 2 + 1] = (byte)(value >> 8);
+        }
+        if (actualLength < maxLength)
+        {
+            trash[actualLength * 2] = 0x00;
+            trash[actualLength * 2 + 1] = 0x00;
+        }
     }
 
     private void WaitAtBarrierIfApplicable(CancellationToken token)
