@@ -304,9 +304,8 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         bool shouldUpdateOT = existingTradeDetails?.OT != tradePartner.TrainerName;
         bool shouldUpdateTID = existingTradeDetails?.TID != int.Parse(tradePartner.TID7);
         bool shouldUpdateSID = existingTradeDetails?.SID != int.Parse(tradePartner.SID7);
-        bool shouldUpdateLanguage = existingTradeDetails?.Language != tradePartner.Language;
 
-        if (shouldUpdateOT || shouldUpdateTID || shouldUpdateSID || shouldUpdateLanguage)
+        if (shouldUpdateOT || shouldUpdateTID || shouldUpdateSID)
         {
 #pragma warning disable CS8604 // Possible null reference argument.
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
@@ -314,8 +313,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
                 poke.Trainer.ID,
                 shouldUpdateOT ? tradePartner.TrainerName : existingTradeDetails.OT,
                 shouldUpdateTID ? int.Parse(tradePartner.TID7) : existingTradeDetails.TID,
-                shouldUpdateSID ? int.Parse(tradePartner.SID7) : existingTradeDetails.SID,
-                shouldUpdateLanguage ? tradePartner.Language : existingTradeDetails.Language
+                shouldUpdateSID ? int.Parse(tradePartner.SID7) : existingTradeDetails.SID
 
             );
 #pragma warning restore CS8602 // Dereference of a possibly null reference.

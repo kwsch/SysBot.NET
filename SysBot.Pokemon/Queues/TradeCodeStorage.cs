@@ -15,7 +15,6 @@ public class TradeCodeStorage
         public string? OT { get; set; }
         public int TID { get; set; }
         public int SID { get; set; }
-        public int Language { get; set; } = 2;
         public int TradeCount { get; set; }
     }
 
@@ -26,11 +25,8 @@ public class TradeCodeStorage
     };
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    public TradeCodeStorage()
+    public TradeCodeStorage() => LoadFromFile();
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    {
-        LoadFromFile();
-    }
 
     public int GetTradeCode(ulong trainerID)
     {
@@ -110,16 +106,15 @@ public class TradeCodeStorage
         return null;
     }
 
-    public void UpdateTradeDetails(ulong trainerID, string ot, int tid, int sid, int language = 2)
+    public void UpdateTradeDetails(ulong trainerID, string ot, int tid, int sid)
     {
         LoadFromFile();
+
         if (_tradeCodeDetails.TryGetValue(trainerID, out var details))
         {
             details.OT = ot;
             details.TID = tid;
             details.SID = sid;
-            if (language != -1)
-                details.Language = language;
             SaveToFile();
         }
     }

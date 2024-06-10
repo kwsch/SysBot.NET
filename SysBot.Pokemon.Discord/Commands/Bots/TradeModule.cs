@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.Net;
 using Discord.WebSocket;
 using PKHeX.Core;
+using PKHeX.Core.AutoMod;
 using SysBot.Base;
 using SysBot.Pokemon.Helpers;
 using System;
@@ -12,6 +13,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static SysBot.Pokemon.TradeSettings.TradeSettingsCategory;
@@ -266,6 +268,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public async Task TradeEggAsync([Summary("Trade Code")] int code, [Summary("Showdown Set")][Remainder] string content)
     {
         var userID = Context.User.Id;
+
         // Check if the user is already in the queue
         if (Info.IsUserInQueue(userID))
         {
@@ -276,33 +279,22 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         bool useTradePartnerInfo = SysCord<T>.Runner.Config.Legality.UseTradePartnerInfo;
         bool storeTradeCodes = SysCord<T>.Runner.Config.Trade.TradeConfiguration.StoreTradeCodes;
 
+        if (useTradePartnerInfo && storeTradeCodes)
+        {
+            useTradePartnerInfo = true;
+            storeTradeCodes = true;
+            content = TrainerInfoHelper.AddTrainerDetails(content, userID, ignoreAutoOT);
+        }
         content = ReusableActions.StripCodeBlock(content);
         var set = new ShowdownSet(content);
         var template = AutoLegalityWrapper.GetTemplate(set);
+
         try
         {
-            GameVersion gameVersion = typeof(T) switch
-            {
-                Type t when t == typeof(PK8) => GameVersion.SWSH,
-                Type t when t == typeof(PB8) => GameVersion.BDSP,
-                Type t when t == typeof(PA8) => GameVersion.PLA,
-                Type t when t == typeof(PK9) => GameVersion.SV,
-                Type t when t == typeof(PB7) => GameVersion.GE,
-                _ => throw new ArgumentException("Unsupported PKM type."),
-            };
-            ITrainerInfo sav;
-            if (useTradePartnerInfo && storeTradeCodes && !ignoreAutoOT)
-            {
-                var (trainerName, tid, sid, language) = TrainerInfoHelper.GetTrainerDetails(userID);
-                sav = SaveUtil.GetBlankSAV(gameVersion, trainerName, (LanguageID)language);
-                sav.SetDisplayID(tid, sid);
-            }
-            else
-            {
-                sav = AutoLegalityWrapper.GetTrainerInfo<T>();
-            }
+            var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
             var pkm = sav.GetLegal(template, out var result);
             pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
+
             if (pkm is not T pk)
             {
                 _ = ReplyAndDeleteAsync($"Oops! I wasn't able to create an egg for that.", 2, Context.Message);
@@ -348,6 +340,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     {
         List<Pictocodes>? lgcode = null;
         var userID = Context.User.Id;
+
         // Check if the user is already in the queue
         if (Info.IsUserInQueue(userID))
         {
@@ -358,38 +351,27 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         bool useTradePartnerInfo = SysCord<T>.Runner.Config.Legality.UseTradePartnerInfo;
         bool storeTradeCodes = SysCord<T>.Runner.Config.Trade.TradeConfiguration.StoreTradeCodes;
 
+        if (useTradePartnerInfo && storeTradeCodes)
+        {
+            useTradePartnerInfo = true;
+            storeTradeCodes = true;
+            content = TrainerInfoHelper.AddTrainerDetails(content, userID, ignoreAutoOT);
+        }
         content = ReusableActions.StripCodeBlock(content);
         var set = new ShowdownSet(content);
         var template = AutoLegalityWrapper.GetTemplate(set);
         int formArgument = ExtractFormArgument(content);
+
         if (set.InvalidLines.Count != 0)
         {
             var msg = $"Unable to parse Showdown Set:\n{string.Join("\n", set.InvalidLines)}";
             _ = ReplyAndDeleteAsync(msg, 2, Context.Message);
             return;
         }
+
         try
         {
-            GameVersion gameVersion = typeof(T) switch
-            {
-                Type t when t == typeof(PK8) => GameVersion.SWSH,
-                Type t when t == typeof(PB8) => GameVersion.BDSP,
-                Type t when t == typeof(PA8) => GameVersion.PLA,
-                Type t when t == typeof(PK9) => GameVersion.SV,
-                Type t when t == typeof(PB7) => GameVersion.GE,
-                _ => throw new ArgumentException("Unsupported PKM type."),
-            };
-            ITrainerInfo sav;
-            if (useTradePartnerInfo && storeTradeCodes && !ignoreAutoOT)
-            {
-                var (trainerName, tid, sid, language) = TrainerInfoHelper.GetTrainerDetails(userID);
-                sav = SaveUtil.GetBlankSAV(gameVersion, trainerName, (LanguageID)language);
-                sav.SetDisplayID(tid, sid);
-            }
-            else
-            {
-                sav = AutoLegalityWrapper.GetTrainerInfo<T>();
-            }
+            var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
             var pkm = sav.GetLegal(template, out var result);
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
@@ -480,9 +462,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             pk.ResetPartyStats();
 
             var sig = Context.User.GetFavor();
-#pragma warning disable CS8604 // Possible null reference argument.
             await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, isBatchTrade: false, batchTradeNumber: 1, totalBatchTrades: 1, true, false, lgcode: lgcode, ignoreAutoOT: ignoreAutoOT, setEdited: setEdited).ConfigureAwait(false);
-#pragma warning restore CS8604 // Possible null reference argument.
         }
         catch (Exception ex)
         {
@@ -553,10 +533,12 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         bool ignoreAutoOT = content.Contains("OT:") || content.Contains("TID:") || content.Contains("SID:");
         bool useTradePartnerInfo = SysCord<T>.Runner.Config.Legality.UseTradePartnerInfo;
         bool storeTradeCodes = SysCord<T>.Runner.Config.Trade.TradeConfiguration.StoreTradeCodes;
-        if (useTradePartnerInfo || storeTradeCodes) // If either of these is true, make sure both are true.
+
+        if (useTradePartnerInfo && storeTradeCodes)
         {
             useTradePartnerInfo = true;
             storeTradeCodes = true;
+            content = TrainerInfoHelper.AddTrainerDetails(content, userID, ignoreAutoOT);
         }
         content = ReusableActions.StripCodeBlock(content);
         var set = new ShowdownSet(content);
@@ -570,26 +552,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         }
         try
         {
-            GameVersion gameVersion = typeof(T) switch
-            {
-                Type t when t == typeof(PK8) => GameVersion.SWSH,
-                Type t when t == typeof(PB8) => GameVersion.BDSP,
-                Type t when t == typeof(PA8) => GameVersion.PLA,
-                Type t when t == typeof(PK9) => GameVersion.SV,
-                Type t when t == typeof(PB7) => GameVersion.GE,
-                _ => throw new ArgumentException("Unsupported PKM type."),
-            };
-            ITrainerInfo sav;
-            if (useTradePartnerInfo && storeTradeCodes && !ignoreAutoOT)
-            {
-                var (trainerName, tid, sid, language) = TrainerInfoHelper.GetTrainerDetails(userID);
-                sav = SaveUtil.GetBlankSAV(gameVersion, trainerName, (LanguageID)language);
-                sav.SetDisplayID(tid, sid);
-            }
-            else
-            {
-                sav = AutoLegalityWrapper.GetTrainerInfo<T>();
-            }
+            var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
             var pkm = sav.GetLegal(template, out var result);
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
@@ -679,9 +642,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             pk.ResetPartyStats();
 
             var sig = Context.User.GetFavor();
-#pragma warning disable CS8604 // Possible null reference argument.
             await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, isBatchTrade: false, batchTradeNumber: 1, totalBatchTrades: 1, lgcode: lgcode, ignoreAutoOT: ignoreAutoOT, setEdited: setEdited).ConfigureAwait(false);
-#pragma warning restore CS8604 // Possible null reference argument.
         }
         catch (Exception ex)
         {
@@ -754,7 +715,16 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2);
             return;
         }
+        bool ignoreAutoOT = content.Contains("OT:") || content.Contains("TID:") || content.Contains("SID:");
+        bool useTradePartnerInfo = SysCord<T>.Runner.Config.Legality.UseTradePartnerInfo;
+        bool storeTradeCodes = SysCord<T>.Runner.Config.Trade.TradeConfiguration.StoreTradeCodes;
 
+        if (useTradePartnerInfo && storeTradeCodes)
+        {
+            useTradePartnerInfo = true;
+            storeTradeCodes = true;
+            content = TrainerInfoHelper.AddTrainerDetails(content, userID, ignoreAutoOT);
+        }
         content = ReusableActions.StripCodeBlock(content);
         var trades = TradeModule<T>.ParseBatchTradeContent(content);
         var maxTradesAllowed = SysCord<T>.Runner.Config.Trade.TradeConfiguration.MaxPkmsPerTrade;
@@ -909,8 +879,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var set = new ShowdownSet(tradeContent);
         var ignoreAutoOT = tradeContent.Contains("OT:") || tradeContent.Contains("TID:") || tradeContent.Contains("SID:");
         var template = AutoLegalityWrapper.GetTemplate(set);
-        var useTradePartnerInfo = SysCord<T>.Runner.Config.Legality.UseTradePartnerInfo;
-        var storeTradeCodes = SysCord<T>.Runner.Config.Trade.TradeConfiguration.StoreTradeCodes;
 
         if (set.InvalidLines.Count != 0)
         {
@@ -921,32 +889,11 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
         try
         {
-            GameVersion gameVersion = typeof(T) switch
-            {
-                Type t when t == typeof(PK8) => GameVersion.SWSH,
-                Type t when t == typeof(PB8) => GameVersion.BDSP,
-                Type t when t == typeof(PA8) => GameVersion.PLA,
-                Type t when t == typeof(PK9) => GameVersion.SV,
-                Type t when t == typeof(PB7) => GameVersion.GE,
-                _ => throw new ArgumentException("Unsupported PKM type."),
-            };
-            ITrainerInfo sav;
-            if (useTradePartnerInfo && storeTradeCodes && !ignoreAutoOT)
-            {
-                var userID1 = Context.User.Id;
-                var (trainerName, tid, sid, language) = TrainerInfoHelper.GetTrainerDetails(userID1);
-                sav = SaveUtil.GetBlankSAV(gameVersion, trainerName, (LanguageID)language);
-                sav.SetDisplayID(tid, sid);
-            }
-            else
-            {
-                sav = AutoLegalityWrapper.GetTrainerInfo<T>();
-            }
+            var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
             var pkm = sav.GetLegal(template, out var result);
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
             bool setEdited = false;
-
             if (pkm is not T pk || !la.Valid || !string.IsNullOrEmpty(set.Form.ToString()))
             {
                 // Perform auto correct if it's on and send that shit through again
@@ -1443,12 +1390,10 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ReplyAsync("Attachment provided is not compatible with this module!").ConfigureAwait(false);
             return;
         }
-
         if (!ignoreAutoOT)
         {
-            pk = (T)ModifyPKMWithTrainerInfo(pk, usr.Id, ignoreAutoOT);
+            pk = (T)ModifyPKMWithTrainerInfo(pk, usr.Id);
         }
-
         await AddTradeToQueueAsync(code, usr.Username, pk, sig, usr).ConfigureAwait(false);
     }
 
@@ -1460,6 +1405,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ReplyAsync("No attachment provided!").ConfigureAwait(false);
             return;
         }
+
         var att = await NetUtil.DownloadPKMAsync(attachment).ConfigureAwait(false);
         var pk = GetRequest(att);
         if (pk == null)
@@ -1467,13 +1413,11 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ReplyAsync("Attachment provided is not compatible with this module!").ConfigureAwait(false);
             return;
         }
-
         if (!ignoreAutoOT)
         {
-            pk = (T)ModifyPKMWithTrainerInfo(pk, usr.Id, ignoreAutoOT);
+            pk = (T)ModifyPKMWithTrainerInfo(pk, usr.Id);
         }
-
-        await AddTradeToQueueAsync(code, usr.Username, pk, sig, usr, isHiddenTrade: true).ConfigureAwait(false);
+        await AddTradeToQueueAsync(code, usr.Username, pk, sig, usr, isHiddenTrade: true, ignoreAutoOT: ignoreAutoOT).ConfigureAwait(false);
     }
 
     private static T? GetRequest(Download<PKM> dl)
@@ -1569,42 +1513,30 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         return randomPictocodes;
     }
 
-    public static PKM ModifyPKMWithTrainerInfo(PKM pkm, ulong userID, bool ignoreAutoOT)
+    public static PKM ModifyPKMWithTrainerInfo(PKM pkm, ulong userID)
     {
-        // Convert PKM to showdown format
+        // Convert File to showdown format
         var showdownSet = ReusableActions.GetFormattedShowdownText(pkm);
-        // Convert the showdown set to a template
+
+        var useTradePartnerInfo = SysCord<T>.Runner.Config.Legality.UseTradePartnerInfo;
+        var storeTradeCodes = SysCord<T>.Runner.Config.Trade.TradeConfiguration.StoreTradeCodes;
+        if (useTradePartnerInfo && storeTradeCodes)
+        {
+            showdownSet = TrainerInfoHelper.ModifyShowdownSetTrainerInfo(showdownSet, userID);
+        }
+
+        // Convert the modified showdown set back to File with new trainer info applied
         showdownSet = ReusableActions.StripCodeBlock(showdownSet);
         var set = new ShowdownSet(showdownSet);
         var template = AutoLegalityWrapper.GetTemplate(set);
-        var useTradePartnerInfo = SysCord<T>.Runner.Config.Legality.UseTradePartnerInfo;
-        var storeTradeCodes = SysCord<T>.Runner.Config.Trade.TradeConfiguration.StoreTradeCodes;
-        GameVersion gameVersion = typeof(T) switch
-        {
-            Type t when t == typeof(PK8) => GameVersion.SWSH,
-            Type t when t == typeof(PB8) => GameVersion.BDSP,
-            Type t when t == typeof(PA8) => GameVersion.PLA,
-            Type t when t == typeof(PK9) => GameVersion.SV,
-            Type t when t == typeof(PB7) => GameVersion.GE,
-            _ => throw new ArgumentException("Unsupported PKM type."),
-        };
-        ITrainerInfo sav;
-        if (useTradePartnerInfo && storeTradeCodes && !ignoreAutoOT)
-        {
-            var (trainerName, tid, sid, language) = TrainerInfoHelper.GetTrainerDetails(userID);
-            sav = SaveUtil.GetBlankSAV(gameVersion, trainerName, (LanguageID)language);
-            sav.SetDisplayID(tid, sid);
-        }
-        else
-        {
-            sav = AutoLegalityWrapper.GetTrainerInfo<T>();
-        }
-        // Convert the set to PKM and run legality analysis
+
+        var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
         var updatedPKM = sav.GetLegal(template, out _);
-        // Check if the PKM is valid after AutoOT applied
-        if (updatedPKM == null || !new LegalityAnalysis(updatedPKM).Valid)
+        var la = new LegalityAnalysis(updatedPKM);
+        if (updatedPKM == null || !la.Valid)
         {
-            throw new Exception("The modified PKM is not valid with AutoOT applied. Trade this file with `trade true` to ignore AutoOT.");
+            LogUtil.LogError("AutoOT", "The modified PKM is not valid.");
+            throw new Exception("The modified PKM is not valid.");
         }
         return updatedPKM;
     }
@@ -1627,8 +1559,9 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         try
         {
             await Task.Delay(delaySeconds * 1000);
-            if (sentMessage != null)
-                await sentMessage.DeleteAsync();
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+            await sentMessage.DeleteAsync();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
             if (messageToDelete != null)
                 await messageToDelete.DeleteAsync();
         }

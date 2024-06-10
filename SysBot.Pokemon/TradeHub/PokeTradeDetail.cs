@@ -72,7 +72,9 @@ namespace SysBot.Pokemon
             Type = type;
             Time = DateTime.Now;
             IsFavored = favored;
+#pragma warning disable CS8601 // Possible null reference assignment.
             LGPETradeCode = lgcode;
+#pragma warning restore CS8601 // Possible null reference assignment.
             BatchTradeNumber = batchTradeNumber;
             TotalBatchTrades = totalBatchTrades;
             IsMysteryEgg = isMysteryEgg;
