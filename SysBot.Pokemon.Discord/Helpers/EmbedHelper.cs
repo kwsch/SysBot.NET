@@ -8,6 +8,32 @@ namespace SysBot.Pokemon.Discord;
 
 public static class EmbedHelper
 {
+    public static async Task SendNotificationEmbedAsync(IUser user, string message)
+    {
+        var embed = new EmbedBuilder()
+            .WithTitle("Notice")
+            .WithDescription(message)
+            .WithTimestamp(DateTimeOffset.Now)
+            .WithThumbnailUrl("https://raw.githubusercontent.com/bdawg1989/sprites/main/exclamation.gif")
+            .WithColor(Color.Red)
+            .Build();
+
+        await user.SendMessageAsync(embed: embed).ConfigureAwait(false);
+    }
+
+    public static async Task SendTradeCanceledEmbedAsync(IUser user, string reason)
+    {
+        var embed = new EmbedBuilder()
+            .WithTitle("Your Trade was Canceled...")
+            .WithDescription($"Your trade was canceled.\nPlease try again. If the issue persists, restart your switch and check your internet connection.\n\n**Reason**: {reason}")
+            .WithTimestamp(DateTimeOffset.Now)
+            .WithThumbnailUrl("https://raw.githubusercontent.com/bdawg1989/sprites/main/dmerror.gif")
+            .WithColor(Color.Red)
+            .Build();
+
+        await user.SendMessageAsync(embed: embed).ConfigureAwait(false);
+    }
+
     public static async Task SendTradeCodeEmbedAsync(IUser user, int code)
     {
         var embed = new EmbedBuilder()
@@ -16,6 +42,31 @@ public static class EmbedHelper
             .WithTimestamp(DateTimeOffset.Now)
             .WithThumbnailUrl("https://raw.githubusercontent.com/bdawg1989/sprites/main/tradecode.gif")
             .WithColor(Color.Blue)
+            .Build();
+
+        await user.SendMessageAsync(embed: embed).ConfigureAwait(false);
+    }
+
+    public static async Task SendTradeFinishedEmbedAsync<T>(IUser user, string message, T pk, bool isMysteryEgg)
+        where T : PKM, new()
+    {
+        string thumbnailUrl;
+
+        if (isMysteryEgg)
+        {
+            thumbnailUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/mysteryegg2.png";
+        }
+        else
+        {
+            thumbnailUrl = AbstractTrade<T>.PokeImg(pk, false, true, null);
+        }
+
+        var embed = new EmbedBuilder()
+            .WithTitle("Trade Completed!")
+            .WithDescription(message)
+            .WithTimestamp(DateTimeOffset.Now)
+            .WithThumbnailUrl(thumbnailUrl)
+            .WithColor(Color.Teal)
             .Build();
 
         await user.SendMessageAsync(embed: embed).ConfigureAwait(false);
@@ -55,56 +106,5 @@ public static class EmbedHelper
 
         var builtEmbed = embed.Build();
         await user.SendMessageAsync(embed: builtEmbed).ConfigureAwait(false);
-    }
-
-    public static async Task SendNotificationEmbedAsync(IUser user, string message)
-    {
-        var embed = new EmbedBuilder()
-            .WithTitle("Notice")
-            .WithDescription(message)
-            .WithTimestamp(DateTimeOffset.Now)
-            .WithThumbnailUrl("https://raw.githubusercontent.com/bdawg1989/sprites/main/exclamation.gif")
-            .WithColor(Color.Red)
-            .Build();
-
-        await user.SendMessageAsync(embed: embed).ConfigureAwait(false);
-    }
-
-    public static async Task SendTradeCanceledEmbedAsync(IUser user, string reason)
-    {
-        var embed = new EmbedBuilder()
-            .WithTitle("Your Trade was Canceled...")
-            .WithDescription($"Your trade was canceled.\nPlease try again. If the issue persists, restart your switch and check your internet connection.\n\n**Reason**: {reason}")
-            .WithTimestamp(DateTimeOffset.Now)
-            .WithThumbnailUrl("https://raw.githubusercontent.com/bdawg1989/sprites/main/dmerror.gif")
-            .WithColor(Color.Red)
-            .Build();
-
-        await user.SendMessageAsync(embed: embed).ConfigureAwait(false);
-    }
-
-    public static async Task SendTradeFinishedEmbedAsync<T>(IUser user, string message, T pk, bool isMysteryEgg)
-        where T : PKM, new()
-    {
-        string thumbnailUrl;
-
-        if (isMysteryEgg)
-        {
-            thumbnailUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/mysteryegg2.png";
-        }
-        else
-        {
-            thumbnailUrl = AbstractTrade<T>.PokeImg(pk, false, true, null);
-        }
-
-        var embed = new EmbedBuilder()
-            .WithTitle("Trade Completed!")
-            .WithDescription(message)
-            .WithTimestamp(DateTimeOffset.Now)
-            .WithThumbnailUrl(thumbnailUrl)
-            .WithColor(Color.Teal)
-            .Build();
-
-        await user.SendMessageAsync(embed: embed).ConfigureAwait(false);
     }
 }

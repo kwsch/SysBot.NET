@@ -10,6 +10,53 @@ namespace SysBot.Pokemon.Discord;
 
 public class DetailsExtractor<T> where T : PKM, new()
 {
+    public static void AddAdditionalText(EmbedBuilder embedBuilder)
+    {
+        string additionalText = string.Join("\n", SysCordSettings.Settings.AdditionalEmbedText);
+        if (!string.IsNullOrEmpty(additionalText))
+        {
+            embedBuilder.AddField("\u200B", additionalText, inline: false);
+        }
+    }
+
+    public static void AddNormalTradeFields(EmbedBuilder embedBuilder, EmbedData embedData, string trainerMention, T pk)
+    {
+        string leftSideContent = $"**Trainer:** {trainerMention}\n";
+        leftSideContent +=
+            (pk.Version is GameVersion.SL or GameVersion.VL && SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowTeraType ? $"**Tera Type:** {embedData.TeraType}\n" : "") +
+            (pk.Version is GameVersion.SL or GameVersion.VL && SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowScale ? $"**Scale:** {embedData.Scale.Item1} ({embedData.Scale.Item2})\n" : "") +
+            (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowLevel ? $"**Level:** {embedData.Level}\n" : "") +
+            (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowMetDate ? $"**Met Date:** {embedData.MetDate}\n" : "") +
+            (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowAbility ? $"**Ability:** {embedData.Ability}\n" : "") +
+            (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowNature ? $"**Nature**: {embedData.Nature}\n" : "") +
+            (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowIVs ? $"**IVs**: {embedData.IVsDisplay}\n" : "") +
+            (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowEVs && !string.IsNullOrWhiteSpace(embedData.EVsDisplay) ? $"**EVs**: {embedData.EVsDisplay}\n" : "");
+
+        leftSideContent = leftSideContent.TrimEnd('\n');
+        embedBuilder.AddField($"**{embedData.SpeciesName}{(string.IsNullOrEmpty(embedData.FormName) ? "" : $"-{embedData.FormName}")} {embedData.SpecialSymbols}**", leftSideContent, inline: true);
+        embedBuilder.AddField("\u200B", "\u200B", inline: true); // Spacer
+        embedBuilder.AddField("**Moves:**", embedData.MovesDisplay, inline: true);
+    }
+
+    public static void AddSpecialTradeFields(EmbedBuilder embedBuilder, bool isMysteryEgg, bool isSpecialRequest, bool isCloneRequest, bool isFixOTRequest, string trainerMention)
+    {
+        string specialDescription = $"**Trainer:** {trainerMention}\n" +
+                                    (isMysteryEgg ? "Mystery Egg" : isSpecialRequest ? "Special Request" : isCloneRequest ? "Clone Request" : isFixOTRequest ? "FixOT Request" : "Dump Request");
+        embedBuilder.AddField("\u200B", specialDescription, inline: false);
+    }
+
+    public static void AddThumbnails(EmbedBuilder embedBuilder, bool isCloneRequest, bool isSpecialRequest, string heldItemUrl)
+    {
+        if (isCloneRequest || isSpecialRequest)
+        {
+            embedBuilder.WithThumbnailUrl("https://raw.githubusercontent.com/bdawg1989/sprites/main/profoak.png");
+        }
+        else if (!string.IsNullOrEmpty(heldItemUrl))
+        {
+            embedBuilder.WithThumbnailUrl(heldItemUrl);
+        }
+    }
+
     public static EmbedData ExtractPokemonDetails(T pk, SocketUser user, bool isMysteryEgg, bool isCloneRequest, bool isDumpRequest, bool isFixOTRequest, bool isSpecialRequest, bool isBatchTrade, int batchTradeNumber, int totalBatchTrades)
     {
         var strings = GameInfo.GetStrings(1);
@@ -79,6 +126,51 @@ public class DetailsExtractor<T> where T : PKM, new()
         return embedData;
     }
 
+    public static string GetUserDetails(int totalTradeCount, TradeCodeStorage.TradeCodeDetails? tradeDetails)
+    {
+        string userDetailsText = "";
+        if (totalTradeCount > 0)
+        {
+            userDetailsText = $"Trades: {totalTradeCount}";
+        }
+        if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.StoreTradeCodes && tradeDetails != null)
+        {
+            if (!string.IsNullOrEmpty(tradeDetails?.OT))
+            {
+                userDetailsText += $" | OT: {tradeDetails?.OT}";
+            }
+            if (tradeDetails?.TID != null)
+            {
+                userDetailsText += $" | TID: {tradeDetails?.TID}";
+            }
+            if (tradeDetails?.TID != null)
+            {
+                userDetailsText += $" | SID: {tradeDetails?.SID}";
+            }
+        }
+        return userDetailsText;
+    }
+
+    private static string GetAbilityName(T pk)
+    {
+        return GameInfo.AbilityDataSource.FirstOrDefault(a => a.Value == pk.Ability)?.Text ?? "";
+    }
+
+    private static string GetAuthorName(string username, string tradeTitle, bool isMysteryEgg, bool isFixOTRequest, bool isCloneRequest, bool isDumpRequest, bool isSpecialRequest, bool isBatchTrade, string pokemonDisplayName, bool isShiny)
+    {
+        string isPkmShiny = isShiny ? "Shiny " : "";
+        return isMysteryEgg || isFixOTRequest || isCloneRequest || isDumpRequest || isSpecialRequest || isBatchTrade ?
+               $"{username}'s {tradeTitle}" :
+               $"{username}'s {isPkmShiny}{pokemonDisplayName}";
+    }
+
+    private static int[] GetEVs(T pk)
+    {
+        int[] evs = new int[6];
+        pk.GetEVs(evs);
+        return evs;
+    }
+
     private static List<string> GetMoveNames(T pk)
     {
         ushort[] moves = new ushort[4];
@@ -107,30 +199,9 @@ public class DetailsExtractor<T> where T : PKM, new()
         return moveNames;
     }
 
-    private static string GetTeraTypeString(PK9 pk9)
+    private static string GetNatureName(T pk)
     {
-        if (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.UseTeraEmojis)
-        {
-            var teraType = pk9.TeraTypeOverride == (MoveType)TeraTypeUtil.Stellar ? MoveType.Normal : pk9.TeraType;
-            var emojiInfo = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.TeraTypeEmojis.FirstOrDefault(e => e.MoveType == teraType);
-            if (emojiInfo != null && !string.IsNullOrEmpty(emojiInfo.EmojiCode))
-            {
-                return emojiInfo.EmojiCode;
-            }
-        }
-
-        if (pk9.TeraTypeOverride == (MoveType)TeraTypeUtil.Stellar)
-        {
-            return "Stellar";
-        }
-        else if ((int)pk9.TeraType == 99) // Terapagos
-        {
-            return "Stellar";
-        }
-        else
-        {
-            return pk9.TeraType.ToString();
-        }
+        return GameInfo.NatureDataSource.FirstOrDefault(n => n.Value == (int)pk.Nature)?.Text ?? "";
     }
 
     private static (string, byte) GetScaleDetails(PK9 pk9)
@@ -138,16 +209,6 @@ public class DetailsExtractor<T> where T : PKM, new()
         string scaleText = $"{PokeSizeDetailedUtil.GetSizeRating(pk9.Scale)}";
         byte scaleNumber = pk9.Scale;
         return (scaleText, scaleNumber);
-    }
-
-    private static string GetAbilityName(T pk)
-    {
-        return GameInfo.AbilityDataSource.FirstOrDefault(a => a.Value == pk.Ability)?.Text ?? "";
-    }
-
-    private static string GetNatureName(T pk)
-    {
-        return GameInfo.NatureDataSource.FirstOrDefault(n => n.Value == (int)pk.Nature)?.Text ?? "";
     }
 
     private static string GetSpecialSymbols(T pk)
@@ -180,6 +241,32 @@ public class DetailsExtractor<T> where T : PKM, new()
         return shinySymbol + alphaSymbol + mightyMarkSymbol + alphaMarkSymbol + mysteryGiftEmoji + displayGender + (!string.IsNullOrEmpty(markTitle) ? $"{markTitle} " : "");
     }
 
+    private static string GetTeraTypeString(PK9 pk9)
+    {
+        if (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.UseTeraEmojis)
+        {
+            var teraType = pk9.TeraTypeOverride == (MoveType)TeraTypeUtil.Stellar ? MoveType.Normal : pk9.TeraType;
+            var emojiInfo = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.TeraTypeEmojis.FirstOrDefault(e => e.MoveType == teraType);
+            if (emojiInfo != null && !string.IsNullOrEmpty(emojiInfo.EmojiCode))
+            {
+                return emojiInfo.EmojiCode;
+            }
+        }
+
+        if (pk9.TeraTypeOverride == (MoveType)TeraTypeUtil.Stellar)
+        {
+            return "Stellar";
+        }
+        else if ((int)pk9.TeraType == 99) // Terapagos
+        {
+            return "Stellar";
+        }
+        else
+        {
+            return pk9.TeraType.ToString();
+        }
+    }
+
     private static string GetTradeTitle(bool isMysteryEgg, bool isCloneRequest, bool isDumpRequest, bool isFixOTRequest, bool isSpecialRequest, bool isBatchTrade, int batchTradeNumber, string pokemonDisplayName, bool isShiny)
     {
         string shinyEmoji = isShiny ? "✨ " : "";
@@ -191,116 +278,49 @@ public class DetailsExtractor<T> where T : PKM, new()
                isDumpRequest ? "Pokémon Dump" :
                "";
     }
-
-    private static string GetAuthorName(string username, string tradeTitle, bool isMysteryEgg, bool isFixOTRequest, bool isCloneRequest, bool isDumpRequest, bool isSpecialRequest, bool isBatchTrade, string pokemonDisplayName, bool isShiny)
-    {
-        string isPkmShiny = isShiny ? "Shiny " : "";
-        return isMysteryEgg || isFixOTRequest || isCloneRequest || isDumpRequest || isSpecialRequest || isBatchTrade ?
-               $"{username}'s {tradeTitle}" :
-               $"{username}'s {isPkmShiny}{pokemonDisplayName}";
-    }
-
-    public static string GetUserDetails(int totalTradeCount, TradeCodeStorage.TradeCodeDetails? tradeDetails)
-    {
-        string userDetailsText = "";
-        if (totalTradeCount > 0)
-        {
-            userDetailsText = $"Trades: {totalTradeCount}";
-        }
-        if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.StoreTradeCodes && tradeDetails != null)
-        {
-            if (!string.IsNullOrEmpty(tradeDetails?.OT))
-            {
-                userDetailsText += $" | OT: {tradeDetails?.OT}";
-            }
-            if (tradeDetails?.TID != null)
-            {
-                userDetailsText += $" | TID: {tradeDetails?.TID}";
-            }
-            if (tradeDetails?.TID != null)
-            {
-                userDetailsText += $" | SID: {tradeDetails?.SID}";
-            }
-        }
-        return userDetailsText;
-    }
-
-    public static void AddAdditionalText(EmbedBuilder embedBuilder)
-    {
-        string additionalText = string.Join("\n", SysCordSettings.Settings.AdditionalEmbedText);
-        if (!string.IsNullOrEmpty(additionalText))
-        {
-            embedBuilder.AddField("\u200B", additionalText, inline: false);
-        }
-    }
-
-    public static void AddNormalTradeFields(EmbedBuilder embedBuilder, EmbedData embedData, string trainerMention, T pk)
-    {
-        string leftSideContent = $"**Trainer:** {trainerMention}\n";
-        leftSideContent +=
-            (pk.Version is GameVersion.SL or GameVersion.VL && SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowTeraType ? $"**Tera Type:** {embedData.TeraType}\n" : "") +
-            (pk.Version is GameVersion.SL or GameVersion.VL && SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowScale ? $"**Scale:** {embedData.Scale.Item1} ({embedData.Scale.Item2})\n" : "") +
-            (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowLevel ? $"**Level:** {embedData.Level}\n" : "") +
-            (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowMetDate ? $"**Met Date:** {embedData.MetDate}\n" : "") +
-            (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowAbility ? $"**Ability:** {embedData.Ability}\n" : "") +
-            (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowNature ? $"**Nature**: {embedData.Nature}\n" : "") +
-            (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowIVs ? $"**IVs**: {embedData.IVsDisplay}\n" : "") +
-            (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.ShowEVs && !string.IsNullOrWhiteSpace(embedData.EVsDisplay) ? $"**EVs**: {embedData.EVsDisplay}\n" : "");
-
-        leftSideContent = leftSideContent.TrimEnd('\n');
-        embedBuilder.AddField($"**{embedData.SpeciesName}{(string.IsNullOrEmpty(embedData.FormName) ? "" : $"-{embedData.FormName}")} {embedData.SpecialSymbols}**", leftSideContent, inline: true);
-        embedBuilder.AddField("\u200B", "\u200B", inline: true); // Spacer
-        embedBuilder.AddField("**Moves:**", embedData.MovesDisplay, inline: true);
-    }
-
-    public static void AddSpecialTradeFields(EmbedBuilder embedBuilder, bool isMysteryEgg, bool isSpecialRequest, bool isCloneRequest, bool isFixOTRequest, string trainerMention)
-    {
-        string specialDescription = $"**Trainer:** {trainerMention}\n" +
-                                    (isMysteryEgg ? "Mystery Egg" : isSpecialRequest ? "Special Request" : isCloneRequest ? "Clone Request" : isFixOTRequest ? "FixOT Request" : "Dump Request");
-        embedBuilder.AddField("\u200B", specialDescription, inline: false);
-    }
-
-    public static void AddThumbnails(EmbedBuilder embedBuilder, bool isCloneRequest, bool isSpecialRequest, string heldItemUrl)
-    {
-        if (isCloneRequest || isSpecialRequest)
-        {
-            embedBuilder.WithThumbnailUrl("https://raw.githubusercontent.com/bdawg1989/sprites/main/profoak.png");
-        }
-        else if (!string.IsNullOrEmpty(heldItemUrl))
-        {
-            embedBuilder.WithThumbnailUrl(heldItemUrl);
-        }
-    }
-
-    private static int[] GetEVs(T pk)
-    {
-        int[] evs = new int[6];
-        pk.GetEVs(evs);
-        return evs;
-    }
 }
 
 public class EmbedData
 {
-    public List<string>? Moves { get; set; }
-    public int Level { get; set; }
-    public string? TeraType { get; set; }
-    public (string, byte) Scale { get; set; }
     public string? Ability { get; set; }
-    public string? Nature { get; set; }
-    public string? SpeciesName { get; set; }
-    public string? SpecialSymbols { get; set; }
-    public string? FormName { get; set; }
-    public string? HeldItem { get; set; }
-    public string? Ball { get; set; }
-    public string? IVsDisplay { get; set; }
-    public string? EVsDisplay { get; set; }
-    public string? MetDate { get; set; }
-    public string? MovesDisplay { get; set; }
-    public string? PokemonDisplayName { get; set; }
-    public string? TradeTitle { get; set; }
+
     public string? AuthorName { get; set; }
+
+    public string? Ball { get; set; }
+
     public string? EmbedImageUrl { get; set; }
+
+    public string? EVsDisplay { get; set; }
+
+    public string? FormName { get; set; }
+
+    public string? HeldItem { get; set; }
+
     public string? HeldItemUrl { get; set; }
+
     public bool IsLocalFile { get; set; }
+
+    public string? IVsDisplay { get; set; }
+
+    public int Level { get; set; }
+
+    public string? MetDate { get; set; }
+
+    public List<string>? Moves { get; set; }
+
+    public string? MovesDisplay { get; set; }
+
+    public string? Nature { get; set; }
+
+    public string? PokemonDisplayName { get; set; }
+
+    public (string, byte) Scale { get; set; }
+
+    public string? SpecialSymbols { get; set; }
+
+    public string? SpeciesName { get; set; }
+
+    public string? TeraType { get; set; }
+
+    public string? TradeTitle { get; set; }
 }

@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Xml.Linq;
 using static SysBot.Pokemon.TradeSettings;
 
 namespace SysBot.Pokemon.Helpers
@@ -20,187 +18,6 @@ namespace SysBot.Pokemon.Helpers
     /// <typeparam name="T"></typeparam>
     public abstract class AbstractTrade<T> where T : PKM, new()
     {
-        public abstract void SendMessage(string message);//完善此方法以实现发送消息功能
-        public abstract IPokeTradeNotifier<T> GetPokeTradeNotifier(T pkm, int code);//完善此方法以实现消息通知功能
-        protected PokeTradeTrainerInfo userInfo = default!;
-        private TradeQueueInfo<T> queueInfo = default!;
-        public static readonly ushort[] ShinyLock = [  (ushort)Species.Victini, (ushort)Species.Keldeo, (ushort)Species.Volcanion, (ushort)Species.Cosmog, (ushort)Species.Cosmoem, (ushort)Species.Magearna, (ushort)Species.Marshadow, (ushort)Species.Eternatus,
-                                                    (ushort)Species.Kubfu, (ushort)Species.Urshifu, (ushort)Species.Zarude, (ushort)Species.Glastrier, (ushort)Species.Spectrier, (ushort)Species.Calyrex ];
-
-        public void SetPokeTradeTrainerInfo(PokeTradeTrainerInfo pokeTradeTrainerInfo)
-        {
-            userInfo = pokeTradeTrainerInfo;
-        }
-
-        public void SetTradeQueueInfo(TradeQueueInfo<T> queueInfo)
-        {
-            this.queueInfo = queueInfo;
-        }
-
-        public static bool HasAdName(T pk, out string ad)
-        {
-            string pattern = @"(YT$)|(YT\w*$)|(Lab$)|(\.\w*$|\.\w*\/)|(TV$)|(PKHeX)|(FB:)|(AuSLove)|(ShinyMart)|(Blainette)|(\ com)|(\ org)|(\ net)|(2DOS3)|(PPorg)|(Tik\wok$)|(YouTube)|(IG:)|(TTV\ )|(Tools)|(JokersWrath)|(bot$)|(PKMGen)|(TheHighTable)";
-            bool ot = Regex.IsMatch(pk.OriginalTrainerName, pattern, RegexOptions.IgnoreCase);
-            bool nick = Regex.IsMatch(pk.Nickname, pattern, RegexOptions.IgnoreCase);
-            ad = ot ? pk.OriginalTrainerName : nick ? pk.Nickname : "";
-            return ot || nick;
-        }
-
-        public static bool ShinyLockCheck(ushort species, string form, string ball = "")
-        {
-            if (ShinyLock.Contains(species))
-                return true;
-            else if (form is not "" && (species is (ushort)Species.Zapdos or (ushort)Species.Moltres or (ushort)Species.Articuno))
-                return true;
-            else if (ball.Contains("Beast") && (species is (ushort)Species.Poipole or (ushort)Species.Naganadel))
-                return true;
-            else if (typeof(T) == typeof(PB8) && (species is (ushort)Species.Manaphy or (ushort)Species.Mew or (ushort)Species.Jirachi))
-                return true;
-            else if (species is (ushort)Species.Pikachu && form is not "" && form is not "-Partner")
-                return true;
-            else if ((species is (ushort)Species.Zacian or (ushort)Species.Zamazenta) && !ball.Contains("Cherish"))
-                return true;
-            return false;
-        }
-
-        public static string PokeImg(PKM pkm, bool canGmax, bool fullSize, ImageSize? preferredImageSize = null)
-        {
-            bool md = false;
-            bool fd = false;
-            string[] baseLink;
-
-            if (fullSize)
-            {
-                baseLink = "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/512x512/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_');
-            }
-            else if (preferredImageSize.HasValue)
-            {
-                baseLink = preferredImageSize.Value switch
-                {
-                    ImageSize.Size256x256 => "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/256x256/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_'),
-                    ImageSize.Size128x128 => "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/128x128/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_'),
-                    _ => "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/256x256/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_'),
-                };
-            }
-            else
-            {
-                baseLink = "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/256x256/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_');
-            }
-
-            if (Enum.IsDefined(typeof(GenderDependent), pkm.Species) && !canGmax && pkm.Form is 0)
-            {
-                if (pkm.Gender == 0 && pkm.Species != (int)Species.Torchic)
-                    md = true;
-                else fd = true;
-            }
-
-            int form = pkm.Species switch
-            {
-                (int)Species.Sinistea or (int)Species.Polteageist or (int)Species.Rockruff or (int)Species.Mothim => 0,
-                (int)Species.Alcremie when pkm.IsShiny || canGmax => 0,
-                _ => pkm.Form,
-
-            };
-
-            if (pkm.Species is (ushort)Species.Sneasel)
-            {
-                if (pkm.Gender is 0)
-                    md = true;
-                else fd = true;
-            }
-
-            if (pkm.Species is (ushort)Species.Basculegion)
-            {
-                if (pkm.Gender is 0)
-                {
-                    md = true;
-                    pkm.Form = 0;
-                }
-                else
-                {
-                    pkm.Form = 1;
-                }
-
-                string s = pkm.IsShiny ? "r" : "n";
-                string g = md && pkm.Gender is not 1 ? "md" : "fd";
-                return $"https://raw.githubusercontent.com/bdawg1989/HomeImages/master/256x256/poke_capture_0" + $"{pkm.Species}" + "_00" + $"{pkm.Form}" + "_" + $"{g}" + "_n_00000000_f_" + $"{s}" + ".png";
-            }
-
-            baseLink[2] = pkm.Species < 10 ? $"000{pkm.Species}" : pkm.Species < 100 && pkm.Species > 9 ? $"00{pkm.Species}" : pkm.Species >= 1000 ? $"{pkm.Species}" : $"0{pkm.Species}";
-            baseLink[3] = pkm.Form < 10 ? $"00{form}" : $"0{form}";
-            baseLink[4] = pkm.PersonalInfo.OnlyFemale ? "fo" : pkm.PersonalInfo.OnlyMale ? "mo" : pkm.PersonalInfo.Genderless ? "uk" : fd ? "fd" : md ? "md" : "mf";
-            baseLink[5] = canGmax ? "g" : "n";
-            baseLink[6] = "0000000" + ((pkm.Species == (int)Species.Alcremie && !canGmax) ? ((IFormArgument)pkm).FormArgument.ToString() : "0");
-            baseLink[8] = pkm.IsShiny ? "r.png" : "n.png";
-            return string.Join("_", baseLink);
-        }
-
-        public static string FormOutput(ushort species, byte form, out string[] formString)
-        {
-            var strings = GameInfo.GetStrings("en");
-            formString = FormConverter.GetFormList(species, strings.Types, strings.forms, GameInfo.GenderSymbolASCII, typeof(T) == typeof(PK8) ? EntityContext.Gen8 : EntityContext.Gen4);
-            if (formString.Length is 0)
-                return string.Empty;
-
-            formString[0] = "";
-            if (form >= formString.Length)
-                form = (byte)(formString.Length - 1);
-
-            return formString[form].Contains('-') ? formString[form] : formString[form] == "" ? "" : $"-{formString[form]}";
-        }
-
-        public static bool HasMark(IRibbonIndex pk, out RibbonIndex result, out string markTitle)
-        {
-            result = default;
-            markTitle = string.Empty;
-
-            if (pk is IRibbonSetMark9 ribbonSetMark)
-            {
-                if (ribbonSetMark.RibbonMarkMightiest)
-                {
-                    result = RibbonIndex.MarkMightiest;
-                    markTitle = " The Unrivaled";
-                    return true;
-                }
-                else if (ribbonSetMark.RibbonMarkAlpha)
-                {
-                    result = RibbonIndex.MarkAlpha;
-                    markTitle = " The Former Alpha";
-                    return true;
-                }
-                else if (ribbonSetMark.RibbonMarkTitan)
-                {
-                    result = RibbonIndex.MarkTitan;
-                    markTitle = " The Former Titan";
-                    return true;
-                }
-                else if (ribbonSetMark.RibbonMarkJumbo)
-                {
-                    result = RibbonIndex.MarkJumbo;
-                    markTitle = " The Great";
-                    return true;
-                }
-                else if (ribbonSetMark.RibbonMarkMini)
-                {
-                    result = RibbonIndex.MarkMini;
-                    markTitle = " The Teeny";
-                    return true;
-                }
-            }
-
-            for (var mark = RibbonIndex.MarkLunchtime; mark <= RibbonIndex.MarkSlump; mark++)
-            {
-                if (pk.GetRibbon((int)mark))
-                {
-                    result = mark;
-                    markTitle = MarkTitle[(int)mark - (int)RibbonIndex.MarkLunchtime];
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         public static readonly string[] MarkTitle =
         [
             " The Peckish",
@@ -262,27 +79,12 @@ namespace SysBot.Pokemon.Helpers
             " The Former Titan",
         ];
 
-        public static PKM TrashBytes(PKM pkm, LegalityAnalysis? la = null)
-        {
-            var pkMet = (T)pkm.Clone();
-            if (pkMet.Version is not GameVersion.GO)
-                pkMet.MetDate = DateOnly.FromDateTime(DateTime.Now);
+        public static readonly ushort[] ShinyLock = [  (ushort)Species.Victini, (ushort)Species.Keldeo, (ushort)Species.Volcanion, (ushort)Species.Cosmog, (ushort)Species.Cosmoem, (ushort)Species.Magearna, (ushort)Species.Marshadow, (ushort)Species.Eternatus,
+                                                    (ushort)Species.Kubfu, (ushort)Species.Urshifu, (ushort)Species.Zarude, (ushort)Species.Glastrier, (ushort)Species.Spectrier, (ushort)Species.Calyrex ];
 
-            var analysis = new LegalityAnalysis(pkMet);
-            var pkTrash = (T)pkMet.Clone();
-            if (analysis.Valid)
-            {
-                pkTrash.IsNicknamed = true;
-                pkTrash.Nickname = "UwU";
-                pkTrash.SetDefaultNickname(la ?? new LegalityAnalysis(pkTrash));
-            }
+        protected PokeTradeTrainerInfo userInfo = default!;
 
-            if (new LegalityAnalysis(pkTrash).Valid)
-                pkm = pkTrash;
-            else if (analysis.Valid)
-                pkm = pkMet;
-            return pkm;
-        }
+        private TradeQueueInfo<T> queueInfo = default!;
 
         public static T CherishHandler(MysteryGift mg, ITrainerInfo info)
         {
@@ -330,335 +132,6 @@ namespace SysBot.Pokemon.Helpers
             {
                 return (T)mgPkm;
             }
-        }
-
-        public void StartTradePs(string ps)
-        {
-            var _ = CheckAndGetPkm(ps, out var msg, out var pkm);
-            if (!_)
-            {
-                SendMessage(msg);
-                return;
-            }
-            var foreign = ps.Contains("Language: ");
-            StartTradeWithoutCheck(pkm, foreign);
-        }
-        public void StartTradeChinesePs(string chinesePs)
-        {
-            var ps = ShowdownTranslator<T>.Chinese2Showdown(chinesePs);
-            LogUtil.LogInfo($"PS code after Chinese conversion:\n{ps}", nameof(AbstractTrade<T>));
-            StartTradePs(ps);
-        }
-        public void StartTradePKM(T pkm)
-        {
-            var _ = CheckPkm(pkm, out var msg);
-            if (!_)
-            {
-                SendMessage(msg);
-                return;
-            }
-
-            StartTradeWithoutCheck(pkm);
-        }
-
-        public void StartTradeMultiPs(string pss)
-        {
-            var psList = pss.Split("\n\n").ToList();
-            if (!JudgeMultiNum(psList.Count)) return;
-
-            var pkms = GetPKMsFromPsList(psList, isChinesePS: false, out int invalidCount, out List<bool> skipAutoOTList);
-
-            if (!JudgeInvalidCount(invalidCount, psList.Count)) return;
-
-            var code = queueInfo.GetRandomTradeCode(12345);
-            var __ = AddToTradeQueue(pkms, code, skipAutoOTList,
-                PokeRoutineType.LinkTrade, out string message);
-            SendMessage(message);
-        }
-
-        public void StartTradeMultiChinesePs(string chinesePssString)
-        {
-            var chinesePsList = chinesePssString.Split('+').ToList();
-            if (!JudgeMultiNum(chinesePsList.Count)) return;
-
-            List<T> pkms = GetPKMsFromPsList(chinesePsList, true, out int invalidCount, out List<bool> skipAutoOTList);
-
-            if (!JudgeInvalidCount(invalidCount, chinesePsList.Count)) return;
-
-            var code = queueInfo.GetRandomTradeCode(12345);
-            var __ = AddToTradeQueue(pkms, code, skipAutoOTList,
-                PokeRoutineType.LinkTrade, out string message);
-            SendMessage(message);
-        }
-
-        public void StartTradeMultiPKM(List<T> rawPkms)
-        {
-            if (!JudgeMultiNum(rawPkms.Count)) return;
-
-            List<T> pkms = [];
-            List<bool> skipAutoOTList = [];
-            int invalidCount = 0;
-            for (var i = 0; i < rawPkms.Count; i++)
-            {
-                var _ = CheckPkm(rawPkms[i], out var msg);
-                if (!_)
-                {
-                    LogUtil.LogInfo($"There is a problem with the {i + 1}th Pokémon in the batch:{msg}", nameof(AbstractTrade<T>));
-                    invalidCount++;
-                }
-                else
-                {
-                    LogUtil.LogInfo($"The {i + 1}th batch: {GameInfo.GetStrings("en").Species[rawPkms[i].Species]}", nameof(AbstractTrade<T>));
-                    skipAutoOTList.Add(false);
-                    pkms.Add(rawPkms[i]);
-                }
-            }
-
-            if (!JudgeInvalidCount(invalidCount, rawPkms.Count)) return;
-
-            var code = queueInfo.GetRandomTradeCode(12345);
-            var __ = AddToTradeQueue(pkms, code, skipAutoOTList,
-                PokeRoutineType.LinkTrade, out string message);
-            SendMessage(message);
-        }
-        /// <summary>
-        /// Generate the corresponding version of the PKM file based on the pokemon showdown code
-        /// </summary>
-        /// <param name="psList">ps code</param>
-        /// <param name="isChinesePS">Is it Chinese ps</param>
-        /// <param name="invalidCount">Number of illegal Pokémon</param>
-        /// <param name="skipAutoOTList">List that needs to skip self-id</param>
-        /// <returns></returns>
-        private List<T> GetPKMsFromPsList(List<string> psList, bool isChinesePS, out int invalidCount, out List<bool> skipAutoOTList)
-        {
-            List<T> pkms = [];
-            skipAutoOTList = [];
-            invalidCount = 0;
-            for (var i = 0; i < psList.Count; i++)
-            {
-                var ps = isChinesePS ? ShowdownTranslator<T>.Chinese2Showdown(psList[i]) : psList[i];
-                var _ = CheckAndGetPkm(ps, out var msg, out var pkm);
-                if (!_)
-                {
-                    LogUtil.LogInfo($"There is a problem with the {i + 1}th Pokémon in the batch:{msg}", nameof(AbstractTrade<T>));
-                    invalidCount++;
-                }
-                else
-                {
-                    LogUtil.LogInfo($"PS code after Chinese conversion:\n{ps}", nameof(AbstractTrade<T>));
-                    skipAutoOTList.Add(ps.Contains("Language: "));
-                    pkms.Add(pkm);
-                }
-            }
-            return pkms;
-        }
-        /// <summary>
-        /// 判断是否符合批量规则
-        /// </summary>
-        /// <param name="multiNum">待计算的数量</param>
-        /// <returns></returns>
-        private bool JudgeMultiNum(int multiNum)
-        {
-            var maxPkmsPerTrade = queueInfo.Hub.Config.Trade.TradeConfiguration.MaxPkmsPerTrade;
-            if (maxPkmsPerTrade <= 1)
-            {
-                SendMessage("Please contact the bot owner to change the trade/MaxPkmsPerTrade configuration to greater than 1.");
-                return false;
-            }
-            else if (multiNum > maxPkmsPerTrade)
-            {
-                SendMessage($"The number of Pokémon exchanged in batches should be less than or equal to {maxPkmsPerTrade}.");
-                return false;
-            }
-            return true;
-        }
-        /// <summary>
-        /// 判断无效数量
-        /// </summary>
-        /// <param name="invalidCount"></param>
-        /// <param name="totalCount"></param>
-        /// <returns></returns>
-        private bool JudgeInvalidCount(int invalidCount, int totalCount)
-        {
-            if (invalidCount == totalCount)
-            {
-                SendMessage("None of them are legal, try again.");
-                return false;
-            }
-            else if (invalidCount != 0)
-            {
-                SendMessage($"Among the {totalCount} Pokémon expected to be traded, {invalidCount} are illegal. Only {totalCount - invalidCount} legal ones will be traded.");
-            }
-            return true;
-        }
-
-        public void StartTradeWithoutCheck(T pkm, bool foreign = false)
-        {
-            var code = queueInfo.GetRandomTradeCode(12345);
-            var __ = AddToTradeQueue(pkm, code, foreign,
-                PokeRoutineType.LinkTrade, out string message);
-            SendMessage(message);
-        }
-
-        public void StartDump()
-        {
-            var code = queueInfo.GetRandomTradeCode(12345);
-            var __ = AddToTradeQueue(new T(), code, false,
-                PokeRoutineType.Dump, out string message);
-            SendMessage(message);
-        }
-
-        public bool Check(T pkm, out string msg)
-        {
-            try
-            {
-                if (!pkm.CanBeTraded())
-                {
-                    msg = $"Cancelling trade, trading of this Pokémon is prohibited!";
-                    return false;
-                }
-                if (pkm is T pk)
-                {
-                    var la = new LegalityAnalysis(pkm);
-                    var valid = la.Valid;
-                    if (valid)
-                    {
-                        msg = $"Already added to the waiting queue. If you select a Pokémon too slowly, your delivery request will be cancelled!";
-                        return true;
-                    }
-                    LogUtil.LogInfo($"Illegal reason:\n{la.Report()}", nameof(AbstractTrade<T>));
-                }
-                LogUtil.LogInfo($"pkm type:{pkm.GetType()}, T:{typeof(T)}", nameof(AbstractTrade<T>));
-                var reason = "I can't create illegal Pokémon.";
-                msg = $"{reason}";
-            }
-            catch (Exception ex)
-            {
-                LogUtil.LogSafe(ex, nameof(AbstractTrade<T>));
-                msg = $"Cancel delivery, an error occurred.";
-            }
-            return false;
-        }
-
-        public bool CheckPkm(T pkm, out string msg)
-        {
-            if (!queueInfo.GetCanQueue())
-            {
-                msg = "Sorry, I'm not accepting requests!";
-                return false;
-            }
-            return Check(pkm, out msg);
-        }
-
-        public bool CheckAndGetPkm(string setstring, out string msg, out T outPkm)
-        {
-            outPkm = new T();
-            if (!queueInfo.GetCanQueue())
-            {
-                msg = "Sorry, I'm not accepting requests!";
-                return false;
-            }
-
-            var set = ShowdownUtil.ConvertToShowdown(setstring);
-            if (set == null)
-            {
-                msg = $"The delivery is cancelled, and the Pokémon's nickname is empty.";
-                return false;
-            }
-
-            var template = AutoLegalityWrapper.GetTemplate(set);
-            if (template.Species < 1)
-            {
-                msg =
-                    $"To cancel delivery, please use the correct Showdown Set code";
-                return false;
-            }
-
-            try
-            {
-                var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
-                GenerationFix(sav);
-                var pkm = sav.GetLegal(template, out var result);
-                if (pkm.Nickname.ToLower() == "egg" && Breeding.CanHatchAsEgg(pkm.Species)) EggTrade(pkm, template);
-                if (Check((T)pkm, out msg))
-                {
-                    outPkm = (T)pkm;
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogUtil.LogSafe(ex, nameof(AbstractTrade<T>));
-                msg = $"Cancel delivery, an error occurred.";
-            }
-
-            return false;
-        }
-
-        private static void GenerationFix(ITrainerInfo sav)
-        {
-            if (typeof(T) == typeof(PK8) || typeof(T) == typeof(PB8) || typeof(T) == typeof(PA8)) sav.GetType().GetProperty("Generation")?.SetValue(sav, 8);
-        }
-
-        private bool AddToTradeQueue(T pk, int code, bool skipAutoOT,
-            PokeRoutineType type, out string msg)
-        {
-            return AddToTradeQueue([pk], code, [skipAutoOT], type, out msg);
-        }
-
-        private bool AddToTradeQueue(List<T> pks, int code, List<bool> skipAutoOTList,
-            PokeRoutineType type, out string msg)
-        {
-            if (pks == null || pks.Count == 0)
-            {
-                msg = $"Pokémon data is empty.";
-                return false;
-            }
-            T pk = pks.First();
-            var trainer = userInfo;
-            var notifier = GetPokeTradeNotifier(pk, code);
-            var tt = type == PokeRoutineType.SeedCheck
-                ? PokeTradeType.Seed
-                : (type == PokeRoutineType.Dump ? PokeTradeType.Dump : PokeTradeType.Specific);
-            var detail =
-                new PokeTradeDetail<T>(pk, trainer, notifier, tt, code, true);
-            detail.Context.Add("skipAutoOTList", skipAutoOTList);
-            if (pks.Count > 0)
-            {
-                detail.Context.Add("batch", pks);
-            }
-            var uniqueTradeID = GenerateUniqueTradeID();
-            var trade = new TradeEntry<T>(detail, userInfo.ID, type, userInfo.TrainerName, uniqueTradeID);
-
-            var added = queueInfo.AddToTradeQueue(trade, userInfo.ID, false);
-
-            if (added == QueueResultAdd.AlreadyInQueue)
-            {
-                msg = $"You are already in the queue, please do not send again.";
-                return false;
-            }
-
-            var position = queueInfo.CheckPosition(userInfo.ID, uniqueTradeID, type);
-            //msg = $"@{name}: Added to the {type} queue, unique ID: {detail.ID}. Current Position: {position.Position}";
-            msg = $"Added to the {type} queue, unique ID: {detail.ID}. Current Position: {position.Position}";
-
-            var botct = queueInfo.Hub.Bots.Count;
-            if (position.Position > botct)
-            {
-                var eta = queueInfo.Hub.Config.Queues.EstimateDelay(position.Position, botct);
-                //msg += $". Estimated: {eta:F1} minutes.";
-                msg += $". Estimated: {eta:F1} minutes.";
-            }
-
-            return true;
-        }
-
-        private static int GenerateUniqueTradeID()
-        {
-            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            int randomValue = new Random().Next(1000);
-            int uniqueTradeID = (int)(timestamp % int.MaxValue) * 1000 + randomValue;
-            return uniqueTradeID;
         }
 
         public static void DittoTrade(PKM pkm)
@@ -797,5 +270,540 @@ namespace SysBot.Pokemon.Helpers
             pk.SetSuggestedRibbons(template, enc, true);
         }
 
+        public static string FormOutput(ushort species, byte form, out string[] formString)
+        {
+            var strings = GameInfo.GetStrings("en");
+            formString = FormConverter.GetFormList(species, strings.Types, strings.forms, GameInfo.GenderSymbolASCII, typeof(T) == typeof(PK8) ? EntityContext.Gen8 : EntityContext.Gen4);
+            if (formString.Length is 0)
+                return string.Empty;
+
+            formString[0] = "";
+            if (form >= formString.Length)
+                form = (byte)(formString.Length - 1);
+
+            return formString[form].Contains('-') ? formString[form] : formString[form] == "" ? "" : $"-{formString[form]}";
+        }
+
+        public static bool HasAdName(T pk, out string ad)
+        {
+            string pattern = @"(YT$)|(YT\w*$)|(Lab$)|(\.\w*$|\.\w*\/)|(TV$)|(PKHeX)|(FB:)|(AuSLove)|(ShinyMart)|(Blainette)|(\ com)|(\ org)|(\ net)|(2DOS3)|(PPorg)|(Tik\wok$)|(YouTube)|(IG:)|(TTV\ )|(Tools)|(JokersWrath)|(bot$)|(PKMGen)|(TheHighTable)";
+            bool ot = Regex.IsMatch(pk.OriginalTrainerName, pattern, RegexOptions.IgnoreCase);
+            bool nick = Regex.IsMatch(pk.Nickname, pattern, RegexOptions.IgnoreCase);
+            ad = ot ? pk.OriginalTrainerName : nick ? pk.Nickname : "";
+            return ot || nick;
+        }
+
+        public static bool HasMark(IRibbonIndex pk, out RibbonIndex result, out string markTitle)
+        {
+            result = default;
+            markTitle = string.Empty;
+
+            if (pk is IRibbonSetMark9 ribbonSetMark)
+            {
+                if (ribbonSetMark.RibbonMarkMightiest)
+                {
+                    result = RibbonIndex.MarkMightiest;
+                    markTitle = " The Unrivaled";
+                    return true;
+                }
+                else if (ribbonSetMark.RibbonMarkAlpha)
+                {
+                    result = RibbonIndex.MarkAlpha;
+                    markTitle = " The Former Alpha";
+                    return true;
+                }
+                else if (ribbonSetMark.RibbonMarkTitan)
+                {
+                    result = RibbonIndex.MarkTitan;
+                    markTitle = " The Former Titan";
+                    return true;
+                }
+                else if (ribbonSetMark.RibbonMarkJumbo)
+                {
+                    result = RibbonIndex.MarkJumbo;
+                    markTitle = " The Great";
+                    return true;
+                }
+                else if (ribbonSetMark.RibbonMarkMini)
+                {
+                    result = RibbonIndex.MarkMini;
+                    markTitle = " The Teeny";
+                    return true;
+                }
+            }
+
+            for (var mark = RibbonIndex.MarkLunchtime; mark <= RibbonIndex.MarkSlump; mark++)
+            {
+                if (pk.GetRibbon((int)mark))
+                {
+                    result = mark;
+                    markTitle = MarkTitle[(int)mark - (int)RibbonIndex.MarkLunchtime];
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static string PokeImg(PKM pkm, bool canGmax, bool fullSize, ImageSize? preferredImageSize = null)
+        {
+            bool md = false;
+            bool fd = false;
+            string[] baseLink;
+
+            if (fullSize)
+            {
+                baseLink = "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/512x512/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_');
+            }
+            else if (preferredImageSize.HasValue)
+            {
+                baseLink = preferredImageSize.Value switch
+                {
+                    ImageSize.Size256x256 => "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/256x256/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_'),
+                    ImageSize.Size128x128 => "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/128x128/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_'),
+                    _ => "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/256x256/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_'),
+                };
+            }
+            else
+            {
+                baseLink = "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/256x256/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_');
+            }
+
+            if (Enum.IsDefined(typeof(GenderDependent), pkm.Species) && !canGmax && pkm.Form is 0)
+            {
+                if (pkm.Gender == 0 && pkm.Species != (int)Species.Torchic)
+                    md = true;
+                else fd = true;
+            }
+
+            int form = pkm.Species switch
+            {
+                (int)Species.Sinistea or (int)Species.Polteageist or (int)Species.Rockruff or (int)Species.Mothim => 0,
+                (int)Species.Alcremie when pkm.IsShiny || canGmax => 0,
+                _ => pkm.Form,
+            };
+
+            if (pkm.Species is (ushort)Species.Sneasel)
+            {
+                if (pkm.Gender is 0)
+                    md = true;
+                else fd = true;
+            }
+
+            if (pkm.Species is (ushort)Species.Basculegion)
+            {
+                if (pkm.Gender is 0)
+                {
+                    md = true;
+                    pkm.Form = 0;
+                }
+                else
+                {
+                    pkm.Form = 1;
+                }
+
+                string s = pkm.IsShiny ? "r" : "n";
+                string g = md && pkm.Gender is not 1 ? "md" : "fd";
+                return "https://raw.githubusercontent.com/bdawg1989/HomeImages/master/256x256/poke_capture_0" + $"{pkm.Species}" + "_00" + $"{pkm.Form}" + "_" + $"{g}" + "_n_00000000_f_" + $"{s}" + ".png";
+            }
+
+            baseLink[2] = pkm.Species < 10 ? $"000{pkm.Species}" : pkm.Species < 100 && pkm.Species > 9 ? $"00{pkm.Species}" : pkm.Species >= 1000 ? $"{pkm.Species}" : $"0{pkm.Species}";
+            baseLink[3] = pkm.Form < 10 ? $"00{form}" : $"0{form}";
+            baseLink[4] = pkm.PersonalInfo.OnlyFemale ? "fo" : pkm.PersonalInfo.OnlyMale ? "mo" : pkm.PersonalInfo.Genderless ? "uk" : fd ? "fd" : md ? "md" : "mf";
+            baseLink[5] = canGmax ? "g" : "n";
+            baseLink[6] = "0000000" + ((pkm.Species == (int)Species.Alcremie && !canGmax) ? ((IFormArgument)pkm).FormArgument.ToString() : "0");
+            baseLink[8] = pkm.IsShiny ? "r.png" : "n.png";
+            return string.Join("_", baseLink);
+        }
+
+        public static bool ShinyLockCheck(ushort species, string form, string ball = "")
+        {
+            if (ShinyLock.Contains(species))
+                return true;
+            else if (form is not "" && (species is (ushort)Species.Zapdos or (ushort)Species.Moltres or (ushort)Species.Articuno))
+                return true;
+            else if (ball.Contains("Beast") && (species is (ushort)Species.Poipole or (ushort)Species.Naganadel))
+                return true;
+            else if (typeof(T) == typeof(PB8) && (species is (ushort)Species.Manaphy or (ushort)Species.Mew or (ushort)Species.Jirachi))
+                return true;
+            else if (species is (ushort)Species.Pikachu && form is not "" && form is not "-Partner")
+                return true;
+            else if ((species is (ushort)Species.Zacian or (ushort)Species.Zamazenta) && !ball.Contains("Cherish"))
+                return true;
+            return false;
+        }
+
+        public static PKM TrashBytes(PKM pkm, LegalityAnalysis? la = null)
+        {
+            var pkMet = (T)pkm.Clone();
+            if (pkMet.Version is not GameVersion.GO)
+                pkMet.MetDate = DateOnly.FromDateTime(DateTime.Now);
+
+            var analysis = new LegalityAnalysis(pkMet);
+            var pkTrash = (T)pkMet.Clone();
+            if (analysis.Valid)
+            {
+                pkTrash.IsNicknamed = true;
+                pkTrash.Nickname = "UwU";
+                pkTrash.SetDefaultNickname(la ?? new LegalityAnalysis(pkTrash));
+            }
+
+            if (new LegalityAnalysis(pkTrash).Valid)
+                pkm = pkTrash;
+            else if (analysis.Valid)
+                pkm = pkMet;
+            return pkm;
+        }
+
+        public bool Check(T pkm, out string msg)
+        {
+            try
+            {
+                if (!pkm.CanBeTraded())
+                {
+                    msg = "Cancelling trade, trading of this Pokémon is prohibited!";
+                    return false;
+                }
+                if (pkm is T pk)
+                {
+                    var la = new LegalityAnalysis(pkm);
+                    var valid = la.Valid;
+                    if (valid)
+                    {
+                        msg = "Already added to the waiting queue. If you select a Pokémon too slowly, your delivery request will be cancelled!";
+                        return true;
+                    }
+                    LogUtil.LogInfo($"Illegal reason:\n{la.Report()}", nameof(AbstractTrade<T>));
+                }
+                LogUtil.LogInfo($"pkm type:{pkm.GetType()}, T:{typeof(T)}", nameof(AbstractTrade<T>));
+                var reason = "I can't create illegal Pokémon.";
+                msg = $"{reason}";
+            }
+            catch (Exception ex)
+            {
+                LogUtil.LogSafe(ex, nameof(AbstractTrade<T>));
+                msg = "Cancel delivery, an error occurred.";
+            }
+            return false;
+        }
+
+        public bool CheckAndGetPkm(string setstring, out string msg, out T outPkm)
+        {
+            outPkm = new T();
+            if (!queueInfo.GetCanQueue())
+            {
+                msg = "Sorry, I'm not accepting requests!";
+                return false;
+            }
+
+            var set = ShowdownUtil.ConvertToShowdown(setstring);
+            if (set == null)
+            {
+                msg = "The delivery is cancelled, and the Pokémon's nickname is empty.";
+                return false;
+            }
+
+            var template = AutoLegalityWrapper.GetTemplate(set);
+            if (template.Species < 1)
+            {
+                msg =
+                    "To cancel delivery, please use the correct Showdown Set code";
+                return false;
+            }
+
+            try
+            {
+                var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
+                GenerationFix(sav);
+                var pkm = sav.GetLegal(template, out var result);
+                if (pkm.Nickname.ToLower() == "egg" && Breeding.CanHatchAsEgg(pkm.Species)) EggTrade(pkm, template);
+                if (Check((T)pkm, out msg))
+                {
+                    outPkm = (T)pkm;
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogUtil.LogSafe(ex, nameof(AbstractTrade<T>));
+                msg = "Cancel delivery, an error occurred.";
+            }
+
+            return false;
+        }
+
+        public bool CheckPkm(T pkm, out string msg)
+        {
+            if (!queueInfo.GetCanQueue())
+            {
+                msg = "Sorry, I'm not accepting requests!";
+                return false;
+            }
+            return Check(pkm, out msg);
+        }
+
+        public abstract IPokeTradeNotifier<T> GetPokeTradeNotifier(T pkm, int code);
+
+        public abstract void SendMessage(string message);//完善此方法以实现发送消息功能
+
+        //完善此方法以实现消息通知功能
+        public void SetPokeTradeTrainerInfo(PokeTradeTrainerInfo pokeTradeTrainerInfo)
+        {
+            userInfo = pokeTradeTrainerInfo;
+        }
+
+        public void SetTradeQueueInfo(TradeQueueInfo<T> queueInfo)
+        {
+            this.queueInfo = queueInfo;
+        }
+
+        public void StartDump()
+        {
+            var code = queueInfo.GetRandomTradeCode(12345);
+            var __ = AddToTradeQueue(new T(), code, false,
+                PokeRoutineType.Dump, out string message);
+            SendMessage(message);
+        }
+
+        public void StartTradeChinesePs(string chinesePs)
+        {
+            var ps = ShowdownTranslator<T>.Chinese2Showdown(chinesePs);
+            LogUtil.LogInfo($"PS code after Chinese conversion:\n{ps}", nameof(AbstractTrade<T>));
+            StartTradePs(ps);
+        }
+
+        public void StartTradeMultiChinesePs(string chinesePssString)
+        {
+            var chinesePsList = chinesePssString.Split('+').ToList();
+            if (!JudgeMultiNum(chinesePsList.Count)) return;
+
+            List<T> pkms = GetPKMsFromPsList(chinesePsList, true, out int invalidCount, out List<bool> skipAutoOTList);
+
+            if (!JudgeInvalidCount(invalidCount, chinesePsList.Count)) return;
+
+            var code = queueInfo.GetRandomTradeCode(12345);
+            var __ = AddToTradeQueue(pkms, code, skipAutoOTList,
+                PokeRoutineType.LinkTrade, out string message);
+            SendMessage(message);
+        }
+
+        public void StartTradeMultiPKM(List<T> rawPkms)
+        {
+            if (!JudgeMultiNum(rawPkms.Count)) return;
+
+            List<T> pkms = [];
+            List<bool> skipAutoOTList = [];
+            int invalidCount = 0;
+            for (var i = 0; i < rawPkms.Count; i++)
+            {
+                var _ = CheckPkm(rawPkms[i], out var msg);
+                if (!_)
+                {
+                    LogUtil.LogInfo($"There is a problem with the {i + 1}th Pokémon in the batch:{msg}", nameof(AbstractTrade<T>));
+                    invalidCount++;
+                }
+                else
+                {
+                    LogUtil.LogInfo($"The {i + 1}th batch: {GameInfo.GetStrings("en").Species[rawPkms[i].Species]}", nameof(AbstractTrade<T>));
+                    skipAutoOTList.Add(false);
+                    pkms.Add(rawPkms[i]);
+                }
+            }
+
+            if (!JudgeInvalidCount(invalidCount, rawPkms.Count)) return;
+
+            var code = queueInfo.GetRandomTradeCode(12345);
+            var __ = AddToTradeQueue(pkms, code, skipAutoOTList,
+                PokeRoutineType.LinkTrade, out string message);
+            SendMessage(message);
+        }
+
+        public void StartTradeMultiPs(string pss)
+        {
+            var psList = pss.Split("\n\n").ToList();
+            if (!JudgeMultiNum(psList.Count)) return;
+
+            var pkms = GetPKMsFromPsList(psList, isChinesePS: false, out int invalidCount, out List<bool> skipAutoOTList);
+
+            if (!JudgeInvalidCount(invalidCount, psList.Count)) return;
+
+            var code = queueInfo.GetRandomTradeCode(12345);
+            var __ = AddToTradeQueue(pkms, code, skipAutoOTList,
+                PokeRoutineType.LinkTrade, out string message);
+            SendMessage(message);
+        }
+
+        public void StartTradePKM(T pkm)
+        {
+            var _ = CheckPkm(pkm, out var msg);
+            if (!_)
+            {
+                SendMessage(msg);
+                return;
+            }
+
+            StartTradeWithoutCheck(pkm);
+        }
+
+        public void StartTradePs(string ps)
+        {
+            var _ = CheckAndGetPkm(ps, out var msg, out var pkm);
+            if (!_)
+            {
+                SendMessage(msg);
+                return;
+            }
+            var foreign = ps.Contains("Language: ");
+            StartTradeWithoutCheck(pkm, foreign);
+        }
+
+        public void StartTradeWithoutCheck(T pkm, bool foreign = false)
+        {
+            var code = queueInfo.GetRandomTradeCode(12345);
+            var __ = AddToTradeQueue(pkm, code, foreign,
+                PokeRoutineType.LinkTrade, out string message);
+            SendMessage(message);
+        }
+
+        private static int GenerateUniqueTradeID()
+        {
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            int randomValue = new Random().Next(1000);
+            int uniqueTradeID = (int)(timestamp % int.MaxValue) * 1000 + randomValue;
+            return uniqueTradeID;
+        }
+
+        private static void GenerationFix(ITrainerInfo sav)
+        {
+            if (typeof(T) == typeof(PK8) || typeof(T) == typeof(PB8) || typeof(T) == typeof(PA8)) sav.GetType().GetProperty("Generation")?.SetValue(sav, 8);
+        }
+
+        private bool AddToTradeQueue(T pk, int code, bool skipAutoOT,
+                    PokeRoutineType type, out string msg)
+        {
+            return AddToTradeQueue([pk], code, [skipAutoOT], type, out msg);
+        }
+
+        private bool AddToTradeQueue(List<T> pks, int code, List<bool> skipAutoOTList,
+                    PokeRoutineType type, out string msg)
+        {
+            if (pks == null || pks.Count == 0)
+            {
+                msg = "Pokémon data is empty.";
+                return false;
+            }
+            T pk = pks.First();
+            var trainer = userInfo;
+            var notifier = GetPokeTradeNotifier(pk, code);
+            var tt = type == PokeRoutineType.SeedCheck
+                ? PokeTradeType.Seed
+                : (type == PokeRoutineType.Dump ? PokeTradeType.Dump : PokeTradeType.Specific);
+            var detail =
+                new PokeTradeDetail<T>(pk, trainer, notifier, tt, code, true);
+            detail.Context.Add("skipAutoOTList", skipAutoOTList);
+            if (pks.Count > 0)
+            {
+                detail.Context.Add("batch", pks);
+            }
+            var uniqueTradeID = GenerateUniqueTradeID();
+            var trade = new TradeEntry<T>(detail, userInfo.ID, type, userInfo.TrainerName, uniqueTradeID);
+
+            var added = queueInfo.AddToTradeQueue(trade, userInfo.ID, false);
+
+            if (added == QueueResultAdd.AlreadyInQueue)
+            {
+                msg = "You are already in the queue, please do not send again.";
+                return false;
+            }
+
+            var position = queueInfo.CheckPosition(userInfo.ID, uniqueTradeID, type);
+
+            //msg = $"@{name}: Added to the {type} queue, unique ID: {detail.ID}. Current Position: {position.Position}";
+            msg = $"Added to the {type} queue, unique ID: {detail.ID}. Current Position: {position.Position}";
+
+            var botct = queueInfo.Hub.Bots.Count;
+            if (position.Position > botct)
+            {
+                var eta = queueInfo.Hub.Config.Queues.EstimateDelay(position.Position, botct);
+
+                //msg += $". Estimated: {eta:F1} minutes.";
+                msg += $". Estimated: {eta:F1} minutes.";
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Generate the corresponding version of the PKM file based on the pokemon showdown code
+        /// </summary>
+        /// <param name="psList">ps code</param>
+        /// <param name="isChinesePS">Is it Chinese ps</param>
+        /// <param name="invalidCount">Number of illegal Pokémon</param>
+        /// <param name="skipAutoOTList">List that needs to skip self-id</param>
+        /// <returns></returns>
+        private List<T> GetPKMsFromPsList(List<string> psList, bool isChinesePS, out int invalidCount, out List<bool> skipAutoOTList)
+        {
+            List<T> pkms = [];
+            skipAutoOTList = [];
+            invalidCount = 0;
+            for (var i = 0; i < psList.Count; i++)
+            {
+                var ps = isChinesePS ? ShowdownTranslator<T>.Chinese2Showdown(psList[i]) : psList[i];
+                var _ = CheckAndGetPkm(ps, out var msg, out var pkm);
+                if (!_)
+                {
+                    LogUtil.LogInfo($"There is a problem with the {i + 1}th Pokémon in the batch:{msg}", nameof(AbstractTrade<T>));
+                    invalidCount++;
+                }
+                else
+                {
+                    LogUtil.LogInfo($"PS code after Chinese conversion:\n{ps}", nameof(AbstractTrade<T>));
+                    skipAutoOTList.Add(ps.Contains("Language: "));
+                    pkms.Add(pkm);
+                }
+            }
+            return pkms;
+        }
+
+        /// <summary>
+        /// 判断无效数量
+        /// </summary>
+        /// <param name="invalidCount"></param>
+        /// <param name="totalCount"></param>
+        /// <returns></returns>
+        private bool JudgeInvalidCount(int invalidCount, int totalCount)
+        {
+            if (invalidCount == totalCount)
+            {
+                SendMessage("None of them are legal, try again.");
+                return false;
+            }
+            else if (invalidCount != 0)
+            {
+                SendMessage($"Among the {totalCount} Pokémon expected to be traded, {invalidCount} are illegal. Only {totalCount - invalidCount} legal ones will be traded.");
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 判断是否符合批量规则
+        /// </summary>
+        /// <param name="multiNum">待计算的数量</param>
+        /// <returns></returns>
+        private bool JudgeMultiNum(int multiNum)
+        {
+            var maxPkmsPerTrade = queueInfo.Hub.Config.Trade.TradeConfiguration.MaxPkmsPerTrade;
+            if (maxPkmsPerTrade <= 1)
+            {
+                SendMessage("Please contact the bot owner to change the trade/MaxPkmsPerTrade configuration to greater than 1.");
+                return false;
+            }
+            else if (multiNum > maxPkmsPerTrade)
+            {
+                SendMessage($"The number of Pokémon exchanged in batches should be less than or equal to {maxPkmsPerTrade}.");
+                return false;
+            }
+            return true;
+        }
     }
 }

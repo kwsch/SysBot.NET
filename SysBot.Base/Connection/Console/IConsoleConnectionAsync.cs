@@ -8,10 +8,11 @@ namespace SysBot.Base;
 /// </summary>
 public interface IConsoleConnectionAsync : IConsoleConnection
 {
-    ValueTask<int> SendAsync(byte[] buffer, CancellationToken token);
+    Task<byte[]> PixelPeek(CancellationToken token);
 
     Task<byte[]> ReadBytesAsync(uint offset, int length, CancellationToken token);
-    Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token);
 
-    Task<byte[]> PixelPeek(CancellationToken token);
+    ValueTask<int> SendAsync(byte[] buffer, CancellationToken token);
+
+    Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token);
 }

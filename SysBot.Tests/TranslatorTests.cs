@@ -48,7 +48,5 @@ namespace SysBot.Tests
                 Trace.WriteLine(la.Report());
             la.Valid.Should().BeTrue();
         }
-
     }
-
 }

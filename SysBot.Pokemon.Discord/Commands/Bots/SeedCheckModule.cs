@@ -10,6 +10,51 @@ public class SeedCheckModule<T> : ModuleBase<SocketCommandContext> where T : PKM
 {
     private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
 
+    [Command("findFrame")]
+    [Alias("ff", "getFrameData")]
+    [Summary("Prints the next shiny frame from the provided seed.")]
+    public async Task FindFrameAsync([Remainder] string seedString)
+    {
+        var me = SysCord<T>.Runner;
+        var hub = me.Hub;
+
+        seedString = seedString.ToLower();
+        if (seedString.StartsWith("0x"))
+            seedString = seedString[2..];
+
+        var seed = Util.GetHexValue64(seedString);
+
+        var r = new SeedSearchResult(Z3SearchResult.Success, seed, -1, hub.Config.SeedCheckSWSH.ResultDisplayMode);
+        var msg = r.ToString();
+
+        var embed = new EmbedBuilder { Color = Color.LighterGrey };
+
+        embed.AddField(x =>
+        {
+            x.Name = $"Seed: {seed:X16}";
+            x.Value = msg;
+            x.IsInline = false;
+        });
+        await ReplyAsync($"Here are the details for `{r.Seed:X16}`:", embed: embed.Build()).ConfigureAwait(false);
+    }
+
+    [Command("seedList")]
+    [Alias("sl", "scq", "seedCheckQueue", "seedQueue", "seedList")]
+    [Summary("Prints the users in the Seed Check queue.")]
+    [RequireSudo]
+    public async Task GetSeedListAsync()
+    {
+        string msg = Info.GetTradeList(PokeRoutineType.SeedCheck);
+        var embed = new EmbedBuilder();
+        embed.AddField(x =>
+        {
+            x.Name = "Pending Trades";
+            x.Value = msg;
+            x.IsInline = false;
+        });
+        await ReplyAsync("These are the users who are currently waiting:", embed: embed.Build()).ConfigureAwait(false);
+    }
+
     [Command("seedCheck")]
     [Alias("checkMySeed", "checkSeed", "seed", "s", "sc", "specialrequest", "sr")]
     [Summary("Checks the seed for a Pokémon.")]
@@ -62,50 +107,5 @@ public class SeedCheckModule<T> : ModuleBase<SocketCommandContext> where T : PKM
         await SeedCheckAsync(code).ConfigureAwait(false);
         if (Context.Message is IUserMessage userMessage)
             await userMessage.DeleteAsync().ConfigureAwait(false);
-    }
-
-    [Command("seedList")]
-    [Alias("sl", "scq", "seedCheckQueue", "seedQueue", "seedList")]
-    [Summary("Prints the users in the Seed Check queue.")]
-    [RequireSudo]
-    public async Task GetSeedListAsync()
-    {
-        string msg = Info.GetTradeList(PokeRoutineType.SeedCheck);
-        var embed = new EmbedBuilder();
-        embed.AddField(x =>
-        {
-            x.Name = "Pending Trades";
-            x.Value = msg;
-            x.IsInline = false;
-        });
-        await ReplyAsync("These are the users who are currently waiting:", embed: embed.Build()).ConfigureAwait(false);
-    }
-
-    [Command("findFrame")]
-    [Alias("ff", "getFrameData")]
-    [Summary("Prints the next shiny frame from the provided seed.")]
-    public async Task FindFrameAsync([Remainder] string seedString)
-    {
-        var me = SysCord<T>.Runner;
-        var hub = me.Hub;
-
-        seedString = seedString.ToLower();
-        if (seedString.StartsWith("0x"))
-            seedString = seedString[2..];
-
-        var seed = Util.GetHexValue64(seedString);
-
-        var r = new SeedSearchResult(Z3SearchResult.Success, seed, -1, hub.Config.SeedCheckSWSH.ResultDisplayMode);
-        var msg = r.ToString();
-
-        var embed = new EmbedBuilder { Color = Color.LighterGrey };
-
-        embed.AddField(x =>
-        {
-            x.Name = $"Seed: {seed:X16}";
-            x.Value = msg;
-            x.IsInline = false;
-        });
-        await ReplyAsync($"Here are the details for `{r.Seed:X16}`:", embed: embed.Build()).ConfigureAwait(false);
     }
 }

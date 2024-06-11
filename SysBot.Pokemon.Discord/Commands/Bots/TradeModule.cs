@@ -3,7 +3,6 @@ using Discord.Commands;
 using Discord.Net;
 using Discord.WebSocket;
 using PKHeX.Core;
-using PKHeX.Core.AutoMod;
 using SysBot.Base;
 using SysBot.Pokemon.Helpers;
 using System;
@@ -13,7 +12,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static SysBot.Pokemon.TradeSettings.TradeSettingsCategory;
@@ -26,7 +24,9 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
 
     private static readonly char[] separator = [' '];
+
     private static readonly char[] separatorArray = [' '];
+
     private static readonly char[] separatorArray0 = [' '];
 
     [Command("fixOT")]
@@ -287,7 +287,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
             if (pkm is not T pk)
             {
-                _ = ReplyAndDeleteAsync($"Oops! I wasn't able to create an egg for that.", 2, Context.Message);
+                _ = ReplyAndDeleteAsync("Oops! I wasn't able to create an egg for that.", 2, Context.Message);
                 return;
             }
 
@@ -364,12 +364,15 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                     case PK9 pk9:
                         pk9.SetRecordFlagsAll();
                         break;
+
                     case PK8 pk8:
                         pk8.SetRecordFlagsAll();
                         break;
+
                     case PB8 pb8:
                         pb8.SetRecordFlagsAll();
                         break;
+
                     case PB7 pb7:
                     case PA8 pa8:
                         break;
@@ -504,6 +507,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public async Task TradeAsync([Summary("Trade Code")] int code, [Summary("Showdown Set")][Remainder] string content)
     {
         List<Pictocodes>? lgcode = null;
+
         // Check if the user is already in the queue
         var userID = Context.User.Id;
         if (Info.IsUserInQueue(userID))
@@ -536,12 +540,15 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                     case PK9 pk9:
                         pk9.SetRecordFlagsAll();
                         break;
+
                     case PK8 pk8:
                         pk8.SetRecordFlagsAll();
                         break;
+
                     case PB8 pb8:
                         pb8.SetRecordFlagsAll();
                         break;
+
                     case PB7 pb7:
                     case PA8 pa8:
                         break;
@@ -1120,7 +1127,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             var lgcode = Info.GetRandomLGTradeCode();
             var sig = Context.User.GetFavor();
 
-            await ReplyAsync($"Event request added to queue.").ConfigureAwait(false);
+            await ReplyAsync("Event request added to queue.").ConfigureAwait(false);
             await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, lgcode: lgcode).ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -1288,7 +1295,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             var lgcode = Info.GetRandomLGTradeCode();
             var sig = Context.User.GetFavor();
 
-            await ReplyAsync($"Battle-ready request added to queue.").ConfigureAwait(false);
+            await ReplyAsync("Battle-ready request added to queue.").ConfigureAwait(false);
             await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, lgcode: lgcode).ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -1429,6 +1436,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ReplyAsync($"{typeof(T).Name} attachment is tracked by HOME, and cannot be traded!").ConfigureAwait(false);
             return;
         }
+
         // handle past gen file requests
         // thanks manu https://github.com/Manu098vm/SysBot.NET/commit/d8c4b65b94f0300096704390cce998940413cc0d
         if (!la.Valid && la.Results.Any(m => m.Identifier is CheckIdentifier.Memory))

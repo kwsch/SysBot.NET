@@ -63,8 +63,11 @@ public static class NetUtil
 
 public sealed class Download<T> where T : class
 {
-    public bool Success;
     public T? Data;
-    public string? SanitizedFileName;
+
     public string? ErrorMessage;
+
+    public string? SanitizedFileName;
+
+    public bool Success;
 }

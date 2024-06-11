@@ -1,20 +1,25 @@
 using System.Collections.Generic;
-using System.Text.Json;
 using System.IO;
+using System.Text.Json;
 
 namespace SysBot.Pokemon;
 
 public class TradeCodeStorage
 {
     private const string FileName = "tradecodes.json";
+
     private Dictionary<ulong, TradeCodeDetails> _tradeCodeDetails;
 
     public class TradeCodeDetails
     {
         public int Code { get; set; }
+
         public string? OT { get; set; }
+
         public int TID { get; set; }
+
         public int SID { get; set; }
+
         public int TradeCount { get; set; }
     }
 
@@ -25,7 +30,9 @@ public class TradeCodeStorage
     };
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
     public TradeCodeStorage() => LoadFromFile();
+
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     public int GetTradeCode(ulong trainerID)

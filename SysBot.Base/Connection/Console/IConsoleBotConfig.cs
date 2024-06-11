@@ -1,4 +1,4 @@
-﻿namespace SysBot.Base;
+namespace SysBot.Base;
 
 /// <summary>
 /// Bare minimum details for a saved configuration object.
@@ -25,14 +25,14 @@ public interface IConsoleBotConfig
 public interface IConsoleBotConnector<out TSync, out TAsync>
 {
     /// <summary>
-    /// Obtains the synchronous communication implementation for this console.
-    /// </summary>
-    TSync CreateSync();
-
-    /// <summary>
     /// Obtains the asynchronous communication implementation for this console.
     /// </summary>
     TAsync CreateAsynchronous();
+
+    /// <summary>
+    /// Obtains the synchronous communication implementation for this console.
+    /// </summary>
+    TSync CreateSync();
 }
 
 /// <summary>

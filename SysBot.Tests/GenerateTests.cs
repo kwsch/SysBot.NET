@@ -7,6 +7,64 @@ namespace SysBot.Tests;
 
 public class GenerateTests
 {
+    private const string Braviary =
+        @"Braviary (F) @ Master Ball
+Ability: Defiant
+EVs: 252 Atk / 4 SpD / 252 Spe
+Jolly Nature
+- Brave Bird
+- Close Combat
+- Tailwind
+- Iron Head";
+
+    private const string Charizard4 =
+        @"Charizard @ Choice Scarf
+Ability: Solar Power
+Level: 50
+Shiny: Yes
+EVs: 252 SpA / 4 SpD / 252 Spe
+Timid Nature
+- Heat Wave
+- Air Slash
+- Solar Beam
+- Beat Up";
+
+    private const string Drednaw =
+        @"Drednaw-Gmax @ Fossilized Drake
+Ability: Shell Armor
+Level: 60
+EVs: 252 Atk / 4 SpD / 252 Spe
+Adamant Nature
+- Earthquake
+- Liquidation
+- Swords Dance
+- Head Smash";
+
+    private const string Gengar =
+        @"Gengar-Gmax @ Life Orb
+Ability: Cursed Body
+Shiny: Yes
+EVs: 252 SpA / 4 SpD / 252 Spe
+Timid Nature
+- Dream Eater
+- Fling
+- Giga Impact
+- Headbutt";
+
+    private const string InvalidSpec =
+        "(Pikachu)";
+
+    private const string Torkoal2 =
+        @"Torkoal (M) @ Assault Vest
+IVs: 0 Atk
+EVs: 248 HP / 8 Atk / 252 SpA
+Ability: Drought
+Quiet Nature
+- Body Press
+- Earth Power
+- Eruption
+- Fire Blast";
+
     static GenerateTests() => AutoLegalityWrapper.EnsureInitialized(new Pokemon.LegalitySettings());
 
     [Theory]
@@ -62,62 +120,4 @@ public class GenerateTests
             pk!.AbilityNumber.Should().Be(abilNumber);
         }
     }
-
-    private const string Gengar =
-        @"Gengar-Gmax @ Life Orb 
-Ability: Cursed Body 
-Shiny: Yes 
-EVs: 252 SpA / 4 SpD / 252 Spe 
-Timid Nature 
-- Dream Eater 
-- Fling 
-- Giga Impact 
-- Headbutt";
-
-    private const string Braviary =
-        @"Braviary (F) @ Master Ball
-Ability: Defiant
-EVs: 252 Atk / 4 SpD / 252 Spe
-Jolly Nature
-- Brave Bird
-- Close Combat
-- Tailwind
-- Iron Head";
-
-    private const string Drednaw =
-        @"Drednaw-Gmax @ Fossilized Drake 
-Ability: Shell Armor 
-Level: 60 
-EVs: 252 Atk / 4 SpD / 252 Spe 
-Adamant Nature 
-- Earthquake 
-- Liquidation 
-- Swords Dance 
-- Head Smash";
-
-    private const string Torkoal2 =
-        @"Torkoal (M) @ Assault Vest
-IVs: 0 Atk
-EVs: 248 HP / 8 Atk / 252 SpA
-Ability: Drought
-Quiet Nature
-- Body Press
-- Earth Power
-- Eruption
-- Fire Blast";
-
-    private const string Charizard4 =
-        @"Charizard @ Choice Scarf 
-Ability: Solar Power 
-Level: 50 
-Shiny: Yes 
-EVs: 252 SpA / 4 SpD / 252 Spe 
-Timid Nature 
-- Heat Wave 
-- Air Slash 
-- Solar Beam 
-- Beat Up";
-
-    private const string InvalidSpec =
-        "(Pikachu)";
 }

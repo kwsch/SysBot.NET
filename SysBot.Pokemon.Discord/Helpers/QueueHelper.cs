@@ -3,19 +3,19 @@ using Discord.Commands;
 using Discord.Net;
 using Discord.WebSocket;
 using PKHeX.Core;
-using SysBot.Pokemon.Discord.Commands.Bots;
-using System.Collections.Generic;
-using System;
-using System.Drawing;
-using Color = System.Drawing.Color;
-using DiscordColor = Discord.Color;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Linq;
-using System.IO;
-using SysBot.Pokemon.Helpers;
 using PKHeX.Core.AutoMod;
 using PKHeX.Drawing.PokeSprite;
+using SysBot.Pokemon.Discord.Commands.Bots;
+using SysBot.Pokemon.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Color = System.Drawing.Color;
+using DiscordColor = Discord.Color;
 
 namespace SysBot.Pokemon.Discord;
 
@@ -25,6 +25,7 @@ public static class QueueHelper<T> where T : PKM, new()
 
     // A dictionary to hold batch trade file paths and their deletion status
     private static readonly Dictionary<int, List<string>> batchTradeFiles = [];
+
     private static readonly Dictionary<ulong, int> userBatchTradeMaxDetailId = [];
 
     public static async Task AddToQueueAsync(SocketCommandContext context, int code, string trainer, RequestSignificance sig, T trade, PokeRoutineType routine, PokeTradeType type, SocketUser trader, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, bool isHiddenTrade = false, bool isMysteryEgg = false, List<Pictocodes>? lgcode = null, bool ignoreAutoOT = false, bool setEdited = false)
@@ -42,7 +43,7 @@ public static class QueueHelper<T> where T : PKM, new()
                 if (trade is PB7 && lgcode != null)
                 {
                     var (thefile, lgcodeembed) = CreateLGLinkCodeSpriteEmbed(lgcode);
-                    await trader.SendFileAsync(thefile, $"Your trade code will be.", embed: lgcodeembed).ConfigureAwait(false);
+                    await trader.SendFileAsync(thefile, "Your trade code will be.", embed: lgcodeembed).ConfigureAwait(false);
                 }
                 else
                 {
@@ -124,7 +125,7 @@ public static class QueueHelper<T> where T : PKM, new()
             var botct = Info.Hub.Bots.Count;
             var baseEta = position.Position > botct ? Info.Hub.Config.Queues.EstimateDelay(position.Position, botct) : 0;
             var etaMessage = $"Estimated: {baseEta:F1} min(s) for trade {batchTradeNumber}/{totalBatchTrades}.";
-            string footerText = $"Current Position: {(position.Position == -1 ? 1 : position.Position)}"; 
+            string footerText = $"Current Position: {(position.Position == -1 ? 1 : position.Position)}";
 
             string userDetailsText = DetailsExtractor<T>.GetUserDetails(totalTradeCount, tradeDetails);
             if (!string.IsNullOrEmpty(userDetailsText))
@@ -317,6 +318,7 @@ public static class QueueHelper<T> where T : PKM, new()
             if (!ballImageLoaded)
             {
                 Console.WriteLine($"Ball image could not be loaded: {ballImgUrl}");
+
                 // await context.Channel.SendMessageAsync($"Ball image could not be loaded: {ballImgUrl}"); // for debugging purposes
             }
         }
@@ -372,6 +374,7 @@ public static class QueueHelper<T> where T : PKM, new()
             }
         }
     }
+
     private static async Task<System.Drawing.Image> OverlaySpeciesOnEgg(string eggImageUrl, string speciesImageUrl)
     {
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
@@ -556,11 +559,17 @@ public static class QueueHelper<T> where T : PKM, new()
     public enum AlcremieDecoration
     {
         Strawberry = 0,
+
         Berry = 1,
+
         Love = 2,
+
         Star = 3,
+
         Clover = 4,
+
         Flower = 5,
+
         Ribbon = 6,
     }
 
@@ -667,12 +676,14 @@ public static class QueueHelper<T> where T : PKM, new()
                     }
                 }
                 break;
+
             case DiscordErrorCode.CannotSendMessageToUser:
                 {
                     // The user either has DMs turned off, or Discord thinks they do.
                     message = context.User == trader ? "You must enable private messages in order to be queued!" : "The mentioned user must enable private messages in order for them to be queued!";
                 }
                 break;
+
             default:
                 {
                     // Send a generic error message.
@@ -745,7 +756,6 @@ public static class QueueHelper<T> where T : PKM, new()
 #pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
-
             }
 #pragma warning restore CA1416 // Validate platform compatibility
             png = destImage;

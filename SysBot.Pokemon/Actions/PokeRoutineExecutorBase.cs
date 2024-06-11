@@ -10,12 +10,18 @@ public abstract class PokeRoutineExecutorBase(IConsoleBotManaged<IConsoleConnect
 {
     public const decimal BotbaseVersion = 2.3m;
 
+    public static readonly TrackedUserLog PreviousUsers = new();
+
+    public static readonly TrackedUserLog PreviousUsersDistribution = new();
+
     public LanguageID GameLang { get; private set; }
-    public GameVersion Version { get; private set; }
+
     public string InGameName { get; private set; } = "Shinypkm.com";
 
-    public static readonly TrackedUserLog PreviousUsers = new();
-    public static readonly TrackedUserLog PreviousUsersDistribution = new();
+    public GameVersion Version { get; private set; }
+
+    public Task Click(SwitchButton b, int delayMin, int delayMax, CancellationToken token) =>
+        Click(b, Util.Rand.Next(delayMin, delayMax), token);
 
     public override string GetSummary()
     {
@@ -25,6 +31,11 @@ public abstract class PokeRoutineExecutorBase(IConsoleBotManaged<IConsoleConnect
             return $"{Connection.Label} - {initial}";
         return $"{Connection.Label} - {initial} ({current})";
     }
+
+    public Task SetStick(SwitchStick stick, short x, short y, int delayMin, int delayMax, CancellationToken token) =>
+        SetStick(stick, x, y, Util.Rand.Next(delayMin, delayMax), token);
+
+    public override void SoftStop() => Config.Pause();
 
     protected void InitSaveData(SaveFile sav)
     {
@@ -36,12 +47,4 @@ public abstract class PokeRoutineExecutorBase(IConsoleBotManaged<IConsoleConnect
     }
 
     protected bool IsValidTrainerData() => GameLang is > 0 and <= LanguageID.ChineseT && InGameName.Length > 0 && Version > 0;
-
-    public override void SoftStop() => Config.Pause();
-
-    public Task Click(SwitchButton b, int delayMin, int delayMax, CancellationToken token) =>
-        Click(b, Util.Rand.Next(delayMin, delayMax), token);
-
-    public Task SetStick(SwitchStick stick, short x, short y, int delayMin, int delayMax, CancellationToken token) =>
-        SetStick(stick, x, y, Util.Rand.Next(delayMin, delayMax), token);
 }

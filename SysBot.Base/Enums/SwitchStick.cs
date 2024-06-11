@@ -1,4 +1,4 @@
-﻿namespace SysBot.Base;
+namespace SysBot.Base;
 
 /// <summary>
 /// Controller Stick differentiation
@@ -6,5 +6,6 @@
 public enum SwitchStick
 {
     LEFT,
+
     RIGHT,
 }

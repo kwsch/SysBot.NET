@@ -44,20 +44,22 @@ public class LogModule : ModuleBase<SocketCommandContext>
         await ReplyAsync("Added logging output to this channel!").ConfigureAwait(false);
     }
 
-    private static void AddLogChannel(ISocketMessageChannel c, ulong cid)
-    {
-        var logger = new ChannelLogger(cid, c);
-        LogUtil.Forwarders.Add(logger);
-        Channels.Add(cid, logger);
-    }
-
-    [Command("logInfo")]
-    [Summary("Dumps the logging settings.")]
+    [Command("logClearAll")]
+    [Summary("Clears all the logging settings.")]
     [RequireSudo]
-    public async Task DumpLogInfoAsync()
+    public async Task ClearLogsAllAsync()
     {
-        foreach (var c in Channels)
-            await ReplyAsync($"{c.Key} - {c.Value}").ConfigureAwait(false);
+        foreach (var l in Channels)
+        {
+            var entry = l.Value;
+            await ReplyAsync($"Logging cleared from {entry.ChannelName} ({entry.ChannelID}!").ConfigureAwait(false);
+            LogUtil.Forwarders.Remove(entry);
+        }
+
+        LogUtil.Forwarders.RemoveAll(y => Channels.Select(z => z.Value).Contains(y));
+        Channels.Clear();
+        SysCordSettings.Settings.LoggingChannels.Clear();
+        await ReplyAsync("Logging cleared from all channels!").ConfigureAwait(false);
     }
 
     [Command("logClear")]
@@ -77,22 +79,20 @@ public class LogModule : ModuleBase<SocketCommandContext>
         await ReplyAsync($"Logging cleared from channel: {Context.Channel.Name}").ConfigureAwait(false);
     }
 
-    [Command("logClearAll")]
-    [Summary("Clears all the logging settings.")]
+    [Command("logInfo")]
+    [Summary("Dumps the logging settings.")]
     [RequireSudo]
-    public async Task ClearLogsAllAsync()
+    public async Task DumpLogInfoAsync()
     {
-        foreach (var l in Channels)
-        {
-            var entry = l.Value;
-            await ReplyAsync($"Logging cleared from {entry.ChannelName} ({entry.ChannelID}!").ConfigureAwait(false);
-            LogUtil.Forwarders.Remove(entry);
-        }
+        foreach (var c in Channels)
+            await ReplyAsync($"{c.Key} - {c.Value}").ConfigureAwait(false);
+    }
 
-        LogUtil.Forwarders.RemoveAll(y => Channels.Select(z => z.Value).Contains(y));
-        Channels.Clear();
-        SysCordSettings.Settings.LoggingChannels.Clear();
-        await ReplyAsync("Logging cleared from all channels!").ConfigureAwait(false);
+    private static void AddLogChannel(ISocketMessageChannel c, ulong cid)
+    {
+        var logger = new ChannelLogger(cid, c);
+        LogUtil.Forwarders.Add(logger);
+        Channels.Add(cid, logger);
     }
 
     private RemoteControlAccess GetReference(IChannel channel) => new()

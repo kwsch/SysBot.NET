@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.IO;
 
 namespace SysBot.Pokemon;
@@ -6,14 +6,14 @@ namespace SysBot.Pokemon;
 public class FolderSettings : IDumper
 {
     private const string FeatureToggle = nameof(FeatureToggle);
-    private const string Files = nameof(Files);
-    public override string ToString() => "Folder / Dumping Settings";
 
-    [Category(FeatureToggle), Description("When enabled, dumps any received PKM files (trade results) to the DumpFolder.")]
-    public bool Dump { get; set; }
+    private const string Files = nameof(Files);
 
     [Category(Files), Description("Source folder: where PKM files to distribute are selected from.")]
     public string DistributeFolder { get; set; } = string.Empty;
+
+    [Category(FeatureToggle), Description("When enabled, dumps any received PKM files (trade results) to the DumpFolder.")]
+    public bool Dump { get; set; }
 
     [Category(Files), Description("Destination folder: where all received PKM files are dumped to.")]
     public string DumpFolder { get; set; } = string.Empty;
@@ -29,4 +29,6 @@ public class FolderSettings : IDumper
         Directory.CreateDirectory(distribute);
         DistributeFolder = distribute;
     }
+
+    public override string ToString() => "Folder / Dumping Settings";
 }

@@ -5,9 +5,13 @@ namespace SysBot.Pokemon;
 
 public class LedyDistributor<T> where T : PKM, new()
 {
-    public readonly Dictionary<string, LedyRequest<T>> UserRequests = [];
     public readonly Dictionary<string, LedyRequest<T>> Distribution;
+
     public readonly PokemonPool<T> Pool;
+
+    public readonly Dictionary<string, LedyRequest<T>> UserRequests = [];
+
+    private const Species NoMatchSpecies = Species.None;
 
     private readonly List<LedyUser> Previous = [];
 
@@ -16,8 +20,6 @@ public class LedyDistributor<T> where T : PKM, new()
         Pool = pool;
         Distribution = Pool.Files;
     }
-
-    private const Species NoMatchSpecies = Species.None;
 
     public LedyResponse<T>? GetLedyTrade(T pk, ulong partnerId, Species speciesMatch = NoMatchSpecies)
     {
@@ -70,6 +72,7 @@ public class LedyDistributor<T> where T : PKM, new()
     private sealed class LedyUser
     {
         public readonly ulong Recipient;
+
         public readonly List<LedyResponse<T>> Requests = new(1);
 
         public LedyUser(ulong recipient, LedyResponse<T> first)

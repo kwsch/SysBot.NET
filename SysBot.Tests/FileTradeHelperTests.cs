@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using PKHeX.Core;
 using SysBot.Pokemon.Helpers;
 using Xunit;
@@ -7,7 +7,6 @@ namespace SysBot.Tests
 {
     public class FileTradeHelperTests
     {
-
         [Fact]
         public void TestValidFileSize()
         {
@@ -39,7 +38,5 @@ namespace SysBot.Tests
             FileTradeHelper<PK8>.ValidFileSize(344 * 960).Should().Be(true);
             FileTradeHelper<PK8>.ValidFileSize(344 * 961).Should().Be(false);
         }
-
     }
-
 }

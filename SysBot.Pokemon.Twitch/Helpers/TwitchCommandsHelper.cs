@@ -89,6 +89,14 @@ namespace SysBot.Pokemon.Twitch
             return GetClearTradeMessage(result);
         }
 
+        public static string GetCode(ulong parse)
+        {
+            var detail = TwitchBot<T>.Info.GetDetail(parse);
+            return detail == null
+                ? "Sorry, you are not currently in the queue."
+                : $"Your trade code is {detail.Trade.Code:0000 0000}";
+        }
+
         private static string GetClearTradeMessage(QueueResultRemove result)
         {
             return result switch
@@ -98,14 +106,6 @@ namespace SysBot.Pokemon.Twitch
                 QueueResultRemove.Removed => "Removed you from the queue.",
                 _ => "Sorry, you are not currently in the queue.",
             };
-        }
-
-        public static string GetCode(ulong parse)
-        {
-            var detail = TwitchBot<T>.Info.GetDetail(parse);
-            return detail == null
-                ? "Sorry, you are not currently in the queue."
-                : $"Your trade code is {detail.Trade.Code:0000 0000}";
         }
     }
 }

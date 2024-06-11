@@ -31,6 +31,7 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
     }
 
 #pragma warning disable RCS1158 // Static member in generic type should use a type parameter.
+
     public static void RestoreTradeStarting(DiscordSocketClient discord)
     {
         _discordClient = discord; // Store the DiscordSocketClient instance

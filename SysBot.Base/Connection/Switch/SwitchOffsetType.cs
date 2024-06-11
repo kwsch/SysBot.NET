@@ -29,15 +29,19 @@ public interface ICommandBuilder
     SwitchOffsetType Type { get; }
 
     byte[] Peek(ulong offset, int length, bool crlf = true);
+
     byte[] PeekMulti(IReadOnlyDictionary<ulong, int> offsets, bool crlf = true);
+
     byte[] Poke(ulong offset, ReadOnlySpan<byte> data, bool crlf = true);
 }
 
 public static class SwitchOffsetTypeUtil
 {
-    public static readonly HeapCommand Heap = new();
-    public static readonly MainCommand Main = new();
     public static readonly AbsoluteCommand Absolute = new();
+
+    public static readonly HeapCommand Heap = new();
+
+    public static readonly MainCommand Main = new();
 }
 
 /// <summary>

@@ -1,4 +1,4 @@
-﻿using Mirai.Net.Data.Messages;
+using Mirai.Net.Data.Messages;
 using Mirai.Net.Modules;
 using Mirai.Net.Sessions;
 using Mirai.Net.Sessions.Http.Managers;
@@ -16,6 +16,7 @@ namespace SysBot.Pokemon.QQ
         private static PokeTradeHub<T> Hub = default!;
 
         internal static TradeQueueInfo<T> Info => Hub.Queues.Info;
+
         private readonly MiraiBot Client;
 
         internal static QQSettings Settings = default!;
@@ -80,19 +81,19 @@ namespace SysBot.Pokemon.QQ
             });
         }
 
-        public async static void SendGroupMessage(MessageChain mc)
+        public static async void SendGroupMessage(MessageChain mc)
         {
             if (string.IsNullOrEmpty(Settings.GroupId)) return;
             await MessageManager.SendGroupMessageAsync(Settings.GroupId, mc);
         }
 
-        public async static void SendFriendMessage(string friendId, MessageChain mc)
+        public static async void SendFriendMessage(string friendId, MessageChain mc)
         {
             if (string.IsNullOrEmpty(friendId) || string.IsNullOrEmpty(Settings.GroupId)) return;
             await MessageManager.SendFriendMessageAsync(friendId, mc);
         }
 
-        public async static void SendTempMessage(string friendId, MessageChain mc)
+        public static async void SendTempMessage(string friendId, MessageChain mc)
         {
             if (string.IsNullOrEmpty(friendId) || string.IsNullOrEmpty(Settings.GroupId)) return;
             await MessageManager.SendTempMessageAsync(friendId, Settings.GroupId, mc);

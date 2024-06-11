@@ -7,26 +7,11 @@ namespace SysBot.Pokemon.Z3;
 
 public static class Z3Search
 {
-    public static SeedSearchResult GetFirstSeed(uint ec, uint pid, Span<int> ivs, SeedCheckResults mode)
+    public static IEnumerable<ulong> FindPotentialSeeds(uint ec, uint pid)
     {
-        var seeds = GetSeeds(ec, pid);
-        bool hasClosest = false;
-        ulong closest = 0;
+        var seeds = new XoroMachineSkip(ec, pid);
         foreach (var seed in seeds)
-        {
-            // Verify the IVs; at most 5 can match
-            for (int i = 1; i <= 5; i++) // fixed IV count
-            {
-                if (IsMatch(seed, ivs, i))
-                    return new SeedSearchResult(Z3SearchResult.Success, seed, i, mode);
-            }
-            hasClosest = true;
-            closest = seed;
-        }
-
-        if (hasClosest)
-            return new SeedSearchResult(Z3SearchResult.SeedMismatch, closest, 0, mode);
-        return SeedSearchResult.None;
+            yield return seed;
     }
 
     public static IList<SeedSearchResult> GetAllSeeds(uint ec, uint pid, Span<int> ivs, SeedCheckResults mode)
@@ -56,18 +41,33 @@ public static class Z3Search
         return result;
     }
 
+    public static SeedSearchResult GetFirstSeed(uint ec, uint pid, Span<int> ivs, SeedCheckResults mode)
+    {
+        var seeds = GetSeeds(ec, pid);
+        bool hasClosest = false;
+        ulong closest = 0;
+        foreach (var seed in seeds)
+        {
+            // Verify the IVs; at most 5 can match
+            for (int i = 1; i <= 5; i++) // fixed IV count
+            {
+                if (IsMatch(seed, ivs, i))
+                    return new SeedSearchResult(Z3SearchResult.Success, seed, i, mode);
+            }
+            hasClosest = true;
+            closest = seed;
+        }
+
+        if (hasClosest)
+            return new SeedSearchResult(Z3SearchResult.SeedMismatch, closest, 0, mode);
+        return SeedSearchResult.None;
+    }
+
     public static IEnumerable<ulong> GetSeeds(uint ec, uint pid)
     {
         foreach (var seed in FindPotentialSeeds(ec, pid))
             yield return seed;
         foreach (var seed in FindPotentialSeeds(ec, pid ^ 0x10000000))
-            yield return seed;
-    }
-
-    public static IEnumerable<ulong> FindPotentialSeeds(uint ec, uint pid)
-    {
-        var seeds = new XoroMachineSkip(ec, pid);
-        foreach (var seed in seeds)
             yield return seed;
     }
 

@@ -1,16 +1,12 @@
-﻿using Mirai.Net.Data.Messages;
+using Mirai.Net.Data.Messages;
 using Mirai.Net.Data.Messages.Concretes;
 using Mirai.Net.Data.Messages.Receivers;
 using Mirai.Net.Modules;
 using Mirai.Net.Utils.Scaffolds;
 using PKHeX.Core;
 using SysBot.Base;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Reactive.Linq;
-using System.Reflection;
 
 namespace SysBot.Pokemon.QQ
 {
@@ -30,36 +26,12 @@ namespace SysBot.Pokemon.QQ
             var qq = receiver.Sender.Id;
             var nickName = receiver.Sender.Name;
             var groupId = receiver.GroupId;
+
             // 中英文判断
             if (IsChinesePS(text))
                 ProcessChinesePS(text, qq, nickName, groupId);
             else if (IsPS(text))
                 ProcessPS(text, qq, nickName, groupId);
-        }
-
-        private void ProcessPS(string text, string qq, string nickName, string groupId)
-        {
-            LogUtil.LogInfo($"收到ps代码:\n{text}", nameof(PsModule<T>));
-            var pss = text.Split("\n\n");
-            if (pss.Length > 1)
-                new MiraiQQTrade<T>(qq, nickName).StartTradeMultiPs(text);
-            else
-                new MiraiQQTrade<T>(qq, nickName).StartTradePs(text);
-        }
-
-        private void ProcessChinesePS(string text, string qq, string nickName, string groupId)
-        {
-            LogUtil.LogInfo($"收到中文ps代码:\n{text}", nameof(PsModule<T>));
-            var pss = text.Split("+");
-            if (pss.Length > 1)
-            {
-                new MiraiQQTrade<T>(qq, nickName).StartTradeMultiChinesePs(text);
-            }
-            else
-            {
-                new MiraiQQTrade<T>(qq, nickName).StartTradeChinesePs(text);
-            }
-
         }
 
         private static bool IsChinesePS(string str)
@@ -74,6 +46,7 @@ namespace SysBot.Pokemon.QQ
             }
             return false;
         }
+
         private static bool IsPS(string str)
         {
             var gameStrings = ShowdownTranslator<T>.GameStringsEn;
@@ -85,6 +58,30 @@ namespace SysBot.Pokemon.QQ
                 }
             }
             return false;
+        }
+
+        private void ProcessChinesePS(string text, string qq, string nickName, string groupId)
+        {
+            LogUtil.LogInfo($"收到中文ps代码:\n{text}", nameof(PsModule<T>));
+            var pss = text.Split("+");
+            if (pss.Length > 1)
+            {
+                new MiraiQQTrade<T>(qq, nickName).StartTradeMultiChinesePs(text);
+            }
+            else
+            {
+                new MiraiQQTrade<T>(qq, nickName).StartTradeChinesePs(text);
+            }
+        }
+
+        private void ProcessPS(string text, string qq, string nickName, string groupId)
+        {
+            LogUtil.LogInfo($"收到ps代码:\n{text}", nameof(PsModule<T>));
+            var pss = text.Split("\n\n");
+            if (pss.Length > 1)
+                new MiraiQQTrade<T>(qq, nickName).StartTradeMultiPs(text);
+            else
+                new MiraiQQTrade<T>(qq, nickName).StartTradePs(text);
         }
     }
 }

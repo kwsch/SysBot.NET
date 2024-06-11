@@ -9,8 +9,9 @@ namespace SysBot.Base
     /// </summary>
     public abstract class RoutineExecutor<T> : IRoutineExecutor where T : class, IConsoleBotConfig
     {
-        public readonly IConsoleConnectionAsync Connection;
         public readonly T Config;
+
+        public readonly IConsoleConnectionAsync Connection;
 
         protected RoutineExecutor(IConsoleBotManaged<IConsoleConnection, IConsoleConnectionAsync> cfg)
         {
@@ -19,11 +20,14 @@ namespace SysBot.Base
         }
 
         public string LastLogged { get; private set; } = "Not Started";
+
         public DateTime LastTime { get; private set; } = DateTime.Now;
 
-        public void ReportStatus() => LastTime = DateTime.Now;
-
         public abstract string GetSummary();
+
+        public abstract Task HardStop();
+
+        public abstract Task InitialStartup(CancellationToken token);
 
         public void Log(string message)
         {
@@ -31,6 +35,20 @@ namespace SysBot.Base
             LastLogged = message;
             LastTime = DateTime.Now;
         }
+
+        public abstract Task MainLoop(CancellationToken token);
+
+        public abstract Task RebootAndStop(CancellationToken token);
+
+        public async Task RebootAndStopAsync(CancellationToken token)
+        {
+            Connection.Connect();
+            await InitialStartup(token).ConfigureAwait(false);
+            await RebootAndStop(token).ConfigureAwait(false);
+            Connection.Disconnect();
+        }
+
+        public void ReportStatus() => LastTime = DateTime.Now;
 
         /// <summary>
         /// Connects to the console, then runs the bot.
@@ -46,19 +64,8 @@ namespace SysBot.Base
             Connection.Disconnect();
         }
 
-        public async Task RebootAndStopAsync(CancellationToken token)
-        {
-            Connection.Connect();
-            await InitialStartup(token).ConfigureAwait(false);
-            await RebootAndStop(token).ConfigureAwait(false);
-            Connection.Disconnect();
-        }
-
-        public abstract Task MainLoop(CancellationToken token);
-        public abstract Task InitialStartup(CancellationToken token);
-        public abstract void SoftStop();
-        public abstract Task HardStop();
         public abstract Task SetController(ControllerType Controller, CancellationToken token);
-        public abstract Task RebootAndStop(CancellationToken token);
+
+        public abstract void SoftStop();
     }
 }

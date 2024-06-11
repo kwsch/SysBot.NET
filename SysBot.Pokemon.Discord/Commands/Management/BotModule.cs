@@ -79,7 +79,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             bot.Start();
-            await ReplyAsync($"Bot has been started.").ConfigureAwait(false);
+            await ReplyAsync("Bot has been started.").ConfigureAwait(false);
         }
 
         [Command("botStop")]
@@ -98,7 +98,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             bot.Stop();
-            await ReplyAsync($"Bot has been stopped.").ConfigureAwait(false);
+            await ReplyAsync("Bot has been stopped.").ConfigureAwait(false);
         }
 
         [Command("botIdle")]
@@ -118,7 +118,7 @@ namespace SysBot.Pokemon.Discord
             }
 
             bot.Pause();
-            await ReplyAsync($"Bot has been set to idle.").ConfigureAwait(false);
+            await ReplyAsync("Bot has been set to idle.").ConfigureAwait(false);
         }
 
         [Command("botChange")]
@@ -158,7 +158,7 @@ namespace SysBot.Pokemon.Discord
             var c = bot.Bot.Connection;
             c.Reset();
             bot.Start();
-            await ReplyAsync($"Bot has been restarted.").ConfigureAwait(false);
+            await ReplyAsync("Bot has been restarted.").ConfigureAwait(false);
         }
     }
 }

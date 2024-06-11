@@ -7,10 +7,6 @@ namespace SysBot.Base;
 /// </summary>
 public static class Decoder
 {
-    private static bool IsNum(char c) => (uint)(c - '0') <= 9;
-    private static bool IsHexUpper(char c) => (uint)(c - 'A') <= 5;
-    private static bool IsHexLower(char c) => (uint)(c - 'a') <= 5;
-
     public static byte[] ConvertHexByteStringToBytes(byte[] bytes)
     {
         var dest = new byte[bytes.Length / 2];
@@ -22,6 +18,11 @@ public static class Decoder
             dest[i] = DecodeTuple(_0, _1);
         }
         return dest;
+    }
+
+    public static ReadOnlySpan<byte> ConvertHexByteStringToBytes(ReadOnlySpan<byte> raw)
+    {
+        throw new NotImplementedException();
     }
 
     public static void LoadHexBytesTo(ReadOnlySpan<byte> str, Span<byte> dest, int tupleSize)
@@ -56,8 +57,9 @@ public static class Decoder
         return result;
     }
 
-    public static ReadOnlySpan<byte> ConvertHexByteStringToBytes(ReadOnlySpan<byte> raw)
-    {
-        throw new NotImplementedException();
-    }
+    private static bool IsHexLower(char c) => (uint)(c - 'a') <= 5;
+
+    private static bool IsHexUpper(char c) => (uint)(c - 'A') <= 5;
+
+    private static bool IsNum(char c) => (uint)(c - '0') <= 9;
 }

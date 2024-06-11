@@ -15,8 +15,8 @@ namespace SysBot.Pokemon.Discord
     /// <summary>
     /// Provides functionality for listing and requesting Pokémon wondercard events via Discord commands.
     /// Users can interact with the system in multiple ways:
-    /// 
-    /// 1. Listing Events: 
+    ///
+    /// 1. Listing Events:
     ///    - Users can list events from a specified generation or game. Optionally, users can filter this list by specifying a Pokémon species name.
     ///    - Command format: .srp {generationOrGame} [speciesName] [pageX]
     ///    - Example: .srp gen9 Mew page2
@@ -39,6 +39,7 @@ namespace SysBot.Pokemon.Discord
     public class SpecialRequestModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
     {
         private const int itemsPerPage = 25;
+
         private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
 
         private static T? GetRequest(Download<PKM> dl)

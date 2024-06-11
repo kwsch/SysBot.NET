@@ -1,15 +1,15 @@
 using FuzzySharp;
-using System.Buffers;
 using PKHeX.Core;
+using SysBot.Base;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
-using SysBot.Base;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using static PKHeX.Core.LearnMethod;
 using static PKHeX.Core.RibbonIndex;
-using System.Threading.Tasks;
-using System.Text;
 
 namespace SysBot.Pokemon;
 
@@ -313,11 +313,13 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
             string correctedHeldItem = GetClosestItem(heldItem, itemlist);
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+
             // LogUtil.LogInfo($"Corrected held item: {correctedHeldItem}", nameof(AutoCorrectShowdown<T>));
 
             if (correctedHeldItem != null)
             {
                 int itemIndex = Array.IndexOf(itemlist, correctedHeldItem);
+
                 // LogUtil.LogInfo($"Item index: {itemIndex}", nameof(AutoCorrectShowdown<T>));
 
                 if (ItemRestrictions.IsHeldItemAllowed(itemIndex, pk.Context))
@@ -330,6 +332,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
                         if (line.Contains(" @ "))
                         {
                             lines[i] = line.Replace(heldItem, correctedHeldItem);
+
                             // LogUtil.LogInfo($"Updated line: {lines[i]}", nameof(AutoCorrectShowdown<T>));
                             break;
                         }
@@ -347,6 +350,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
                         if (line.Contains(" @ "))
                         {
                             lines[i] = line.Split(new[] { " @ " }, StringSplitOptions.None)[0];
+
                             // LogUtil.LogInfo($"Updated line: {lines[i]}", nameof(AutoCorrectShowdown<T>));
                             break;
                         }
@@ -377,7 +381,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 
     private static void ValidateMoves(string[] lines, PKM pk, LegalityAnalysis la, GameStrings gameStrings, string speciesName, string formName)
     {
-        var moveLines = lines.Where(line => line.StartsWith($"- ")).ToArray();
+        var moveLines = lines.Where(line => line.StartsWith("- ")).ToArray();
         var correctedMoveLines = new List<string>(); // Create a list to store corrected move lines
 
         var validMoves = GetValidMoves(pk, gameStrings, speciesName, formName);

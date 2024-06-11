@@ -15,12 +15,19 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
     where T : PKM, new()
 {
     private T Data { get; }
+
     private PokeTradeTrainerInfo Info { get; }
+
     private int Code { get; }
+
     private List<Pictocodes> LGCode { get; }
+
     private SocketUser Trader { get; }
+
     private int BatchTradeNumber { get; }
+
     private int TotalBatchTrades { get; }
+
     private bool IsMysteryEgg { get; }
 
     public DiscordTradeNotifier(T data, PokeTradeTrainerInfo info, int code, SocketUser trader, int batchTradeNumber, int totalBatchTrades, bool isMysteryEgg, List<Pictocodes> lgcode)
@@ -36,6 +43,7 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
     }
 
     public Action<PokeRoutineExecutor<T>>? OnFinish { private get; set; }
+
     public readonly PokeTradeHub<T> Hub = SysCord<T>.Runner.Hub;
 
     public void TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
@@ -209,7 +217,6 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
 #pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
-
             }
 #pragma warning restore CA1416 // Validate platform compatibility
             png = destImage;

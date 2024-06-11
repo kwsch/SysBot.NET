@@ -1,4 +1,3 @@
-using NLog;
 using PKHeX.Core;
 using SysBot.Base;
 using System;
@@ -15,12 +14,14 @@ namespace SysBot.Pokemon.Twitch
 {
     public class TwitchBot<T> where T : PKM, new()
     {
-        private static PokeTradeHub<T> Hub = default!;
-        internal static TradeQueueInfo<T> Info => Hub.Queues.Info;
-
         internal static readonly List<TwitchQueue<T>> QueuePool = new();
-        private readonly TwitchClient client;
+
+        private static PokeTradeHub<T> Hub = default!;
+
         private readonly string Channel;
+
+        private readonly TwitchClient client;
+
         private readonly TwitchSettings Settings;
 
         public TwitchBot(TwitchSettings settings, PokeTradeHub<T> hub)
@@ -82,6 +83,8 @@ namespace SysBot.Pokemon.Twitch
             // Hub.Queues.Forwarders.Add((bot, detail) => client.SendMessage(Channel, $"{bot.Connection.Name} is now trading (ID {detail.ID}) {detail.Trainer.TrainerName}"));
         }
 
+        internal static TradeQueueInfo<T> Info => Hub.Queues.Info;
+
         public void StartingDistribution(string message)
         {
             Task.Run(async () =>
@@ -99,6 +102,14 @@ namespace SysBot.Pokemon.Twitch
                 if (!string.IsNullOrWhiteSpace(message))
                     client.SendMessage(Channel, message);
             });
+        }
+
+        private static int GenerateUniqueTradeID()
+        {
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            int randomValue = new Random().Next(1000);
+            int uniqueTradeID = (int)(timestamp % int.MaxValue) * 1000 + randomValue;
+            return uniqueTradeID;
         }
 
         private bool AddToTradeQueue(T pk, int code, OnWhisperReceivedArgs e, RequestSignificance sig, PokeRoutineType type, out string msg)
@@ -134,17 +145,20 @@ namespace SysBot.Pokemon.Twitch
             return true;
         }
 
-        private static int GenerateUniqueTradeID()
+        private void Client_OnChatCommandReceived(object? sender, OnChatCommandReceivedArgs e)
         {
-            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            int randomValue = new Random().Next(1000);
-            int uniqueTradeID = (int)(timestamp % int.MaxValue) * 1000 + randomValue;
-            return uniqueTradeID;
-        }
+            if (!Hub.Config.Twitch.AllowCommandsViaChannel || Hub.Config.Twitch.UserBlacklist.Contains(e.Command.ChatMessage.Username))
+                return;
 
-        private void Client_OnLog(object? sender, OnLogArgs e)
-        {
-            LogUtil.LogText($"[{client.TwitchUsername}] -[{e.BotUsername}] {e.Data}");
+            var msg = e.Command.ChatMessage;
+            var c = e.Command.CommandText.ToLower();
+            var args = e.Command.ArgumentsAsString;
+            var response = HandleCommand(msg, c, args, false);
+            if (response.Length == 0)
+                return;
+
+            var channel = e.Command.ChatMessage.Channel;
+            client.SendMessage(channel, response);
         }
 
         private void Client_OnConnected(object? sender, OnConnectedArgs e)
@@ -168,33 +182,22 @@ namespace SysBot.Pokemon.Twitch
             client.SendMessage(e.Channel, "Connected!");
         }
 
-        private void Client_OnMessageReceived(object? sender, OnMessageReceivedArgs e)
-        {
-            LogUtil.LogText($"[{client.TwitchUsername}] - Received message: @{e.ChatMessage.Username}: {e.ChatMessage.Message}");
-            if (client.JoinedChannels.Count == 0)
-                client.JoinChannel(e.ChatMessage.Channel);
-        }
-
         private void Client_OnLeftChannel(object? sender, OnLeftChannelArgs e)
         {
             LogUtil.LogText($"[{client.TwitchUsername}] - Left channel {e.Channel}");
             client.JoinChannel(e.Channel);
         }
 
-        private void Client_OnChatCommandReceived(object? sender, OnChatCommandReceivedArgs e)
+        private void Client_OnLog(object? sender, OnLogArgs e)
         {
-            if (!Hub.Config.Twitch.AllowCommandsViaChannel || Hub.Config.Twitch.UserBlacklist.Contains(e.Command.ChatMessage.Username))
-                return;
+            LogUtil.LogText($"[{client.TwitchUsername}] -[{e.BotUsername}] {e.Data}");
+        }
 
-            var msg = e.Command.ChatMessage;
-            var c = e.Command.CommandText.ToLower();
-            var args = e.Command.ArgumentsAsString;
-            var response = HandleCommand(msg, c, args, false);
-            if (response.Length == 0)
-                return;
-
-            var channel = e.Command.ChatMessage.Channel;
-            client.SendMessage(channel, response);
+        private void Client_OnMessageReceived(object? sender, OnMessageReceivedArgs e)
+        {
+            LogUtil.LogText($"[{client.TwitchUsername}] - Received message: @{e.ChatMessage.Username}: {e.ChatMessage.Message}");
+            if (client.JoinedChannels.Count == 0)
+                client.JoinChannel(e.ChatMessage.Channel);
         }
 
         private void Client_OnWhisperCommandReceived(object? sender, OnWhisperCommandReceivedArgs e)
@@ -212,6 +215,45 @@ namespace SysBot.Pokemon.Twitch
             client.SendWhisper(msg.Username, response);
         }
 
+        private void Client_OnWhisperReceived(object? sender, OnWhisperReceivedArgs e)
+        {
+            LogUtil.LogText($"[{client.TwitchUsername}] - @{e.WhisperMessage.Username}: {e.WhisperMessage.Message}");
+            if (QueuePool.Count > 100)
+            {
+                var removed = QueuePool[0];
+                QueuePool.RemoveAt(0); // First in, first out
+                client.SendMessage(Channel, $"Removed @{removed.DisplayName} ({(Species)removed.Pokemon.Species}) from the waiting list: stale request.");
+            }
+
+            var user = QueuePool.FindLast(q => q.UserName == e.WhisperMessage.Username);
+            if (user == null)
+                return;
+            QueuePool.Remove(user);
+            var msg = e.WhisperMessage.Message;
+            try
+            {
+                int code = Util.ToInt32(msg);
+                var sig = GetUserSignificance(user);
+                var _ = AddToTradeQueue(user.Pokemon, code, e, sig, PokeRoutineType.LinkTrade, out string message);
+                client.SendMessage(Channel, message);
+            }
+            catch (Exception ex)
+            {
+                LogUtil.LogSafe(ex, nameof(TwitchBot<T>));
+                LogUtil.LogError($"{ex.Message}", nameof(TwitchBot<T>));
+            }
+        }
+
+        private RequestSignificance GetUserSignificance(TwitchQueue<T> user)
+        {
+            var name = user.UserName;
+            if (name == Channel)
+                return RequestSignificance.Owner;
+            if (Settings.IsSudo(user.UserName))
+                return RequestSignificance.Favored;
+            return user.IsSubscriber ? RequestSignificance.Favored : RequestSignificance.None;
+        }
+
         private string HandleCommand(TwitchLibMessage m, string c, string args, bool whisper)
         {
             bool sudo() => m is ChatMessage ch && (ch.IsBroadcaster || Settings.IsSudo(m.Username));
@@ -222,17 +264,21 @@ namespace SysBot.Pokemon.Twitch
                 // User Usable Commands
                 case "donate":
                     return Settings.DonationLink.Length > 0 ? $"Here's the donation link! Thank you for your support :3 {Settings.DonationLink}" : string.Empty;
+
                 case "discord":
                     return Settings.DiscordLink.Length > 0 ? $"Here's the Discord Server Link, have a nice stay :3 {Settings.DiscordLink}" : string.Empty;
+
                 case "tutorial":
                 case "help":
                     return $"{Settings.TutorialText} {Settings.TutorialLink}";
+
                 case "trade":
                 case "t":
                     var _ = TwitchCommandsHelper<T>.AddToWaitingList(args, m.DisplayName, m.Username, ulong.Parse(m.UserId), subscriber(), out string msg);
                     if (msg.Contains("Please read what you are supposed to type") && Settings.TutorialLink.Length > 0)
                         msg += $"\nUsage Tutorial: {Settings.TutorialLink}";
                     return msg;
+
                 case "ts":
                 case "queue":
                 case "position":
@@ -283,45 +329,6 @@ namespace SysBot.Pokemon.Twitch
 
                 default: return string.Empty;
             }
-        }
-
-        private void Client_OnWhisperReceived(object? sender, OnWhisperReceivedArgs e)
-        {
-            LogUtil.LogText($"[{client.TwitchUsername}] - @{e.WhisperMessage.Username}: {e.WhisperMessage.Message}");
-            if (QueuePool.Count > 100)
-            {
-                var removed = QueuePool[0];
-                QueuePool.RemoveAt(0); // First in, first out
-                client.SendMessage(Channel, $"Removed @{removed.DisplayName} ({(Species)removed.Pokemon.Species}) from the waiting list: stale request.");
-            }
-
-            var user = QueuePool.FindLast(q => q.UserName == e.WhisperMessage.Username);
-            if (user == null)
-                return;
-            QueuePool.Remove(user);
-            var msg = e.WhisperMessage.Message;
-            try
-            {
-                int code = Util.ToInt32(msg);
-                var sig = GetUserSignificance(user);
-                var _ = AddToTradeQueue(user.Pokemon, code, e, sig, PokeRoutineType.LinkTrade, out string message);
-                client.SendMessage(Channel, message);
-            }
-            catch (Exception ex)
-            {
-                LogUtil.LogSafe(ex, nameof(TwitchBot<T>));
-                LogUtil.LogError($"{ex.Message}", nameof(TwitchBot<T>));
-            }
-        }
-
-        private RequestSignificance GetUserSignificance(TwitchQueue<T> user)
-        {
-            var name = user.UserName;
-            if (name == Channel)
-                return RequestSignificance.Owner;
-            if (Settings.IsSudo(user.UserName))
-                return RequestSignificance.Favored;
-            return user.IsSubscriber ? RequestSignificance.Favored : RequestSignificance.None;
         }
     }
 }

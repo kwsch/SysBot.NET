@@ -1,21 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace SysBot.Pokemon
 {
     public class ShowdownTranslatorDictionary
     {
-
         // 添加持有物
         public static List<string> holdItemKeywords = new List<string> { "持有", "携带" };
-
-        // 添加异色
-        public static Dictionary<string, string> shinyTypes = new Dictionary<string, string>
-        {
-            {"异色", "\nShiny: Yes"},
-            {"闪光", "\nShiny: Yes"},
-            {"星闪", "\nShiny: Star"},
-            {"方闪", "\nShiny: Square"}
-        };
 
         // 添加个体值
         public static Dictionary<string, string> ivCombos = new()
@@ -29,14 +19,18 @@ namespace SysBot.Pokemon
             {"4V0攻0速", "31 HP / 0 Atk / 31 Def / 31 SpA / 31 SpD / 0 Spe"}
         };
 
-        public static Dictionary<string, string> statsDict = new()
+        public static Dictionary<string, string> languages = new Dictionary<string, string>
         {
-            { "生命", "HP" },
-            { "攻击", "Atk" },
-            { "防御", "Def" },
-            { "特攻", "SpA" },
-            { "特防", "SpD" },
-            { "速度", "Spe" }
+            { "异国", "Italian" },
+            { "日语", "Japanese" },
+            { "英语", "English" },
+            { "法语", "French" },
+            { "意大利语", "Italian" },
+            { "德语", "German" },
+            { "西班牙语", "Spanish" },
+            { "韩语", "Korean" },
+            { "简体中文", "ChineseS" },
+            { "繁体中文", "ChineseT" }
         };
 
         public static Dictionary<string, string> ribbonMarks = new()
@@ -91,22 +85,27 @@ namespace SysBot.Pokemon
             { "宝主之证", "\n.RibbonMarkTitan=True" }
         };
 
-
-        public static Dictionary<string, string> languages = new Dictionary<string, string>
+        // 添加异色
+        public static Dictionary<string, string> shinyTypes = new Dictionary<string, string>
         {
-            { "异国", "Italian" },
-            { "日语", "Japanese" },
-            { "英语", "English" },
-            { "法语", "French" },
-            { "意大利语", "Italian" },
-            { "德语", "German" },
-            { "西班牙语", "Spanish" },
-            { "韩语", "Korean" },
-            { "简体中文", "ChineseS" },
-            { "繁体中文", "ChineseT" }
+            {"异色", "\nShiny: Yes"},
+            {"闪光", "\nShiny: Yes"},
+            {"星闪", "\nShiny: Star"},
+            {"方闪", "\nShiny: Square"}
+        };
+
+        public static Dictionary<string, string> statsDict = new()
+        {
+            { "生命", "HP" },
+            { "攻击", "Atk" },
+            { "防御", "Def" },
+            { "特攻", "SpA" },
+            { "特防", "SpD" },
+            { "速度", "Spe" }
         };
 
         #region 形态中文ps字典，感谢ppllouf
+
         public static Dictionary<string, string> formDict = new Dictionary<string, string> {
             {"阿罗拉","Alola"},
             {"初始","Original"},
@@ -293,7 +292,7 @@ namespace SysBot.Pokemon
             {"火灶面具","Hearthflame"},
             {"础石面具","Cornerstone"},
         };
-        #endregion
 
+        #endregion 形态中文ps字典，感谢ppllouf
     }
 }

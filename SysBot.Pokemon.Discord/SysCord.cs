@@ -17,18 +17,27 @@ namespace SysBot.Pokemon.Discord;
 
 public static class SysCordSettings
 {
-    public static DiscordManager Manager { get; internal set; } = default!;
-    public static DiscordSettings Settings => Manager.Config;
     public static PokeTradeHubConfig HubConfig { get; internal set; } = default!;
+
+    public static DiscordManager Manager { get; internal set; } = default!;
+
+    public static DiscordSettings Settings => Manager.Config;
 }
 
 public sealed class SysCord<T> where T : PKM, new()
 {
-    public static PokeBotRunner<T> Runner { get; private set; } = default!;
+    public readonly PokeTradeHub<T> Hub;
+
+    private readonly Dictionary<ulong, ulong> _announcementMessageIds = [];
 
     private readonly DiscordSocketClient _client;
-    private readonly DiscordManager Manager;
-    public readonly PokeTradeHub<T> Hub;
+
+    // Keep the CommandService and DI container around for use with commands.
+    // These two types require you install the Discord.Net.Commands package.
+    private readonly CommandService _commands;
+
+    private readonly IServiceProvider _services;
+
     private readonly HashSet<string> _validCommands = new HashSet<string>
     {
         "trade", "t", "clone", "fixOT", "fix", "f", "dittoTrade", "ditto", "dt", "itemTrade", "item", "it",
@@ -38,13 +47,7 @@ public sealed class SysCord<T> where T : PKM, new()
         "queueStatus", "qs", "queueClear", "qc", "ts", "tc", "deleteTradeCode", "dtc", "mysteryegg", "me"
     };
 
-    // Keep the CommandService and DI container around for use with commands.
-    // These two types require you install the Discord.Net.Commands package.
-    private readonly CommandService _commands;
-    private readonly IServiceProvider _services;
-
-    // Track loading of Echo/Logging channels, so they aren't loaded multiple times.
-    private bool MessageChannelsLoaded { get; set; }
+    private readonly DiscordManager Manager;
 
     public SysCord(PokeBotRunner<T> runner)
     {
@@ -67,6 +70,7 @@ public sealed class SysCord<T> where T : PKM, new()
             // How much logging do you want to see?
             LogLevel = LogSeverity.Info,
             GatewayIntents = Guilds | GuildMessages | DirectMessages | GuildMembers | GuildPresences | MessageContent,
+
             // If you or another service needs to do anything with messages
             // (ex. checking Reactions, checking the content of edited/deleted messages),
             // you must set the MessageCacheSize. You may adjust the number as needed.
@@ -77,9 +81,11 @@ public sealed class SysCord<T> where T : PKM, new()
         {
             // Again, log level:
             LogLevel = LogSeverity.Info,
+
             // This makes commands get run on the task thread pool instead on the websocket read thread.
             // This ensures long-running logic can't block the websocket connection.
             DefaultRunMode = Hub.Config.Discord.AsyncCommands ? RunMode.Async : RunMode.Sync,
+
             // There's a few more properties you can set,
             // for example, case-insensitive commands.
             CaseSensitiveCommands = false,
@@ -95,17 +101,10 @@ public sealed class SysCord<T> where T : PKM, new()
         _client.PresenceUpdated += Client_PresenceUpdated;
     }
 
-    public async Task HandleBotStart()
-    {
-        await AnnounceBotStatus("Online", EmbedColorOption.Green);
-    }
+    public static PokeBotRunner<T> Runner { get; private set; } = default!;
 
-    public async Task HandleBotStop()
-    {
-        await AnnounceBotStatus("Offline", EmbedColorOption.Red);
-    }
-
-    private readonly Dictionary<ulong, ulong> _announcementMessageIds = [];
+    // Track loading of Echo/Logging channels, so they aren't loaded multiple times.
+    private bool MessageChannelsLoaded { get; set; }
 
     public async Task AnnounceBotStatus(string status, EmbedColorOption color)
     {
@@ -124,7 +123,7 @@ public sealed class SysCord<T> where T : PKM, new()
             : "https://raw.githubusercontent.com/bdawg1989/sprites/main/botstop.png";
 
         var embed = new EmbedBuilder()
-            .WithTitle($"Bot Status Report")
+            .WithTitle("Bot Status Report")
             .WithDescription(fullStatusMessage)
             .WithColor(EmbedColorConverter.ToDiscordColor(color))
             .WithThumbnailUrl(thumbnailUrl)
@@ -183,76 +182,14 @@ public sealed class SysCord<T> where T : PKM, new()
         }
     }
 
-    // If any services require the client, or the CommandService, or something else you keep on hand,
-    // pass them as parameters into this method as needed.
-    // If this method is getting pretty long, you can separate it out into another file using partials.
-    private static ServiceProvider ConfigureServices()
+    public async Task HandleBotStart()
     {
-        var map = new ServiceCollection();//.AddSingleton(new SomeServiceClass());
-
-        // When all your required services are in the collection, build the container.
-        // Tip: There's an overload taking in a 'validateScopes' bool to make sure
-        // you haven't made any mistakes in your dependency graph.
-        return map.BuildServiceProvider();
+        await AnnounceBotStatus("Online", EmbedColorOption.Green);
     }
 
-    // Example of a logging handler. This can be reused by add-ons
-    // that ask for a Func<LogMessage, Task>.
-
-    private static Task Log(LogMessage msg)
+    public async Task HandleBotStop()
     {
-        var text = $"[{msg.Severity,8}] {msg.Source}: {msg.Message} {msg.Exception}";
-        Console.ForegroundColor = GetTextColor(msg.Severity);
-        Console.WriteLine($"{DateTime.Now,-19} {text}");
-        Console.ResetColor();
-
-        LogUtil.LogText($"SysCord: {text}");
-
-        return Task.CompletedTask;
-    }
-
-    private static ConsoleColor GetTextColor(LogSeverity sv) => sv switch
-    {
-        LogSeverity.Critical => ConsoleColor.Red,
-        LogSeverity.Error => ConsoleColor.Red,
-
-        LogSeverity.Warning => ConsoleColor.Yellow,
-        LogSeverity.Info => ConsoleColor.White,
-
-        LogSeverity.Verbose => ConsoleColor.DarkGray,
-        LogSeverity.Debug => ConsoleColor.DarkGray,
-        _ => Console.ForegroundColor,
-    };
-
-    public async Task MainAsync(string apiToken, CancellationToken token)
-    {
-        // Centralize the logic for commands into a separate method.
-        await InitCommands().ConfigureAwait(false);
-
-        // Login and connect.
-        await _client.LoginAsync(TokenType.Bot, apiToken).ConfigureAwait(false);
-        await _client.StartAsync().ConfigureAwait(false);
-
-        var app = await _client.GetApplicationInfoAsync().ConfigureAwait(false);
-        Manager.Owner = app.Owner.Id;
-
-        try
-        {
-            // Wait infinitely so your bot actually stays connected.
-            await MonitorStatusAsync(token).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            // Handle the cancellation and perform cleanup tasks
-            LogUtil.LogText("MainAsync: Bot is disconnecting due to cancellation...");
-            await AnnounceBotStatus("Offline", EmbedColorOption.Red);
-            LogUtil.LogText("MainAsync: Cleanup tasks completed.");
-        }
-        finally
-        {
-            // Disconnect the bot
-            await _client.StopAsync();
-        }
+        await AnnounceBotStatus("Offline", EmbedColorOption.Red);
     }
 
     public async Task InitCommands()
@@ -286,6 +223,127 @@ public sealed class SysCord<T> where T : PKM, new()
         // Subscribe a handler to see if a message invokes a command.
         _client.Ready += LoadLoggingAndEcho;
         _client.MessageReceived += HandleMessageAsync;
+    }
+
+    public async Task MainAsync(string apiToken, CancellationToken token)
+    {
+        // Centralize the logic for commands into a separate method.
+        await InitCommands().ConfigureAwait(false);
+
+        // Login and connect.
+        await _client.LoginAsync(TokenType.Bot, apiToken).ConfigureAwait(false);
+        await _client.StartAsync().ConfigureAwait(false);
+
+        var app = await _client.GetApplicationInfoAsync().ConfigureAwait(false);
+        Manager.Owner = app.Owner.Id;
+
+        try
+        {
+            // Wait infinitely so your bot actually stays connected.
+            await MonitorStatusAsync(token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Handle the cancellation and perform cleanup tasks
+            LogUtil.LogText("MainAsync: Bot is disconnecting due to cancellation...");
+            await AnnounceBotStatus("Offline", EmbedColorOption.Red);
+            LogUtil.LogText("MainAsync: Cleanup tasks completed.");
+        }
+        finally
+        {
+            // Disconnect the bot
+            await _client.StopAsync();
+        }
+    }
+
+    // If any services require the client, or the CommandService, or something else you keep on hand,
+    // pass them as parameters into this method as needed.
+    // If this method is getting pretty long, you can separate it out into another file using partials.
+    private static ServiceProvider ConfigureServices()
+    {
+        var map = new ServiceCollection();//.AddSingleton(new SomeServiceClass());
+
+        // When all your required services are in the collection, build the container.
+        // Tip: There's an overload taking in a 'validateScopes' bool to make sure
+        // you haven't made any mistakes in your dependency graph.
+        return map.BuildServiceProvider();
+    }
+
+    // Example of a logging handler. This can be reused by add-ons
+    // that ask for a Func<LogMessage, Task>.
+
+    private static ConsoleColor GetTextColor(LogSeverity sv) => sv switch
+    {
+        LogSeverity.Critical => ConsoleColor.Red,
+        LogSeverity.Error => ConsoleColor.Red,
+
+        LogSeverity.Warning => ConsoleColor.Yellow,
+        LogSeverity.Info => ConsoleColor.White,
+
+        LogSeverity.Verbose => ConsoleColor.DarkGray,
+        LogSeverity.Debug => ConsoleColor.DarkGray,
+        _ => Console.ForegroundColor,
+    };
+
+    private static Task Log(LogMessage msg)
+    {
+        var text = $"[{msg.Severity,8}] {msg.Source}: {msg.Message} {msg.Exception}";
+        Console.ForegroundColor = GetTextColor(msg.Severity);
+        Console.WriteLine($"{DateTime.Now,-19} {text}");
+        Console.ResetColor();
+
+        LogUtil.LogText($"SysCord: {text}");
+
+        return Task.CompletedTask;
+    }
+
+    private static async Task RespondToThanksMessage(SocketUserMessage msg)
+    {
+        var channel = msg.Channel;
+        await channel.TriggerTypingAsync();
+        await Task.Delay(1500);
+
+        var responses = new List<string>
+        {
+            "You're welcome! ❤️",
+            "No problem at all!",
+            "Anytime, glad to help!",
+            "It's my pleasure! ❤️",
+            "Not a problem! You're welcome!",
+            "Always here to help!",
+            "Glad I could assist!",
+            "Happy to serve!",
+            "Of course! You're welcome!",
+            "Sure thing!"
+        };
+
+        var randomResponse = responses[new Random().Next(responses.Count)];
+        var finalResponse = $"{randomResponse}";
+
+        await msg.Channel.SendMessageAsync(finalResponse).ConfigureAwait(false);
+    }
+
+    private static string TrimStatusEmoji(string channelName)
+    {
+        var onlineEmoji = SysCordSettings.Settings.OnlineEmoji;
+        var offlineEmoji = SysCordSettings.Settings.OfflineEmoji;
+
+        if (channelName.StartsWith(onlineEmoji))
+        {
+            return channelName[onlineEmoji.Length..].Trim();
+        }
+
+        if (channelName.StartsWith(offlineEmoji))
+        {
+            return channelName[offlineEmoji.Length..].Trim();
+        }
+
+        return channelName.Trim();
+    }
+
+    private Task Client_PresenceUpdated(SocketUser user, SocketPresence before, SocketPresence after)
+    {
+        return Task.CompletedTask;
     }
 
     private async Task HandleMessageAsync(SocketMessage arg)
@@ -346,93 +404,31 @@ public sealed class SysCord<T> where T : PKM, new()
         }
     }
 
-    private async Task<bool> TryHandleCommandAsync(SocketUserMessage msg, SocketCommandContext context, int pos)
+    private async Task LoadLoggingAndEcho()
     {
-        var AbuseSettings = Hub.Config.TradeAbuse;
+        if (MessageChannelsLoaded)
+            return;
 
-        // Check if the user is in the bannedIDs list
-        if (msg.Author is SocketGuildUser user)
-        {
-            if (AbuseSettings.BannedIDs.List.Any(z => z.ID == user.Id))
-            {
-                await msg.Channel.SendMessageAsync("You are banned from using this bot.").ConfigureAwait(false);
-                return true;
-            }
-        }
+        // Restore Echoes
+        EchoModule.RestoreChannels(_client, Hub.Config.Discord);
 
-        var mgr = Manager;
-        if (!mgr.CanUseCommandUser(msg.Author.Id))
-        {
-            await msg.Channel.SendMessageAsync("You are not permitted to use this command.").ConfigureAwait(false);
-            return true;
-        }
-        if (!mgr.CanUseCommandChannel(msg.Channel.Id) && msg.Author.Id != mgr.Owner)
-        {
-            if (Hub.Config.Discord.ReplyCannotUseCommandInChannel)
-                await msg.Channel.SendMessageAsync("You can't use that command here.").ConfigureAwait(false);
-            return true;
-        }
+        // Restore Logging
+        LogModule.RestoreLogging(_client, Hub.Config.Discord);
+        TradeStartModule<T>.RestoreTradeStarting(_client);
 
-        var guild = msg.Channel is SocketGuildChannel g ? g.Guild.Name : "Unknown Guild";
-        await Log(new LogMessage(LogSeverity.Info, "Command", $"Executing command from {guild}#{msg.Channel.Name}:@{msg.Author.Username}. Content: {msg}")).ConfigureAwait(false);
-        var result = await _commands.ExecuteAsync(context, pos, _services).ConfigureAwait(false);
+        // Don't let it load more than once in case of Discord hiccups.
+        await Log(new LogMessage(LogSeverity.Info, "LoadLoggingAndEcho()", "Logging and Echo channels loaded!")).ConfigureAwait(false);
+        MessageChannelsLoaded = true;
 
-        if (result.Error == CommandError.UnknownCommand)
-            return false;
-
-        if (!result.IsSuccess)
-            await msg.Channel.SendMessageAsync(result.ErrorReason).ConfigureAwait(false);
-        return true;
-    }
-
-    private async Task TryHandleAttachmentAsync(SocketMessage msg)
-    {
-        var mgr = Manager;
-        var cfg = mgr.Config;
-        if (cfg.ConvertPKMToShowdownSet && (cfg.ConvertPKMReplyAnyChannel || mgr.CanUseCommandChannel(msg.Channel.Id)))
-        {
-            if (msg is SocketUserMessage userMessage)
-            {
-                foreach (var att in msg.Attachments)
-                    await msg.Channel.RepostPKMAsShowdownAsync(att, userMessage).ConfigureAwait(false);
-            }
-        }
-    }
-
-    private static async Task RespondToThanksMessage(SocketUserMessage msg)
-    {
-        var channel = msg.Channel;
-        await channel.TriggerTypingAsync();
-        await Task.Delay(1500);
-
-        var responses = new List<string>
-        {
-            "You're welcome! ❤️",
-            "No problem at all!",
-            "Anytime, glad to help!",
-            "It's my pleasure! ❤️",
-            "Not a problem! You're welcome!",
-            "Always here to help!",
-            "Glad I could assist!",
-            "Happy to serve!",
-            "Of course! You're welcome!",
-            "Sure thing!"
-        };
-
-        var randomResponse = responses[new Random().Next(responses.Count)];
-        var finalResponse = $"{randomResponse}";
-
-        await msg.Channel.SendMessageAsync(finalResponse).ConfigureAwait(false);
-    }
-
-    private Task Client_PresenceUpdated(SocketUser user, SocketPresence before, SocketPresence after)
-    {
-        return Task.CompletedTask;
+        var game = Hub.Config.Discord.BotGameStatus;
+        if (!string.IsNullOrWhiteSpace(game))
+            await _client.SetGameAsync(game).ConfigureAwait(false);
     }
 
     private async Task MonitorStatusAsync(CancellationToken token)
     {
         const int Interval = 20; // seconds
+
         // Check datetime for update
         UserStatus state = UserStatus.Idle;
         while (!token.IsCancellationRequested)
@@ -472,42 +468,56 @@ public sealed class SysCord<T> where T : PKM, new()
         }
     }
 
-    private async Task LoadLoggingAndEcho()
+    private async Task TryHandleAttachmentAsync(SocketMessage msg)
     {
-        if (MessageChannelsLoaded)
-            return;
-
-        // Restore Echoes
-        EchoModule.RestoreChannels(_client, Hub.Config.Discord);
-
-        // Restore Logging
-        LogModule.RestoreLogging(_client, Hub.Config.Discord);
-        TradeStartModule<T>.RestoreTradeStarting(_client);
-
-        // Don't let it load more than once in case of Discord hiccups.
-        await Log(new LogMessage(LogSeverity.Info, "LoadLoggingAndEcho()", "Logging and Echo channels loaded!")).ConfigureAwait(false);
-        MessageChannelsLoaded = true;
-
-        var game = Hub.Config.Discord.BotGameStatus;
-        if (!string.IsNullOrWhiteSpace(game))
-            await _client.SetGameAsync(game).ConfigureAwait(false);
+        var mgr = Manager;
+        var cfg = mgr.Config;
+        if (cfg.ConvertPKMToShowdownSet && (cfg.ConvertPKMReplyAnyChannel || mgr.CanUseCommandChannel(msg.Channel.Id)))
+        {
+            if (msg is SocketUserMessage userMessage)
+            {
+                foreach (var att in msg.Attachments)
+                    await msg.Channel.RepostPKMAsShowdownAsync(att, userMessage).ConfigureAwait(false);
+            }
+        }
     }
 
-    private static string TrimStatusEmoji(string channelName)
+    private async Task<bool> TryHandleCommandAsync(SocketUserMessage msg, SocketCommandContext context, int pos)
     {
-        var onlineEmoji = SysCordSettings.Settings.OnlineEmoji;
-        var offlineEmoji = SysCordSettings.Settings.OfflineEmoji;
+        var AbuseSettings = Hub.Config.TradeAbuse;
 
-        if (channelName.StartsWith(onlineEmoji))
+        // Check if the user is in the bannedIDs list
+        if (msg.Author is SocketGuildUser user)
         {
-            return channelName[onlineEmoji.Length..].Trim();
+            if (AbuseSettings.BannedIDs.List.Any(z => z.ID == user.Id))
+            {
+                await msg.Channel.SendMessageAsync("You are banned from using this bot.").ConfigureAwait(false);
+                return true;
+            }
         }
 
-        if (channelName.StartsWith(offlineEmoji))
+        var mgr = Manager;
+        if (!mgr.CanUseCommandUser(msg.Author.Id))
         {
-            return channelName[offlineEmoji.Length..].Trim();
+            await msg.Channel.SendMessageAsync("You are not permitted to use this command.").ConfigureAwait(false);
+            return true;
+        }
+        if (!mgr.CanUseCommandChannel(msg.Channel.Id) && msg.Author.Id != mgr.Owner)
+        {
+            if (Hub.Config.Discord.ReplyCannotUseCommandInChannel)
+                await msg.Channel.SendMessageAsync("You can't use that command here.").ConfigureAwait(false);
+            return true;
         }
 
-        return channelName.Trim();
+        var guild = msg.Channel is SocketGuildChannel g ? g.Guild.Name : "Unknown Guild";
+        await Log(new LogMessage(LogSeverity.Info, "Command", $"Executing command from {guild}#{msg.Channel.Name}:@{msg.Author.Username}. Content: {msg}")).ConfigureAwait(false);
+        var result = await _commands.ExecuteAsync(context, pos, _services).ConfigureAwait(false);
+
+        if (result.Error == CommandError.UnknownCommand)
+            return false;
+
+        if (!result.IsSuccess)
+            await msg.Channel.SendMessageAsync(result.ErrorReason).ConfigureAwait(false);
+        return true;
     }
 }

@@ -69,6 +69,7 @@ namespace SysBot.Pokemon.Discord
                     // Extract title from the Pokepaste HTML
                     var titleMatch = Regex.Match(pokePasteHtml, @"<h1>(.*?)</h1>");
                     var title = titleMatch.Success ? titleMatch.Groups[1].Value : "pokepasteteam";
+
                     // Sanitize the title to make it a valid filename
                     title = Regex.Replace(title, "[^a-zA-Z0-9_.-]", "").Trim();
                     if (title.Length > 30) title = title[..30]; // Truncate if too long

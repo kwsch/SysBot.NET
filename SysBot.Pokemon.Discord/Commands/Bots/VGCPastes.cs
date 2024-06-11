@@ -50,15 +50,15 @@ namespace SysBot.Pokemon.Discord
                     var pokePasteUrl = row[24]?.Trim('"');
                     if (string.IsNullOrWhiteSpace(pokePasteUrl) || !Uri.IsWellFormedUriString(pokePasteUrl, UriKind.Absolute))
                     {
-                        continue; 
+                        continue;
                     }
 
                     if (pokemonName != null)
                     {
-                        var pokemonColumns = row.GetRange(37, 5); 
+                        var pokemonColumns = row.GetRange(37, 5);
                         if (!pokemonColumns.Any(cell => cell.Equals(pokemonName, StringComparison.OrdinalIgnoreCase)))
                         {
-                            continue; 
+                            continue;
                         }
                     }
 
@@ -228,13 +228,13 @@ namespace SysBot.Pokemon.Discord
                                     .WithName($"{Context.User.Username}'s Generated Team")
                                     .WithIconUrl(Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl());
                             })
-                        .WithTitle($"Team: {teamDescription}") 
+                        .WithTitle($"Team: {teamDescription}")
                         .WithDescription(
                                 $"**Trainer Name:** {trainerName}\n" +
                                 $"**Date Shared:** {dateShared}\n" +
-                                $"{(rentalCode != "None" ? $"**Rental Code:** `{rentalCode}`" : "")}" 
+                                $"{(rentalCode != "None" ? $"**Rental Code:** `{rentalCode}`" : "")}"
                             )
-                        .WithImageUrl($"attachment://spreadsheetteam.png")
+                        .WithImageUrl("attachment://spreadsheetteam.png")
                         .WithFooter($"Legalized Team Sent to {Context.User.Username}'s Inbox")
                         .WithCurrentTimestamp();
 
@@ -275,6 +275,7 @@ namespace SysBot.Pokemon.Discord
             {
                 var showdownText = match.Groups[1].Value;
                 showdownText = System.Net.WebUtility.HtmlDecode(Regex.Replace(showdownText, "<.*?>", string.Empty));
+
                 // Update the level to 100 in the showdown set since some level's don't meet minimum requirements
                 showdownText = Regex.Replace(showdownText, @"(?i)(?<=\bLevel: )\d+", "100");
                 var set = new ShowdownSet(showdownText);

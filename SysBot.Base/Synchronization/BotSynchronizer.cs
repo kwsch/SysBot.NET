@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -6,6 +6,13 @@ namespace SysBot.Base;
 
 public class BotSynchronizer
 {
+    /// <summary>
+    /// Blocks bots from proceeding until all participating bots are waiting at the same step.
+    /// </summary>
+    public readonly Barrier Barrier;
+
+    public readonly List<Action> BarrierReleasingActions = [];
+
     private readonly ISynchronizationSetting Config;
 
     public BotSynchronizer(ISynchronizationSetting hub)
@@ -13,13 +20,6 @@ public class BotSynchronizer
         Config = hub;
         Barrier = new Barrier(0, ReleaseBarrier);
     }
-
-    /// <summary>
-    /// Blocks bots from proceeding until all participating bots are waiting at the same step.
-    /// </summary>
-    public readonly Barrier Barrier;
-
-    public readonly List<Action> BarrierReleasingActions = [];
 
     /// <summary>
     /// When the Barrier releases the bots, this method is executed before the bots continue execution.

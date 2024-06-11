@@ -1,6 +1,7 @@
+using SysBot.Base;
+
 using System;
 using System.Windows.Forms;
-using SysBot.Base;
 
 namespace SysBot.Pokemon.WinForms;
 

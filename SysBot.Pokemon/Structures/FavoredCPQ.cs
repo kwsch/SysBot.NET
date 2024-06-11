@@ -1,18 +1,41 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace SysBot.Pokemon;
+
+public enum FavoredMode
+{
+    None,
+
+    Exponent,
+
+    Multiply,
+}
+
+public interface IFavoredCPQSetting
+{
+    float Exponent { get; }
+
+    int MinimumFreeAhead { get; }
+
+    int MinimumFreeBypass { get; }
+
+    FavoredMode Mode { get; }
+
+    float Multiply { get; }
+}
 
 /// <summary>
 /// Allows Enqueue requests to have favored requests inserted ahead of a fraction of unfavored requests.
 /// </summary>
 public sealed class FavoredCPQ<TKey, TValue> : ConcurrentPriorityQueue<TKey, TValue> where TKey : IComparable<TKey> where TValue : IEquatable<TValue>, IFavoredEntry
 {
-    public IFavoredCPQSetting Settings { get; set; }
-
     public FavoredCPQ(IFavoredCPQSetting settings) => Settings = settings;
+
     public FavoredCPQ(IEnumerable<KeyValuePair<TKey, TValue>> collection, IFavoredCPQSetting settings) : base(collection) => Settings = settings;
+
+    public IFavoredCPQSetting Settings { get; set; }
 
     public void Add(TKey priority, TValue value)
     {
@@ -71,27 +94,12 @@ public sealed class FavoredCPQ<TKey, TValue> : ConcurrentPriorityQueue<TKey, TVa
         };
 
         var clamp = Math.Max(0, pos);
+
         // If there are enough unfavored users to require our minimum, then clamp.
         if (unfavored >= s.MinimumFreeBypass)
             return Math.Max(s.MinimumFreeAhead, clamp);
         return clamp;
     }
-}
-
-public interface IFavoredCPQSetting
-{
-    FavoredMode Mode { get; }
-    float Exponent { get; }
-    float Multiply { get; }
-    int MinimumFreeAhead { get; }
-    int MinimumFreeBypass { get; }
-}
-
-public enum FavoredMode
-{
-    None,
-    Exponent,
-    Multiply,
 }
 
 public interface IFavoredEntry

@@ -19,7 +19,9 @@ public enum SwitchConfigureParameter
     /// sys-botbase Echoes the command request back after processing the command if this is set.
     /// </summary>
     echoCommands,
+
     controllerType,
+
     /// <summary>
     /// Amount of time (milliseconds) Hid polling rate for virtual functions
     /// </summary>

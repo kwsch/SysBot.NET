@@ -1,4 +1,4 @@
-﻿namespace SysBot.Base;
+namespace SysBot.Base;
 
 public enum SwitchProtocol
 {

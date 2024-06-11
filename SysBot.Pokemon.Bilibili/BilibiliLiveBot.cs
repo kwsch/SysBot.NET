@@ -1,10 +1,10 @@
+using PKHeX.Core;
+using SysBot.Base;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using PKHeX.Core;
-using SysBot.Base;
 
 namespace SysBot.Pokemon.Bilibili
 {
@@ -16,7 +16,9 @@ namespace SysBot.Pokemon.Bilibili
         internal static TradeQueueInfo<T> Info => Hub.Queues.Info;
 
         private static readonly string DefaultUserName = "b站用户";
+
         private static readonly string LogIdentity = "b站直播";
+
         private static readonly ulong DefaultUserId = 2333;
 
         public BilibiliLiveBot(BilibiliSettings settings, PokeTradeHub<T> hub)
@@ -51,7 +53,6 @@ namespace SysBot.Pokemon.Bilibili
                     if (string.IsNullOrWhiteSpace(last) || currentDanmu == last) continue;
                     currentDanmu = last;
 
-
                     string[] split = last.Split('：');
                     if (split.Length != 2 || Info.Count != 0) continue;
                     var showdown = ShowdownTranslator<T>.Chinese2Showdown(split[1]);
@@ -67,7 +68,6 @@ namespace SysBot.Pokemon.Bilibili
                 }
             });
         }
-
 
         public static bool CheckAndGetPkm(string setstring, string username, out string msg, out T outPkm)
         {
@@ -160,6 +160,7 @@ namespace SysBot.Pokemon.Bilibili
             }
 
             var position = Info.CheckPosition(userId, uniqueTradeID, type);
+
             //msg = $"@{name}: Added to the {type} queue, unique ID: {detail.ID}. Current Position: {position.Position}";
             msg = $" 你在第{position.Position}位";
 
@@ -167,12 +168,14 @@ namespace SysBot.Pokemon.Bilibili
             if (position.Position > botct)
             {
                 var eta = Info.Hub.Config.Queues.EstimateDelay(position.Position, botct);
+
                 //msg += $". Estimated: {eta:F1} minutes.";
                 msg += $", 需等待约{eta:F1}分钟";
             }
 
             return true;
         }
+
         private static int GenerateUniqueTradeID()
         {
             long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();

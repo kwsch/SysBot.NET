@@ -10,13 +10,21 @@ namespace SysBot.Pokemon;
 public class TradeSettings : IBotStateSettings, ICountSettings
 {
     private const string CountStats = nameof(CountStats);
+
     private const string HOMELegality = nameof(HOMELegality);
+
     private const string TradeConfig = nameof(TradeConfig);
+
     private const string AutoCorrectShowdownConfig = nameof(AutoCorrectShowdownConfig);
+
     private const string VGCPastesConfig = nameof(VGCPastesConfig);
+
     private const string Miscellaneous = nameof(Miscellaneous);
+
     private const string RequestFolders = nameof(RequestFolders);
+
     private const string EmbedSettings = nameof(EmbedSettings);
+
     public override string ToString() => "Trade Configuration Settings";
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
@@ -48,7 +56,6 @@ public class TradeSettings : IBotStateSettings, ICountSettings
 
     [Category(CountStats), Description("Settings related to Trade Count Statistics."), DisplayName("Trade Count Statistics Settings"), Browsable(true)]
     public CountStatsSettingsCategory CountStatsSettings { get; set; } = new();
-
 
     [Category(TradeConfig), TypeConverter(typeof(CategoryConverter<TradeSettingsCategory>))]
     public class TradeSettingsCategory
@@ -100,18 +107,31 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         public enum HeldItem
         {
             None = 0,
+
             AbilityPatch = 1606,
+
             RareCandy = 50,
+
             AbilityCapsule = 645,
+
             BottleCap = 795,
+
             expCandyL = 1127,
+
             expCandyXL = 1128,
+
             MasterBall = 1,
+
             Nugget = 92,
+
             BigPearl = 89,
+
             GoldBottleCap = 796,
+
             ppUp = 51,
+
             ppMax = 53,
+
             FreshStartMochi = 2479,
         }
     }
@@ -125,6 +145,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         public bool EnableAutoCorrect { get; set; } = true;
 
         private bool _autoCorrectEmbedIndicator = true;
+
         [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, we will put an indicator on Trade Embeds showing a trade was Auto Corrected."), DisplayName("Show Trade Embed Indicator?")]
         public bool AutoCorrectEmbedIndicator
         {
@@ -133,6 +154,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         private bool _autoCorrectNickname = true;
+
         [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct illegal nicknames."), DisplayName("Auto Correct Nicknames?")]
         public bool AutoCorrectNickname
         {
@@ -141,6 +163,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         private string _fixedNickname = string.Empty;
+
         [Category(nameof(AutoCorrectShowdownCategory)), Description("Set a default Nickname. If none provided, it will just be blank."), DisplayName("Rename Invalid Nicknames to...")]
         public string FixedNickname
         {
@@ -149,6 +172,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         private bool _autoCorrectSpeciesAndForm = true;
+
         [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong species and form."), DisplayName("Auto Correct Species and Form")]
         public bool AutoCorrectSpeciesAndForm
         {
@@ -157,6 +181,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         private bool _autoCorrectHeldItem = true;
+
         [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong held item."), DisplayName("Auto Correct Held Item")]
         public bool AutoCorrectHeldItem
         {
@@ -165,6 +190,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         private bool _autoCorrectNature = true;
+
         [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong nature."), DisplayName("Auto Correct Nature")]
         public bool AutoCorrectNature
         {
@@ -173,6 +199,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         private bool _autoCorrectAbility = true;
+
         [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong ability."), DisplayName("Auto Correct Ability")]
         public bool AutoCorrectAbility
         {
@@ -181,6 +208,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         private bool _autoCorrectBall = true;
+
         [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong Ball Name."), DisplayName("Auto Correct Ball")]
         public bool AutoCorrectBall
         {
@@ -189,6 +217,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         private bool _autoCorrectLevel = true;
+
         [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong level."), DisplayName("Auto Correct Level")]
         public bool AutoCorrectLevel
         {
@@ -197,6 +226,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         private bool _autoCorrectGender = true;
+
         [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong gender."), DisplayName("Auto Correct Gender")]
         public bool AutoCorrectGender
         {
@@ -205,6 +235,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         private bool _autoCorrectMovesLearnset = true;
+
         [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong moves and learnset."), DisplayName("Auto Correct Moves/Learnset")]
         public bool AutoCorrectMovesLearnset
         {
@@ -213,6 +244,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         private bool _autoCorrectEVs = true;
+
         [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong EVs."), DisplayName("Auto Correct EVs")]
         public bool AutoCorrectEVs
         {
@@ -221,6 +253,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         private bool _autoCorrectIVs = true;
+
         [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong IVs."), DisplayName("Auto Correct IVs")]
         public bool AutoCorrectIVs
         {
@@ -229,6 +262,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         private bool _autoCorrectMarks = true;
+
         [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong Marks/Ribbons."), DisplayName("Auto Correct Marks/Ribbons")]
         public bool AutoCorrectMarks
         {
@@ -243,6 +277,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         public override string ToString() => "Trade Embed Configuration Settings";
 
         private bool _useEmbeds = true;
+
         [Category(EmbedSettings), Description("If true, will show beautiful embeds in your discord trade channels of what the user is trading. False will show default text."), DisplayName("Use Embeds")]
         public bool UseEmbeds
         {
@@ -409,7 +444,6 @@ public class TradeSettings : IBotStateSettings, ICountSettings
             {
                 // code.Add((pictocodes)Util.Rand.Next(10));
                 lgcode.Add(Pictocodes.Pikachu);
-
             }
         }
         else
@@ -417,13 +451,12 @@ public class TradeSettings : IBotStateSettings, ICountSettings
             for (int i = 0; i <= 2; i++)
             {
                 lgcode.Add((Pictocodes)Util.Rand.Next(10));
-                // code.Add(pictocodes.Pikachu);
 
+                // code.Add(pictocodes.Pikachu);
             }
         }
         return lgcode;
     }
-
 
     [Category(CountStats), TypeConverter(typeof(CategoryConverter<CountStatsSettingsCategory>))]
     public class CountStatsSettingsCategory
@@ -431,11 +464,17 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         public override string ToString() => "Trade Count Statistics";
 
         private int _completedSurprise;
+
         private int _completedDistribution;
+
         private int _completedTrades;
+
         private int _completedSeedChecks;
+
         private int _completedClones;
+
         private int _completedDumps;
+
         private int _completedFixOTs;
 
         [Category(CountStats), Description("Completed Surprise Trades")]
@@ -445,7 +484,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
             set => _completedSurprise = value;
         }
 
-        [Category(  ), Description("Completed Link Trades (Distribution)")]
+        [Category(), Description("Completed Link Trades (Distribution)")]
         public int CompletedDistribution
         {
             get => _completedDistribution;
@@ -492,11 +531,17 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         public bool EmitCountsOnStatusCheck { get; set; }
 
         public void AddCompletedTrade() => Interlocked.Increment(ref _completedTrades);
+
         public void AddCompletedSeedCheck() => Interlocked.Increment(ref _completedSeedChecks);
+
         public void AddCompletedSurprise() => Interlocked.Increment(ref _completedSurprise);
+
         public void AddCompletedDistribution() => Interlocked.Increment(ref _completedDistribution);
+
         public void AddCompletedDumps() => Interlocked.Increment(ref _completedDumps);
+
         public void AddCompletedClones() => Interlocked.Increment(ref _completedClones);
+
         public void AddCompletedFixOTs() => Interlocked.Increment(ref _completedFixOTs);
 
         public IEnumerable<string> GetNonZeroCounts()
@@ -544,6 +589,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     public enum ImageSize
     {
         Size256x256,
+
         Size128x128
     }
 
@@ -556,10 +602,14 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         public string EmojiCode { get; set; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public MoveTypeEmojiInfo() { }
+
+        public MoveTypeEmojiInfo()
+        { }
+
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
         public MoveTypeEmojiInfo(MoveType moveType)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
@@ -584,10 +634,14 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         public string EmojiCode { get; set; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public TeraTypeEmojiInfo() { }
+
+        public TeraTypeEmojiInfo()
+        { }
+
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
         public TeraTypeEmojiInfo(MoveType teraType)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {

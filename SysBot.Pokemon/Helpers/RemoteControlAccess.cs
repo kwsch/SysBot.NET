@@ -8,9 +8,11 @@ namespace SysBot.Pokemon;
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class RemoteControlAccess
 {
-    public ulong ID { get; set; }
-    public string Name { get; set; } = string.Empty;
     public string Comment { get; set; } = string.Empty;
+
+    public ulong ID { get; set; }
+
+    public string Name { get; set; } = string.Empty;
 
     public override string ToString() => $"{Name} = {ID} // {Comment}";
 }
@@ -19,12 +21,6 @@ public class RemoteControlAccess
 public class RemoteControlAccessList
 {
     /// <summary>
-    /// Don't mutate this list; use <see cref="AddIfNew"/> and <see cref="RemoveAll"/>.
-    /// This is public for serialization purposes.
-    /// </summary>
-    public List<RemoteControlAccess> List { get; set; } = [];
-
-    /// <summary>
     /// Allows Bot-Specific role lists to permit anyone to use the bot if there are no roles specified.
     /// </summary>
     /// <remarks>
@@ -32,18 +28,11 @@ public class RemoteControlAccessList
     /// </remarks>
     public bool AllowIfEmpty { get; set; } = true;
 
-    /// <summary> Checks if any item has the requested <see cref="id"/> property. </summary>
-    /// <returns>True if any item matches the <see cref="id"/></returns>
-    /// <remarks>Used for unique IDs such as Users or Channels</remarks>
-    public bool Contains(ulong id) => List.Any(z => z.ID == id);
-
-    /// <summary> Checks if any item has the requested <see cref="name"/> property. </summary>
-    /// <returns>True if any item matches the <see cref="name"/></returns>
-    /// <remarks>Used for checking Role Names</remarks>
-    public bool Contains(string name) => List.Any(z => z.Name == name);
-
-    public int RemoveAll(Predicate<RemoteControlAccess> item) => List.RemoveAll(item);
-    public void Clear() => List.Clear();
+    /// <summary>
+    /// Don't mutate this list; use <see cref="AddIfNew"/> and <see cref="RemoveAll"/>.
+    /// This is public for serialization purposes.
+    /// </summary>
+    public List<RemoteControlAccess> List { get; set; } = [];
 
     /// <summary>
     /// Adds new items if not already present by <see cref="RemoteControlAccess.ID"/>.
@@ -58,10 +47,29 @@ public class RemoteControlAccessList
         }
     }
 
+    public void Clear() => List.Clear();
+
+    /// <summary> Checks if any item has the requested <see cref="id"/> property. </summary>
+    /// <returns>True if any item matches the <see cref="id"/></returns>
+    /// <remarks>Used for unique IDs such as Users or Channels</remarks>
+    public bool Contains(ulong id) => List.Any(z => z.ID == id);
+
+    /// <summary> Checks if any item has the requested <see cref="name"/> property. </summary>
+    /// <returns>True if any item matches the <see cref="name"/></returns>
+    /// <remarks>Used for checking Role Names</remarks>
+    public bool Contains(string name) => List.Any(z => z.Name == name);
+
     /// <summary>
     /// Used with foreach iterating. You shouldn't be calling this manually.
     /// </summary>
     public IEnumerator<RemoteControlAccess> GetEnumerator() => List.GetEnumerator();
+
+    public int RemoveAll(Predicate<RemoteControlAccess> item) => List.RemoveAll(item);
+
+    /// <summary>
+    /// Gets an enumerable summary of the items in this object.
+    /// </summary>
+    public IEnumerable<string> Summarize() => List.Select(z => z.ToString());
 
     /// <summary>
     /// Used for summarizing this object in a PropertyGrid.
@@ -72,9 +80,4 @@ public class RemoteControlAccessList
             ? (AllowIfEmpty ? "Anyone allowed" : "None allowed (none specified).")
             : $"{List.Count} entries specified.";
     }
-
-    /// <summary>
-    /// Gets an enumerable summary of the items in this object.
-    /// </summary>
-    public IEnumerable<string> Summarize() => List.Select(z => z.ToString());
 }

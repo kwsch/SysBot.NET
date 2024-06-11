@@ -11,15 +11,21 @@ namespace SysBot.Pokemon.WinForms
     public class UpdateForm : Form
     {
         private Button buttonDownload;
+
         private Label labelUpdateInfo;
+
         private readonly Label labelChangelogTitle = new();
+
         private TextBox textBoxChangelog;
+
         private readonly bool isUpdateRequired;
+
         private readonly string newVersion;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
         public UpdateForm(bool updateRequired, string newVersion)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
@@ -34,6 +40,7 @@ namespace SysBot.Pokemon.WinForms
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
                 labelUpdateInfo.Text = "A required update is available. You must update to continue using this application.";
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
+
                 // Optionally, you can also disable the close button on the form if the update is required
                 ControlBox = false;
             }
@@ -51,14 +58,14 @@ namespace SysBot.Pokemon.WinForms
             labelUpdateInfo.AutoSize = true;
             labelUpdateInfo.Location = new Point(12, 20); // Adjust as needed
             labelUpdateInfo.Size = new Size(460, 60); // Adjust as needed
-            labelUpdateInfo.Text = $"A new version is available. Please download the latest version.";
+            labelUpdateInfo.Text = "A new version is available. Please download the latest version.";
 
             // buttonDownload
             buttonDownload.Size = new Size(130, 23); // Set the button size if not already set
             int buttonX = (ClientSize.Width - buttonDownload.Size.Width) / 2; // Calculate X position
             int buttonY = ClientSize.Height - buttonDownload.Size.Height - 20; // Calculate Y position, 20 pixels from the bottom
             buttonDownload.Location = new Point(buttonX, buttonY);
-            buttonDownload.Text = $"Download Update";
+            buttonDownload.Text = "Download Update";
             buttonDownload.Click += ButtonDownload_Click;
 
             // labelChangelogTitle

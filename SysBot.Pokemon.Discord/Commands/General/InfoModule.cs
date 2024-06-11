@@ -17,8 +17,11 @@ namespace SysBot.Pokemon.Discord;
 public class InfoModule : ModuleBase<SocketCommandContext>
 {
     private const string detail = "I am an open-source Discord bot powered by PKHeX.Core and other open-source software.";
-    private const string repo = "https://github.com/bdawg1989/MergeBot";
+
     private const ulong DisallowedUserId = 195756980873199618;
+
+    private const string repo = "https://github.com/bdawg1989/MergeBot";
+
     [Command("info")]
     [Alias("about", "whoami", "owner")]
     public async Task InfoAsync()
@@ -59,8 +62,9 @@ public class InfoModule : ModuleBase<SocketCommandContext>
         await ReplyAsync("Here's a bit about me!", embed: builder.Build()).ConfigureAwait(false);
     }
 
-    private static string GetUptime() => (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss");
     private static string GetHeapSize() => Math.Round(GC.GetTotalMemory(true) / (1024.0 * 1024.0), 2).ToString(CultureInfo.CurrentCulture);
+
+    private static string GetUptime() => (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss");
 
     private static string GetVersionInfo(string assemblyName, bool inclVersion = true)
     {

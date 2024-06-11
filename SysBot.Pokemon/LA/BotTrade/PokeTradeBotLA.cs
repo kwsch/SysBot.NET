@@ -17,18 +17,23 @@ namespace SysBot.Pokemon;
 public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRoutineExecutor8LA(Config), ICountBot, ITradeBot
 {
     private readonly TradeSettings TradeSettings = Hub.Config.Trade;
+
     private readonly TradeAbuseSettings AbuseSettings = Hub.Config.TradeAbuse;
+
     public event EventHandler<Exception>? ConnectionError;
+
     public event EventHandler? ConnectionSuccess;
 
     private void OnConnectionError(Exception ex)
     {
         ConnectionError?.Invoke(this, ex);
     }
+
     private void OnConnectionSuccess()
     {
         ConnectionSuccess?.Invoke(this, EventArgs.Empty);
     }
+
     public ICountSettings Counts => TradeSettings;
 
     /// <summary>
@@ -49,8 +54,11 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 
     // Cached offsets that stay the same per session.
     private ulong BoxStartOffset;
+
     private ulong SoftBanOffset;
+
     private ulong OverworldOffset;
+
     private ulong TradePartnerNIDOffset;
 
     // Cached offsets that stay the same per trade.
@@ -85,6 +93,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         UpdateBarrier(false);
         return CleanExit(CancellationToken.None);
     }
+
     public override async Task RebootAndStop(CancellationToken t)
     {
         await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
@@ -97,6 +106,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
             await MainLoop(t).ConfigureAwait(false);
         }
     }
+
     private async Task InnerLoop(SAV8LA sav, CancellationToken token)
     {
         while (!token.IsCancellationRequested)
@@ -212,6 +222,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 
         HandleAbortedTrade(detail, type, priority, result);
     }
+
     private void HandleAbortedTrade(PokeTradeDetail<PA8> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
     {
         detail.IsProcessing = false;
@@ -340,6 +351,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         }
 
         Log("Checking offered Pokémon.");
+
         // If we got to here, we can read their offered Pokémon.
 
         // Wait for user input... Needs to be different from the previously offered Pokémon.
@@ -382,6 +394,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 
         // Trade was Successful!
         var received = await ReadPokemon(BoxStartOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
+
         // Pokémon in b1s1 is same as the one they were supposed to receive (was never sent).
         if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend) && received.Checksum == toSend.Checksum)
         {
@@ -759,6 +772,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
             Log($"Left the Barrier. Count: {Hub.BotSync.Barrier.ParticipantCount}");
         }
     }
+
     private async Task<(PA8 toSend, PokeTradeResult check)> HandleFixOT(SAV8LA sav, PokeTradeDetail<PA8> poke, PA8 offered, PartnerDataHolder partner, CancellationToken token)
     {
         var adOT = AbstractTrade<PA8>.HasAdName(offered, out _);
@@ -862,12 +876,12 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         var tradela = new LegalityAnalysis(cln);
         if (tradela.Valid)
         {
-            Log($"Pokemon is valid, applying AutoOT.");
+            Log("Pokemon is valid, applying AutoOT.");
             await SetBoxPokemonAbsolute(BoxStartOffset, cln, token, sav).ConfigureAwait(false);
         }
         else
         {
-            Log($"Pokemon not valid, can't apply AutoOT.");
+            Log("Pokemon not valid, can't apply AutoOT.");
         }
 
         return tradela.Valid;

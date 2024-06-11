@@ -38,5 +38,5 @@ public sealed record TradeEntry<T> where T : PKM, new()
         return type == 0 || type == Type;
     }
 
-public override string ToString() => $"(ID {Trade.ID}) {Username} {UserID:D19} - {Type} - UniqueTradeID: {UniqueTradeID}";
+    public override string ToString() => $"(ID {Trade.ID}) {Username} {UserID:D19} - {Type} - UniqueTradeID: {UniqueTradeID}";
 }

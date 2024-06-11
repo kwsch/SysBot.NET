@@ -13,6 +13,11 @@ namespace SysBot.Base;
 /// </summary>
 public static class LogUtil
 {
+    // hook in here if you want to forward the message elsewhere???
+    public static readonly List<ILogForwarder> Forwarders = [];
+
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     static LogUtil()
     {
         if (!LogConfig.LoggingEnabled)
@@ -39,12 +44,6 @@ public static class LogUtil
         LogManager.Configuration = config;
     }
 
-    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    public static void LogText(string message) => Logger.Log(LogLevel.Info, message);
-
-    // hook in here if you want to forward the message elsewhere???
-    public static readonly List<ILogForwarder> Forwarders = [];
-
     public static DateTime LastLogged { get; private set; } = DateTime.Now;
 
     public static void LogError(string message, string identity)
@@ -58,6 +57,21 @@ public static class LogUtil
         Logger.Log(LogLevel.Info, $"{identity} {message}");
         Log(message, identity);
     }
+
+    public static void LogSafe(Exception exception, string identity)
+    {
+        Logger.Log(LogLevel.Error, $"Exception from {identity}:");
+        Logger.Log(LogLevel.Error, exception);
+
+        var err = exception.InnerException;
+        while (err is not null)
+        {
+            Logger.Log(LogLevel.Error, err);
+            err = err.InnerException;
+        }
+    }
+
+    public static void LogText(string message) => Logger.Log(LogLevel.Info, message);
 
     private static void Log(string message, string identity)
     {
@@ -75,18 +89,5 @@ public static class LogUtil
         }
 
         LastLogged = DateTime.Now;
-    }
-
-    public static void LogSafe(Exception exception, string identity)
-    {
-        Logger.Log(LogLevel.Error, $"Exception from {identity}:");
-        Logger.Log(LogLevel.Error, exception);
-
-        var err = exception.InnerException;
-        while (err is not null)
-        {
-            Logger.Log(LogLevel.Error, err);
-            err = err.InnerException;
-        }
     }
 }

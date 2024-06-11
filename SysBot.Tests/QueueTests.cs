@@ -13,6 +13,7 @@ public class QueueTests
 {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 #pragma warning disable IDE0044 // Add readonly modifier
+
     private static List<Pictocodes> lgcode;
 #pragma warning restore IDE0044 // Add readonly modifier
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
@@ -89,12 +90,18 @@ public class QueueTests
         where T : PKM, new()
     {
         public override Task MainLoop(CancellationToken token) => Task.CompletedTask;
-        public override void SoftStop() { }
+
+        public override void SoftStop()
+        { }
+
         public override Task HardStop() => Task.CompletedTask;
 
         public override Task<T> ReadPokemon(ulong offset, CancellationToken token) => Task.Run(() => new T(), token);
+
         public override Task<T> ReadPokemon(ulong offset, int size, CancellationToken token) => Task.Run(() => new T(), token);
+
         public override Task<T> ReadPokemonPointer(IEnumerable<long> jumps, int size, CancellationToken token) => Task.Run(() => new T(), token);
+
         public override Task<T> ReadBoxPokemon(int box, int slot, CancellationToken token) => Task.Run(() => new T(), token);
 
         public override Task RebootAndStop(CancellationToken token)

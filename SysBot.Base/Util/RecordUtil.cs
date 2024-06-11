@@ -1,4 +1,4 @@
-﻿using NLog;
+using NLog;
 using NLog.Config;
 using NLog.Targets;
 using System.IO;
@@ -7,6 +7,11 @@ namespace SysBot.Base;
 
 public static class RecordUtil<T>
 {
+    // ReSharper disable once StaticMemberInGenericType
+    private static readonly Logger Logger = new LogFactory { Configuration = GetConfig() }.GetCurrentClassLogger();
+
+    public static void Record(string message) => Logger.Log(LogLevel.Info, message);
+
     private static LoggingConfiguration GetConfig()
     {
         var config = new LoggingConfiguration();
@@ -27,8 +32,4 @@ public static class RecordUtil<T>
         config.AddRule(LogLevel.Debug, LogLevel.Fatal, record);
         return config;
     }
-
-    // ReSharper disable once StaticMemberInGenericType
-    private static readonly Logger Logger = new LogFactory { Configuration = GetConfig() }.GetCurrentClassLogger();
-    public static void Record(string message) => Logger.Log(LogLevel.Info, message);
 }

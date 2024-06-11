@@ -18,16 +18,20 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
     public static ISeedSearchHandler<PK8> SeedChecker { get; set; } = new NoSeedSearchHandler<PK8>();
 
     private readonly TradeSettings TradeSettings = hub.Config.Trade;
+
     private readonly PokeTradeHub<PK8> Hub = hub ?? throw new ArgumentNullException(nameof(hub));
+
     private readonly TradeAbuseSettings AbuseSettings = hub.Config.TradeAbuse;
 
     public event EventHandler<Exception>? ConnectionError;
+
     public event EventHandler? ConnectionSuccess;
 
     private void OnConnectionError(Exception ex)
     {
         ConnectionError?.Invoke(this, ex);
     }
+
     private void OnConnectionSuccess()
     {
         ConnectionSuccess?.Invoke(this, EventArgs.Empty);
@@ -83,6 +87,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
         UpdateBarrier(false);
         return CleanExit(CancellationToken.None);
     }
+
     public override async Task RebootAndStop(CancellationToken t)
     {
         await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
@@ -95,6 +100,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
             await MainLoop(t).ConfigureAwait(false);
         }
     }
+
     private async Task InnerLoop(SAV8SWSH sav, CancellationToken token)
     {
         while (!token.IsCancellationRequested)
@@ -211,6 +217,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
 
         HandleAbortedTrade(detail, type, priority, result);
     }
+
     private void HandleAbortedTrade(PokeTradeDetail<PK8> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
     {
         detail.IsProcessing = false;
@@ -422,6 +429,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
 
         // Trade was Successful!
         var received = await ReadBoxPokemon(0, 0, token).ConfigureAwait(false);
+
         // Pokémon in b1s1 is same as the one they were supposed to receive (was never sent).
         if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend) && received.Checksum == toSend.Checksum)
         {
@@ -550,6 +558,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
         if (!partnerFound)
         {
             poke.SendNotification(this, "**HEY CHANGE IT NOW OR I AM LEAVING!!!**");
+
             // They get one more chance.
             partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, oldEC, 15_000, 0_200, false, token).ConfigureAwait(false);
         }
@@ -739,6 +748,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
         }
 
         Log($"Selecting Pokémon: {pkm.FileName}");
+
         // Box 1 Slot 1; no movement required.
         await Click(A, 0_700, token).ConfigureAwait(false);
 
@@ -977,6 +987,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
         await Click(Y, 2_000, token).ConfigureAwait(false);
         for (int i = 0; i < 5; i++)
             await Click(A, 1_500, token).ConfigureAwait(false);
+
         // Extra A press for Japanese.
         if (GameLang == LanguageID.Japanese)
             await Click(A, 1_500, token).ConfigureAwait(false);
@@ -1029,6 +1040,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
         var data = await Connection.ReadBytesAsync(LinkTradePartnerNIDOffset, 8, token).ConfigureAwait(false);
         return BitConverter.ToUInt64(data, 0);
     }
+
     private async Task<(PK8 toSend, PokeTradeResult check)> HandleFixOT(SAV8SWSH sav, PokeTradeDetail<PK8> poke, PK8 offered, PartnerDataHolder partner, CancellationToken token)
     {
         if (Hub.Config.Discord.ReturnPKMs)
@@ -1156,12 +1168,12 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
         var tradeswsh = new LegalityAnalysis(cln);
         if (tradeswsh.Valid)
         {
-            Log($"Pokemon is valid with Trade Partner Info applied. Swapping details.");
+            Log("Pokemon is valid with Trade Partner Info applied. Swapping details.");
             await SetBoxPokemon(cln, 0, 0, token, sav).ConfigureAwait(false);
         }
         else
         {
-            Log($"Pokemon not valid after using Trade Partner Info.");
+            Log("Pokemon not valid after using Trade Partner Info.");
         }
 
         return tradeswsh.Valid;

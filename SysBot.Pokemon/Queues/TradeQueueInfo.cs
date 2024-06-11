@@ -234,7 +234,6 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
         {
             code.Add((Pictocodes)Util.Rand.Next(10));
             code.Add(Pictocodes.Pikachu);
-
         }
         return code;
     }

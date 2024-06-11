@@ -11,10 +11,17 @@ namespace SysBot.Base;
 /// </summary>
 public abstract class SwitchUSB : IConsoleConnection
 {
-    public string Name { get; }
-    public string Label { get; set; }
-    public bool Connected { get; protected set; }
+    private static readonly object _registry = new();
+
+    private readonly object _sync = new();
+
     private readonly int Port;
+
+    private UsbEndpointReader? reader;
+
+    private UsbDevice? SwDevice;
+
+    private UsbEndpointWriter? writer;
 
     protected SwitchUSB(int port)
     {
@@ -22,26 +29,17 @@ public abstract class SwitchUSB : IConsoleConnection
         Name = Label = $"USB-{port}";
     }
 
-    public void Log(string message) => LogInfo(message);
-    public void LogInfo(string message) => LogUtil.LogInfo(message, Label);
-    public void LogError(string message) => LogUtil.LogError(message, Label);
-
-    private UsbDevice? SwDevice;
-    private UsbEndpointReader? reader;
-    private UsbEndpointWriter? writer;
-
-    public int MaximumTransferSize { get; set; } = 0x1C0;
     public int BaseDelay { get; set; } = 1;
+
+    public bool Connected { get; protected set; }
+
     public int DelayFactor { get; set; } = 1000;
 
-    private readonly object _sync = new();
-    private static readonly object _registry = new();
+    public string Label { get; set; }
 
-    public void Reset()
-    {
-        Disconnect();
-        Connect();
-    }
+    public int MaximumTransferSize { get; set; } = 0x1C0;
+
+    public string Name { get; }
 
     public void Connect()
     {
@@ -73,29 +71,6 @@ public abstract class SwitchUSB : IConsoleConnection
         }
     }
 
-    private UsbDevice? TryFindUSB()
-    {
-        lock (_registry)
-        {
-            foreach (var device in UsbDevice.AllLibUsbDevices)
-            {
-                if (device is not UsbRegistry ur)
-                    continue;
-                if (ur.Vid != 0x057E)
-                    continue;
-                if (ur.Pid != 0x3000)
-                    continue;
-
-                ur.DeviceProperties.TryGetValue("Address", out var addr);
-                if (Port.ToString() != addr?.ToString())
-                    continue;
-
-                return ur.Device;
-            }
-        }
-        return null;
-    }
-
     public void Disconnect()
     {
         lock (_sync)
@@ -116,11 +91,11 @@ public abstract class SwitchUSB : IConsoleConnection
         }
     }
 
-    public int Send(byte[] buffer)
-    {
-        lock (_sync)
-            return SendInternal(buffer);
-    }
+    public void Log(string message) => LogInfo(message);
+
+    public void LogError(string message) => LogUtil.LogError(message, Label);
+
+    public void LogInfo(string message) => LogUtil.LogInfo(message, Label);
 
     public int Read(byte[] buffer)
     {
@@ -128,16 +103,60 @@ public abstract class SwitchUSB : IConsoleConnection
             return ReadInternal(buffer);
     }
 
+    public void Reset()
+    {
+        Disconnect();
+        Connect();
+    }
+
+    public int Send(byte[] buffer)
+    {
+        lock (_sync)
+            return SendInternal(buffer);
+    }
+
+    public void WriteSmall(ICommandBuilder b, ReadOnlySpan<byte> data, ulong offset)
+    {
+        lock (_sync)
+        {
+            var cmd = b.Poke(offset, data, false);
+            SendInternal(cmd);
+            Thread.Sleep(1);
+        }
+    }
+
+    protected byte[] PixelPeekUSB()
+    {
+        Thread.Sleep(1);
+        lock (_sync)
+        {
+            byte[] sizeOfReturn = new byte[4];
+            if (reader == null)
+                throw new Exception("USB device not found or not connected.");
+
+            reader.Read(sizeOfReturn, 5000, out _);
+            int size = BitConverter.ToInt32(sizeOfReturn, 0);
+            byte[] buffer = new byte[size];
+            int transfSize = 0;
+            while (transfSize < size)
+            {
+                Thread.Sleep(1);
+                var ec = reader.Read(buffer, transfSize, Math.Min(reader.ReadBufferSize, size - transfSize), 5000, out int lenVal);
+                if (ec != ErrorCode.None)
+                {
+                    LogError($"Error while getting screenshot: {UsbDevice.LastErrorString}");
+                    Disconnect();
+                    break;
+                }
+                transfSize += lenVal;
+            }
+            return buffer;
+        }
+    }
+
     protected byte[] Read(ICommandBuilder b, ulong offset, int length)
     {
         var cmd = b.Peek(offset, length, false);
-        SendInternal(cmd);
-        return ReadBulkUSB();
-    }
-
-    protected byte[] ReadMulti(ICommandBuilder b, IReadOnlyDictionary<ulong, int> offsetSizes)
-    {
-        var cmd = b.PeekMulti(offsetSizes, false);
         SendInternal(cmd);
         return ReadBulkUSB();
     }
@@ -176,22 +195,19 @@ public abstract class SwitchUSB : IConsoleConnection
         }
     }
 
+    protected byte[] ReadMulti(ICommandBuilder b, IReadOnlyDictionary<ulong, int> offsetSizes)
+    {
+        var cmd = b.PeekMulti(offsetSizes, false);
+        SendInternal(cmd);
+        return ReadBulkUSB();
+    }
+
     protected void Write(ICommandBuilder b, ReadOnlySpan<byte> data, ulong offset)
     {
         if (data.Length > MaximumTransferSize)
             WriteLarge(b, data, offset);
         else
             WriteSmall(b, data, offset);
-    }
-
-    public void WriteSmall(ICommandBuilder b, ReadOnlySpan<byte> data, ulong offset)
-    {
-        lock (_sync)
-        {
-            var cmd = b.Poke(offset, data, false);
-            SendInternal(cmd);
-            Thread.Sleep(1);
-        }
     }
 
     private int ReadInternal(byte[] buffer)
@@ -226,6 +242,29 @@ public abstract class SwitchUSB : IConsoleConnection
         return l;
     }
 
+    private UsbDevice? TryFindUSB()
+    {
+        lock (_registry)
+        {
+            foreach (var device in UsbDevice.AllLibUsbDevices)
+            {
+                if (device is not UsbRegistry ur)
+                    continue;
+                if (ur.Vid != 0x057E)
+                    continue;
+                if (ur.Pid != 0x3000)
+                    continue;
+
+                ur.DeviceProperties.TryGetValue("Address", out var addr);
+                if (Port.ToString() != addr?.ToString())
+                    continue;
+
+                return ur.Device;
+            }
+        }
+        return null;
+    }
+
     private void WriteLarge(ICommandBuilder b, ReadOnlySpan<byte> data, ulong offset)
     {
         while (data.Length != 0)
@@ -237,35 +276,6 @@ public abstract class SwitchUSB : IConsoleConnection
             data = data[length..];
             offset += (uint)length;
             Thread.Sleep((MaximumTransferSize / DelayFactor) + BaseDelay);
-        }
-    }
-
-    protected byte[] PixelPeekUSB()
-    {
-        Thread.Sleep(1);
-        lock (_sync)
-        {
-            byte[] sizeOfReturn = new byte[4];
-            if (reader == null)
-                throw new Exception("USB device not found or not connected.");
-
-            reader.Read(sizeOfReturn, 5000, out _);
-            int size = BitConverter.ToInt32(sizeOfReturn, 0);
-            byte[] buffer = new byte[size];
-            int transfSize = 0;
-            while (transfSize < size)
-            {
-                Thread.Sleep(1);
-                var ec = reader.Read(buffer, transfSize, Math.Min(reader.ReadBufferSize, size - transfSize), 5000, out int lenVal);
-                if (ec != ErrorCode.None)
-                {
-                    LogError($"Error while getting screenshot: {UsbDevice.LastErrorString}");
-                    Disconnect();
-                    break;
-                }
-                transfSize += lenVal;
-            }
-            return buffer;
         }
     }
 }

@@ -1,23 +1,10 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using System.Collections.Generic;
 
 namespace SysBot.Pokemon;
 
 public static class SeedSearchUtil
 {
-    public static uint GetShinyXor(uint val) => (val >> 16) ^ (val & 0xFFFF);
-
-    public static uint GetShinyType(uint pid, uint tidsid)
-    {
-        var p = GetShinyXor(pid);
-        var t = GetShinyXor(tidsid);
-        if (p == t)
-            return 2; // square;
-        if ((p ^ t) < 0x10)
-            return 1; // star
-        return 0;
-    }
-
     public static void GetShinyFrames(ulong seed, out int[] frames, out uint[] type, out List<uint[,]> IVs, SeedCheckResults mode)
     {
         int shinyindex = 0;
@@ -93,4 +80,17 @@ public static class SeedSearchUtil
             rng = origrng;
         }
     }
+
+    public static uint GetShinyType(uint pid, uint tidsid)
+    {
+        var p = GetShinyXor(pid);
+        var t = GetShinyXor(tidsid);
+        if (p == t)
+            return 2; // square;
+        if ((p ^ t) < 0x10)
+            return 1; // star
+        return 0;
+    }
+
+    public static uint GetShinyXor(uint val) => (val >> 16) ^ (val & 0xFFFF);
 }

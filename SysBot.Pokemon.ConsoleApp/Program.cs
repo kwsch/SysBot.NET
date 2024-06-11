@@ -12,6 +12,18 @@ public static class Program
 {
     private const string ConfigPath = "config.json";
 
+    private static void ExitNoConfig()
+    {
+        var bot = new PokeBotState { Connection = new SwitchConnectionConfig { IP = "192.168.0.1", Port = 6000 }, InitialRoutine = PokeRoutineType.FlexTrade };
+        var cfg = new ProgramConfig { Bots = [bot] };
+        var created = JsonSerializer.Serialize(cfg, ProgramConfigContext.Default.ProgramConfig);
+        File.WriteAllText(ConfigPath, created);
+        Console.WriteLine("Created new config file since none was found in the program's path. Please configure it and restart the program.");
+        Console.WriteLine("It is suggested to configure this config file using the GUI project if possible, as it will help you assign values correctly.");
+        Console.WriteLine("Press any key to exit.");
+        Console.ReadKey();
+    }
+
     private static void Main(string[] args)
     {
         Console.WriteLine("Starting up...");
@@ -36,18 +48,6 @@ public static class Program
             Console.WriteLine("Unable to start bots with saved config file. Please copy your config from the WinForms project or delete it and reconfigure.");
             Console.ReadKey();
         }
-    }
-
-    private static void ExitNoConfig()
-    {
-        var bot = new PokeBotState { Connection = new SwitchConnectionConfig { IP = "192.168.0.1", Port = 6000 }, InitialRoutine = PokeRoutineType.FlexTrade };
-        var cfg = new ProgramConfig { Bots = [bot] };
-        var created = JsonSerializer.Serialize(cfg, ProgramConfigContext.Default.ProgramConfig);
-        File.WriteAllText(ConfigPath, created);
-        Console.WriteLine("Created new config file since none was found in the program's path. Please configure it and restart the program.");
-        Console.WriteLine("It is suggested to configure this config file using the GUI project if possible, as it will help you assign values correctly.");
-        Console.WriteLine("Press any key to exit.");
-        Console.ReadKey();
     }
 }
 
@@ -74,16 +74,6 @@ public static class BotContainer
         Console.ReadKey();
         env.StopAll();
     }
-
-    private static IPokeBotRunner GetRunner(ProgramConfig prog) => prog.Mode switch
-    {
-        ProgramMode.SWSH => new PokeBotRunnerImpl<PK8>(prog.Hub, new BotFactory8SWSH()),
-        ProgramMode.BDSP => new PokeBotRunnerImpl<PB8>(prog.Hub, new BotFactory8BS()),
-        ProgramMode.LA => new PokeBotRunnerImpl<PA8>(prog.Hub, new BotFactory8LA()),
-        ProgramMode.SV => new PokeBotRunnerImpl<PK9>(prog.Hub, new BotFactory9SV()),
-        ProgramMode.LGPE => new PokeBotRunnerImpl<PB7>(prog.Hub, new BotFactory7LGPE()),
-        _ => throw new IndexOutOfRangeException("Unsupported mode."),
-    };
 
     private static bool AddBot(IPokeBotRunner env, PokeBotState cfg, ProgramMode mode)
     {
@@ -116,4 +106,14 @@ public static class BotContainer
         Console.WriteLine($"Added: {cfg}: {cfg.InitialRoutine}");
         return true;
     }
+
+    private static IPokeBotRunner GetRunner(ProgramConfig prog) => prog.Mode switch
+    {
+        ProgramMode.SWSH => new PokeBotRunnerImpl<PK8>(prog.Hub, new BotFactory8SWSH()),
+        ProgramMode.BDSP => new PokeBotRunnerImpl<PB8>(prog.Hub, new BotFactory8BS()),
+        ProgramMode.LA => new PokeBotRunnerImpl<PA8>(prog.Hub, new BotFactory8LA()),
+        ProgramMode.SV => new PokeBotRunnerImpl<PK9>(prog.Hub, new BotFactory9SV()),
+        ProgramMode.LGPE => new PokeBotRunnerImpl<PB7>(prog.Hub, new BotFactory7LGPE()),
+        _ => throw new IndexOutOfRangeException("Unsupported mode."),
+    };
 }

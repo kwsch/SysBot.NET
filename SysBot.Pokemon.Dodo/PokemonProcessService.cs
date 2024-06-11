@@ -1,5 +1,3 @@
-using System;
-using System.Net.Http;
 using DoDo.Open.Sdk.Models.Bots;
 using DoDo.Open.Sdk.Models.ChannelMessages;
 using DoDo.Open.Sdk.Models.Events;
@@ -8,18 +6,25 @@ using DoDo.Open.Sdk.Services;
 using PKHeX.Core;
 using SysBot.Base;
 using SysBot.Pokemon.Helpers;
+using System;
+using System.Net.Http;
 
 namespace SysBot.Pokemon.Dodo
 {
     public class PokemonProcessService<TP> : EventProcessService where TP : PKM, new()
     {
         private readonly OpenApiService _openApiService;
+
         private static readonly string LogIdentity = "DodoBot";
+
         private static readonly string Welcome = "at我并尝试对我说：\n皮卡丘\nps代码\n或者直接拖一个文件进来";
+
         private readonly string _channelId;
 #pragma warning disable IDE0044 // Add readonly modifier
+
         private DodoSettings _dodoSettings;
 #pragma warning restore IDE0044 // Add readonly modifier
+
         private string _botDodoSourceId = default!;
 
         public PokemonProcessService(OpenApiService openApiService, DodoSettings settings)
@@ -56,7 +61,7 @@ namespace SysBot.Pokemon.Dodo
 
             if (eventBody.MessageBody is MessageBodyText messageBodyText)
             {
-                DodoBot<TP>.SendPersonalMessage(eventBody.DodoSourceId, $"你好", eventBody.IslandSourceId);
+                DodoBot<TP>.SendPersonalMessage(eventBody.DodoSourceId, "你好", eventBody.IslandSourceId);
             }
         }
 
@@ -78,9 +83,9 @@ namespace SysBot.Pokemon.Dodo
                 var downloadBytes = client.GetByteArrayAsync(messageBodyFile.Url).Result;
                 var pkms = FileTradeHelper<TP>.Bin2List(downloadBytes);
                 ProcessWithdraw(eventBody.MessageId);
-                if (pkms.Count == 1) 
+                if (pkms.Count == 1)
                     new DodoTrade<TP>(ulong.Parse(eventBody.DodoSourceId), eventBody.Personal.NickName, eventBody.ChannelId, eventBody.IslandSourceId).StartTradePKM(pkms[0]);
-                else if (pkms.Count > 1 && pkms.Count <= FileTradeHelper<TP>.MaxCountInBin) 
+                else if (pkms.Count > 1 && pkms.Count <= FileTradeHelper<TP>.MaxCountInBin)
                     new DodoTrade<TP>(ulong.Parse(eventBody.DodoSourceId), eventBody.Personal.NickName, eventBody.ChannelId, eventBody.IslandSourceId).StartTradeMultiPKM(pkms);
                 else
                     DodoBot<TP>.SendChannelMessage("文件内容不正确", eventBody.ChannelId);
@@ -190,7 +195,7 @@ namespace SysBot.Pokemon.Dodo
             if (_dodoSettings.WithdrawTradeMessage)
             {
                 DodoBot<TP>.OpenApiService.SetChannelMessageWithdraw(new SetChannelMessageWithdrawInput() { MessageId = messageId }, true);
-            }  
+            }
         }
 
         public override void MessageReactionEvent(
@@ -198,6 +203,5 @@ namespace SysBot.Pokemon.Dodo
         {
             // Do nothing
         }
-
     }
 }

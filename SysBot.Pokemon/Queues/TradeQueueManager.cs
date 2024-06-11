@@ -6,16 +6,26 @@ namespace SysBot.Pokemon;
 
 public class TradeQueueManager<T> where T : PKM, new()
 {
+    public readonly PokeTradeQueue<T>[] AllQueues;
+
+    // hook in here if you want to forward the message elsewhere???
+    public readonly List<Action<PokeRoutineExecutorBase, PokeTradeDetail<T>>> Forwarders = [];
+
+    public readonly TradeQueueInfo<T> Info;
+
+    private readonly PokeTradeQueue<T> Batch = new(PokeTradeType.Batch);
+
+    private readonly PokeTradeQueue<T> Clone = new(PokeTradeType.Clone);
+
+    private readonly PokeTradeQueue<T> Dump = new(PokeTradeType.Dump);
+
+    private readonly PokeTradeQueue<T> FixOT = new(PokeTradeType.FixOT);
+
     private readonly PokeTradeHub<T> Hub;
 
-    private readonly PokeTradeQueue<T> Trade = new(PokeTradeType.Specific);
-    private readonly PokeTradeQueue<T> Batch = new(PokeTradeType.Batch);
     private readonly PokeTradeQueue<T> Seed = new(PokeTradeType.Seed);
-    private readonly PokeTradeQueue<T> Clone = new(PokeTradeType.Clone);
-    private readonly PokeTradeQueue<T> FixOT = new(PokeTradeType.FixOT);
-    private readonly PokeTradeQueue<T> Dump = new(PokeTradeType.Dump);
-    public readonly TradeQueueInfo<T> Info;
-    public readonly PokeTradeQueue<T>[] AllQueues;
+
+    private readonly PokeTradeQueue<T> Trade = new(PokeTradeType.Specific);
 
     public TradeQueueManager(PokeTradeHub<T> hub)
     {
@@ -25,6 +35,18 @@ public class TradeQueueManager<T> where T : PKM, new()
 
         foreach (var q in AllQueues)
             q.Queue.Settings = hub.Config.Favoritism;
+    }
+
+    public void ClearAll()
+    {
+        foreach (var q in AllQueues)
+            q.Clear();
+    }
+
+    public void Enqueue(PokeRoutineType type, PokeTradeDetail<T> detail, uint priority)
+    {
+        var queue = GetQueue(type);
+        queue.Enqueue(detail, priority);
     }
 
     public PokeTradeQueue<T> GetQueue(PokeRoutineType type) => type switch
@@ -37,10 +59,18 @@ public class TradeQueueManager<T> where T : PKM, new()
         _ => Trade,
     };
 
-    public void ClearAll()
+    public void StartTrade(PokeRoutineExecutorBase b, PokeTradeDetail<T> detail)
     {
-        foreach (var q in AllQueues)
-            q.Clear();
+        foreach (var f in Forwarders)
+            f.Invoke(b, detail);
+    }
+
+    public bool TryDequeue(PokeRoutineType type, out PokeTradeDetail<T> detail, out uint priority)
+    {
+        if (type == PokeRoutineType.FlexTrade)
+            return GetFlexDequeue(out detail, out priority);
+
+        return TryDequeueInternal(type, out detail, out priority);
     }
 
     public bool TryDequeueLedy(out PokeTradeDetail<T> detail, bool force = false)
@@ -62,23 +92,10 @@ public class TradeQueueManager<T> where T : PKM, new()
             lgcode = new List<Pictocodes> { Pictocodes.Pikachu, Pictocodes.Pikachu, Pictocodes.Pikachu };
         }
         var trainer = new PokeTradeTrainerInfo("Random Distribution");
+
         // Include lgcode in the creation of PokeTradeDetail
         detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random, code, false, lgcode);
         return true;
-    }
-
-    public bool TryDequeue(PokeRoutineType type, out PokeTradeDetail<T> detail, out uint priority)
-    {
-        if (type == PokeRoutineType.FlexTrade)
-            return GetFlexDequeue(out detail, out priority);
-
-        return TryDequeueInternal(type, out detail, out priority);
-    }
-
-    private bool TryDequeueInternal(PokeRoutineType type, out PokeTradeDetail<T> detail, out uint priority)
-    {
-        var queue = GetQueue(type);
-        return queue.TryDequeue(out detail, out priority);
     }
 
     private bool GetFlexDequeue(out PokeTradeDetail<T> detail, out uint priority)
@@ -87,6 +104,21 @@ public class TradeQueueManager<T> where T : PKM, new()
         if (cfg.FlexMode == FlexYieldMode.LessCheatyFirst)
             return GetFlexDequeueOld(out detail, out priority);
         return GetFlexDequeueWeighted(cfg, out detail, out priority);
+    }
+
+    private bool GetFlexDequeueOld(out PokeTradeDetail<T> detail, out uint priority)
+    {
+        if (TryDequeueInternal(PokeRoutineType.SeedCheck, out detail, out priority))
+            return true;
+        if (TryDequeueInternal(PokeRoutineType.Clone, out detail, out priority))
+            return true;
+        if (TryDequeueInternal(PokeRoutineType.Dump, out detail, out priority))
+            return true;
+        if (TryDequeueInternal(PokeRoutineType.FixOT, out detail, out priority))
+            return true;
+        if (TryDequeueInternal(PokeRoutineType.LinkTrade, out detail, out priority))
+            return true;
+        return false;
     }
 
     private bool GetFlexDequeueWeighted(QueueSettings cfg, out PokeTradeDetail<T> detail, out uint priority)
@@ -127,33 +159,9 @@ public class TradeQueueManager<T> where T : PKM, new()
         return preferredQueue.TryDequeue(out detail, out priority);
     }
 
-    private bool GetFlexDequeueOld(out PokeTradeDetail<T> detail, out uint priority)
-    {
-        if (TryDequeueInternal(PokeRoutineType.SeedCheck, out detail, out priority))
-            return true;
-        if (TryDequeueInternal(PokeRoutineType.Clone, out detail, out priority))
-            return true;
-        if (TryDequeueInternal(PokeRoutineType.Dump, out detail, out priority))
-            return true;
-        if (TryDequeueInternal(PokeRoutineType.FixOT, out detail, out priority))
-            return true;
-        if (TryDequeueInternal(PokeRoutineType.LinkTrade, out detail, out priority))
-            return true;
-        return false;
-    }
-
-    public void Enqueue(PokeRoutineType type, PokeTradeDetail<T> detail, uint priority)
+    private bool TryDequeueInternal(PokeRoutineType type, out PokeTradeDetail<T> detail, out uint priority)
     {
         var queue = GetQueue(type);
-        queue.Enqueue(detail, priority);
-    }
-
-    // hook in here if you want to forward the message elsewhere???
-    public readonly List<Action<PokeRoutineExecutorBase, PokeTradeDetail<T>>> Forwarders = [];
-
-    public void StartTrade(PokeRoutineExecutorBase b, PokeTradeDetail<T> detail)
-    {
-        foreach (var f in Forwarders)
-            f.Invoke(b, detail);
+        return queue.TryDequeue(out detail, out priority);
     }
 }

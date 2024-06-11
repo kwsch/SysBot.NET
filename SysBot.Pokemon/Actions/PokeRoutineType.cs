@@ -18,7 +18,7 @@ public enum PokeRoutineType
     LinkTrade = 3,
 
     /// <summary> Performs batch link trades. </summary>
-    Batch = 3, 
+    Batch = 3,
 
     /// <summary> Performs a seed check without transferring data from the bot. </summary>
     SeedCheck = 4,

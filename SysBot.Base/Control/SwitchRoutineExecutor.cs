@@ -6,9 +6,53 @@ using System.Threading.Tasks;
 
 namespace SysBot.Base
 {
+    public enum ControllerType
+    {
+        JoyRight1 = 1,   ///< Joy-Con right controller.
+
+        JoyLeft2 = 2,   ///< Joy-Con left controller.
+
+        ProController = 3,   ///< Pro Controller and Gc controller.
+
+        JoyLeft4 = 4,    ///< Joy-Con left controller.
+
+        JoyRight5 = 5,   ///< Joy-Con right controller.
+
+        ProController2 = 6,   ///< Pro Controller and GC Controller
+
+        FamicomLeft = 7,   ///< Famicom left controller.
+
+        FamicomRight = 8,    ///< Famicom right controller (with microphone).
+
+        NESLeft = 9,    ///< NES left controller.
+
+        NESRight = 10,   ///< NES right controller.
+
+        SNES = 11,   ///< SNES controller
+
+        PokeBallPlus = 12,  ///< Poké Ball Plus controller.
+
+        ProController3 = 13,  ///< Pro Controller and Gc controller.
+
+        ProController4 = 15,  ///< Pro Controller and Gc controller.
+
+        DebugPad = 17,  ///< DebugPad
+
+        System19 = 19,  ///< Generic controller.
+
+        System20 = 20,  ///< Generic controller.
+
+        System21 = 21,  ///< Generic controller.
+
+        N64 = 22,  ///< N64 controller
+
+        SegaGenesis = 28,   ///< Sega Genesis controller
+    }
+
     public abstract class SwitchRoutineExecutor<T> : RoutineExecutor<T> where T : class, IConsoleBotConfig
     {
         public readonly bool UseCRLF;
+
         protected readonly ISwitchConnectionAsync SwitchConnection;
 
         protected SwitchRoutineExecutor(IConsoleBotManaged<IConsoleConnection, IConsoleConnectionAsync> cfg) : base(cfg)
@@ -19,19 +63,9 @@ namespace SysBot.Base
             SwitchConnection = connect;
         }
 
-        public override async Task InitialStartup(CancellationToken token) => await EchoCommands(false, token).ConfigureAwait(false);
-
         public async Task Click(SwitchButton b, int delay, CancellationToken token)
         {
             await Connection.SendAsync(SwitchCommand.Click(b, UseCRLF), token).ConfigureAwait(false);
-            await Task.Delay(delay, token).ConfigureAwait(false);
-        }
-
-        public async Task PressAndHold(SwitchButton b, int hold, int delay, CancellationToken token)
-        {
-            await Connection.SendAsync(SwitchCommand.Hold(b, UseCRLF), token).ConfigureAwait(false);
-            await Task.Delay(hold, token).ConfigureAwait(false);
-            await Connection.SendAsync(SwitchCommand.Release(b, UseCRLF), token).ConfigureAwait(false);
             await Task.Delay(delay, token).ConfigureAwait(false);
         }
 
@@ -44,32 +78,25 @@ namespace SysBot.Base
             SwitchCommand.Configure(SwitchConfigureParameter.mainLoopSleepTime, 0, UseCRLF);
         }
 
-        public async Task SetStick(SwitchStick stick, short x, short y, int delay, CancellationToken token)
-        {
-            var cmd = SwitchCommand.SetStick(stick, x, y, UseCRLF);
-            await Connection.SendAsync(cmd, token).ConfigureAwait(false);
-            await Task.Delay(delay, token).ConfigureAwait(false);
-        }
-
         public async Task DetachController(CancellationToken token)
         {
             await Connection.SendAsync(SwitchCommand.DetachController(UseCRLF), token).ConfigureAwait(false);
-        }
-
-        public override async Task SetController(ControllerType ControllerType, CancellationToken token)
-        {
-            var cmd = SwitchCommand.Configure(SwitchConfigureParameter.controllerType, (int)ControllerType);
-            await Connection.SendAsync(cmd, token).ConfigureAwait(false);
-        }
-        public async Task SetScreen(ScreenState state, CancellationToken token)
-        {
-            await Connection.SendAsync(SwitchCommand.SetScreen(state, UseCRLF), token).ConfigureAwait(false);
         }
 
         public async Task EchoCommands(bool value, CancellationToken token)
         {
             var cmd = SwitchCommand.Configure(SwitchConfigureParameter.echoCommands, value ? 1 : 0, UseCRLF);
             await Connection.SendAsync(cmd, token).ConfigureAwait(false);
+        }
+
+        public override async Task InitialStartup(CancellationToken token) => await EchoCommands(false, token).ConfigureAwait(false);
+
+        public async Task PressAndHold(SwitchButton b, int hold, int delay, CancellationToken token)
+        {
+            await Connection.SendAsync(SwitchCommand.Hold(b, UseCRLF), token).ConfigureAwait(false);
+            await Task.Delay(hold, token).ConfigureAwait(false);
+            await Connection.SendAsync(SwitchCommand.Release(b, UseCRLF), token).ConfigureAwait(false);
+            await Task.Delay(delay, token).ConfigureAwait(false);
         }
 
         /// <inheritdoc cref="ReadUntilChanged(ulong,byte[],int,int,bool,bool,CancellationToken)"/>
@@ -97,28 +124,23 @@ namespace SysBot.Base
             } while (sw.ElapsedMilliseconds < waitms);
             return false;
         }
-    }
-    public enum ControllerType
-    {
-        JoyRight1 = 1,   ///< Joy-Con right controller.
-        JoyLeft2 = 2,   ///< Joy-Con left controller.
-        ProController = 3,   ///< Pro Controller and Gc controller.
-        JoyLeft4 = 4,    ///< Joy-Con left controller.
-        JoyRight5 = 5,   ///< Joy-Con right controller.
-        ProController2 = 6,   ///< Pro Controller and GC Controller
-        FamicomLeft = 7,   ///< Famicom left controller.
-        FamicomRight = 8,    ///< Famicom right controller (with microphone).
-        NESLeft = 9,    ///< NES left controller.
-        NESRight = 10,   ///< NES right controller.
-        SNES = 11,   ///< SNES controller
-        PokeBallPlus = 12,  ///< Poké Ball Plus controller.
-        ProController3 = 13,  ///< Pro Controller and Gc controller.
-        ProController4 = 15,  ///< Pro Controller and Gc controller.
-        DebugPad = 17,  ///< DebugPad
-        System19 = 19,  ///< Generic controller.
-        System20 = 20,  ///< Generic controller.
-        System21 = 21,  ///< Generic controller.
-        N64 = 22,  ///< N64 controller
-        SegaGenesis = 28,   ///< Sega Genesis controller
+
+        public override async Task SetController(ControllerType ControllerType, CancellationToken token)
+        {
+            var cmd = SwitchCommand.Configure(SwitchConfigureParameter.controllerType, (int)ControllerType);
+            await Connection.SendAsync(cmd, token).ConfigureAwait(false);
+        }
+
+        public async Task SetScreen(ScreenState state, CancellationToken token)
+        {
+            await Connection.SendAsync(SwitchCommand.SetScreen(state, UseCRLF), token).ConfigureAwait(false);
+        }
+
+        public async Task SetStick(SwitchStick stick, short x, short y, int delay, CancellationToken token)
+        {
+            var cmd = SwitchCommand.SetStick(stick, x, y, UseCRLF);
+            await Connection.SendAsync(cmd, token).ConfigureAwait(false);
+            await Task.Delay(delay, token).ConfigureAwait(false);
+        }
     }
 }

@@ -9,21 +9,6 @@ namespace SysBot.Pokemon.Discord;
 [Summary("Distribution Pool Module")]
 public class PoolModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
 {
-    [Command("poolReload")]
-    [Summary("Reloads the bot pool from the setting's folder.")]
-    [RequireSudo]
-    public async Task ReloadPoolAsync()
-    {
-        var me = SysCord<T>.Runner;
-        var hub = me.Hub;
-
-        var pool = hub.Ledy.Pool.Reload(hub.Config.Folder.DistributeFolder);
-        if (!pool)
-            await ReplyAsync("Failed to reload from folder.").ConfigureAwait(false);
-        else
-            await ReplyAsync($"Reloaded from folder. Pool count: {hub.Ledy.Pool.Count}").ConfigureAwait(false);
-    }
-
     [Command("pool")]
     [Summary("Displays the details of Pokémon files in the random pool.")]
     public async Task DisplayPoolCountAsync()
@@ -50,5 +35,20 @@ public class PoolModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
         {
             await ReplyAsync($"Pool Count: {count}").ConfigureAwait(false);
         }
+    }
+
+    [Command("poolReload")]
+    [Summary("Reloads the bot pool from the setting's folder.")]
+    [RequireSudo]
+    public async Task ReloadPoolAsync()
+    {
+        var me = SysCord<T>.Runner;
+        var hub = me.Hub;
+
+        var pool = hub.Ledy.Pool.Reload(hub.Config.Folder.DistributeFolder);
+        if (!pool)
+            await ReplyAsync("Failed to reload from folder.").ConfigureAwait(false);
+        else
+            await ReplyAsync($"Reloaded from folder. Pool count: {hub.Ledy.Pool.Count}").ConfigureAwait(false);
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 
 namespace SysBot.Pokemon.WinForms;
@@ -6,6 +6,17 @@ namespace SysBot.Pokemon.WinForms;
 public static class WinFormsUtil
 {
     #region Message Displays
+
+    internal static DialogResult Alert(params string[] lines) => Alert(true, lines);
+
+    internal static DialogResult Alert(bool sound, params string[] lines)
+    {
+        if (sound)
+            System.Media.SystemSounds.Asterisk.Play();
+        string msg = string.Join(Environment.NewLine + Environment.NewLine, lines);
+        return MessageBox.Show(msg, "Alert", MessageBoxButtons.OK, sound ? MessageBoxIcon.Information : MessageBoxIcon.None);
+    }
+
     /// <summary>
     /// Displays a dialog showing the details of an error.
     /// </summary>
@@ -18,23 +29,14 @@ public static class WinFormsUtil
         return MessageBox.Show(msg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
 
-    internal static DialogResult Alert(params string[] lines) => Alert(true, lines);
-
-    internal static DialogResult Alert(bool sound, params string[] lines)
-    {
-        if (sound)
-            System.Media.SystemSounds.Asterisk.Play();
-        string msg = string.Join(Environment.NewLine + Environment.NewLine, lines);
-        return MessageBox.Show(msg, "Alert", MessageBoxButtons.OK, sound ? MessageBoxIcon.Information : MessageBoxIcon.None);
-    }
-
     internal static DialogResult Prompt(MessageBoxButtons btn, params string[] lines)
     {
         System.Media.SystemSounds.Asterisk.Play();
         string msg = string.Join(Environment.NewLine + Environment.NewLine, lines);
         return MessageBox.Show(msg, "Prompt", btn, MessageBoxIcon.Question);
     }
-    #endregion
+
+    #endregion Message Displays
 
     /// <summary>
     /// Gets the selected value of the input <see cref="cb"/>. If no value is selected, will return 0.

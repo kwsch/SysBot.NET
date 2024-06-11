@@ -13,6 +13,17 @@ namespace SysBot.Pokemon.QQ
     {
         public bool? IsEnable { get; set; } = true;
 
+        public static string GetQueueCheckResultMessage(QueueCheckResult<T> result)
+        {
+            if (!result.InQueue || result.Detail is null)
+                return "你不在队列里";
+            var msg = $"你在第{result.Position}位";
+            var pk = result.Detail.Trade.TradeData;
+            if (pk.Species != 0)
+                msg += $"，交换宝可梦：{ShowdownTranslator<T>.GameStringsZh.Species[result.Detail.Trade.TradeData.Species]}";
+            return msg;
+        }
+
         public void Execute(MessageReceiverBase @base)
         {
             var receiver = @base.Concretize<GroupMessageReceiver>();
@@ -44,17 +55,6 @@ namespace SysBot.Pokemon.QQ
                     MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At(receiver.Sender.Id).Plain("You are not currently in the queue.").Build());
                 }
             }
-        }
-
-        public static string GetQueueCheckResultMessage(QueueCheckResult<T> result)
-        {
-            if (!result.InQueue || result.Detail is null)
-                return "你不在队列里";
-            var msg = $"你在第{result.Position}位";
-            var pk = result.Detail.Trade.TradeData;
-            if (pk.Species != 0)
-                msg += $"，交换宝可梦：{ShowdownTranslator<T>.GameStringsZh.Species[result.Detail.Trade.TradeData.Species]}";
-            return msg;
         }
 
         private static string GetClearTradeMessage(QueueResultRemove result)

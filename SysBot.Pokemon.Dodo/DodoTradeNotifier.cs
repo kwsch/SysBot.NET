@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.Collections.Generic;
@@ -9,14 +9,6 @@ namespace SysBot.Pokemon.Dodo
 {
     public class DodoTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new()
     {
-        private T Data { get; }
-        private PokeTradeTrainerInfo Info { get; }
-        private int Code { get; }
-        private string Username { get; }
-
-        private string ChannelId { get; }
-        private string IslandSourceId { get; }
-
         public DodoTradeNotifier(T data, PokeTradeTrainerInfo info, int code, string username, string channelId,
             string islandSourceId)
         {
@@ -30,6 +22,18 @@ namespace SysBot.Pokemon.Dodo
         }
 
         public Action<PokeRoutineExecutor<T>>? OnFinish { private get; set; }
+
+        private string ChannelId { get; }
+
+        private int Code { get; }
+
+        private T Data { get; }
+
+        private PokeTradeTrainerInfo Info { get; }
+
+        private string IslandSourceId { get; }
+
+        private string Username { get; }
 
         public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, string message)
         {
@@ -46,6 +50,26 @@ namespace SysBot.Pokemon.Dodo
             else if (message.StartsWith("批量"))
             {
                 DodoBot<T>.SendChannelMessage(message, ChannelId);
+            }
+        }
+
+        public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeSummary message)
+        {
+            var msg = message.Summary;
+            if (message.Details.Count > 0)
+                msg += ", " + string.Join(", ", message.Details.Select(z => $"{z.Heading}: {z.Detail}"));
+            LogUtil.LogText(msg);
+        }
+
+        public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result, string message)
+        {
+            var msg = $"Details for {result.FileName}: " + message;
+            LogUtil.LogText(msg);
+            if (result.Species != 0 && info.Type == PokeTradeType.Dump)
+            {
+                var text =
+                    $"species:{result.Species}\npid:{result.PID}\nec:{result.EncryptionConstant}\nIVs:{string.Join(",", result.IVs)}\nisShiny:{result.IsShiny}";
+                DodoBot<T>.SendChannelMessage(text, ChannelId);
             }
         }
 
@@ -67,7 +91,7 @@ namespace SysBot.Pokemon.Dodo
             OnFinish?.Invoke(routine);
             var tradedToUser = Data.Species;
             var message = $"@{info.Trainer.TrainerName}: " + (tradedToUser != 0
-                ? $"Trade finished. Enjoy your {(Species) tradedToUser}!"
+                ? $"Trade finished. Enjoy your {(Species)tradedToUser}!"
                 : "Trade finished!");
             LogUtil.LogText(message);
             DodoBot<T>.SendChannelAtMessage(info.Trainer.ID, "完成", ChannelId);
@@ -111,27 +135,8 @@ namespace SysBot.Pokemon.Dodo
                 text = $"批量派送{batchPKMs.Count}只宝可梦\n密码:见私信\n状态:搜索中";
             }
             DodoBot<T>.SendChannelMessage(text, ChannelId);
+
             //DodoBot<T>.SendPersonalMessage(info.Trainer.ID.ToString(), $"{info.Code:0000 0000}", IslandSourceId);
-        }
-
-        public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeSummary message)
-        {
-            var msg = message.Summary;
-            if (message.Details.Count > 0)
-                msg += ", " + string.Join(", ", message.Details.Select(z => $"{z.Heading}: {z.Detail}"));
-            LogUtil.LogText(msg);
-        }
-
-        public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result, string message)
-        {
-            var msg = $"Details for {result.FileName}: " + message;
-            LogUtil.LogText(msg);
-            if (result.Species != 0 && info.Type == PokeTradeType.Dump)
-            {
-                var text =
-                    $"species:{result.Species}\npid:{result.PID}\nec:{result.EncryptionConstant}\nIVs:{string.Join(",", result.IVs)}\nisShiny:{result.IsShiny}";
-                DodoBot<T>.SendChannelMessage(text, ChannelId);
-            }
         }
     }
 }

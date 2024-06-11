@@ -1,13 +1,13 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
+using SysBot.Pokemon.Bilibili;
 using SysBot.Pokemon.Discord;
+using SysBot.Pokemon.Dodo;
+using SysBot.Pokemon.QQ;
 using SysBot.Pokemon.Twitch;
 using SysBot.Pokemon.WinForms;
 using SysBot.Pokemon.YouTube;
 using System.Threading;
 using System.Threading.Tasks;
-using SysBot.Pokemon.Bilibili;
-using SysBot.Pokemon.Dodo;
-using SysBot.Pokemon.QQ;
 
 namespace SysBot.Pokemon;
 
@@ -16,14 +16,23 @@ namespace SysBot.Pokemon;
 /// </summary>
 public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
 {
-    public PokeBotRunnerImpl(PokeTradeHub<T> hub, BotFactory<T> fac) : base(hub, fac) { }
-    public PokeBotRunnerImpl(PokeTradeHubConfig config, BotFactory<T> fac) : base(config, fac) { }
+    private BilibiliLiveBot<T>? Bilibili;
+
+    private DodoBot<T>? Dodo;
+
+    private MiraiQQBot<T>? QQ;
 
     private TwitchBot<T>? Twitch;
+
     private YouTubeBot<T>? YouTube;
-    private MiraiQQBot<T>? QQ;
-    private BilibiliLiveBot<T>? Bilibili;
-    private DodoBot<T>? Dodo;
+
+    public PokeBotRunnerImpl(PokeTradeHub<T> hub, BotFactory<T> fac) : base(hub, fac)
+    {
+    }
+
+    public PokeBotRunnerImpl(PokeTradeHubConfig config, BotFactory<T> fac) : base(config, fac)
+    {
+    }
 
     protected override void AddIntegrations()
     {
@@ -33,6 +42,38 @@ public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
         AddQQBot(Hub.Config.QQ);
         AddBilibiliBot(Hub.Config.Bilibili);
         AddDodoBot(Hub.Config.Dodo);
+    }
+
+    private void AddBilibiliBot(BilibiliSettings config)
+    {
+        if (string.IsNullOrWhiteSpace(config.LogUrl) || config.RoomId == 0) return;
+        if (Bilibili != null) return;
+        Bilibili = new BilibiliLiveBot<T>(config, Hub);
+    }
+
+    private void AddDiscordBot(string apiToken)
+    {
+        if (string.IsNullOrWhiteSpace(apiToken))
+            return;
+        var bot = new SysCord<T>(this);
+        Task.Run(() => bot.MainAsync(apiToken, CancellationToken.None));
+    }
+
+    private void AddDodoBot(DodoSettings config)
+    {
+        if (string.IsNullOrWhiteSpace(config.BaseApi) || string.IsNullOrWhiteSpace(config.ClientId) || string.IsNullOrWhiteSpace(config.Token)) return;
+        if (Dodo != null) return;
+        Dodo = new DodoBot<T>(config, Hub);
+    }
+
+    private void AddQQBot(QQSettings config)
+    {
+        if (string.IsNullOrWhiteSpace(config.VerifyKey) || string.IsNullOrWhiteSpace(config.Address)) return;
+        if (string.IsNullOrWhiteSpace(config.QQ) || string.IsNullOrWhiteSpace(config.GroupId)) return;
+        if (QQ != null) return;
+
+        //add qq bot
+        QQ = new MiraiQQBot<T>(config, Hub);
     }
 
     private void AddTwitchBot(TwitchSettings config)
@@ -71,36 +112,5 @@ public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
 
         YouTube = new YouTubeBot<T>(Hub.Config.YouTube, Hub);
         Hub.BotSync.BarrierReleasingActions.Add(() => YouTube.StartingDistribution(config.MessageStart));
-    }
-
-    private void AddDiscordBot(string apiToken)
-    {
-        if (string.IsNullOrWhiteSpace(apiToken))
-            return;
-        var bot = new SysCord<T>(this);
-        Task.Run(() => bot.MainAsync(apiToken, CancellationToken.None));
-    }
-
-    private void AddQQBot(QQSettings config)
-    {
-        if (string.IsNullOrWhiteSpace(config.VerifyKey) || string.IsNullOrWhiteSpace(config.Address)) return;
-        if (string.IsNullOrWhiteSpace(config.QQ) || string.IsNullOrWhiteSpace(config.GroupId)) return;
-        if (QQ != null) return;
-        //add qq bot
-        QQ = new MiraiQQBot<T>(config, Hub);
-    }
-
-    private void AddBilibiliBot(BilibiliSettings config)
-    {
-        if (string.IsNullOrWhiteSpace(config.LogUrl) || config.RoomId == 0) return;
-        if (Bilibili != null) return;
-        Bilibili = new BilibiliLiveBot<T>(config, Hub);
-    }
-
-    private void AddDodoBot(DodoSettings config)
-    {
-        if (string.IsNullOrWhiteSpace(config.BaseApi) || string.IsNullOrWhiteSpace(config.ClientId) || string.IsNullOrWhiteSpace(config.Token)) return;
-        if (Dodo != null) return;
-        Dodo = new DodoBot<T>(config, Hub);
     }
 }

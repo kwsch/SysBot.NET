@@ -78,7 +78,6 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var userID = Context.User.Id;
         var code = Info.GetRandomTradeCode(userID);
         return CloneAsync(code);
-
     }
 
     [Command("cloneList")]

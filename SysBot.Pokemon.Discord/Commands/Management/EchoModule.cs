@@ -35,24 +35,33 @@ namespace SysBot.Pokemon.Discord
     public class EchoModule : ModuleBase<SocketCommandContext>
     {
         private static DiscordSettings? Settings { get; set; }
+
         private class EchoChannel(ulong channelId, string channelName, Action<string> action, Action<byte[], string, EmbedBuilder> raidAction)
         {
             public readonly ulong ChannelID = channelId;
+
             public readonly string ChannelName = channelName;
+
             public readonly Action<string> Action = action;
+
             public readonly Action<byte[], string, EmbedBuilder> RaidAction = raidAction;
+
             public string EmbedResult = string.Empty;
         }
 
         private class EncounterEchoChannel(ulong channelId, string channelName, Action<string, Embed> embedaction)
         {
             public readonly ulong ChannelID = channelId;
+
             public readonly string ChannelName = channelName;
+
             public readonly Action<string, Embed> EmbedAction = embedaction;
+
             public string EmbedResult = string.Empty;
         }
 
         private static readonly Dictionary<ulong, EchoChannel> Channels = [];
+
         private static readonly Dictionary<ulong, EncounterEchoChannel> EncounterChannels = [];
 
         public static void RestoreChannels(DiscordSocketClient discord, DiscordSettings cfg)
@@ -63,6 +72,7 @@ namespace SysBot.Pokemon.Discord
                 if (discord.GetChannel(ch.ID) is ISocketMessageChannel c)
                     AddEchoChannel(c, ch.ID);
             }
+
             // EchoUtil.Echo("Added echo notification to Discord channel(s) on Bot startup.");
         }
 
@@ -222,7 +232,7 @@ namespace SysBot.Pokemon.Discord
                     {
                         await c.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                     }
-                    return true; 
+                    return true;
                 }
                 catch (Exception ex)
                 {
