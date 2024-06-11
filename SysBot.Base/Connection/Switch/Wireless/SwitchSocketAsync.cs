@@ -105,7 +105,7 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
     public async Task<byte[]> PixelPeek(CancellationToken token)
     {
         await SendAsync(SwitchCommand.PixelPeek(), token).ConfigureAwait(false);
-        await Task.Delay(Connection.ReceiveBufferSize / DelayFactor + BaseDelay, token).ConfigureAwait(false);
+        await Task.Delay((Connection.ReceiveBufferSize / DelayFactor) + BaseDelay, token).ConfigureAwait(false);
         var data = await FlexRead(token).ConfigureAwait(false);
 
         try
@@ -221,7 +221,7 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
                 return Array.Empty<byte>();
             }
 
-            await Task.Delay(MaximumTransferSize / DelayFactor + BaseDelay, token).ConfigureAwait(false);
+            await Task.Delay((MaximumTransferSize / DelayFactor) + BaseDelay, token).ConfigureAwait(false);
             available = Connection.Available;
         } while (flexBuffer.Count == 0 || flexBuffer.Last() != (byte)'\n');
 

@@ -1148,6 +1148,11 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
 
     private async Task<bool> ApplyAutoOT(PK8 toSend, string trainerName, SAV8SWSH sav, CancellationToken token)
     {
+        if (toSend is IHomeTrack pk && pk.HasTracker)
+        {
+            Log("Home tracker detected.  Can't apply AutoOT.");
+            return false;
+        }
         var data = await Connection.ReadBytesAsync(LinkTradePartnerNameOffset - 0x8, 8, token).ConfigureAwait(false);
         var tidsid = BitConverter.ToUInt32(data, 0);
         var cln = toSend.Clone();
@@ -1189,12 +1194,12 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
         {
             char value = trainerName[i];
             trash[i * 2] = (byte)value;
-            trash[i * 2 + 1] = (byte)(value >> 8);
+            trash[(i * 2) + 1] = (byte)(value >> 8);
         }
         if (actualLength < maxLength)
         {
             trash[actualLength * 2] = 0x00;
-            trash[actualLength * 2 + 1] = 0x00;
+            trash[(actualLength * 2) + 1] = 0x00;
         }
     }
 }

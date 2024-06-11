@@ -138,12 +138,12 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         {
             char value = trainerName[i];
             trash[i * 2] = (byte)value;
-            trash[i * 2 + 1] = (byte)(value >> 8);
+            trash[(i * 2) + 1] = (byte)(value >> 8);
         }
         if (actualLength < maxLength)
         {
             trash[actualLength * 2] = 0x00;
-            trash[actualLength * 2 + 1] = 0x00;
+            trash[(actualLength * 2) + 1] = 0x00;
         }
     }
 
@@ -155,6 +155,11 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
 
     private async Task<bool> ApplyAutoOT(PB8 toSend, PB8 offered, SAV8BS sav, string tradePartner, CancellationToken token)
     {
+        if (toSend is IHomeTrack pk && pk.HasTracker)
+        {
+            Log("Home tracker detected.  Can't apply AutoOT.");
+            return false;
+        }
         var cln = toSend.Clone();
         cln.OriginalTrainerGender = offered.OriginalTrainerGender;
         cln.TrainerTID7 = offered.TrainerTID7;

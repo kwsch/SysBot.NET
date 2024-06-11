@@ -50,7 +50,7 @@ namespace SysBot.Pokemon.Helpers
                 if (tp != null && tp.Species > 0 && tp.Valid && tp is T pkm) return new List<T>() { pkm };
             }
             int size = pkmSizeInBin[typeof(T)];
-            int times = bb.Length % size == 0 ? (bb.Length / size) : (bb.Length / size + 1);
+            int times = bb.Length % size == 0 ? (bb.Length / size) : ((bb.Length / size) + 1);
             List<T> pkmBytes = new();
             for (var i = 0; i < times; i++)
             {

@@ -168,7 +168,7 @@ namespace SysBot.Pokemon
 
                 sst = SpecialTradeType.StatChange;
             }
-            else if ((pk.HeldItem >= 1862 && pk.HeldItem <= 1879 || pk.HeldItem == 2549) && pk is PK9 pk9) // Change TeraType
+            else if (((pk.HeldItem >= 1862 && pk.HeldItem <= 1879) || pk.HeldItem == 2549) && pk is PK9 pk9) // Change TeraType
             {
                 MoveType teraTypeOverride = MoveType.Normal;
 

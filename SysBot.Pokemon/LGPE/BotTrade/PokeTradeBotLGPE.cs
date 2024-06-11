@@ -787,12 +787,12 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
         {
             char value = name[i];
             trash[i * 2] = (byte)value;
-            trash[i * 2 + 1] = (byte)(value >> 8);
+            trash[(i * 2) + 1] = (byte)(value >> 8);
         }
         if (actualLength < maxLength)
         {
             trash[actualLength * 2] = 0x00;
-            trash[actualLength * 2 + 1] = 0x00;
+            trash[(actualLength * 2) + 1] = 0x00;
         }
     }
 }

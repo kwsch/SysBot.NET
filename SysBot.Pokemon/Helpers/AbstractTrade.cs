@@ -669,7 +669,7 @@ namespace SysBot.Pokemon.Helpers
         {
             long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             int randomValue = new Random().Next(1000);
-            int uniqueTradeID = (int)(timestamp % int.MaxValue) * 1000 + randomValue;
+            int uniqueTradeID = ((int)(timestamp % int.MaxValue) * 1000) + randomValue;
             return uniqueTradeID;
         }
 

@@ -86,7 +86,7 @@ namespace SysBot.Pokemon.Twitch
 
         public void TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
         {
-            var receive = Data.Species == 0 ? string.Empty : Data.IsEgg || Data.Species == 132 && Data.IsNicknamed ? $" ({Data.Species} ({Data.Nickname}))" : $" ({Data.Nickname})";
+            var receive = Data.Species == 0 ? string.Empty : Data.IsEgg || (Data.Species == 132 && Data.IsNicknamed) ? $" ({Data.Species} ({Data.Nickname}))" : $" ({Data.Nickname})";
             var msg = $"@{info.Trainer.TrainerName} (ID: {info.ID}): Initializing trade{receive} with you. Please be ready. Use the code you whispered me to search!";
             var dest = Settings.TradeStartDestination;
             if (dest == TwitchMessageDestination.Whisper)

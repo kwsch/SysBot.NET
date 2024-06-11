@@ -186,12 +186,12 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         {
             char value = name[i];
             trash[i * 2] = (byte)value;
-            trash[i * 2 + 1] = (byte)(value >> 8);
+            trash[(i * 2) + 1] = (byte)(value >> 8);
         }
         if (actualLength < maxLength)
         {
             trash[actualLength * 2] = 0x00;
-            trash[actualLength * 2 + 1] = 0x00;
+            trash[(actualLength * 2) + 1] = 0x00;
         }
     }
 
@@ -210,34 +210,53 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
 
     private async Task<bool> ApplyAutoOT(PK9 toSend, TradeMyStatus tradePartner, SAV9SV sav, CancellationToken token)
     {
-        var save = SaveUtil.GetBlankSAV((GameVersion)tradePartner.Game, tradePartner.OT, (LanguageID)tradePartner.Language);
-        var tradePartnerSV = new TradePartnerSV(tradePartner);
-        save.SetDisplayID(uint.Parse(tradePartnerSV.TID7), uint.Parse(tradePartnerSV.SID7));
+        if (toSend is IHomeTrack pk && pk.HasTracker)
+        {
+            Log("Home tracker detected.  Can't apply AutoOT.");
+            return false;
+        }
+        if (toSend.Species == (ushort)Species.Ditto)
+        {
+            Log("Do nothing to trade Pokemon, since pokemon is Ditto");
+            return false;
+        }
         var cln = toSend.Clone();
-        cln.OriginalTrainerName = tradePartner.OT;
-        ClearOTTrash(cln, tradePartner);  // If Generated OT is longer than partner OT, expect Trash.
-        cln.DisplayTID = save.DisplayTID;
-        cln.DisplaySID = save.DisplaySID;
         cln.OriginalTrainerGender = (byte)tradePartner.Gender;
+        cln.TrainerTID7 = (uint)Math.Abs(tradePartner.DisplayTID);
+        cln.TrainerSID7 = (uint)Math.Abs(tradePartner.DisplaySID);
         cln.Language = tradePartner.Language;
-        if (toSend.IsShiny)
-            cln.SetShiny();
+        cln.OriginalTrainerName = tradePartner.OT;
+        ClearOTTrash(cln, tradePartner);
+
         if (!toSend.IsNicknamed)
             cln.ClearNickname();
+
+        if (toSend.MetLocation == Locations.TeraCavern9 && toSend.IsShiny)
+        {
+            cln.PID = ShinyUtil.GetShinyPID(cln.TID16, cln.SID16, cln.PID, 1u);
+        }
+        else if (toSend.IsShiny)
+        {
+            uint id32 = (uint)((cln.TID16) | (cln.SID16 << 16));
+            uint pid = cln.PID;
+            ShinyUtil.ForceShinyState(true, ref pid, id32, 1u);
+            cln.PID = pid;
+        }
+
         cln.RefreshChecksum();
+
         var tradeSV = new LegalityAnalysis(cln);
         if (tradeSV.Valid)
         {
-            Log("Pokemon is valid with Trade Partner Info applied. Swapping details.");
+            Log("Pokemon is valid, using trade partner info (AutoOT).");
             await SetBoxPokemonAbsolute(BoxStartOffset, cln, token, sav).ConfigureAwait(false);
-            return true;
         }
         else
         {
-            Log("Pokemon not valid after using Trade Partner Info.");
-            Log(tradeSV.Report());
-            return false;
+            Log("Trade Pokemon can't have AutoOT applied.");
         }
+
+        return tradeSV.Valid;
     }
 
     private async Task<PokeTradeResult> ConfirmAndStartTrading(PokeTradeDetail<PK9> detail, CancellationToken token)
