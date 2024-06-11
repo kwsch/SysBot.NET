@@ -111,7 +111,7 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
         await ReplyAsync($"{b.Connection.Name} has performed: {button}").ConfigureAwait(false);
     }
 
-    private string GetRunningBotIP()
+    private static string GetRunningBotIP()
     {
         var r = SysCord<T>.Runner;
         var runningBot = r.Bots.Find(x => x.IsRunning);
@@ -130,7 +130,7 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
 
     private async Task SetScreen(bool on)
     {
-        string ip = GetRunningBotIP();
+        string ip = RemoteControlModule<T>.GetRunningBotIP();
         var bot = GetBot(ip);
         if (bot == null)
         {

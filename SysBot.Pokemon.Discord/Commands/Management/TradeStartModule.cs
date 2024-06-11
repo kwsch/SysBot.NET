@@ -244,7 +244,7 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
         {
             using var httpClient = new HttpClient();
             using var response = await httpClient.GetAsync(imagePath);
-            using var stream = await response.Content.ReadAsStreamAsync();
+            await using var stream = await response.Content.ReadAsStreamAsync();
 #pragma warning disable CA1416 // Validate platform compatibility
             return new Bitmap(stream);
 #pragma warning restore CA1416 // Validate platform compatibility

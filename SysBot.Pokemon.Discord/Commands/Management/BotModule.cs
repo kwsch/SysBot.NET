@@ -40,13 +40,7 @@ namespace SysBot.Pokemon.Discord
 
                 // Access the IP address from the first bot in the Bots array
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 var ip = config["Bots"][0]["Connection"]["IP"].ToString();
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
                 return ip;
             }

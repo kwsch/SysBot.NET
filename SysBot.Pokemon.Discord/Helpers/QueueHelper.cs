@@ -240,9 +240,7 @@ public static class QueueHelper<T> where T : PKM, new()
 
         // Save the image to the specified path
 #pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
         image.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
-#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
 
         return filePath;
@@ -294,13 +292,7 @@ public static class QueueHelper<T> where T : PKM, new()
                 using (var graphics = Graphics.FromImage(localImage))
                 {
 #pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
                     var ballPosition = new Point(localImage.Width - ballImage.Width, localImage.Height - ballImage.Height);
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
                     graphics.DrawImage(ballImage, ballPosition);
@@ -354,13 +346,7 @@ public static class QueueHelper<T> where T : PKM, new()
                 using (var graphics = Graphics.FromImage(speciesImage))
                 {
 #pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
                     var ballPosition = new Point(speciesImage.Width - ballImage.Width, speciesImage.Height - ballImage.Height);
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
                     graphics.DrawImage(ballImage, ballPosition);
@@ -384,22 +370,12 @@ public static class QueueHelper<T> where T : PKM, new()
         System.Drawing.Image speciesImage = await LoadImageFromUrl(speciesImageUrl);
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
         double scaleRatio = Math.Min((double)eggImage.Width / speciesImage.Width, (double)eggImage.Height / speciesImage.Height);
 #pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
         Size newSize = new Size((int)(speciesImage.Width * scaleRatio), (int)(speciesImage.Height * scaleRatio));
-#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
         System.Drawing.Image resizedSpeciesImage = new Bitmap(speciesImage, newSize);
@@ -409,23 +385,15 @@ public static class QueueHelper<T> where T : PKM, new()
         {
             // Calculate the position to center the species image on the egg image
 #pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
             int speciesX = (eggImage.Width - resizedSpeciesImage.Width) / 2;
 #pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
             int speciesY = (eggImage.Height - resizedSpeciesImage.Height) / 2;
-#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
 
             // Draw the resized and centered species image over the egg image
 #pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
             g.DrawImage(resizedSpeciesImage, speciesX, speciesY, resizedSpeciesImage.Width, resizedSpeciesImage.Height);
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
         }
 #pragma warning restore CA1416 // Validate platform compatibility
@@ -440,9 +408,7 @@ public static class QueueHelper<T> where T : PKM, new()
 
         // Calculate scale factor for resizing while maintaining aspect ratio
 #pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
         double scale = Math.Min(128.0 / eggImage.Width, 128.0 / eggImage.Height);
-#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
 
         // Calculate new dimensions
@@ -639,7 +605,7 @@ public static class QueueHelper<T> where T : PKM, new()
         {
             using var httpClient = new HttpClient();
             using var response = await httpClient.GetAsync(imagePath);
-            using var stream = await response.Content.ReadAsStreamAsync();
+            await using var stream = await response.Content.ReadAsStreamAsync();
 #pragma warning disable CA1416 // Validate platform compatibility
             return new Bitmap(stream);
 #pragma warning restore CA1416 // Validate platform compatibility
@@ -712,49 +678,29 @@ public static class QueueHelper<T> where T : PKM, new()
 #pragma warning restore CA1416 // Validate platform compatibility
 
 #pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
             destImage.SetResolution(png.HorizontalResolution, png.VerticalResolution);
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
 
 #pragma warning disable CA1416 // Validate platform compatibility
             using (var graphics = Graphics.FromImage(destImage))
             {
 #pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
                 graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
 #pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
                 graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
 #pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
                 graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 #pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
                 graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
 #pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
                 graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
 #pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
                 graphics.DrawImage(png, destRect, 0, 0, png.Width, png.Height, GraphicsUnit.Pixel);
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
             }
 #pragma warning restore CA1416 // Validate platform compatibility
@@ -765,85 +711,31 @@ public static class QueueHelper<T> where T : PKM, new()
             codecount++;
         }
 #pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
         int outputImageWidth = spritearray[0].Width + 20;
 #pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
 
-#pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
         int outputImageHeight = spritearray[0].Height - 65;
 #pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
 
 #pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
         Bitmap outputImage = new Bitmap(outputImageWidth, outputImageHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
 
 #pragma warning disable CA1416 // Validate platform compatibility
         using (Graphics graphics = Graphics.FromImage(outputImage))
         {
 #pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
             graphics.DrawImage(spritearray[0], new Rectangle(0, 0, spritearray[0].Width, spritearray[0].Height),
                 new Rectangle(new Point(), spritearray[0].Size), GraphicsUnit.Pixel);
 #pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
             graphics.DrawImage(spritearray[1], new Rectangle(50, 0, spritearray[1].Width, spritearray[1].Height),
                 new Rectangle(new Point(), spritearray[1].Size), GraphicsUnit.Pixel);
 #pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
             graphics.DrawImage(spritearray[2], new Rectangle(100, 0, spritearray[2].Width, spritearray[2].Height),
                 new Rectangle(new Point(), spritearray[2].Size), GraphicsUnit.Pixel);
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
         }
 #pragma warning restore CA1416 // Validate platform compatibility

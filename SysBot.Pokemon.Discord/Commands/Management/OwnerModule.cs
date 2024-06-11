@@ -263,7 +263,7 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
             return;
         }
 
-        using MemoryStream ms = new(bytes);
+        await using MemoryStream ms = new(bytes);
         var img = "cap.jpg";
         var embed = new EmbedBuilder { ImageUrl = $"attachment://{img}", Color = (DiscordColor?)Color.Purple }
             .WithFooter(new EmbedFooterBuilder { Text = "Here's your screenshot." });
@@ -320,19 +320,13 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
                         return;
                     }
 
-                    using (var ms = new MemoryStream(bytes))
+                    await using (var ms = new MemoryStream(bytes))
                     {
 #pragma warning disable CA1416 // Validate platform compatibility
                         using var bitmap = new Bitmap(ms);
 #pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
                         var frame = bitmap.Clone(new Rectangle(0, 0, bitmap.Width, bitmap.Height), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
                         gifFrames.Add(frame);
@@ -342,7 +336,7 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
                     await Task.Delay(screenshotInterval).ConfigureAwait(false);
                 }
 
-                using (var ms = new MemoryStream())
+                await using (var ms = new MemoryStream())
                 {
                     using (var gif = new AnimatedGifCreator(ms, 200))
                     {
@@ -388,13 +382,7 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
             var config = JObject.Parse(jsonData);
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
             var ip = config["Bots"][0]["Connection"]["IP"].ToString();
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
             return ip;
         }

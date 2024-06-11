@@ -19,7 +19,7 @@ namespace SysBot.Pokemon.Discord
     {
         // Uses VGCPastes Repository Spreadsheet in which they keep track of all current teams
         // https://twitter.com/VGCPastes
-        private async Task<string> DownloadSpreadsheetAsCsv()
+        private static async Task<string> DownloadSpreadsheetAsCsv()
         {
             var GID = SysCord<T>.Runner.Config.Trade.VGCPastesConfiguration.GID;
             var csvUrl = $"https://docs.google.com/spreadsheets/d/1axlwmzPA49rYkqXh7zHvAtSP-TKbM0ijGYBPRflLSWw/export?format=csv&gid={GID}";
@@ -32,7 +32,7 @@ namespace SysBot.Pokemon.Discord
 
         private async Task<List<List<string>>> FetchSpreadsheetData()
         {
-            var csvData = await DownloadSpreadsheetAsCsv();
+            var csvData = await VGCPastes<T>.DownloadSpreadsheetAsCsv();
             var rows = csvData.Split('\n');
             var data = rows.Select(row => row.Split(',').Select(cell => cell.Trim('"')).ToList()).ToList();
             return data;
@@ -77,7 +77,7 @@ namespace SysBot.Pokemon.Discord
             return pokePasteData;
         }
 
-        private (string PokePasteUrl, List<string> RowData) SelectRandomPokePasteUrl(List<List<string>> data, string? pokemonName = null)
+        private static (string PokePasteUrl, List<string> RowData) SelectRandomPokePasteUrl(List<List<string>> data, string? pokemonName = null)
         {
             var filteredData = data.Where(row => row.Count > 40 && Uri.IsWellFormedUriString(row[24]?.Trim('"'), UriKind.Absolute));
 
@@ -122,7 +122,7 @@ namespace SysBot.Pokemon.Discord
                 var spreadsheetData = await FetchSpreadsheetData();
 
                 // Use the adjusted method to select a random PokePaste URL (and row data) based on the Pokémon name
-                var (PokePasteUrl, selectedRow) = SelectRandomPokePasteUrl(spreadsheetData, pokemonName);
+                var (PokePasteUrl, selectedRow) = VGCPastes<T>.SelectRandomPokePasteUrl(spreadsheetData, pokemonName);
                 if (PokePasteUrl == null)
                 {
                     await ReplyAsync("Failed to find a valid PokePaste URL with the specified Pokémon.");
@@ -155,7 +155,7 @@ namespace SysBot.Pokemon.Discord
 #pragma warning disable CS8604 // Possible null reference argument.
                 var sanitizedTeamDescription = SanitizeFileName(teamDescription);
 #pragma warning restore CS8604 // Possible null reference argument.
-                using var memoryStream = new MemoryStream();
+                await using var memoryStream = new MemoryStream();
                 using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
                 {
                     foreach (var set in showdownSets)
@@ -179,7 +179,7 @@ namespace SysBot.Pokemon.Discord
                             var speciesName = GameInfo.GetStrings("en").Species[set.Species];
                             var fileName = namer.GetName(pk);
                             var entry = archive.CreateEntry($"{fileName}.{pk.Extension}");
-                            using var entryStream = entry.Open();
+                            await using var entryStream = entry.Open();
                             await entryStream.WriteAsync(pk.Data.AsMemory(0, pk.Data.Length));
 
                             string speciesImageUrl = AbstractTrade<PK9>.PokeImg(pk, false, false);
@@ -210,12 +210,10 @@ namespace SysBot.Pokemon.Discord
 #pragma warning disable CA1416 // Validate platform compatibility
                 combinedImage.Save("spreadsheetteam.png");
 #pragma warning restore CA1416 // Validate platform compatibility
-                using (var imageStream = new MemoryStream())
+                await using (var imageStream = new MemoryStream())
                 {
 #pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
                     combinedImage.Save(imageStream, System.Drawing.Imaging.ImageFormat.Png);
-#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
                     imageStream.Position = 0;
 
@@ -288,14 +286,10 @@ namespace SysBot.Pokemon.Discord
         private static System.Drawing.Image CombineImages(List<System.Drawing.Image> images)
         {
 #pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
             int width = images.Sum(img => img.Width);
 #pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
             int height = images.Max(img => img.Height);
-#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
 
 #pragma warning disable CA1416 // Validate platform compatibility

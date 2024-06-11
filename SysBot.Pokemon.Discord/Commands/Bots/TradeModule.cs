@@ -773,7 +773,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         }
 
         var zipBytes = await new HttpClient().GetByteArrayAsync(attachment.Url);
-        using var zipStream = new MemoryStream(zipBytes);
+        await using var zipStream = new MemoryStream(zipBytes);
         using var archive = new ZipArchive(zipStream, ZipArchiveMode.Read);
         var entries = archive.Entries.ToList();
 
@@ -791,7 +791,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
         foreach (var entry in entries)
         {
-            using var entryStream = entry.Open();
+            await using var entryStream = entry.Open();
             var pkBytes = await TradeModule<T>.ReadAllBytesAsync(entryStream).ConfigureAwait(false);
             var pk = EntityFormat.GetFromBytes(pkBytes);
 
@@ -809,7 +809,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     private static async Task<byte[]> ReadAllBytesAsync(Stream stream)
     {
-        using var memoryStream = new MemoryStream();
+        await using var memoryStream = new MemoryStream();
         await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
         return memoryStream.ToArray();
     }

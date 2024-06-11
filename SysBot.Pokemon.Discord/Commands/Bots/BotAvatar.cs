@@ -38,7 +38,7 @@ namespace SysBot.Pokemon.Discord
             using var httpClient = new HttpClient();
             var imageBytes = await httpClient.GetByteArrayAsync(attachment.Url);
 
-            using var ms = new MemoryStream(imageBytes);
+            await using var ms = new MemoryStream(imageBytes);
             var image = new Image(ms);
             await Context.Client.CurrentUser.ModifyAsync(user => user.Avatar = image);
 
