@@ -735,6 +735,13 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
 
     private Task<PB7?> ApplyAutoOT(PB7 toSend, ulong trainerID)
     {
+        var isMyg = MysteryGift.IsMysteryGift(toSend.Data.Length) && toSend.Extension != ".pb7";
+        if (isMyg)
+        {
+            Log("Trade is a Mystery Gift. Skipping AutoOT.");
+            return Task.FromResult<PB7?>(null);
+        }
+
         var tradeCodeStorage = new TradeCodeStorage();
         var tradeDetails = tradeCodeStorage.GetTradeDetails(trainerID);
         if (tradeDetails != null)

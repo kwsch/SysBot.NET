@@ -862,6 +862,12 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
             Log("Home tracker detected.  Can't apply AutoOT.");
             return false;
         }
+        var isMyg = MysteryGift.IsMysteryGift(toSend.Data.Length) && toSend.Extension != ".pb7";
+        if (isMyg)
+        {
+            Log("Trade is a Mystery Gift.  Skipping AutoOT.");
+            return false;
+        }
         var cln = toSend.Clone();
         cln.OriginalTrainerGender = tradePartner.Gender;
         cln.TrainerTID7 = uint.Parse(tradePartner.TID7);

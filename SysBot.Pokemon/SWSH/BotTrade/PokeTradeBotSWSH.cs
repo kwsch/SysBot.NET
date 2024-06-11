@@ -1153,6 +1153,12 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
             Log("Home tracker detected.  Can't apply AutoOT.");
             return false;
         }
+        var isMyg = MysteryGift.IsMysteryGift(toSend.Data.Length) && toSend.Extension != ".pb7";
+        if (isMyg)
+        {
+            Log("Trade is a Mystery Gift.  Skipping AutoOT.");
+            return false;
+        }
         var data = await Connection.ReadBytesAsync(LinkTradePartnerNameOffset - 0x8, 8, token).ConfigureAwait(false);
         var tidsid = BitConverter.ToUInt32(data, 0);
         var cln = toSend.Clone();
