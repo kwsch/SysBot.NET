@@ -11,13 +11,6 @@ namespace SysBot.Tests;
 
 public class QueueTests
 {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-#pragma warning disable IDE0044 // Add readonly modifier
-
-    private static List<Pictocodes> lgcode;
-#pragma warning restore IDE0044 // Add readonly modifier
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
     [Fact]
     public void TestEnqueuePK8() => EnqueueTest<PK8>();
 

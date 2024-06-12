@@ -23,6 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="PKHeX.Core">
+      <HintPath>..\SysBot.Pokemon\deps\PKHeX.Core.dll</HintPath>
+    </Reference>
     <Reference Include="StreamingClient.Base">
       <HintPath>deps\StreamingClient.Base.dll</HintPath>
     </Reference>
