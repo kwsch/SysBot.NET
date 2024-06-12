@@ -376,7 +376,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
 
         if (hub.Config.Legality.UseTradePartnerInfo && !poke.IgnoreAutoOT)
         {
-            await ApplyAutoOT(toSend, trainerName, sav, token);
+            toSend = await ApplyAutoOT(toSend, trainerName, sav, token);
         }
 
         // Confirm Box 1 Slot 1
@@ -1144,19 +1144,19 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
         return (clone, PokeTradeResult.Success);
     }
 
-    private async Task<bool> ApplyAutoOT(PK8 toSend, string trainerName, SAV8SWSH sav, CancellationToken token)
+    private async Task<PK8> ApplyAutoOT(PK8 toSend, string trainerName, SAV8SWSH sav, CancellationToken token)
     {
         if (toSend is IHomeTrack pk && pk.HasTracker)
         {
             Log("Home tracker detected.  Can't apply AutoOT.");
-            return false;
+            return toSend;
         }
 
         // Current handler cannot be past gen OT
         if (toSend.Generation != toSend.Format)
         {
             Log("Can not apply Partner details: Current handler cannot be different gen OT.");
-            return false;
+            return toSend;
         }
         var data = await Connection.ReadBytesAsync(LinkTradePartnerNameOffset - 0x8, 8, token).ConfigureAwait(false);
         var tidsid = BitConverter.ToUInt32(data, 0);
@@ -1181,13 +1181,13 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
         {
             Log("Pokemon is valid with Trade Partner Info applied. Swapping details.");
             await SetBoxPokemon(cln, 0, 0, token, sav).ConfigureAwait(false);
+            return cln;
         }
         else
         {
             Log("Pokemon not valid after using Trade Partner Info.");
+            return toSend;
         }
-
-        return tradeswsh.Valid;
     }
 
     private static void ClearOTTrash(PK8 pokemon, string trainerName)

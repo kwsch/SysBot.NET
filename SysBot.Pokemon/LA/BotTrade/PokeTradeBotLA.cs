@@ -373,7 +373,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 
         if (Hub.Config.Legality.UseTradePartnerInfo && !poke.IgnoreAutoOT)
         {
-            await ApplyAutoOT(toSend, tradePartner, sav, token);
+           toSend = await ApplyAutoOT(toSend, tradePartner, sav, token);
         }
 
         Log("Confirming trade.");
@@ -855,19 +855,19 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 
     // based on https://github.com/Muchacho13Scripts/SysBot.NET/commit/f7879386f33bcdbd95c7a56e7add897273867106
     // and https://github.com/berichan/SysBot.PLA/commit/84042d4716007dc6ff3100ad4be4a483d622ccf8
-    private async Task<bool> ApplyAutoOT(PA8 toSend, TradePartnerLA tradePartner, SAV8LA sav, CancellationToken token)
+    private async Task<PA8> ApplyAutoOT(PA8 toSend, TradePartnerLA tradePartner, SAV8LA sav, CancellationToken token)
     {
         if (toSend is IHomeTrack pk && pk.HasTracker)
         {
             Log("Home tracker detected.  Can't apply AutoOT.");
-            return false;
+            return toSend;
         }
 
         // Current handler cannot be past gen OT
         if (toSend.Generation != toSend.Format)
         {
             Log("Can not apply Partner details: Current handler cannot be different gen OT.");
-            return false;
+            return toSend;
         }
         var cln = toSend.Clone();
         cln.OriginalTrainerGender = tradePartner.Gender;
@@ -891,13 +891,13 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         {
             Log("Pokemon is valid, applying AutoOT.");
             await SetBoxPokemonAbsolute(BoxStartOffset, cln, token, sav).ConfigureAwait(false);
+            return cln;
         }
         else
         {
             Log("Pokemon not valid, can't apply AutoOT.");
+            return toSend;
         }
-
-        return tradela.Valid;
     }
 
     private static void ClearOTTrash(PA8 pokemon, string trainerName)
