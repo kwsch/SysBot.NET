@@ -210,12 +210,21 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
 
     private async Task<bool> ApplyAutoOT(PK9 toSend, TradeMyStatus tradePartner, SAV9SV sav, CancellationToken token)
     {
+        // Home Tracker Check
         if (toSend is IHomeTrack pk && pk.HasTracker)
         {
             Log("Home tracker detected.  Can't apply AutoOT.");
             return false;
         }
 
+        // Don't apply to Ditto
+        if (toSend.Species == (ushort)Species.Ditto)
+        {
+            Log("Do nothing to trade Pokemon, since pokemon is Ditto");
+            return false;
+        }
+
+        // Mystery Gifts
         if (toSend is IFatefulEncounterReadOnly fe && fe.FatefulEncounter &&
             (toSend.TID16 != 0 || toSend.SID16 != 0) &&
             (toSend.TID16 != 12345 || toSend.SID16 != 54321))
@@ -224,6 +233,12 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             return false;
         }
 
+        // Current handler cannot be past gen OT
+        if (toSend.Generation != toSend.Format)
+        {
+            Log("Can not apply Partner details: Current handler cannot be different gen OT.");
+            return false;
+        }
         var cln = toSend.Clone();
         cln.OriginalTrainerGender = (byte)tradePartner.Gender;
         cln.TrainerTID7 = (uint)Math.Abs(tradePartner.DisplayTID);
@@ -232,22 +247,38 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         cln.OriginalTrainerName = tradePartner.OT;
         ClearOTTrash(cln, tradePartner);
 
+        ushort species = toSend.Species;
+        GameVersion version;
+        switch (species)
+        {
+            case (ushort)Species.Koraidon:
+            case (ushort)Species.GougingFire:
+            case (ushort)Species.RagingBolt:
+                version = GameVersion.SL;
+                Log("Scarlet version exclusive Pokémon, changing the version to Scarlet.");
+                break;
+
+            case (ushort)Species.Miraidon:
+            case (ushort)Species.IronCrown:
+            case (ushort)Species.IronBoulder:
+                version = GameVersion.VL;
+                Log("Violet version exclusive Pokémon, changing the version to Violet.");
+                break;
+
+            default:
+                version = (GameVersion)tradePartner.Game;
+                break;
+        }
+        cln.Version = version;
+
         if (!toSend.IsNicknamed)
             cln.ClearNickname();
 
-        if (toSend.MetLocation == Locations.TeraCavern9 && toSend.IsShiny)
-        {
-            cln.PID = ShinyUtil.GetShinyPID(cln.TID16, cln.SID16, cln.PID, 1u);
-        }
-        else if (toSend.IsShiny)
-        {
-            uint id32 = (uint)((cln.TID16) | (cln.SID16 << 16));
-            uint pid = cln.PID;
-            ShinyUtil.ForceShinyState(true, ref pid, id32, 1u);
-            cln.PID = pid;
-        }
+        if (toSend.IsShiny)
+            cln.PID = (uint)((cln.TID16 ^ cln.SID16 ^ (cln.PID & 0xFFFF) ^ toSend.ShinyXor) << 16) | (cln.PID & 0xFFFF);
 
-        cln.RefreshChecksum();
+        if (!toSend.ChecksumValid)
+            cln.RefreshChecksum();
 
         var tradeSV = new LegalityAnalysis(cln);
         if (tradeSV.Valid)

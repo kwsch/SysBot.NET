@@ -197,8 +197,7 @@ public sealed class SysCord<T> where T : PKM, new()
         var assembly = Assembly.GetExecutingAssembly();
 
         await _commands.AddModulesAsync(assembly, _services).ConfigureAwait(false);
-        var genericTypes = assembly.DefinedTypes.Where(z => z.IsSubclassOf(typeof(ModuleBase<SocketCommandContext>)) && z.IsGenericType);
-        foreach (var t in genericTypes)
+        foreach (var t in assembly.DefinedTypes.Where(z => z.IsSubclassOf(typeof(ModuleBase<SocketCommandContext>)) && z.IsGenericType))
         {
             var genModule = t.MakeGenericType(typeof(T));
             await _commands.AddModuleAsync(genModule, _services).ConfigureAwait(false);

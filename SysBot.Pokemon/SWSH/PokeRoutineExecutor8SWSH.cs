@@ -331,8 +331,7 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
     protected virtual async Task EnterLinkCode(int code, PokeTradeHubConfig config, CancellationToken token)
     {
         // Default implementation to just press directional arrows. Can do via Hid keys, but users are slower than bots at even the default code entry.
-        var keys = TradeUtil.GetPresses(code);
-        foreach (var key in keys)
+        foreach (var key in TradeUtil.GetPresses(code))
         {
             int delay = config.Timings.KeypressTime;
             await Click(key, delay, token).ConfigureAwait(false);

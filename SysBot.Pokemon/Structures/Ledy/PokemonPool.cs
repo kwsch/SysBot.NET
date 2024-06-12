@@ -70,7 +70,7 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
         var files = Directory.EnumerateFiles(path, "*", opt);
         var matchFiles = LoadUtil.GetFilesOfSize(files, ExpectedSize);
 
-        int surpriseBlocked = 0;
+        const int surpriseBlocked = 0;
         foreach (var file in matchFiles)
         {
             var data = File.ReadAllBytes(file);

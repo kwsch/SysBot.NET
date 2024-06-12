@@ -196,8 +196,7 @@ namespace SysBot.Pokemon.Discord
         {
             var showdownSets = new List<ShowdownSet>();
             var regex = new Regex(@"<pre>(.*?)</pre>", RegexOptions.Singleline);
-            var matches = regex.Matches(pokePasteHtml);
-            foreach (Match match in matches)
+            foreach (Match match in regex.Matches(pokePasteHtml))
             {
                 var showdownText = match.Groups[1].Value;
                 showdownText = System.Net.WebUtility.HtmlDecode(Regex.Replace(showdownText, "<.*?>", string.Empty));

@@ -1,11 +1,8 @@
 using Discord;
 using Discord.WebSocket;
 using PKHeX.Core;
-using PKHeX.Core.AutoMod;
-using PKHeX.Drawing.PokeSprite;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using Color = Discord.Color;
 
@@ -48,7 +45,7 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
 
     public void TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
     {
-        int language = 2;
+        const int language = 2;
         var speciesName = SpeciesName.GetSpeciesName(Data.Species, language);
         var batchInfo = TotalBatchTrades > 1 ? $" (Trade {BatchTradeNumber} of {TotalBatchTrades})" : "";
         var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";

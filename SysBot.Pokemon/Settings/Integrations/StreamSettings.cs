@@ -148,8 +148,7 @@ public class StreamSettings
 
         try
         {
-            var files = Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*", SearchOption.TopDirectoryOnly);
-            foreach (var file in files)
+            foreach (var file in Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*", SearchOption.TopDirectoryOnly))
             {
                 if (file.Contains(b.Connection.Name))
                     File.Delete(file);

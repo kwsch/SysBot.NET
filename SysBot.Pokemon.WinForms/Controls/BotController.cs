@@ -139,8 +139,7 @@ public partial class BotController : UserControl
         {
             // blend from green->red, favoring green until near saturation
             var factor = seconds / (double)threshold;
-            var blend = Blend(bad, good, factor * factor);
-            PB_Lamp.BackColor = blend;
+            PB_Lamp.BackColor = Blend(bad, good, factor * factor);
         }
     }
 

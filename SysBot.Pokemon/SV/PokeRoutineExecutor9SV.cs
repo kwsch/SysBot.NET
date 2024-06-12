@@ -280,8 +280,7 @@ public abstract class PokeRoutineExecutor9SV : PokeRoutineExecutor<PK9>
         else
         {
             // Enter link code using directional arrows
-            var keys = TradeUtil.GetPresses(code);
-            foreach (var key in keys)
+            foreach (var key in TradeUtil.GetPresses(code))
             {
                 int delay = config.Timings.KeypressTime;
                 await Click(key, delay, token).ConfigureAwait(false);

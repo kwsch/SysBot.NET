@@ -5,10 +5,11 @@ using SysBot.Pokemon.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static SysBot.Pokemon.TradeSettings;
 
 namespace SysBot.Pokemon.Discord;
 
-public class DetailsExtractor<T> where T : PKM, new()
+public static class DetailsExtractor<T> where T : PKM, new()
 {
     public static void AddAdditionalText(EmbedBuilder embedBuilder)
     {
@@ -104,7 +105,7 @@ public class DetailsExtractor<T> where T : PKM, new()
         embedData.IVsDisplay = ivsDisplay;
 
         int[] evs = GetEVs(pk);
-        string evsDisplay = string.Join(" / ", new[] {
+        embedData.EVsDisplay = string.Join(" / ", new[] {
             (evs[0] != 0 ? $"{evs[0]} HP" : ""),
             (evs[1] != 0 ? $"{evs[1]} Atk" : ""),
             (evs[2] != 0 ? $"{evs[2]} Def" : ""),
@@ -112,7 +113,6 @@ public class DetailsExtractor<T> where T : PKM, new()
             (evs[5] != 0 ? $"{evs[5]} SpD" : ""),
             (evs[3] != 0 ? $"{evs[3]} Spe" : "") // correct pkhex/ALM ordering of stats
         }.Where(s => !string.IsNullOrEmpty(s)));
-        embedData.EVsDisplay = evsDisplay;
         embedData.MetDate = pk.MetDate.ToString();
         embedData.MovesDisplay = string.Join("\n", embedData.Moves);
         embedData.PokemonDisplayName = pk.IsNicknamed ? pk.Nickname : embedData.SpeciesName;
@@ -180,14 +180,14 @@ public class DetailsExtractor<T> where T : PKM, new()
 
         var typeEmojis = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.CustomTypeEmojis
             .Where(e => !string.IsNullOrEmpty(e.EmojiCode))
-            .ToDictionary(e => e.MoveType, e => $"{e.EmojiCode}");
+            .ToDictionary(e => (PKHeX.Core.MoveType)e.MoveType, e => $"{e.EmojiCode}");
 
         for (int i = 0; i < moves.Length; i++)
         {
             if (moves[i] == 0) continue;
             string moveName = GameInfo.MoveDataSource.FirstOrDefault(m => m.Value == moves[i])?.Text ?? "";
             byte moveTypeId = MoveInfo.GetType(moves[i], default);
-            MoveType moveType = (MoveType)moveTypeId;
+            PKHeX.Core.MoveType moveType = (PKHeX.Core.MoveType)moveTypeId;
             string formattedMove = $"{moveName} ({movePPs[i]}pp)";
             if (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.MoveTypeEmojis && typeEmojis.TryGetValue(moveType, out var moveEmoji))
             {
@@ -245,26 +245,14 @@ public class DetailsExtractor<T> where T : PKM, new()
     {
         if (SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.UseTeraEmojis)
         {
-            var teraType = pk9.TeraTypeOverride == (MoveType)TeraTypeUtil.Stellar ? MoveType.Normal : pk9.TeraType;
-            var emojiInfo = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.TeraTypeEmojis.FirstOrDefault(e => e.MoveType == teraType);
+            var teraType = pk9.TeraTypeOverride == (PKHeX.Core.MoveType)TeraTypeUtil.Stellar || (int)pk9.TeraType == 99 ? TradeSettings.MoveType.Stellar : (TradeSettings.MoveType)pk9.TeraType;
+            var emojiInfo = SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.TeraTypeEmojis.Find(e => e.MoveType == teraType);
             if (emojiInfo != null && !string.IsNullOrEmpty(emojiInfo.EmojiCode))
             {
                 return emojiInfo.EmojiCode;
             }
         }
-
-        if (pk9.TeraTypeOverride == (MoveType)TeraTypeUtil.Stellar)
-        {
-            return "Stellar";
-        }
-        else if ((int)pk9.TeraType == 99) // Terapagos
-        {
-            return "Stellar";
-        }
-        else
-        {
-            return pk9.TeraType.ToString();
-        }
+        return pk9.TeraType.ToString();
     }
 
     private static string GetTradeTitle(bool isMysteryEgg, bool isCloneRequest, bool isDumpRequest, bool isFixOTRequest, bool isSpecialRequest, bool isBatchTrade, int batchTradeNumber, string pokemonDisplayName, bool isShiny)

@@ -26,8 +26,7 @@ public class LegalizerModule<T> : ModuleBase<SocketCommandContext> where T : PKM
     [Summary("Tries to legalize the attached pkm data.")]
     public async Task LegalizeAsync()
     {
-        var attachments = Context.Message.Attachments;
-        foreach (var att in attachments)
+        foreach (var att in (System.Collections.Generic.IReadOnlyCollection<global::Discord.Attachment>)Context.Message.Attachments)
             await Context.Channel.ReplyWithLegalizedSetAsync(att).ConfigureAwait(false);
     }
 }

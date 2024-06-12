@@ -9,16 +9,14 @@ public static class Z3Search
 {
     public static IEnumerable<ulong> FindPotentialSeeds(uint ec, uint pid)
     {
-        var seeds = new XoroMachineSkip(ec, pid);
-        foreach (var seed in seeds)
+        foreach (var seed in new XoroMachineSkip(ec, pid))
             yield return seed;
     }
 
     public static IList<SeedSearchResult> GetAllSeeds(uint ec, uint pid, Span<int> ivs, SeedCheckResults mode)
     {
         var result = new List<SeedSearchResult>();
-        var seeds = GetSeeds(ec, pid);
-        foreach (var seed in seeds)
+        foreach (var seed in GetSeeds(ec, pid))
         {
             // Verify the IVs; at most 5 can match
             bool added = false;

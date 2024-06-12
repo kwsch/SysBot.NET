@@ -110,8 +110,7 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
 
         try
         {
-            var result = Decoder.ConvertHexByteStringToBytes(data);
-            return result;
+            return Decoder.ConvertHexByteStringToBytes(data);
         }
         catch (Exception e)
         {

@@ -26,16 +26,14 @@ namespace SysBot.Pokemon.Discord
             using var httpClient = new HttpClient();
             var response = await httpClient.GetAsync(csvUrl);
             response.EnsureSuccessStatusCode();
-            var csvData = await response.Content.ReadAsStringAsync();
-            return csvData;
+            return await response.Content.ReadAsStringAsync();
         }
 
         private async Task<List<List<string>>> FetchSpreadsheetData()
         {
             var csvData = await VGCPastes<T>.DownloadSpreadsheetAsCsv();
             var rows = csvData.Split('\n');
-            var data = rows.Select(row => row.Split(',').Select(cell => cell.Trim('"')).ToList()).ToList();
-            return data;
+            return rows.Select(row => row.Split(',').Select(cell => cell.Trim('"')).ToList()).ToList();
         }
 
         private static List<(string TrainerName, string PokePasteUrl, string TeamDescription, string DateShared, string RentalCode)> ParsePokePasteData(List<List<string>> data, string? pokemonName = null)
@@ -260,8 +258,7 @@ namespace SysBot.Pokemon.Discord
         {
             var httpClient = new HttpClient();
             var pokePasteHtml = await httpClient.GetStringAsync(pokePasteUrl);
-            var showdownSets = ParseShowdownSets(pokePasteHtml);
-            return showdownSets;
+            return ParseShowdownSets(pokePasteHtml);
         }
 
         private static List<ShowdownSet> ParseShowdownSets(string pokePasteHtml)
@@ -317,8 +314,7 @@ namespace SysBot.Pokemon.Discord
         private static string SanitizeFileName(string fileName)
         {
             var invalidChars = Path.GetInvalidFileNameChars();
-            var validName = string.Join("_", fileName.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.');
-            return validName;
+            return string.Join("_", fileName.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.');
         }
 
         private static DiscordColor GetTypeColor()

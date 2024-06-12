@@ -90,7 +90,7 @@ public static class AutoLegalityWrapper
         var OT = cfg.GenerateOT;
         if (OT.Length == 0)
             OT = "Blank"; // Will fail if actually left blank.
-        var fallback = new SimpleTrainerInfo(GameVersion.Any)
+        return new SimpleTrainerInfo(GameVersion.Any)
         {
             Language = (byte)cfg.GenerateLanguage,
             TID16 = cfg.GenerateTID16,
@@ -98,7 +98,6 @@ public static class AutoLegalityWrapper
             OT = OT,
             Generation = 0,
         };
-        return fallback;
     }
 
     private static void InitializeAutoLegality(LegalitySettings cfg)
@@ -160,8 +159,7 @@ public static class AutoLegalityWrapper
         var fallback = GetDefaultTrainer(cfg);
         for (byte generation = 1; generation <= PKX.Generation; generation++)
         {
-            var versions = GameUtil.GetVersionsInGeneration(generation, PKX.Version);
-            foreach (var version in versions)
+            foreach (var version in GameUtil.GetVersionsInGeneration(generation, PKX.Version))
                 RegisterIfNoneExist(fallback, generation, version);
         }
 

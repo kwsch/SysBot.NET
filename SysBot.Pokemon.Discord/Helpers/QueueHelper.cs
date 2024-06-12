@@ -213,8 +213,7 @@ public static class QueueHelper<T> where T : PKM, new()
     {
         long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         int randomValue = new Random().Next(1000);
-        int uniqueTradeID = ((int)(timestamp % int.MaxValue) * 1000) + randomValue;
-        return uniqueTradeID;
+        return ((int)(timestamp % int.MaxValue) * 1000) + randomValue;
     }
 
     private static string GetImageFolderPath()
@@ -253,7 +252,7 @@ public static class QueueHelper<T> where T : PKM, new()
 
         if (pk.IsEgg)
         {
-            string eggImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/egg.png";
+            const string eggImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/egg.png";
             speciesImageUrl = AbstractTrade<T>.PokeImg(pk, false, true, null);
             System.Drawing.Image combinedImage = await OverlaySpeciesOnEgg(eggImageUrl, speciesImageUrl);
             embedImageUrl = SaveImageLocally(combinedImage);

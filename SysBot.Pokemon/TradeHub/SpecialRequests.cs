@@ -385,8 +385,7 @@ namespace SysBot.Pokemon
                 lock (_sync2)
                 {
                     var rawText = File.ReadAllText(ItemPath);
-                    var split = rawText.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var st in split)
+                    foreach (var st in rawText.Split(separator, StringSplitOptions.RemoveEmptyEntries))
                     {
                         var reqs = st.Split(',');
                         tmp.Add(reqs[0], int.Parse(reqs[1]));

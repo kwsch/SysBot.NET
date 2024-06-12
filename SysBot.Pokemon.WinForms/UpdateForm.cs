@@ -99,8 +99,7 @@ namespace SysBot.Pokemon.WinForms
         private async Task FetchAndDisplayChangelog()
         {
             _ = new UpdateChecker();
-            string changelog = await UpdateChecker.FetchChangelogAsync();
-            textBoxChangelog.Text = changelog;
+            textBoxChangelog.Text = await UpdateChecker.FetchChangelogAsync();
         }
 
         private async void ButtonDownload_Click(object? sender, EventArgs? e)

@@ -108,8 +108,7 @@ namespace SysBot.Pokemon.Twitch
         {
             long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             int randomValue = new Random().Next(1000);
-            int uniqueTradeID = ((int)(timestamp % int.MaxValue) * 1000) + randomValue;
-            return uniqueTradeID;
+            return ((int)(timestamp % int.MaxValue) * 1000) + randomValue;
         }
 
         private bool AddToTradeQueue(T pk, int code, OnWhisperReceivedArgs e, RequestSignificance sig, PokeRoutineType type, out string msg)

@@ -730,7 +730,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 
     private static int GetLanguageIndex(GameVersion version)
     {
-        var language = GameLanguage.DefaultLanguage;
+        const string language = GameLanguage.DefaultLanguage;
         return GameLanguage.GetLanguageIndex(language);
     }
 

@@ -209,8 +209,7 @@ namespace SysBot.Pokemon.Discord
                 .WithDescription($"Page {page} of {pageCount}")
                 .WithColor(DiscordColor.Blue);
 
-            var pageItems = allEvents.Skip((page - 1) * itemsPerPage).Take(itemsPerPage);
-            foreach (var item in pageItems)
+            foreach (var item in allEvents.Skip((page - 1) * itemsPerPage).Take(itemsPerPage))
             {
                 embed.AddField($"{item.Index}. {item.EventInfo}", $"Use `{botPrefix}srp {generationOrGame} {item.Index}` to request this event.");
             }
@@ -269,8 +268,7 @@ namespace SysBot.Pokemon.Discord
                 var (start, end) = GetEncounterDateRange(selectedEvent);
                 if (start.HasValue && end.HasValue)
                 {
-                    var randomDate = GenerateRandomDateInRange(start.Value, end.Value);
-                    pk.MetDate = randomDate;
+                    pk.MetDate = GenerateRandomDateInRange(start.Value, end.Value);
                 }
                 else
                 {

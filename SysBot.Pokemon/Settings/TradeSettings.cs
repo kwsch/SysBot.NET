@@ -108,29 +108,29 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         {
             None = 0,
 
-            AbilityPatch = 1606,
+            MasterBall = 1,
 
             RareCandy = 50,
+
+            ppUp = 51,
+
+            ppMax = 53,
+
+            BigPearl = 89,
+
+            Nugget = 92,
 
             AbilityCapsule = 645,
 
             BottleCap = 795,
 
+            GoldBottleCap = 796,
+
             expCandyL = 1127,
 
             expCandyXL = 1128,
 
-            MasterBall = 1,
-
-            Nugget = 92,
-
-            BigPearl = 89,
-
-            GoldBottleCap = 796,
-
-            ppUp = 51,
-
-            ppMax = 53,
+            AbilityPatch = 1606,
 
             FreshStartMochi = 2479,
         }
@@ -313,26 +313,27 @@ public class TradeSettings : IBotStateSettings, ICountSettings
 
         [Category(EmbedSettings), Description("Custom Emoji information for the move types."), DisplayName("Custom Type Emojis")]
         public List<MoveTypeEmojiInfo> CustomTypeEmojis { get; set; } = new List<MoveTypeEmojiInfo>
-    {
-        new(MoveType.Bug),
-        new(MoveType.Fire),
-        new(MoveType.Flying),
-        new(MoveType.Ground),
-        new(MoveType.Water),
-        new(MoveType.Grass),
-        new(MoveType.Ice),
-        new(MoveType.Rock),
-        new(MoveType.Ghost),
-        new(MoveType.Steel),
-        new(MoveType.Fighting),
-        new(MoveType.Electric),
-        new(MoveType.Dragon),
-        new(MoveType.Psychic),
-        new(MoveType.Dark),
-        new(MoveType.Normal),
-        new(MoveType.Poison),
-        new(MoveType.Fairy),
-    };
+        {
+            new(MoveType.Bug),
+            new(MoveType.Fire),
+            new(MoveType.Flying),
+            new(MoveType.Ground),
+            new(MoveType.Water),
+            new(MoveType.Grass),
+            new(MoveType.Ice),
+            new(MoveType.Rock),
+            new(MoveType.Ghost),
+            new(MoveType.Steel),
+            new(MoveType.Fighting),
+            new(MoveType.Electric),
+            new(MoveType.Dragon),
+            new(MoveType.Psychic),
+            new(MoveType.Dark),
+            new(MoveType.Normal),
+            new(MoveType.Poison),
+            new(MoveType.Fairy),
+            new(MoveType.Stellar)
+        };
 
         [Category(EmbedSettings), Description("The full string for the male gender emoji."), DisplayName("Male Emoji")]
         public EmojiInfo MaleEmoji { get; set; } = new EmojiInfo();
@@ -357,26 +358,27 @@ public class TradeSettings : IBotStateSettings, ICountSettings
 
         [Category(EmbedSettings), Description("Tera Type Emoji information for the tera types."), DisplayName("Custom Tera Type Emojis")]
         public List<TeraTypeEmojiInfo> TeraTypeEmojis { get; set; } = new List<TeraTypeEmojiInfo>
-    {
-        new(MoveType.Bug),
-        new(MoveType.Fire),
-        new(MoveType.Flying),
-        new(MoveType.Ground),
-        new(MoveType.Water),
-        new(MoveType.Grass),
-        new(MoveType.Ice),
-        new(MoveType.Rock),
-        new(MoveType.Ghost),
-        new(MoveType.Steel),
-        new(MoveType.Fighting),
-        new(MoveType.Electric),
-        new(MoveType.Dragon),
-        new(MoveType.Psychic),
-        new(MoveType.Dark),
-        new(MoveType.Normal),
-        new(MoveType.Poison),
-        new(MoveType.Fairy),
-    };
+        {
+            new(MoveType.Bug),
+            new(MoveType.Fire),
+            new(MoveType.Flying),
+            new(MoveType.Ground),
+            new(MoveType.Water),
+            new(MoveType.Grass),
+            new(MoveType.Ice),
+            new(MoveType.Rock),
+            new(MoveType.Ghost),
+            new(MoveType.Steel),
+            new(MoveType.Fighting),
+            new(MoveType.Electric),
+            new(MoveType.Dragon),
+            new(MoveType.Psychic),
+            new(MoveType.Dark),
+            new(MoveType.Normal),
+            new(MoveType.Poison),
+            new(MoveType.Fairy),
+            new(MoveType.Stellar)
+        };
 
         [Category(EmbedSettings), Description("Will show Scale in trade embed (SV & Discord only). Requires user to upload the emojis to their server."), DisplayName("Show Scale")]
         public bool ShowScale { get; set; } = true;
@@ -593,34 +595,46 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         Size128x128
     }
 
+    public enum MoveType
+    {
+        Normal,
+        Fighting,
+        Flying,
+        Poison,
+        Ground,
+        Rock,
+        Bug,
+        Ghost,
+        Steel,
+        Fire,
+        Water,
+        Grass,
+        Electric,
+        Psychic,
+        Ice,
+        Dragon,
+        Dark,
+        Fairy,
+        Stellar
+    }
+
     public class MoveTypeEmojiInfo
     {
         [Description("The type of move.")]
         public MoveType MoveType { get; set; }
-
         [Description("The Discord emoji string for this move type.")]
-        public string EmojiCode { get; set; }
-
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
+        public string EmojiCode { get; set; } = string.Empty;
         public MoveTypeEmojiInfo()
         { }
-
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
         public MoveTypeEmojiInfo(MoveType moveType)
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             MoveType = moveType;
+            EmojiCode = string.Empty;
         }
-
         public override string ToString()
         {
             if (string.IsNullOrEmpty(EmojiCode))
                 return MoveType.ToString();
-
             return $"{EmojiCode}";
         }
     }
@@ -629,30 +643,22 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     {
         [Description("The Tera Type.")]
         public MoveType MoveType { get; set; }
-
         [Description("The Discord emoji string for this tera type.")]
         public string EmojiCode { get; set; }
-
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
         public TeraTypeEmojiInfo()
         { }
-
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
         public TeraTypeEmojiInfo(MoveType teraType)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             MoveType = teraType;
         }
-
         public override string ToString()
         {
             if (string.IsNullOrEmpty(EmojiCode))
                 return MoveType.ToString();
-
             return $"{EmojiCode}";
         }
     }

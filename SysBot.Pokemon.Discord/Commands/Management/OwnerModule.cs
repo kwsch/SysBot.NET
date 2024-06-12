@@ -264,7 +264,7 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
         }
 
         await using MemoryStream ms = new(bytes);
-        var img = "cap.jpg";
+        const string img = "cap.jpg";
         var embed = new EmbedBuilder { ImageUrl = $"attachment://{img}", Color = (DiscordColor?)Color.Purple }
             .WithFooter(new EmbedFooterBuilder { Text = "Here's your screenshot." });
 
@@ -295,7 +295,7 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
                     return;
                 }
 
-                var screenshotCount = 10;
+                const int screenshotCount = 10;
                 var screenshotInterval = TimeSpan.FromSeconds(0.1 / 10);
 #pragma warning disable CA1416 // Validate platform compatibility
                 var gifFrames = new List<System.Drawing.Image>();
@@ -350,7 +350,7 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
                     }
 
                     ms.Position = 0;
-                    var gifFileName = "screenshot.gif";
+                    const string gifFileName = "screenshot.gif";
                     var embed = new EmbedBuilder { ImageUrl = $"attachment://{gifFileName}", Color = (DiscordColor?)Color.Red }
                         .WithFooter(new EmbedFooterBuilder { Text = "Here's your GIF." });
 

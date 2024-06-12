@@ -732,10 +732,9 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     private static List<string> ParseBatchTradeContent(string content)
     {
         var delimiters = new[] { "---", "—-" }; // Includes both three hyphens and an em dash followed by a hyphen
-        var trades = content.Split(delimiters, StringSplitOptions.RemoveEmptyEntries)
+        return content.Split(delimiters, StringSplitOptions.RemoveEmptyEntries)
                             .Select(trade => trade.Trim())
                             .ToList();
-        return trades;
     }
 
     [Command("batchtradezip")]
@@ -777,7 +776,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         using var archive = new ZipArchive(zipStream, ZipArchiveMode.Read);
         var entries = archive.Entries.ToList();
 
-        var maxTradesAllowed = 6; // for full team in the zip created
+        const int maxTradesAllowed = 6; // for full team in the zip created
 
         // Check if batch mode is allowed and if the number of trades exceeds the limit
         if (maxTradesAllowed < 1 || entries.Count > maxTradesAllowed)

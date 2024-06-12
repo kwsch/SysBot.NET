@@ -156,8 +156,8 @@ namespace SysBot.Pokemon.Helpers
             if (pkm is PK9 pk9)
             {
                 pk9.ObedienceLevel = pk9.MetLevel;
-                pk9.TeraTypeOriginal = MoveType.Normal;
-                pk9.TeraTypeOverride = (MoveType)19;
+                pk9.TeraTypeOriginal = PKHeX.Core.MoveType.Normal;
+                pk9.TeraTypeOverride = (PKHeX.Core.MoveType)19;
             }
 
             pkm.Ball = 21;
@@ -251,7 +251,7 @@ namespace SysBot.Pokemon.Helpers
                 pk9.ObedienceLevel = 1;
                 pk9.Version = 0;
                 pk9.BattleVersion = 0;
-                pk9.TeraTypeOverride = (MoveType)19;
+                pk9.TeraTypeOverride = (PKHeX.Core.MoveType)19;
             }
 
             var la = new LegalityAnalysis(pk);
@@ -286,7 +286,7 @@ namespace SysBot.Pokemon.Helpers
 
         public static bool HasAdName(T pk, out string ad)
         {
-            string pattern = @"(YT$)|(YT\w*$)|(Lab$)|(\.\w*$|\.\w*\/)|(TV$)|(PKHeX)|(FB:)|(AuSLove)|(ShinyMart)|(Blainette)|(\ com)|(\ org)|(\ net)|(2DOS3)|(PPorg)|(Tik\wok$)|(YouTube)|(IG:)|(TTV\ )|(Tools)|(JokersWrath)|(bot$)|(PKMGen)|(TheHighTable)";
+            const string pattern = @"(YT$)|(YT\w*$)|(Lab$)|(\.\w*$|\.\w*\/)|(TV$)|(PKHeX)|(FB:)|(AuSLove)|(ShinyMart)|(Blainette)|(\ com)|(\ org)|(\ net)|(2DOS3)|(PPorg)|(Tik\wok$)|(YouTube)|(IG:)|(TTV\ )|(Tools)|(JokersWrath)|(bot$)|(PKMGen)|(TheHighTable)";
             bool ot = Regex.IsMatch(pk.OriginalTrainerName, pattern, RegexOptions.IgnoreCase);
             bool nick = Regex.IsMatch(pk.Nickname, pattern, RegexOptions.IgnoreCase);
             ad = ot ? pk.OriginalTrainerName : nick ? pk.Nickname : "";
@@ -476,7 +476,7 @@ namespace SysBot.Pokemon.Helpers
                     LogUtil.LogInfo($"Illegal reason:\n{la.Report()}", nameof(AbstractTrade<T>));
                 }
                 LogUtil.LogInfo($"pkm type:{pkm.GetType()}, T:{typeof(T)}", nameof(AbstractTrade<T>));
-                var reason = "I can't create illegal Pokémon.";
+                const string reason = "I can't create illegal Pokémon.";
                 msg = $"{reason}";
             }
             catch (Exception ex)
@@ -495,28 +495,27 @@ namespace SysBot.Pokemon.Helpers
                 msg = "Sorry, I'm not accepting requests!";
                 return false;
             }
-
             var set = ShowdownUtil.ConvertToShowdown(setstring);
             if (set == null)
             {
                 msg = "The delivery is cancelled, and the Pokémon's nickname is empty.";
                 return false;
             }
-
             var template = AutoLegalityWrapper.GetTemplate(set);
             if (template.Species < 1)
             {
-                msg =
-                    "To cancel delivery, please use the correct Showdown Set code";
+                msg = "To cancel delivery, please use the correct Showdown Set code";
                 return false;
             }
-
             try
             {
                 var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
                 GenerationFix(sav);
                 var pkm = sav.GetLegal(template, out var result);
-                if (pkm.Nickname.ToLower() == "egg" && Breeding.CanHatchAsEgg(pkm.Species)) EggTrade(pkm, template);
+                if (string.Equals(pkm.Nickname, "egg", StringComparison.OrdinalIgnoreCase) && Breeding.CanHatchAsEgg(pkm.Species))
+                {
+                    EggTrade(pkm, template);
+                }
                 if (Check((T)pkm, out msg))
                 {
                     outPkm = (T)pkm;
@@ -528,7 +527,6 @@ namespace SysBot.Pokemon.Helpers
                 LogUtil.LogSafe(ex, nameof(AbstractTrade<T>));
                 msg = "Cancel delivery, an error occurred.";
             }
-
             return false;
         }
 
@@ -669,8 +667,7 @@ namespace SysBot.Pokemon.Helpers
         {
             long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             int randomValue = new Random().Next(1000);
-            int uniqueTradeID = ((int)(timestamp % int.MaxValue) * 1000) + randomValue;
-            return uniqueTradeID;
+            return ((int)(timestamp % int.MaxValue) * 1000) + randomValue;
         }
 
         private static void GenerationFix(ITrainerInfo sav)

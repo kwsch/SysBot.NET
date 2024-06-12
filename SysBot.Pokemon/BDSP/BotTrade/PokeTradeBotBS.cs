@@ -167,6 +167,13 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
             Log("Trade is a Mystery Gift with specific TID/SID. Skipping AutoOT.");
             return false;
         }
+
+        // Current handler cannot be past gen OT
+        if (toSend.Generation != toSend.Format)
+        {
+            Log("Can not apply Partner details: Current handler cannot be different gen OT.");
+            return false;
+        }
         var cln = toSend.Clone();
         cln.OriginalTrainerGender = offered.OriginalTrainerGender;
         cln.TrainerTID7 = offered.TrainerTID7;
@@ -179,9 +186,10 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
             cln.ClearNickname();
 
         if (toSend.IsShiny)
-            cln.SetShiny();
+            cln.PID = (uint)((cln.TID16 ^ cln.SID16 ^ (cln.PID & 0xFFFF) ^ toSend.ShinyXor) << 16) | (cln.PID & 0xFFFF);
 
-        cln.RefreshChecksum();
+        if (!toSend.ChecksumValid)
+            cln.RefreshChecksum();
 
         var tradeBS = new LegalityAnalysis(cln);
         if (tradeBS.Valid)
