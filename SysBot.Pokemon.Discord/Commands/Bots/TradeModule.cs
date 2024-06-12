@@ -1359,7 +1359,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ReplyAsync("Attachment provided is not compatible with this module!").ConfigureAwait(false);
             return;
         }
-        await AddTradeToQueueAsync(code, usr.Username, pk, sig, usr).ConfigureAwait(false);
+        await AddTradeToQueueAsync(code, usr.Username, pk, sig, usr, ignoreAutoOT: ignoreAutoOT).ConfigureAwait(false);
     }
 
     private async Task HideTradeAsyncAttach(int code, RequestSignificance sig, SocketUser usr, bool ignoreAutoOT = false)
@@ -1396,20 +1396,18 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     private async Task AddTradeToQueueAsync(int code, string trainerName, T? pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, bool isHiddenTrade = false, bool isMysteryEgg = false, List<Pictocodes>? lgcode = null, PokeTradeType tradeType = PokeTradeType.Specific, bool ignoreAutoOT = false, bool setEdited = false)
     {
         lgcode ??= TradeModule<T>.GenerateRandomPictocodes(3);
-#pragma warning disable CS8604 // Possible null reference argument.
-        if (!pk.CanBeTraded())
+        if (pk is not null && !pk.CanBeTraded())
         {
             var reply = await ReplyAsync("Provided Pokémon content is blocked from trading!").ConfigureAwait(false);
-            await Task.Delay(6000); // Delay for 6 seconds
+            await Task.Delay(6000).ConfigureAwait(false); // Delay for 6 seconds
             await reply.DeleteAsync().ConfigureAwait(false);
             return;
         }
-#pragma warning restore CS8604 // Possible null reference argument.
-        var la = new LegalityAnalysis(pk);
+        var la = new LegalityAnalysis(pk!);
         if (!la.Valid)
         {
             string responseMessage;
-            if (pk.IsEgg)
+            if (pk?.IsEgg == true)
             {
                 string speciesName = GameInfo.GetStrings("en").specieslist[pk.Species];
                 responseMessage = $"Invalid Showdown Set for the {speciesName} egg. Please review your information and try again.";
@@ -1423,7 +1421,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await reply.DeleteAsync().ConfigureAwait(false);
             return;
         }
-        if (Info.Hub.Config.Legality.DisallowNonNatives && (la.EncounterOriginal.Context != pk.Context || pk.GO))
+        if (Info.Hub.Config.Legality.DisallowNonNatives && (la.EncounterOriginal.Context != pk?.Context || pk?.GO == true))
         {
             // Allow the owner to prevent trading entities that require a HOME Tracker even if the file has one already.
             await ReplyAsync($"{typeof(T).Name} attachment is not native, and cannot be traded!").ConfigureAwait(false);
@@ -1435,27 +1433,20 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ReplyAsync($"{typeof(T).Name} attachment is tracked by HOME, and cannot be traded!").ConfigureAwait(false);
             return;
         }
-
         // handle past gen file requests
         // thanks manu https://github.com/Manu098vm/SysBot.NET/commit/d8c4b65b94f0300096704390cce998940413cc0d
         if (!la.Valid && la.Results.Any(m => m.Identifier is CheckIdentifier.Memory))
         {
-            var clone = (T)pk.Clone();
-
+            var clone = (T)pk!.Clone();
             clone.HandlingTrainerName = pk.OriginalTrainerName;
             clone.HandlingTrainerGender = pk.OriginalTrainerGender;
-
             if (clone is PK8 or PA8 or PB8 or PK9)
                 ((dynamic)clone).HandlingTrainerLanguage = (byte)pk.Language;
-
             clone.CurrentHandler = 1;
-
             la = new LegalityAnalysis(clone);
-
             if (la.Valid) pk = clone;
         }
-
-        await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk, PokeRoutineType.LinkTrade, tradeType, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, isHiddenTrade, isMysteryEgg, lgcode, ignoreAutoOT: ignoreAutoOT, setEdited: setEdited).ConfigureAwait(false);
+        await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk!, PokeRoutineType.LinkTrade, tradeType, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, isHiddenTrade, isMysteryEgg, lgcode, ignoreAutoOT: ignoreAutoOT, setEdited: setEdited).ConfigureAwait(false);
     }
 
     public static List<Pictocodes> GenerateRandomPictocodes(int count)
