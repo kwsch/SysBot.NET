@@ -71,7 +71,7 @@ public sealed partial class Main : Form
         RTB_Logs.MaxLength = 32_767; // character length
         LoadControls();
         Text = $"{(string.IsNullOrEmpty(Config.Hub.BotName) ? "NotPaldea.net" : Config.Hub.BotName)} {TradeBot.Version} ({Config.Mode})";
-        await Task.Run(BotMonitor).ConfigureAwait(false);
+        _ = Task.Run(BotMonitor);
         InitUtil.InitializeStubs(Config.Mode);
         _isFormLoading = false;
         UpdateBackgroundImage(Config.Mode);
@@ -226,7 +226,7 @@ public sealed partial class Main : Form
     [JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
     public sealed partial class ProgramConfigContext : JsonSerializerContext;
 
-    private void ComboBox1_SelectedIndexChanged(object? sender, EventArgs e)
+    private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
     {
         if (_isFormLoading) return; // Check to avoid processing during form loading
 
