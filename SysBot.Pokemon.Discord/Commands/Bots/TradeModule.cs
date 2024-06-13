@@ -341,7 +341,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         content = ReusableActions.StripCodeBlock(content);
         var set = new ShowdownSet(content);
         var template = AutoLegalityWrapper.GetTemplate(set);
-        int formArgument = ExtractFormArgument(content);
 
         if (set.InvalidLines.Count != 0)
         {
@@ -520,7 +519,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         content = ReusableActions.StripCodeBlock(content);
         var set = new ShowdownSet(content);
         var template = AutoLegalityWrapper.GetTemplate(set);
-        int formArgument = ExtractFormArgument(content);
+
         if (set.InvalidLines.Count != 0)
         {
             var msg = $"Unable to parse Showdown Set:\n{string.Join("\n", set.InvalidLines)}";
@@ -663,16 +662,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         {
             _ = DeleteMessagesAfterDelayAsync(userMessage, null, 2);
         }
-    }
-
-    private static int ExtractFormArgument(string content)
-    {
-        var match = Regex.Match(content, @"\.FormArgument=(\d+)");
-        if (match.Success)
-        {
-            return int.Parse(match.Groups[1].Value);
-        }
-        return 0;
     }
 
     [Command("batchTrade")]
