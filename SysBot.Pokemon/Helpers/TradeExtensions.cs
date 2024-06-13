@@ -7,14 +7,7 @@ using static SysBot.Pokemon.TradeSettings;
 
 namespace SysBot.Pokemon.Helpers
 {
-    /// <summary>
-    /// Pokémon abstract transaction class
-    /// This class needs to implement SendMessage and also implement a multi-parameter constructor.
-    /// The parameters should include information about the message sent by this type of robot so that SendMessage can be used
-    /// Note that SetPokeTradeTrainerInfo and SetTradeQueueInfo must be called in the constructor of the abstract class.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public abstract class AbstractTrade<T> where T : PKM, new()
+    public abstract class TradeExtensions<T> where T : PKM, new()
     {
         public static readonly string[] MarkTitle =
         [
@@ -79,10 +72,6 @@ namespace SysBot.Pokemon.Helpers
 
         public static readonly ushort[] ShinyLock = [  (ushort)Species.Victini, (ushort)Species.Keldeo, (ushort)Species.Volcanion, (ushort)Species.Cosmog, (ushort)Species.Cosmoem, (ushort)Species.Magearna, (ushort)Species.Marshadow, (ushort)Species.Eternatus,
                                                     (ushort)Species.Kubfu, (ushort)Species.Urshifu, (ushort)Species.Zarude, (ushort)Species.Glastrier, (ushort)Species.Spectrier, (ushort)Species.Calyrex ];
-
-        protected PokeTradeTrainerInfo userInfo = default!;
-
-        private TradeQueueInfo<T> queueInfo = default!;
 
         public static T CherishHandler(MysteryGift mg, ITrainerInfo info)
         {

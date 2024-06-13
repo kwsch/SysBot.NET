@@ -58,7 +58,7 @@ public static class EmbedHelper
         }
         else
         {
-            thumbnailUrl = AbstractTrade<T>.PokeImg(pk, false, true, null);
+            thumbnailUrl = TradeExtensions<T>.PokeImg(pk, false, true, null);
         }
 
         var embed = new EmbedBuilder()

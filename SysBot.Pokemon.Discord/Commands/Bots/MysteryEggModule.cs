@@ -67,7 +67,7 @@ namespace SysBot.Pokemon.Discord
                             var la = new LegalityAnalysis(validPk);
                             if (la.Valid)
                             {
-                                AbstractTrade<T>.EggTrade(validPk, template);
+                                TradeExtensions<T>.EggTrade(validPk, template);
                                 SetHaX(validPk);
                                 var sig = Context.User.GetFavor();
                                 await AddTradeToQueueAsync(code, Context.User.Username, validPk, sig, Context.User, isMysteryEgg: true).ConfigureAwait(false);

@@ -5,7 +5,6 @@ using SysBot.Pokemon.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static SysBot.Pokemon.TradeSettings;
 
 namespace SysBot.Pokemon.Discord;
 
@@ -223,7 +222,7 @@ public static class DetailsExtractor<T> where T : PKM, new()
         }
         if (pk is IRibbonIndex ribbonIndex)
         {
-            AbstractTrade<T>.HasMark(ribbonIndex, out RibbonIndex result, out markTitle);
+            TradeExtensions<T>.HasMark(ribbonIndex, out RibbonIndex result, out markTitle);
         }
         string alphaSymbol = (pk is IAlpha alpha && alpha.IsAlpha) ? SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.AlphaPLAEmoji.EmojiString : string.Empty;
         string shinySymbol = pk.ShinyXor == 0 ? "◼ " : pk.IsShiny ? "★ " : string.Empty;

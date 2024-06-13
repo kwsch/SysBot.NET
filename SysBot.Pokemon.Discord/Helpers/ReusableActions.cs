@@ -80,7 +80,7 @@ public static class ReusableActions
     {
         var txt = GetFormattedShowdownText(pkm);
         bool canGmax = pkm is PK8 pk8 && pk8.CanGigantamax;
-        var speciesImageUrl = AbstractTrade<PK9>.PokeImg(pkm, canGmax, false);
+        var speciesImageUrl = TradeExtensions<PK9>.PokeImg(pkm, canGmax, false);
 
         var embed = new EmbedBuilder()
             .WithTitle("Pokémon Showdown Set")

@@ -253,14 +253,14 @@ public static class QueueHelper<T> where T : PKM, new()
         if (pk.IsEgg)
         {
             const string eggImageUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/egg.png";
-            speciesImageUrl = AbstractTrade<T>.PokeImg(pk, false, true, null);
+            speciesImageUrl = TradeExtensions<T>.PokeImg(pk, false, true, null);
             System.Drawing.Image combinedImage = await OverlaySpeciesOnEgg(eggImageUrl, speciesImageUrl);
             embedImageUrl = SaveImageLocally(combinedImage);
         }
         else
         {
             bool canGmax = pk is PK8 pk8 && pk8.CanGigantamax;
-            speciesImageUrl = AbstractTrade<T>.PokeImg(pk, canGmax, false, SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.PreferredImageSize);
+            speciesImageUrl = TradeExtensions<T>.PokeImg(pk, canGmax, false, SysCord<T>.Runner.Config.Trade.TradeEmbedSettings.PreferredImageSize);
             embedImageUrl = speciesImageUrl;
         }
 

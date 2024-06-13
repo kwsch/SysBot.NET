@@ -109,7 +109,7 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
                 PokeTradeType.Dump => "https://raw.githubusercontent.com/bdawg1989/sprites/main/AltBallImg/128x128/dumpball.png",
                 PokeTradeType.FixOT => "https://raw.githubusercontent.com/bdawg1989/sprites/main/AltBallImg/128x128/rocketball.png",
                 PokeTradeType.Seed => "https://raw.githubusercontent.com/bdawg1989/sprites/main/specialrequest.png",
-                _ => detail.TradeData != null ? AbstractTrade<T>.PokeImg(detail.TradeData, false, true) : ""
+                _ => detail.TradeData != null ? TradeExtensions<T>.PokeImg(detail.TradeData, false, true) : ""
             };
 
             var (r, g, b) = await GetDominantColorAsync(embedImageUrl);

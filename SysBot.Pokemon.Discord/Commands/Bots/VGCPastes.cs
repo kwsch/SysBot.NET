@@ -180,7 +180,7 @@ namespace SysBot.Pokemon.Discord
                             await using var entryStream = entry.Open();
                             await entryStream.WriteAsync(pk.Data.AsMemory(0, pk.Data.Length));
 
-                            string speciesImageUrl = AbstractTrade<PK9>.PokeImg(pk, false, false);
+                            string speciesImageUrl = TradeExtensions<PK9>.PokeImg(pk, false, false);
 #pragma warning disable CA1416 // Validate platform compatibility
                             var speciesImage = System.Drawing.Image.FromStream(await new HttpClient().GetStreamAsync(speciesImageUrl));
 #pragma warning restore CA1416 // Validate platform compatibility

@@ -152,7 +152,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var template = AutoLegalityWrapper.GetTemplate(set);
         var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
         var pkm = sav.GetLegal(template, out var result);
-        AbstractTrade<T>.DittoTrade((T)pkm);
+        TradeExtensions<T>.DittoTrade((T)pkm);
         var la = new LegalityAnalysis(pkm);
 
         if (pkm is not T pk || !la.Valid)
@@ -293,7 +293,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
             // Use the EggTrade method without setting the nickname
             pk.IsNicknamed = false; // Make sure we don't set a nickname
-            AbstractTrade<T>.EggTrade(pk, template);
+            TradeExtensions<T>.EggTrade(pk, template);
 
             var sig = Context.User.GetFavor();
             await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User).ConfigureAwait(false);

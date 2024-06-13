@@ -226,7 +226,7 @@ public sealed partial class Main : Form
     [JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
     public sealed partial class ProgramConfigContext : JsonSerializerContext;
 
-    private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
+    private void ComboBox1_SelectedIndexChanged(object? sender, EventArgs e)
     {
         if (_isFormLoading) return; // Check to avoid processing during form loading
 
