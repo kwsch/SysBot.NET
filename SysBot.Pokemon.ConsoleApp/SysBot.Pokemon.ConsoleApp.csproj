@@ -14,10 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SysBot.Pokemon.Bilibili\SysBot.Pokemon.Bilibili.csproj" />
     <ProjectReference Include="..\SysBot.Pokemon.Discord\SysBot.Pokemon.Discord.csproj" />
-    <ProjectReference Include="..\SysBot.Pokemon.Dodo\SysBot.Pokemon.Dodo.csproj" />
-    <ProjectReference Include="..\SysBot.Pokemon.QQ\SysBot.Pokemon.QQ.csproj" />
     <ProjectReference Include="..\SysBot.Pokemon.Twitch\SysBot.Pokemon.Twitch.csproj" />
     <ProjectReference Include="..\SysBot.Pokemon\SysBot.Pokemon.csproj" />
     <ProjectReference Include="..\SysBot.Pokemon.Z3\SysBot.Pokemon.Z3.csproj" />

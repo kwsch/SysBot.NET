@@ -1,8 +1,5 @@
 using PKHeX.Core;
-using SysBot.Pokemon.Bilibili;
 using SysBot.Pokemon.Discord;
-using SysBot.Pokemon.Dodo;
-using SysBot.Pokemon.QQ;
 using SysBot.Pokemon.Twitch;
 using SysBot.Pokemon.WinForms;
 using SysBot.Pokemon.YouTube;
@@ -16,15 +13,9 @@ namespace SysBot.Pokemon;
 /// </summary>
 public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
 {
-    private BilibiliLiveBot<T>? Bilibili;
-
-    private DodoBot<T>? Dodo;
-
-    private MiraiQQBot<T>? QQ;
-
-    private TwitchBot<T>? Twitch;
 
     private YouTubeBot<T>? YouTube;
+    private static TwitchBot<T>? Twitch;
 
     public PokeBotRunnerImpl(PokeTradeHub<T> hub, BotFactory<T> fac) : base(hub, fac)
     {
@@ -39,16 +30,6 @@ public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
         AddDiscordBot(Hub.Config.Discord.Token);
         AddTwitchBot(Hub.Config.Twitch);
         AddYouTubeBot(Hub.Config.YouTube);
-        AddQQBot(Hub.Config.QQ);
-        AddBilibiliBot(Hub.Config.Bilibili);
-        AddDodoBot(Hub.Config.Dodo);
-    }
-
-    private void AddBilibiliBot(BilibiliSettings config)
-    {
-        if (string.IsNullOrWhiteSpace(config.LogUrl) || config.RoomId == 0) return;
-        if (Bilibili != null) return;
-        Bilibili = new BilibiliLiveBot<T>(config, Hub);
     }
 
     private void AddDiscordBot(string apiToken)
@@ -57,23 +38,6 @@ public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
             return;
         var bot = new SysCord<T>(this);
         Task.Run(() => bot.MainAsync(apiToken, CancellationToken.None));
-    }
-
-    private void AddDodoBot(DodoSettings config)
-    {
-        if (string.IsNullOrWhiteSpace(config.BaseApi) || string.IsNullOrWhiteSpace(config.ClientId) || string.IsNullOrWhiteSpace(config.Token)) return;
-        if (Dodo != null) return;
-        Dodo = new DodoBot<T>(config, Hub);
-    }
-
-    private void AddQQBot(QQSettings config)
-    {
-        if (string.IsNullOrWhiteSpace(config.VerifyKey) || string.IsNullOrWhiteSpace(config.Address)) return;
-        if (string.IsNullOrWhiteSpace(config.QQ) || string.IsNullOrWhiteSpace(config.GroupId)) return;
-        if (QQ != null) return;
-
-        //add qq bot
-        QQ = new MiraiQQBot<T>(config, Hub);
     }
 
     private void AddTwitchBot(TwitchSettings config)

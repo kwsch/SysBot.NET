@@ -23,12 +23,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SysBot.Pokemon.Z3", "SysBot
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SysBot.Pokemon.YouTube", "SysBot.Pokemon.YouTube\SysBot.Pokemon.YouTube.csproj", "{958D8B0C-FF01-4BC3-84AF-8BCB80794B49}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SysBot.Pokemon.QQ", "SysBot.Pokemon.QQ\SysBot.Pokemon.QQ.csproj", "{2CD212D9-FF32-4434-9E19-D9CCB99E6817}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SysBot.Pokemon.Bilibili", "SysBot.Pokemon.Bilibili\SysBot.Pokemon.Bilibili.csproj", "{310FFBCD-05DA-4CA3-B785-08B2158ABEBC}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SysBot.Pokemon.Dodo", "SysBot.Pokemon.Dodo\SysBot.Pokemon.Dodo.csproj", "{BE43311D-4571-466E-B3CB-3FD658EFC159}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,18 +65,6 @@ Global
 		{958D8B0C-FF01-4BC3-84AF-8BCB80794B49}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{958D8B0C-FF01-4BC3-84AF-8BCB80794B49}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{958D8B0C-FF01-4BC3-84AF-8BCB80794B49}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2CD212D9-FF32-4434-9E19-D9CCB99E6817}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2CD212D9-FF32-4434-9E19-D9CCB99E6817}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2CD212D9-FF32-4434-9E19-D9CCB99E6817}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2CD212D9-FF32-4434-9E19-D9CCB99E6817}.Release|Any CPU.Build.0 = Release|Any CPU
-		{310FFBCD-05DA-4CA3-B785-08B2158ABEBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{310FFBCD-05DA-4CA3-B785-08B2158ABEBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{310FFBCD-05DA-4CA3-B785-08B2158ABEBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{310FFBCD-05DA-4CA3-B785-08B2158ABEBC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BE43311D-4571-466E-B3CB-3FD658EFC159}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BE43311D-4571-466E-B3CB-3FD658EFC159}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BE43311D-4571-466E-B3CB-3FD658EFC159}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BE43311D-4571-466E-B3CB-3FD658EFC159}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -13,11 +13,6 @@ public sealed class PokeTradeHubConfig : BaseConfig
 
     private const string Integration = nameof(Integration);
 
-    [Browsable(false)]
-    [Category(Integration)]
-    [TypeConverter(typeof(ExpandableObjectConverter))]
-    public BilibiliSettings Bilibili { get; set; } = new();
-
     [Category(BotTrade), Description("Name of the Discord Bot the Program is Running. This will Title the window for easier recognition. Requires program restart.")]
     public string BotName { get; set; } = string.Empty;
 
@@ -29,11 +24,6 @@ public sealed class PokeTradeHubConfig : BaseConfig
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public DistributionSettings Distribution { get; set; } = new();
 
-    [Browsable(false)]
-    [Category(Integration)]
-    [TypeConverter(typeof(ExpandableObjectConverter))]
-    public DodoSettings Dodo { get; set; } = new();
-
     // Encounter Bots - For finding or hosting Pokémon in-game.
     [Browsable(false)]
     [Category(BotEncounter)]
@@ -43,11 +33,6 @@ public sealed class PokeTradeHubConfig : BaseConfig
     [Category(Integration), Description("Allows favored users to join the queue with a more favorable position than unfavored users.")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public FavoredPrioritySettings Favoritism { get; set; } = new();
-
-    [Browsable(false)]
-    [Category(Integration)]
-    [TypeConverter(typeof(ExpandableObjectConverter))]
-    public QQSettings QQ { get; set; } = new();
 
     [Category(Operation)]
     [TypeConverter(typeof(ExpandableObjectConverter))]
