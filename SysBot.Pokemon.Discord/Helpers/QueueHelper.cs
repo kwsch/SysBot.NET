@@ -157,12 +157,12 @@ public static class QueueHelper<T> where T : PKM, new()
             if (setEdited && Info.Hub.Config.Trade.AutoCorrectConfig.AutoCorrectEmbedIndicator)
             {
                 embedBuilder.Footer.IconUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/setedited.png";
-                embedBuilder.AddField("__Your Showdown Set was Invalid__", "Auto Corrected to make legal.");
+                embedBuilder.AddField("**__Notice__**: **Your Showdown Set was Invalid.**", "*Auto Corrected to make legal.*");
             }
             if (isNonNative)
             {
                 embedBuilder.Footer.IconUrl = "https://raw.githubusercontent.com/bdawg1989/sprites/main/exclamation.gif";
-                embedBuilder.AddField("__This Pokemon is Non-Native!__", "It can't have AutoOT applied and can't enter Pokémon HOME.");
+                embedBuilder.AddField("**__Notice__**: **This Pokemon is Non-Native.**", "*Cannot enter HOME & AutoOT not applied.*");
             }
             DetailsExtractor<T>.AddThumbnails(embedBuilder, type == PokeRoutineType.Clone, type == PokeRoutineType.SeedCheck, embedData.HeldItemUrl);
 
