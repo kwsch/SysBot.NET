@@ -339,6 +339,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         }
         var ignoreAutoOT = content.Contains("OT:") || content.Contains("TID:") || content.Contains("SID:");
         content = ReusableActions.StripCodeBlock(content);
+        content = ConvertMasterBall(content); // Temp fix for Ball: Master being unrecognized by the bot
         var set = new ShowdownSet(content);
         var template = AutoLegalityWrapper.GetTemplate(set);
 
@@ -517,6 +518,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
         var ignoreAutoOT = content.Contains("OT:") || content.Contains("TID:") || content.Contains("SID:");
         content = ReusableActions.StripCodeBlock(content);
+        content = ConvertMasterBall(content); // Temp fix for Ball: Master not being recognized by the bot
         var set = new ShowdownSet(content);
         var template = AutoLegalityWrapper.GetTemplate(set);
 
@@ -1380,6 +1382,19 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             T pk => pk,
             _ => EntityConverter.ConvertToType(dl.Data, typeof(T), out _) as T,
         };
+    }
+
+    private string ConvertMasterBall(string content)
+    {
+        var lines = content.Split('\n');
+        for (int i = 0; i < lines.Length; i++)
+        {
+            if (lines[i].StartsWith("Ball:") && lines[i].Contains("Master"))
+            {
+                lines[i] = ".Ball=1";
+            }
+        }
+        return string.Join('\n', lines);
     }
 
     private async Task AddTradeToQueueAsync(int code, string trainerName, T? pk, RequestSignificance sig, SocketUser usr, bool isBatchTrade = false, int batchTradeNumber = 1, int totalBatchTrades = 1, bool isHiddenTrade = false, bool isMysteryEgg = false, List<Pictocodes>? lgcode = null, PokeTradeType tradeType = PokeTradeType.Specific, bool ignoreAutoOT = false, bool setEdited = false)
