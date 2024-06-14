@@ -534,6 +534,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             var pkm = sav.GetLegal(template, out var result);
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
+
             if (SysCord<T>.Runner.Config.Trade.TradeConfiguration.SuggestRelearnMoves)
             {
                 switch (pkm)
@@ -1413,28 +1414,36 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             string responseMessage;
             if (pk?.IsEgg == true)
             {
-                string speciesName = GameInfo.GetStrings("en").specieslist[pk.Species];
+                string speciesName = SpeciesName.GetSpeciesName(pk.Species, (int)LanguageID.English);
                 responseMessage = $"Invalid Showdown Set for the {speciesName} egg. Please review your information and try again.";
             }
             else
             {
-                responseMessage = $"{typeof(T).Name} attachment is not legal, and cannot be traded!";
+                string speciesName = SpeciesName.GetSpeciesName(pk!.Species, (int)LanguageID.English);
+                responseMessage = $"{speciesName} attachment is not legal, and cannot be traded!";
             }
             var reply = await ReplyAsync(responseMessage).ConfigureAwait(false);
             await Task.Delay(6000);
             await reply.DeleteAsync().ConfigureAwait(false);
             return;
         }
+        bool isNonNative = false;
+        if (la.EncounterOriginal.Context != pk?.Context || pk?.GO == true)
+        {
+            isNonNative = true;
+        }
         if (Info.Hub.Config.Legality.DisallowNonNatives && (la.EncounterOriginal.Context != pk?.Context || pk?.GO == true))
         {
             // Allow the owner to prevent trading entities that require a HOME Tracker even if the file has one already.
-            await ReplyAsync($"{typeof(T).Name} attachment is not native, and cannot be traded!").ConfigureAwait(false);
+            string speciesName = SpeciesName.GetSpeciesName(pk!.Species, (int)LanguageID.English);
+            await ReplyAsync($"This **{speciesName}** is not native to this game, and cannot be traded!  Trade with the correct bot, then trade to HOME.").ConfigureAwait(false);
             return;
         }
         if (Info.Hub.Config.Legality.DisallowTracked && pk is IHomeTrack { HasTracker: true })
         {
             // Allow the owner to prevent trading entities that already have a HOME Tracker.
-            await ReplyAsync($"{typeof(T).Name} attachment is tracked by HOME, and cannot be traded!").ConfigureAwait(false);
+            string speciesName = SpeciesName.GetSpeciesName(pk.Species, (int)LanguageID.English);
+            await ReplyAsync($"This {speciesName} file is tracked by HOME, and cannot be traded!").ConfigureAwait(false);
             return;
         }
         // handle past gen file requests
@@ -1450,7 +1459,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             la = new LegalityAnalysis(clone);
             if (la.Valid) pk = clone;
         }
-        await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk!, PokeRoutineType.LinkTrade, tradeType, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, isHiddenTrade, isMysteryEgg, lgcode, ignoreAutoOT: ignoreAutoOT, setEdited: setEdited).ConfigureAwait(false);
+        await QueueHelper<T>.AddToQueueAsync(Context, code, trainerName, sig, pk!, PokeRoutineType.LinkTrade, tradeType, usr, isBatchTrade, batchTradeNumber, totalBatchTrades, isHiddenTrade, isMysteryEgg, lgcode, ignoreAutoOT: ignoreAutoOT, setEdited: setEdited, isNonNative: isNonNative).ConfigureAwait(false);
     }
 
     public static List<Pictocodes> GenerateRandomPictocodes(int count)
