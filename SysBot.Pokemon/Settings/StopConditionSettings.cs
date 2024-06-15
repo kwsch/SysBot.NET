@@ -56,7 +56,7 @@ public class StopConditionSettings
         if (settings.StopOnForm.HasValue && settings.StopOnForm != pk.Form)
             return false;
 
-        if (settings.TargetNature != Nature.Random && settings.TargetNature != (Nature)pk.Nature)
+        if (settings.TargetNature != Nature.Random && settings.TargetNature != pk.Nature)
             return false;
 
         // Return if it doesn't have a mark, or it has an unwanted mark.

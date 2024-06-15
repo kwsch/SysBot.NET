@@ -134,7 +134,7 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
     public async Task<string> GetGameInfo(string info, CancellationToken token)
     {
         var bytes = await ReadRaw(SwitchCommand.GetGameInfo(info), 17, token).ConfigureAwait(false);
-        return Encoding.ASCII.GetString(bytes).Trim(['\0', '\n']);
+        return Encoding.ASCII.GetString(bytes).Trim('\0', '\n');
     }
 
     public async Task<bool> IsProgramRunning(ulong pid, CancellationToken token)

@@ -61,7 +61,7 @@ public sealed class SwitchSocketSync(IWirelessConnectionConfig cfg) : SwitchSock
         Thread.Sleep((MaximumTransferSize / DelayFactor) + BaseDelay);
         var size = (length * 2) + 1;
         var buffer = ArrayPool<byte>.Shared.Rent(size);
-        var _ = Read(buffer, size);
+        _ = Read(buffer, size);
         var mem = buffer.AsMemory(0, size);
         var result = DecodeResult(mem, length);
         ArrayPool<byte>.Shared.Return(buffer, true);

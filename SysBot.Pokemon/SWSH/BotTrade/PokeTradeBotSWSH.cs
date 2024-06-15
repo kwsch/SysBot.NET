@@ -207,7 +207,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         {
             var pkm = hub.Ledy.Pool.GetRandomSurprise();
             await EnsureConnectedToYComm(OverworldOffset, hub.Config, token).ConfigureAwait(false);
-            var _ = await PerformSurpriseTrade(sav, pkm, token).ConfigureAwait(false);
+            _ = await PerformSurpriseTrade(sav, pkm, token).ConfigureAwait(false);
         }
     }
 
