@@ -1420,7 +1420,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             else
             {
                 string speciesName = SpeciesName.GetSpeciesName(pk!.Species, (int)LanguageID.English);
-                responseMessage = $"{speciesName} attachment is not legal, and cannot be traded!";
+                responseMessage = $"{speciesName} attachment is not legal, and cannot be traded!\n\nLegality Report:\n```\n{la.Report()}\n```";
             }
             var reply = await ReplyAsync(responseMessage).ConfigureAwait(false);
             await Task.Delay(6000);
