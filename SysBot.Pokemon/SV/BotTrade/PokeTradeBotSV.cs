@@ -535,11 +535,18 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             // They get one more chance.
             partnerFound = await ReadUntilChanged(TradePartnerOfferedOffset, oldEC, 15_000, 0_200, false, true, token).ConfigureAwait(false);
         }
-
+        // Check if the user has cancelled the trade
+        if (!await IsInBox(PortalOffset, token).ConfigureAwait(false))
+        {
+            Log("User cancelled the trade. Exiting...");
+            await ExitTradeToPortal(false, token).ConfigureAwait(false);
+            return (offered, PokeTradeResult.TrainerTooSlow);
+        }
         var pk2 = await ReadUntilPresent(TradePartnerOfferedOffset, 25_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
         if (!partnerFound || pk2 is null || SearchUtil.HashByDetails(pk2) == SearchUtil.HashByDetails(offered))
         {
             Log("Trade partner did not change their Pokémon.");
+            await ExitTradeToPortal(false, token).ConfigureAwait(false);
             return (offered, PokeTradeResult.TrainerTooSlow);
         }
 
@@ -878,6 +885,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             (toSend, update) = await GetEntityToSend(sav, poke, offered, oldEC, toSend, trainer, null, token).ConfigureAwait(false);
             if (update != PokeTradeResult.Success)
             {
+                await ExitTradeToPortal(false, token).ConfigureAwait(false);
                 return update;
             }
 
