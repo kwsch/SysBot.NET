@@ -17,11 +17,11 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 {
     private static readonly char[] separator = ['\r', '\n'];
 
-    public static async Task<string> PerformAutoCorrect(string content, PKM originalPk, LegalityAnalysis originalLa)
+    public static async Task<(string CorrectedContent, List<string> CorrectionMessages)> PerformAutoCorrect(string content, PKM originalPk, LegalityAnalysis originalLa)
     {
         var autoCorrectConfig = new TradeSettings.AutoCorrectShowdownCategory();
         if (!autoCorrectConfig.EnableAutoCorrect)
-            return content;
+            return (content, new List<string>());
 
         string[] lines = content.Split(separator, StringSplitOptions.RemoveEmptyEntries);
         var gameStrings = GetGameStrings();
@@ -30,56 +30,99 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 
         (string speciesName, string formName, string gender, string heldItem, string nickname) = ParseSpeciesLine(lines[0]);
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
         string correctedSpeciesName = autoCorrectConfig.AutoCorrectSpeciesAndForm ? await GetClosestSpecies(speciesName).ConfigureAwait(false) ?? speciesName : speciesName;
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
         ushort speciesIndex = (ushort)Array.IndexOf(gameStrings.specieslist, correctedSpeciesName);
         string[] formNames = FormConverter.GetFormList(speciesIndex, gameStrings.types, gameStrings.forms, new List<string>(), generation);
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-        string correctedFormName = autoCorrectConfig.AutoCorrectSpeciesAndForm ? await GetClosestFormName(formName, formNames).ConfigureAwait(false) ?? formName : formName;
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
+        string correctedFormName = formName;
+        if (!string.IsNullOrEmpty(formName))
+        {
+            correctedFormName = await GetClosestFormName(formName, formNames).ConfigureAwait(false) ?? formName;
+        }
+
+        // Combine corrected species and form names
+        string finalCorrectedName = string.IsNullOrEmpty(correctedFormName) ? correctedSpeciesName : $"{correctedSpeciesName}-{correctedFormName}";
+
+        // Continue with your logic using finalCorrectedName
         PKM pk = originalPk.Clone();
         LegalityAnalysis la = originalLa;
 
-        bool speciesOrFormCorrected = correctedSpeciesName != speciesName || correctedFormName != formName;
+        var correctionMessages = new List<string>();
+
+        bool speciesOrFormCorrected = finalCorrectedName != $"{speciesName}-{formName}".Trim('-');
         if (speciesOrFormCorrected)
         {
             pk.Species = speciesIndex;
             var personalFormInfo = await Task.Run(() => GetPersonalFormInfo(speciesIndex)).ConfigureAwait(false);
             pk.Form = correctedFormName != null ? (byte)personalFormInfo.FormIndex(speciesIndex, (byte)Array.IndexOf(formNames, correctedFormName)) : (byte)0;
             la = new LegalityAnalysis(pk);
+
+            correctionMessages.Add($"Species or form was incorrect. Adjusted to **{finalCorrectedName}**.");
         }
 
         (string abilityName, string natureName, string ballName, string levelValue) = ParseLines(lines);
 
         var personalAbilityInfoTask = Task.Run(() => GetPersonalInfo(speciesIndex));
-        var closestAbilityTask = GetClosestAbility(abilityName, speciesIndex, gameStrings, await personalAbilityInfoTask);
-        var closestNatureTask = GetClosestNature(natureName, gameStrings);
-#pragma warning disable CS8604 // Possible null reference argument.
-        var legalBallTask = GetLegalBall(speciesIndex, correctedFormName, ballName, gameStrings, pk);
-#pragma warning restore CS8604 // Possible null reference argument.
+        var (closestAbility, abilityCorrectd) = await GetClosestAbility(abilityName, speciesIndex, gameStrings, await personalAbilityInfoTask);
+        var (closestNature, natureCorrectd) = await GetClosestNature(natureName, gameStrings);
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-        string correctedAbilityName = autoCorrectConfig.AutoCorrectAbility ? await closestAbilityTask : abilityName;
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-        string correctedNatureName = autoCorrectConfig.AutoCorrectNature ? await closestNatureTask : natureName;
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-        string correctedBallName = autoCorrectConfig.AutoCorrectBall ? await legalBallTask : ballName;
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
+        string correctedAbilityName = autoCorrectConfig.AutoCorrectAbility ? closestAbility ?? abilityName : abilityName;
+        string correctedNatureName = autoCorrectConfig.AutoCorrectNature ? closestNature ?? natureName : natureName;
+
+        if (abilityCorrectd)
+        {
+            correctionMessages.Add($"Ability was incorrect. Adjusted from **{abilityName}** to **{correctedAbilityName}**.");
+        }
+
+        if (natureCorrectd)
+        {
+            correctionMessages.Add($"Nature was incorrect. Adjusted from **{natureName}** to **{correctedNatureName}**.");
+        }
+
+        string formNameForBallVerification = correctedSpeciesName == speciesName ? formName : correctedFormName;
+        string correctedBallName = string.Empty;
+
+        if (!string.IsNullOrEmpty(ballName))
+        {
+            var legalBallTask = GetLegalBall(speciesIndex, formNameForBallVerification, ballName, gameStrings, pk);
+            correctedBallName = autoCorrectConfig.AutoCorrectBall ? await legalBallTask : ballName;
+
+            if (!string.IsNullOrEmpty(correctedBallName) && correctedBallName != ballName)
+            {
+                correctionMessages.Add($"{correctedSpeciesName} can't be in a {ballName}. Adjusted to **{correctedBallName}**.");
+            }
+        }
+
+        if (!string.IsNullOrEmpty(correctedAbilityName) && correctedAbilityName != abilityName)
+        {
+            correctionMessages.Add($"{speciesName} can't have the ability {abilityName}. Adjusted to **{correctedAbilityName}**.");
+        }
+
+        if (!string.IsNullOrEmpty(correctedNatureName) && correctedNatureName != natureName)
+        {
+            correctionMessages.Add($"Nature was incorrect. Adjusted to **{correctedNatureName}** Nature.");
+        }
 
         var levelVerifier = new LevelVerifier();
-        if (autoCorrectConfig.AutoCorrectLevel)
+        if (autoCorrectConfig.AutoCorrectLevel && !string.IsNullOrWhiteSpace(levelValue))
+        {
             levelVerifier.Verify(la);
+            if (!la.Valid)
+            {
+                correctionMessages.Add($"Level was incorrect. Adjusted to **Level 100**.");
+            }
+        }
+
         if (autoCorrectConfig.AutoCorrectGender)
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
             gender = await ValidateGender(pk, gender, speciesName);
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
+
+        if (!string.IsNullOrEmpty(gender) && gender != pk.Gender.ToString())
+        {
+            correctionMessages.Add($"{speciesName} can't be {gender}. Adjusted to **{pk.Gender}**.");
+        }
 
         if (autoCorrectConfig.AutoCorrectMovesLearnset)
-            ValidateMoves(lines, pk, la, gameStrings, correctedSpeciesName, correctedFormName);
+            ValidateMoves(lines, pk, la, gameStrings, correctedSpeciesName, correctedFormName ?? formName, correctionMessages);
 
         if (!ValidateIVs(pk, la, lines) && autoCorrectConfig.AutoCorrectIVs)
             RemoveIVLine(lines);
@@ -87,22 +130,20 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         if (!ValidateEVs(lines) && autoCorrectConfig.AutoCorrectEVs)
             RemoveEVLine(lines);
 
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-        string markLine = null;
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+        VerifyShiny(pk, la, lines, correctionMessages);
+
+        string? markLine = null;
         if (autoCorrectConfig.AutoCorrectMarks)
         {
             var markVerifier = new MarkVerifier();
             markVerifier.Verify(la);
             if (!la.Valid)
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 markLine = await CorrectMarks(pk, la.EncounterOriginal, lines);
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
 
         string correctedHeldItem = autoCorrectConfig.AutoCorrectHeldItem ? ValidateHeldItem(lines, pk, itemlist, heldItem) : heldItem;
 
-        string[] correctedLines = lines.Select((line, i) => CorrectLine(line, i, speciesName, correctedSpeciesName, correctedFormName, gender, correctedHeldItem, correctedAbilityName, correctedNatureName, correctedBallName, levelValue, la, nickname)).ToArray();
+        string[] correctedLines = lines.Select((line, i) => CorrectLine(line, i, speciesName, correctedSpeciesName, correctedFormName ?? formName, gender ?? string.Empty, correctedHeldItem, correctedAbilityName, correctedNatureName, correctedBallName, levelValue, la, nickname)).ToArray();
 
         // Find the index of the first move line
         int moveSetIndex = Array.FindIndex(correctedLines, line => line.StartsWith("- "));
@@ -134,7 +175,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             if (!la.Valid)
             {
                 string fixedNickname = autoCorrectConfig.FixedNickname;
-                correctedLines[0] = CorrectLine(correctedLines[0], 0, speciesName, correctedSpeciesName, correctedFormName, gender, correctedHeldItem, correctedAbilityName, correctedNatureName, correctedBallName, levelValue, la, fixedNickname);
+                correctedLines[0] = CorrectLine(correctedLines[0], 0, speciesName, correctedSpeciesName, correctedFormName ?? formName, gender ?? string.Empty, correctedHeldItem, correctedAbilityName, correctedNatureName, correctedBallName, levelValue, la, fixedNickname);
             }
         }
 
@@ -142,7 +183,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 
         await Task.Run(() => LogUtil.LogInfo($"Final Showdown Set:\n{finalShowdownSet}", nameof(AutoCorrectShowdown<T>)));
 
-        return finalShowdownSet;
+        return (finalShowdownSet, correctionMessages);
     }
 
     private static (string speciesName, string formName, string gender, string heldItem, string nickname) ParseSpeciesLine(string speciesLine)
@@ -221,17 +262,17 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
                 sb.Append(correctedSpeciesName);
                 if (!string.IsNullOrEmpty(correctedFormName))
                 {
-                    sb.Append("-");
+                    sb.Append('-');
                     sb.Append(correctedFormName);
                 }
-                sb.Append(")");
+                sb.Append(')');
             }
             else
             {
                 sb.Append(correctedSpeciesName);
                 if (!string.IsNullOrEmpty(correctedFormName))
                 {
-                    sb.Append("-");
+                    sb.Append('-');
                     sb.Append(correctedFormName);
                 }
             }
@@ -240,7 +281,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             {
                 sb.Append(" (");
                 sb.Append(gender);
-                sb.Append(")");
+                sb.Append(')');
             }
 
             if (!string.IsNullOrEmpty(correctedHeldItem))
@@ -267,17 +308,22 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         {
             return !la.Valid ? "Level: 100" : $"Level: {levelValue}";
         }
-
+        else if (line.StartsWith("Shiny:", StringComparison.OrdinalIgnoreCase))
+        {
+            return la.EncounterMatch.Shiny.IsValid(la.Entity) ? "Shiny: Yes" : "Shiny: No";
+        }
         return line;
     }
 
-    private static Task<string>? GetClosestSpecies(string userSpecies)
+    private static async Task<string?> GetClosestSpecies(string userSpecies, string[]? formNames = null)
     {
         var gameStrings = GetGameStrings();
-        var pkms = gameStrings.specieslist.Select(s => new T { Species = (ushort)Array.IndexOf(gameStrings.specieslist, s) });
-        var sortedSpecies = pkms.OrderBySpeciesName(gameStrings.specieslist).Select(p => gameStrings.specieslist[p.Species]);
+        var sortedSpecies = gameStrings.specieslist.OrderBy(name => name);
 
         var speciesName = userSpecies.Split('-')[0].Trim();
+        var formNamePart = userSpecies.Contains('-') ? string.Join("-", userSpecies.Split('-').Skip(1)).Trim() : string.Empty;
+
+        // LogUtil.LogInfo($"Comparing species: {speciesName}", nameof(AutoCorrectShowdown<T>));
 
         var fuzzySpecies = sortedSpecies
             .Where(s => !string.IsNullOrEmpty(s))
@@ -285,13 +331,36 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             .OrderByDescending(s => s.Distance)
             .FirstOrDefault();
 
-#pragma warning disable CS8604 // Possible null reference argument.
-        return Task.FromResult<string>(fuzzySpecies.Distance >= 80 ? fuzzySpecies.Species : null);
-#pragma warning restore CS8604 // Possible null reference argument.
+        // LogUtil.LogInfo($"Closest species found: {fuzzySpecies.Species} with distance {fuzzySpecies.Distance}", nameof(AutoCorrectShowdown<T>));
+
+        if (fuzzySpecies.Distance >= 80)
+        {
+            var correctedSpecies = fuzzySpecies.Species;
+
+            if (!string.IsNullOrEmpty(formNamePart))
+            {
+                if (formNames != null)
+                {
+                    var closestFormName = await GetClosestFormName(formNamePart, formNames).ConfigureAwait(false);
+                    // LogUtil.LogInfo($"Form names being compared against: {string.Join(", ", formNames)}", nameof(AutoCorrectShowdown<T>));
+                    // LogUtil.LogInfo($"Closest form found: {closestFormName}", nameof(AutoCorrectShowdown<T>));
+
+                    if (closestFormName != null)
+                    {
+                        return $"{correctedSpecies}-{closestFormName}";
+                    }
+                }
+                return $"{correctedSpecies}-{formNamePart}";
+            }
+            return correctedSpecies;
+        }
+        return null;
     }
 
-    private static Task<string>? GetClosestFormName(string userFormName, string[] validFormNames)
+    private static Task<string?> GetClosestFormName(string userFormName, string[] validFormNames)
     {
+        // LogUtil.LogInfo($"Comparing form name: {userFormName}", nameof(AutoCorrectShowdown<T>));
+
         var fuzzyFormName = validFormNames
             .Where(f => !string.IsNullOrEmpty(f))
             .Select(f => (FormName: f, Distance: Fuzz.Ratio(userFormName, f)))
@@ -299,9 +368,16 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             .ThenBy(f => f.FormName.Length)
             .FirstOrDefault();
 
-#pragma warning disable CS8604 // Possible null reference argument.
-        return Task.FromResult<string>(fuzzyFormName.Distance >= 80 ? fuzzyFormName.FormName : null);
-#pragma warning restore CS8604 // Possible null reference argument.
+        // LogUtil.LogInfo($"Closest form name found: {fuzzyFormName.FormName} with distance {fuzzyFormName.Distance}", nameof(AutoCorrectShowdown<T>));
+
+        // Lowered threshold to 70 and added fallback logic
+        if (fuzzyFormName.Distance >= 70)
+        {
+            return Task.FromResult<string?>(fuzzyFormName.FormName);
+        }
+
+        // Fallback: return the closest match even if it doesn't meet the threshold
+        return Task.FromResult<string?>(fuzzyFormName.FormName);
     }
 
     private static string ValidateHeldItem(string[] lines, PKM pk, string[] itemlist, string heldItem)
@@ -379,21 +455,61 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         return fuzzyItem.Distance >= 80 ? fuzzyItem.Item : null;
     }
 
-    private static void ValidateMoves(string[] lines, PKM pk, LegalityAnalysis la, GameStrings gameStrings, string speciesName, string formName)
+    private static void VerifyShiny(PKM pk, LegalityAnalysis la, string[] lines, List<string> correctionMessages)
+    {
+        var enc = la.EncounterMatch;
+        if (!enc.Shiny.IsValid(pk))
+        {
+            string speciesName = SpeciesName.GetSpeciesNameGeneration(pk.Species, (int)LanguageID.English, pk.Format);
+            correctionMessages.Add($"{speciesName} cannot be shiny. Setting to **Shiny: No**.");
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].Contains("Shiny: Yes", StringComparison.OrdinalIgnoreCase))
+                {
+                    lines[i] = "Shiny: No";
+                    break;
+                }
+            }
+        }
+    }
+
+    private static void ValidateMoves(string[] lines, PKM pk, LegalityAnalysis la, GameStrings gameStrings, string speciesName, string formName, List<string> correctionMessages)
     {
         var moveLines = lines.Where(line => line.StartsWith("- ")).ToArray();
         var correctedMoveLines = new List<string>(); // Create a list to store corrected move lines
-
         var validMoves = GetValidMoves(pk, gameStrings, speciesName, formName);
+        var usedMoves = new HashSet<string>(); // Create a HashSet to track used moves
 
-        foreach (var moveLine in moveLines)
+        for (int i = 0; i < moveLines.Length && i < 4; i++) // Validate up to four moves
         {
+            var moveLine = moveLines[i];
             var moveName = moveLine[2..].Trim();
             var correctedMoveName = GetClosestMove(moveName, validMoves);
 
-            if (!string.IsNullOrEmpty(correctedMoveName) && !correctedMoveLines.Contains($"- {correctedMoveName}"))
+            if (!string.IsNullOrEmpty(correctedMoveName))
             {
-                correctedMoveLines.Add($"- {correctedMoveName}");
+                if (!usedMoves.Contains(correctedMoveName))
+                {
+                    correctedMoveLines.Add($"- {correctedMoveName}");
+                    usedMoves.Add(correctedMoveName);
+                    if (moveName != correctedMoveName)
+                    {
+                        var speciesNameEN = SpeciesName.GetSpeciesNameGeneration(pk.Species, (int)LanguageID.English, pk.Format);
+                        correctionMessages.Add($"{speciesNameEN} cannot learn {moveName}. Replaced with **{correctedMoveName}**.");
+                    }
+                }
+                else
+                {
+                    var unusedValidMoves = validMoves.Except(usedMoves).ToList();
+                    if (unusedValidMoves.Count > 0)
+                    {
+                        var randomMove = unusedValidMoves[new Random().Next(unusedValidMoves.Count)];
+                        correctedMoveLines.Add($"- {randomMove}");
+                        usedMoves.Add(randomMove);
+                        var speciesNameEN = SpeciesName.GetSpeciesNameGeneration(pk.Species, (int)LanguageID.English, pk.Format);
+                        correctionMessages.Add($"{speciesNameEN} cannot learn {moveName}. Replaced with **{randomMove}**.");
+                    }
+                }
             }
         }
 
@@ -608,7 +724,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         throw new ArgumentException("Unsupported PKM type.", nameof(pk));
     }
 
-    private static Task<string>? GetClosestAbility(string userAbility, ushort speciesIndex, GameStrings gameStrings, IPersonalAbility12 personalInfo)
+    private static Task<(string? Ability, bool Corrected)> GetClosestAbility(string userAbility, ushort speciesIndex, GameStrings gameStrings, IPersonalAbility12 personalInfo)
     {
         var abilities = Enumerable.Range(0, personalInfo.AbilityCount)
             .Select(i => gameStrings.abilitylist[personalInfo.GetAbilityAtIndex(i)])
@@ -619,12 +735,12 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             .OrderByDescending(a => a.Distance)
             .FirstOrDefault();
 
-#pragma warning disable CS8604 // Possible null reference argument.
-        return Task.FromResult<string>(fuzzyAbility.Distance >= 80 ? fuzzyAbility.Ability : null);
-#pragma warning restore CS8604 // Possible null reference argument.
+        var correctedAbility = fuzzyAbility.Distance >= 80 ? fuzzyAbility.Ability : null;
+        var corrected = correctedAbility != null && correctedAbility != userAbility;
+        return Task.FromResult((correctedAbility, corrected));
     }
 
-    private static Task<string>? GetClosestNature(string userNature, GameStrings gameStrings)
+    private static Task<(string? Nature, bool Corrected)> GetClosestNature(string userNature, GameStrings gameStrings)
     {
         var fuzzyNature = gameStrings.natures
             .Where(n => !string.IsNullOrEmpty(n))
@@ -632,35 +748,31 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             .OrderByDescending(n => n.Distance)
             .FirstOrDefault();
 
-#pragma warning disable CS8604 // Possible null reference argument.
-        return Task.FromResult<string>(fuzzyNature.Distance >= 80 ? fuzzyNature.Nature : null);
-#pragma warning restore CS8604 // Possible null reference argument.
+        var correctedNature = fuzzyNature.Distance >= 80 ? fuzzyNature.Nature : null;
+        var corrected = correctedNature != null && correctedNature != userNature;
+        return Task.FromResult((correctedNature, corrected));
     }
 
-    private static Task<string>? GetLegalBall(ushort speciesIndex, string formName, string ballName, GameStrings gameStrings, PKM pk)
+    private static Task<string>? GetLegalBall(ushort speciesIndex, string formNameForBallVerification, string ballName, GameStrings gameStrings, PKM pk)
     {
         var closestBall = GetClosestBall(ballName, gameStrings);
-
         if (closestBall != null)
         {
-            pk.Ball = (byte)Array.IndexOf(gameStrings.itemlist, closestBall);
+            pk.Ball = (byte)Array.IndexOf(gameStrings.balllist, closestBall);
             if (new LegalityAnalysis(pk).Valid)
                 return Task.FromResult(closestBall);
         }
-
         var legalBall = BallApplicator.ApplyBallLegalByColor(pk);
-        return Task.FromResult(gameStrings.itemlist[legalBall]);
+        return Task.FromResult(gameStrings.balllist[legalBall]);
     }
 
     private static string? GetClosestBall(string userBall, GameStrings gameStrings)
     {
         var ballList = gameStrings.balllist.Where(b => !string.IsNullOrWhiteSpace(b)).ToArray();
-
         var fuzzyBall = ballList
             .Select(b => (BallName: b, Distance: Fuzz.PartialRatio(userBall, b)))
             .OrderByDescending(b => b.Distance)
             .FirstOrDefault();
-
         return fuzzyBall != default ? fuzzyBall.BallName : null;
     }
 
