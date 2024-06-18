@@ -143,7 +143,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 
         string correctedHeldItem = autoCorrectConfig.AutoCorrectHeldItem ? ValidateHeldItem(lines, pk, itemlist, heldItem) : heldItem;
 
-        string[] correctedLines = lines.Select((line, i) => CorrectLine(line, i, speciesName, correctedSpeciesName, correctedFormName ?? formName, gender ?? string.Empty, correctedHeldItem, correctedAbilityName, correctedNatureName, correctedBallName, levelValue, la, nickname)).ToArray();
+        string[] correctedLines = lines.Select((line, i) => CorrectLine(line, i, speciesName, correctedSpeciesName, correctedFormName ?? formName, formName, gender ?? string.Empty, correctedHeldItem, correctedAbilityName, correctedNatureName, correctedBallName, levelValue, la, nickname)).ToArray();
 
         // Find the index of the first move line
         int moveSetIndex = Array.FindIndex(correctedLines, line => line.StartsWith("- "));
@@ -168,17 +168,6 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             }
         }
 
-        if (autoCorrectConfig.AutoCorrectNickname)
-        {
-            var nicknameVerifier = new NicknameVerifier();
-            nicknameVerifier.Verify(la);
-            if (!la.Valid)
-            {
-                string fixedNickname = autoCorrectConfig.FixedNickname;
-                correctedLines[0] = CorrectLine(correctedLines[0], 0, speciesName, correctedSpeciesName, correctedFormName ?? formName, gender ?? string.Empty, correctedHeldItem, correctedAbilityName, correctedNatureName, correctedBallName, levelValue, la, fixedNickname);
-            }
-        }
-
         string finalShowdownSet = string.Join(Environment.NewLine, correctedLines);
 
         await Task.Run(() => LogUtil.LogInfo($"Final Showdown Set:\n{finalShowdownSet}", nameof(AutoCorrectShowdown<T>)));
@@ -192,36 +181,52 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         string gender = string.Empty;
         string heldItem = string.Empty;
         string nickname = string.Empty;
+        string speciesName = string.Empty;
 
         int heldItemIndex = speciesLine.IndexOf(" @ ");
         if (heldItemIndex != -1)
         {
             heldItem = speciesLine[(heldItemIndex + 3)..].Trim();
             speciesLine = speciesLine[..heldItemIndex].Trim();
+            LogUtil.LogInfo($"Parsed held item: {heldItem}", nameof(ParseSpeciesLine));
         }
 
-        string speciesName = speciesLine;
-
-        Match match = Regex.Match(speciesLine, @"^(.*?)\s*\((.*?)\)(\s*\(([MF])\))?$");
+        Match match = Regex.Match(speciesLine, @"^(?:(?<nickname>.*?)\s*\((?<species>.*?)\)(?:\s*\((?<gender>[MF])\))?|(?<species>.*?)(?:\s*\((?<gender>[MF])\))?)$");
         if (match.Success)
         {
-            if (match.Groups[1].Success)
-                nickname = match.Groups[1].Value.Trim();
+            if (match.Groups["nickname"].Success)
+            {
+                nickname = match.Groups["nickname"].Value.Trim();
+                LogUtil.LogInfo($"Parsed nickname: {nickname}", nameof(ParseSpeciesLine));
+            }
 
-            speciesName = match.Groups[2].Value.Trim();
+            if (match.Groups["species"].Success)
+            {
+                speciesName = match.Groups["species"].Value.Trim();
+                LogUtil.LogInfo($"Parsed species name: {speciesName}", nameof(ParseSpeciesLine));
+            }
 
-            if (match.Groups[4].Success)
-                gender = match.Groups[4].Value.Trim();
+            if (match.Groups["gender"].Success)
+            {
+                gender = match.Groups["gender"].Value.Trim();
+                LogUtil.LogInfo($"Parsed gender: {gender}", nameof(ParseSpeciesLine));
+            }
+        }
+        else
+        {
+            speciesName = speciesLine.Trim();
+            LogUtil.LogInfo($"Parsed species name: {speciesName}", nameof(ParseSpeciesLine));
         }
 
         string[] speciesParts = speciesName.Split(['-'], 2);
         speciesName = speciesParts[0].Trim();
-
         if (speciesParts.Length > 1)
         {
             formName = speciesParts[1].Trim();
+            LogUtil.LogInfo($"Parsed form name: {formName}", nameof(ParseSpeciesLine));
         }
 
+        LogUtil.LogInfo($"Final parsed values - Species: {speciesName}, Form: {formName}, Gender: {gender}, Held Item: {heldItem}, Nickname: {nickname}", nameof(ParseSpeciesLine));
         return (speciesName, formName, gender, heldItem, nickname);
     }
 
@@ -249,47 +254,34 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         return (abilityName, natureName, ballName, levelValue);
     }
 
-    private static string CorrectLine(string line, int index, string speciesName, string correctedSpeciesName, string correctedFormName, string gender, string correctedHeldItem, string correctedAbilityName, string correctedNatureName, string correctedBallName, string levelValue, LegalityAnalysis la, string nickname)
+    private static string CorrectLine(string line, int index, string speciesName, string correctedSpeciesName, string correctedFormName, string formName, string gender, string correctedHeldItem, string correctedAbilityName, string correctedNatureName, string correctedBallName, string levelValue, LegalityAnalysis la, string nickname)
     {
         if (index == 0) // Species line
         {
             StringBuilder sb = new StringBuilder();
-
+            string finalCorrectedName = string.IsNullOrEmpty(correctedFormName) ? correctedSpeciesName : $"{correctedSpeciesName}-{correctedFormName}";
             if (!string.IsNullOrEmpty(nickname))
             {
                 sb.Append(nickname);
                 sb.Append(" (");
-                sb.Append(correctedSpeciesName);
-                if (!string.IsNullOrEmpty(correctedFormName))
-                {
-                    sb.Append('-');
-                    sb.Append(correctedFormName);
-                }
+                sb.Append(finalCorrectedName);
                 sb.Append(')');
             }
             else
             {
-                sb.Append(correctedSpeciesName);
-                if (!string.IsNullOrEmpty(correctedFormName))
-                {
-                    sb.Append('-');
-                    sb.Append(correctedFormName);
-                }
+                sb.Append(finalCorrectedName);
             }
-
             if (!string.IsNullOrEmpty(gender))
             {
                 sb.Append(" (");
                 sb.Append(gender);
                 sb.Append(')');
             }
-
             if (!string.IsNullOrEmpty(correctedHeldItem))
             {
                 sb.Append(" @ ");
                 sb.Append(correctedHeldItem);
             }
-
             return sb.ToString();
         }
         else if (line.StartsWith("Ability:"))
@@ -908,7 +900,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         return true;
     }
 
-    private static Task<string>? ValidateGender(PKM pk, string gender, string speciesName)
+    private static Task<string> ValidateGender(PKM pk, string gender, string speciesName)
     {
         if (!string.IsNullOrEmpty(gender))
         {
@@ -949,7 +941,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         }
     }
 
-    private static Task<string>? CorrectMarks(PKM pk, IEncounterTemplate encounter, string[] lines)
+    private static Task<string> CorrectMarks(PKM pk, IEncounterTemplate encounter, string[] lines)
     {
         if (pk is not IRibbonIndex m)
         {
