@@ -123,7 +123,12 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
                 markLine = await CorrectMarks(pk, la.EncounterOriginal, lines);
         }
 
-        string correctedHeldItem = autoCorrectConfig.AutoCorrectHeldItem ? ValidateHeldItem(lines, pk, itemlist, heldItem) : heldItem;
+        (string correctedHeldItem, string heldItemCorrectionMessage) = ValidateHeldItem(lines, pk, itemlist, heldItem);
+
+        if (!string.IsNullOrEmpty(heldItemCorrectionMessage))
+        {
+            correctionMessages.Add(heldItemCorrectionMessage);
+        }
 
         string correctedGender = gender;
         if (autoCorrectConfig.AutoCorrectGender)
@@ -369,7 +374,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
     {
         // LogUtil.LogInfo($"Comparing form name: {userFormName}", nameof(AutoCorrectShowdown<T>));
 
-        var fuzzyFormName = validFormNames
+        var (FormName, Distance) = validFormNames
             .Where(f => !string.IsNullOrEmpty(f))
             .Select(f => (FormName: f, Distance: Fuzz.Ratio(userFormName, f)))
             .OrderByDescending(f => f.Distance)
@@ -379,73 +384,58 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         // LogUtil.LogInfo($"Closest form name found: {fuzzyFormName.FormName} with distance {fuzzyFormName.Distance}", nameof(AutoCorrectShowdown<T>));
 
         // Lowered threshold to 70 and added fallback logic
-        if (fuzzyFormName.Distance >= 70)
+        if (Distance >= 70)
         {
-            return Task.FromResult<string?>(fuzzyFormName.FormName);
+            return Task.FromResult<string?>(FormName);
         }
 
         // Fallback: return the closest match even if it doesn't meet the threshold
-        return Task.FromResult<string?>(fuzzyFormName.FormName);
+        return Task.FromResult<string?>(FormName);
     }
 
-    private static string ValidateHeldItem(string[] lines, PKM pk, string[] itemlist, string heldItem)
+    private static (string, string) ValidateHeldItem(string[] lines, PKM pk, string[] itemlist, string heldItem)
     {
-        // LogUtil.LogInfo($"Validating held item: {heldItem}", nameof(AutoCorrectShowdown<T>));
-
         if (!string.IsNullOrEmpty(heldItem))
         {
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
             string correctedHeldItem = GetClosestItem(heldItem, itemlist);
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-
-            // LogUtil.LogInfo($"Corrected held item: {correctedHeldItem}", nameof(AutoCorrectShowdown<T>));
-
             if (correctedHeldItem != null)
             {
                 int itemIndex = Array.IndexOf(itemlist, correctedHeldItem);
-
-                // LogUtil.LogInfo($"Item index: {itemIndex}", nameof(AutoCorrectShowdown<T>));
-
                 if (ItemRestrictions.IsHeldItemAllowed(itemIndex, pk.Context))
                 {
-                    // LogUtil.LogInfo("Held item is allowed", nameof(AutoCorrectShowdown<T>));
-
                     for (int i = 0; i < lines.Length; i++)
                     {
                         string line = lines[i];
                         if (line.Contains(" @ "))
                         {
                             lines[i] = line.Replace(heldItem, correctedHeldItem);
-
-                            // LogUtil.LogInfo($"Updated line: {lines[i]}", nameof(AutoCorrectShowdown<T>));
                             break;
                         }
                     }
-
-                    return correctedHeldItem;
+                    if (correctedHeldItem != heldItem)
+                    {
+                        string correctionMessage = $"Held item was incorrect. Adjusted from **{heldItem}** to **{correctedHeldItem}**.";
+                        return (correctedHeldItem, correctionMessage);
+                    }
+                    return (correctedHeldItem, string.Empty);
                 }
                 else
                 {
-                    // LogUtil.LogInfo("Held item is not allowed", nameof(AutoCorrectShowdown<T>));
-
                     for (int i = 0; i < lines.Length; i++)
                     {
                         string line = lines[i];
                         if (line.Contains(" @ "))
                         {
                             lines[i] = line.Split(new[] { " @ " }, StringSplitOptions.None)[0];
-
-                            // LogUtil.LogInfo($"Updated line: {lines[i]}", nameof(AutoCorrectShowdown<T>));
                             break;
                         }
                     }
-
-                    return string.Empty;
+                    string correctionMessage = $"Held item **{heldItem}** is not allowed. Removed the held item.";
+                    return (string.Empty, correctionMessage);
                 }
             }
         }
-
-        return heldItem;
+        return (heldItem, string.Empty);
     }
 
     private static string? GetClosestItem(string userItem, string[] itemlist)
