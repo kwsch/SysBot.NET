@@ -69,16 +69,6 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         string correctedAbilityName = autoCorrectConfig.AutoCorrectAbility ? closestAbility ?? abilityName : abilityName;
         string correctedNatureName = autoCorrectConfig.AutoCorrectNature ? closestNature ?? natureName : natureName;
 
-        if (abilityCorrectd)
-        {
-            correctionMessages.Add($"Ability was incorrect. Adjusted from **{abilityName}** to **{correctedAbilityName}**.");
-        }
-
-        if (natureCorrectd)
-        {
-            correctionMessages.Add($"Nature was incorrect. Adjusted from **{natureName}** to **{correctedNatureName}**.");
-        }
-
         string formNameForBallVerification = correctedSpeciesName == speciesName ? formName : correctedFormName;
         string correctedBallName = string.Empty;
 
