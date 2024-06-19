@@ -113,14 +113,6 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             }
         }
 
-        if (autoCorrectConfig.AutoCorrectGender)
-            gender = await ValidateGender(pk, gender, speciesName);
-
-        if (!string.IsNullOrEmpty(gender) && gender != pk.Gender.ToString())
-        {
-            correctionMessages.Add($"{speciesName} can't be {gender}. Adjusted to **{pk.Gender}**.");
-        }
-
         if (autoCorrectConfig.AutoCorrectMovesLearnset)
             ValidateMoves(lines, pk, la, gameStrings, correctedSpeciesName, correctedFormName ?? formName, correctionMessages);
 
@@ -143,7 +135,21 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 
         string correctedHeldItem = autoCorrectConfig.AutoCorrectHeldItem ? ValidateHeldItem(lines, pk, itemlist, heldItem) : heldItem;
 
-        string[] correctedLines = lines.Select((line, i) => CorrectLine(line, i, speciesName, correctedSpeciesName, correctedFormName ?? formName, formName, gender ?? string.Empty, correctedHeldItem, correctedAbilityName, correctedNatureName, correctedBallName, levelValue, la, nickname)).ToArray();
+        string correctedGender = gender;
+        if (autoCorrectConfig.AutoCorrectGender)
+        {
+            correctedGender = await ValidateGender(pk, gender, speciesName);
+            if (!string.IsNullOrEmpty(correctedGender) && correctedGender != gender)
+            {
+                correctionMessages.Add($"{speciesName} can't be {gender}. Adjusted to **{correctedGender}**.");
+            }
+            else
+            {
+                correctedGender = gender;
+            }
+        }
+
+        string[] correctedLines = lines.Select((line, i) => CorrectLine(line, i, speciesName, correctedSpeciesName, correctedFormName ?? formName, formName, correctedGender, correctedHeldItem, correctedAbilityName, correctedNatureName, correctedBallName, levelValue, la, nickname)).ToArray();
 
         // Find the index of the first move line
         int moveSetIndex = Array.FindIndex(correctedLines, line => line.StartsWith("- "));
@@ -170,7 +176,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 
         string finalShowdownSet = string.Join(Environment.NewLine, correctedLines);
 
-        await Task.Run(() => LogUtil.LogInfo($"Final Showdown Set:\n{finalShowdownSet}", nameof(AutoCorrectShowdown<T>)));
+       // await Task.Run(() => LogUtil.LogInfo($"Final Showdown Set:\n{finalShowdownSet}", nameof(AutoCorrectShowdown<T>)));
 
         return (finalShowdownSet, correctionMessages);
     }
@@ -188,45 +194,65 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         {
             heldItem = speciesLine[(heldItemIndex + 3)..].Trim();
             speciesLine = speciesLine[..heldItemIndex].Trim();
-            LogUtil.LogInfo($"Parsed held item: {heldItem}", nameof(ParseSpeciesLine));
+            //LogUtil.LogInfo($"Parsed held item: {heldItem}", nameof(ParseSpeciesLine));
         }
 
-        Match match = Regex.Match(speciesLine, @"^(?:(?<nickname>.*?)\s*\((?<species>.*?)\)(?:\s*\((?<gender>[MF])\))?|(?<species>.*?)(?:\s*\((?<gender>[MF])\))?)$");
-        if (match.Success)
+        int firstParenIndex = speciesLine.IndexOf('(');
+        int lastParenIndex = speciesLine.LastIndexOf(')');
+
+        if (firstParenIndex != -1 && lastParenIndex != -1 && firstParenIndex < lastParenIndex)
         {
-            if (match.Groups["nickname"].Success)
-            {
-                nickname = match.Groups["nickname"].Value.Trim();
-                LogUtil.LogInfo($"Parsed nickname: {nickname}", nameof(ParseSpeciesLine));
-            }
+            string textInParentheses = speciesLine[(firstParenIndex + 1)..lastParenIndex].Trim();
 
-            if (match.Groups["species"].Success)
+            if (textInParentheses == "M" || textInParentheses == "F")
             {
-                speciesName = match.Groups["species"].Value.Trim();
-                LogUtil.LogInfo($"Parsed species name: {speciesName}", nameof(ParseSpeciesLine));
+                gender = textInParentheses;
+               // LogUtil.LogInfo($"Parsed gender: {gender}", nameof(ParseSpeciesLine));
+                speciesName = speciesLine[..firstParenIndex].Trim();
+                //LogUtil.LogInfo($"Parsed species name: {speciesName}", nameof(ParseSpeciesLine));
             }
-
-            if (match.Groups["gender"].Success)
+            else
             {
-                gender = match.Groups["gender"].Value.Trim();
-                LogUtil.LogInfo($"Parsed gender: {gender}", nameof(ParseSpeciesLine));
+                int secondParenIndex = textInParentheses.IndexOf('(');
+                if (secondParenIndex != -1)
+                {
+                    string genderInParentheses = textInParentheses[(secondParenIndex + 1)..].Trim();
+                    if (genderInParentheses == "M" || genderInParentheses == "F")
+                    {
+                        gender = genderInParentheses;
+                        //LogUtil.LogInfo($"Parsed gender: {gender}", nameof(ParseSpeciesLine));
+                        textInParentheses = textInParentheses[..secondParenIndex].Trim();
+                    }
+                }
+
+                speciesName = textInParentheses;
+                //LogUtil.LogInfo($"Parsed species name: {speciesName}", nameof(ParseSpeciesLine));
+
+                string remainingText = speciesLine[..firstParenIndex].Trim();
+                if (!string.IsNullOrEmpty(remainingText))
+                {
+                    nickname = remainingText;
+                    //LogUtil.LogInfo($"Parsed nickname: {nickname}", nameof(ParseSpeciesLine));
+                }
             }
         }
         else
         {
             speciesName = speciesLine.Trim();
-            LogUtil.LogInfo($"Parsed species name: {speciesName}", nameof(ParseSpeciesLine));
+            //LogUtil.LogInfo($"Parsed species name: {speciesName}", nameof(ParseSpeciesLine));
         }
 
-        string[] speciesParts = speciesName.Split(['-'], 2);
-        speciesName = speciesParts[0].Trim();
-        if (speciesParts.Length > 1)
+        speciesName = speciesName.Replace(")", string.Empty);
+
+        int formSeparatorIndex = speciesName.IndexOf('-');
+        if (formSeparatorIndex != -1)
         {
-            formName = speciesParts[1].Trim();
-            LogUtil.LogInfo($"Parsed form name: {formName}", nameof(ParseSpeciesLine));
+            formName = speciesName[(formSeparatorIndex + 1)..].Trim();
+            speciesName = speciesName[..formSeparatorIndex].Trim();
+            //LogUtil.LogInfo($"Parsed form name: {formName}", nameof(ParseSpeciesLine));
         }
 
-        LogUtil.LogInfo($"Final parsed values - Species: {speciesName}, Form: {formName}, Gender: {gender}, Held Item: {heldItem}, Nickname: {nickname}", nameof(ParseSpeciesLine));
+        //LogUtil.LogInfo($"Final parsed values - Species: {speciesName}, Form: {formName}, Gender: {gender}, Held Item: {heldItem}, Nickname: {nickname}", nameof(ParseSpeciesLine));
         return (speciesName, formName, gender, heldItem, nickname);
     }
 
@@ -254,7 +280,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         return (abilityName, natureName, ballName, levelValue);
     }
 
-    private static string CorrectLine(string line, int index, string speciesName, string correctedSpeciesName, string correctedFormName, string formName, string gender, string correctedHeldItem, string correctedAbilityName, string correctedNatureName, string correctedBallName, string levelValue, LegalityAnalysis la, string nickname)
+    private static string CorrectLine(string line, int index, string speciesName, string correctedSpeciesName, string correctedFormName, string formName, string correctedGender, string correctedHeldItem, string correctedAbilityName, string correctedNatureName, string correctedBallName, string levelValue, LegalityAnalysis la, string nickname)
     {
         if (index == 0) // Species line
         {
@@ -271,10 +297,10 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             {
                 sb.Append(finalCorrectedName);
             }
-            if (!string.IsNullOrEmpty(gender))
+            if (!string.IsNullOrEmpty(correctedGender))
             {
                 sb.Append(" (");
-                sb.Append(gender);
+                sb.Append(correctedGender);
                 sb.Append(')');
             }
             if (!string.IsNullOrEmpty(correctedHeldItem))
