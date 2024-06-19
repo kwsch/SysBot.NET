@@ -115,13 +115,18 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         VerifyShiny(pk, la, lines, correctionMessages);
 
         string? markLine = null;
-        if (autoCorrectConfig.AutoCorrectMarks)
+        List<string> markCorrectionMessages = new List<string>();
+        if (autoCorrectConfig.AutoCorrectMarks && lines.Any(line => line.StartsWith(".RibbonMark")))
         {
             var markVerifier = new MarkVerifier();
             markVerifier.Verify(la);
             if (!la.Valid)
-                markLine = await CorrectMarks(pk, la.EncounterOriginal, lines);
+            {
+                (markLine, markCorrectionMessages) = await CorrectMarks(pk, la.EncounterOriginal, lines);
+            }
         }
+
+        correctionMessages.AddRange(markCorrectionMessages);
 
         (string correctedHeldItem, string heldItemCorrectionMessage) = ValidateHeldItem(lines, pk, itemlist, heldItem);
 
@@ -947,67 +952,45 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         }
     }
 
-    private static Task<string> CorrectMarks(PKM pk, IEncounterTemplate encounter, string[] lines)
+    private static Task<(string? MarkLine, List<string> CorrectionMessages)> CorrectMarks(PKM pk, IEncounterTemplate encounter, string[] lines)
     {
+        List<string> correctionMessages = [];
+
         if (pk is not IRibbonIndex m)
         {
-            LogUtil.LogInfo("PKM does not implement IRibbonIndex. Correcting to '.Ribbons=$SuggestAll'.", nameof(AutoCorrectShowdown<T>));
-            return Task.FromResult(".Ribbons=$SuggestAll");
+            correctionMessages.Add("PKM does not implement IRibbonIndex. Correcting marks.");
+            return Task.FromResult<(string? MarkLine, List<string> CorrectionMessages)>((".Ribbons=$SuggestAll", correctionMessages));
         }
 
-        // Find the existing mark line in the input showdown set
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-        string existingMarkLine = lines.FirstOrDefault(line => line.StartsWith(".RibbonMark"));
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-
+        string? existingMarkLine = lines.FirstOrDefault(line => line.StartsWith(".RibbonMark"));
         if (!string.IsNullOrEmpty(existingMarkLine))
         {
-            // Extract the mark name from the existing mark line
             string markName = existingMarkLine.Split('=')[0].Replace(".RibbonMark", string.Empty);
-
-            // Find the corresponding RibbonIndex based on the mark name
             if (Enum.TryParse($"Mark{markName}", out RibbonIndex markIndex))
             {
-                // Check if the mark is valid based on the encounter and the Pokémon
                 if (MarkRules.IsEncounterMarkValid(markIndex, pk, encounter))
                 {
                     m.SetRibbon((int)markIndex, true);
-                    LogUtil.LogInfo($"Found valid mark: {markIndex}. Keeping the existing mark line: {existingMarkLine}", nameof(AutoCorrectShowdown<T>));
-                    return Task.FromResult(existingMarkLine);
+                    return Task.FromResult<(string? MarkLine, List<string> CorrectionMessages)>((existingMarkLine, correctionMessages));
                 }
-                else
-                {
-                    LogUtil.LogInfo($"Mark {markIndex} is not valid for the encounter. Correcting to '.Ribbons=$SuggestAll'.", nameof(AutoCorrectShowdown<T>));
-                }
-            }
-            else
-            {
-                LogUtil.LogInfo($"Invalid mark name: {markName}. Correcting to '.Ribbons=$SuggestAll'.", nameof(AutoCorrectShowdown<T>));
             }
         }
 
-        // Apply valid marks based on the encounter if no valid mark is found
         if (MarkRules.IsEncounterMarkAllowed(encounter, pk))
         {
-            LogUtil.LogInfo("Encounter allows marks. Searching for valid marks.", nameof(AutoCorrectShowdown<T>));
             for (var mark = MarkLunchtime; mark <= MarkSlump; mark++)
             {
                 if (MarkRules.IsEncounterMarkValid(mark, pk, encounter))
                 {
                     m.SetRibbon((int)mark, true);
-                    LogUtil.LogInfo($"Found valid mark: {mark}. Setting the mark line to '.RibbonMark{GetRibbonNameSafe(mark)}=True'.", nameof(AutoCorrectShowdown<T>));
-                    return Task.FromResult($".RibbonMark{GetRibbonNameSafe(mark)}=True");
+                    string markLine = $".RibbonMark{GetRibbonNameSafe(mark)}=True";
+                    return Task.FromResult<(string? MarkLine, List<string> CorrectionMessages)>((markLine, correctionMessages));
                 }
             }
         }
-        else
-        {
-            LogUtil.LogInfo("Encounter does not allow marks. Correcting to '.Ribbons=$SuggestAll'.", nameof(AutoCorrectShowdown<T>));
-        }
 
-        // If no valid mark is found, correct the line to ".Ribbons=$SuggestAll"
-        LogUtil.LogInfo("No valid marks found. Correcting to '.Ribbons=$SuggestAll'.", nameof(AutoCorrectShowdown<T>));
-        return Task.FromResult(".Ribbons=$SuggestAll");
+        correctionMessages.Add("Correcting Marks/Ribbons.  Changing to **.Ribbons=$SuggestAll**");
+        return Task.FromResult<(string? MarkLine, List<string> CorrectionMessages)>((".Ribbons=$SuggestAll", correctionMessages));
     }
 
     private static string GetRibbonNameSafe(RibbonIndex index)
