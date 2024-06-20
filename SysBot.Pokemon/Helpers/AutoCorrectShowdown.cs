@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static PKHeX.Core.LearnMethod;
 using static PKHeX.Core.RibbonIndex;
@@ -19,164 +18,200 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
 
     public static async Task<(string CorrectedContent, List<string> CorrectionMessages)> PerformAutoCorrect(string content, PKM originalPk, LegalityAnalysis originalLa)
     {
-        var autoCorrectConfig = new TradeSettings.AutoCorrectShowdownCategory();
-        if (!autoCorrectConfig.EnableAutoCorrect)
-            return (content, new List<string>());
-
-        string[] lines = content.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-        var gameStrings = GetGameStrings();
-        var generation = GetGeneration();
-        var itemlist = gameStrings.itemlist;
-
-        (string speciesName, string formName, string gender, string heldItem, string nickname) = ParseSpeciesLine(lines[0]);
-
-        string correctedSpeciesName = autoCorrectConfig.AutoCorrectSpeciesAndForm ? await GetClosestSpecies(speciesName).ConfigureAwait(false) ?? speciesName : speciesName;
-        ushort speciesIndex = (ushort)Array.IndexOf(gameStrings.specieslist, correctedSpeciesName);
-        string[] formNames = FormConverter.GetFormList(speciesIndex, gameStrings.types, gameStrings.forms, new List<string>(), generation);
-
-        string correctedFormName = formName;
-        if (!string.IsNullOrEmpty(formName))
+        return await Task.Run(async () =>
         {
-            correctedFormName = await GetClosestFormName(formName, formNames).ConfigureAwait(false) ?? formName;
-        }
+            var autoCorrectConfig = new TradeSettings.AutoCorrectShowdownCategory();
+            if (!autoCorrectConfig.EnableAutoCorrect)
+                return (content, new List<string>());
 
-        // Combine corrected species and form names
-        string finalCorrectedName = string.IsNullOrEmpty(correctedFormName) ? correctedSpeciesName : $"{correctedSpeciesName}-{correctedFormName}";
+            string[] lines = content.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+            var gameStrings = GetGameStrings();
+            var generation = GetGeneration();
+            var itemlist = gameStrings.itemlist;
 
-        // Continue with your logic using finalCorrectedName
-        PKM pk = originalPk.Clone();
-        LegalityAnalysis la = originalLa;
+            (string speciesName, string formName, string gender, string heldItem, string nickname) = ParseSpeciesLine(lines[0]);
+            string originalSpeciesName = speciesName;
+            string originalFormName = formName;
+            string correctedSpeciesName = autoCorrectConfig.AutoCorrectSpeciesAndForm ? await GetClosestSpecies(speciesName) ?? speciesName : speciesName;
+            ushort speciesIndex = (ushort)Array.IndexOf(gameStrings.specieslist, correctedSpeciesName);
 
-        var correctionMessages = new List<string>();
-
-        bool speciesOrFormCorrected = finalCorrectedName != $"{speciesName}-{formName}".Trim('-');
-        if (speciesOrFormCorrected)
-        {
-            pk.Species = speciesIndex;
-            var personalFormInfo = await Task.Run(() => GetPersonalFormInfo(speciesIndex)).ConfigureAwait(false);
-            pk.Form = correctedFormName != null ? (byte)personalFormInfo.FormIndex(speciesIndex, (byte)Array.IndexOf(formNames, correctedFormName)) : (byte)0;
-            la = new LegalityAnalysis(pk);
-
-            correctionMessages.Add($"Species or form was incorrect. Adjusted to **{finalCorrectedName}**.");
-        }
-
-        (string abilityName, string natureName, string ballName, string levelValue) = ParseLines(lines);
-
-        var personalAbilityInfoTask = Task.Run(() => GetPersonalInfo(speciesIndex));
-        var (closestAbility, abilityCorrectd) = await GetClosestAbility(abilityName, speciesIndex, gameStrings, await personalAbilityInfoTask);
-        var (closestNature, natureCorrectd) = await GetClosestNature(natureName, gameStrings);
-
-        string correctedAbilityName = autoCorrectConfig.AutoCorrectAbility ? closestAbility ?? abilityName : abilityName;
-        string correctedNatureName = autoCorrectConfig.AutoCorrectNature ? closestNature ?? natureName : natureName;
-
-        string formNameForBallVerification = correctedSpeciesName == speciesName ? formName : correctedFormName;
-        string correctedBallName = string.Empty;
-
-        if (!string.IsNullOrEmpty(ballName))
-        {
-            var legalBallTask = GetLegalBall(speciesIndex, formNameForBallVerification, ballName, gameStrings, pk);
-            correctedBallName = autoCorrectConfig.AutoCorrectBall ? await legalBallTask : ballName;
-
-            if (!string.IsNullOrEmpty(correctedBallName) && correctedBallName != ballName)
+            string[] formNames = Array.Empty<string>();
+            string correctedFormName = formName;
+            if (!string.IsNullOrEmpty(formName))
             {
-                correctionMessages.Add($"{correctedSpeciesName} can't be in a {ballName}. Adjusted to **{correctedBallName}**.");
+                formNames = FormConverter.GetFormList(speciesIndex, gameStrings.types, gameStrings.forms, new List<string>(), generation);
+                correctedFormName = await GetClosestFormName(formName, formNames) ?? formName;
             }
-        }
 
-        if (!string.IsNullOrEmpty(correctedAbilityName) && correctedAbilityName != abilityName)
-        {
-            correctionMessages.Add($"{speciesName} can't have the ability {abilityName}. Adjusted to **{correctedAbilityName}**.");
-        }
+            // Combine corrected species and form names
+            string finalCorrectedName = string.IsNullOrEmpty(correctedFormName) ? correctedSpeciesName : $"{correctedSpeciesName}-{correctedFormName}";
 
-        if (!string.IsNullOrEmpty(correctedNatureName) && correctedNatureName != natureName)
-        {
-            correctionMessages.Add($"Nature was incorrect. Adjusted to **{correctedNatureName}** Nature.");
-        }
+            // Update speciesName to be the same as finalCorrectedName
+            speciesName = finalCorrectedName;
 
-        var levelVerifier = new LevelVerifier();
-        if (autoCorrectConfig.AutoCorrectLevel && !string.IsNullOrWhiteSpace(levelValue))
-        {
-            levelVerifier.Verify(la);
-            if (!la.Valid)
+            PKM pk = originalPk.Clone();
+            LegalityAnalysis la = originalLa;
+
+            var correctionMessages = new List<string>();
+
+            bool speciesOrFormCorrected = finalCorrectedName != $"{originalSpeciesName}-{originalFormName}".Trim('-');
+            if (speciesOrFormCorrected)
             {
-                correctionMessages.Add($"Level was incorrect. Adjusted to **Level 100**.");
+                pk.Species = speciesIndex;
+                var personalFormInfo = GetPersonalFormInfo(speciesIndex);
+                pk.Form = correctedFormName != null ? (byte)personalFormInfo.FormIndex(speciesIndex, (byte)Array.IndexOf(formNames, correctedFormName)) : (byte)0;
+                la = new LegalityAnalysis(pk);
+
+                // Add separate messages for species and form corrections
+                if (correctedSpeciesName != originalSpeciesName)
+                {
+                    correctionMessages.Add($"Species was incorrect. Adjusted from **{originalSpeciesName}** to **{correctedSpeciesName}**.");
+                }
+                if (correctedFormName != originalFormName)
+                {
+                    correctionMessages.Add($"Form was incorrect. Adjusted from **{originalFormName}** to **{correctedFormName}**.");
+                }
+                if (correctedSpeciesName == originalSpeciesName && correctedFormName == originalFormName)
+                {
+                    correctionMessages.Add($"Species or form was incorrect. Adjusted to **{finalCorrectedName}**.");
+                }
             }
-        }
 
-        if (autoCorrectConfig.AutoCorrectMovesLearnset)
-            ValidateMoves(lines, pk, la, gameStrings, correctedSpeciesName, correctedFormName ?? formName, correctionMessages);
+            (string abilityName, string natureName, string ballName, string levelValue) = ParseLines(lines);
 
-        if (!ValidateIVs(pk, la, lines) && autoCorrectConfig.AutoCorrectIVs)
-            RemoveIVLine(lines);
-
-        if (!ValidateEVs(lines) && autoCorrectConfig.AutoCorrectEVs)
-            RemoveEVLine(lines);
-
-        VerifyShiny(pk, la, lines, correctionMessages);
-
-        string? markLine = null;
-        List<string> markCorrectionMessages = new List<string>();
-        if (autoCorrectConfig.AutoCorrectMarks && lines.Any(line => line.StartsWith(".RibbonMark")))
-        {
-            var markVerifier = new MarkVerifier();
-            markVerifier.Verify(la);
-            if (!la.Valid)
+            string correctedAbilityName = string.Empty;
+            if (!string.IsNullOrEmpty(abilityName) && autoCorrectConfig.AutoCorrectAbility)
             {
-                (markLine, markCorrectionMessages) = await CorrectMarks(pk, la.EncounterOriginal, lines);
+                var personalAbilityInfo = GetPersonalInfo(speciesIndex);
+                var closestAbility = await GetClosestAbility(abilityName, speciesIndex, gameStrings, personalAbilityInfo);
+                correctedAbilityName = closestAbility.Ability ?? abilityName;
+
+                if (!string.IsNullOrEmpty(correctedAbilityName) && correctedAbilityName != abilityName)
+                {
+                    correctionMessages.Add($"{speciesName} can't have the ability {abilityName}. Adjusted to **{correctedAbilityName}**.");
+                }
             }
-        }
 
-        correctionMessages.AddRange(markCorrectionMessages);
-
-        (string correctedHeldItem, string heldItemCorrectionMessage) = ValidateHeldItem(lines, pk, itemlist, heldItem);
-
-        if (!string.IsNullOrEmpty(heldItemCorrectionMessage))
-        {
-            correctionMessages.Add(heldItemCorrectionMessage);
-        }
-
-        string correctedGender = gender;
-        if (autoCorrectConfig.AutoCorrectGender)
-        {
-            correctedGender = await ValidateGender(pk, gender, speciesName);
-            if (!string.IsNullOrEmpty(correctedGender) && correctedGender != gender)
+            string correctedNatureName = string.Empty;
+            if (!string.IsNullOrEmpty(natureName) && autoCorrectConfig.AutoCorrectNature)
             {
-                correctionMessages.Add($"{speciesName} can't be {gender}. Adjusted to **{correctedGender}**.");
+                var closestNature = await GetClosestNature(natureName, gameStrings);
+                correctedNatureName = closestNature.Nature ?? natureName;
+
+                if (!string.IsNullOrEmpty(correctedNatureName) && correctedNatureName != natureName)
+                {
+                    correctionMessages.Add($"Nature was incorrect. Adjusted to **{correctedNatureName}** Nature.");
+                }
             }
-            else
+
+            string formNameForBallVerification = correctedSpeciesName == speciesName ? formName : correctedFormName;
+            string correctedBallName = string.Empty;
+            if (!string.IsNullOrEmpty(ballName) && autoCorrectConfig.AutoCorrectBall)
             {
-                correctedGender = gender;
+                var legalBall = await GetLegalBall(speciesIndex, formNameForBallVerification, ballName, gameStrings, pk);
+                correctedBallName = legalBall;
+
+                if (!string.IsNullOrEmpty(correctedBallName) && correctedBallName != ballName)
+                {
+                    correctionMessages.Add($"{speciesName} can't be in a {ballName}. Adjusted to **{correctedBallName}**.");
+                }
             }
-        }
 
-        string[] correctedLines = lines.Select((line, i) => CorrectLine(line, i, speciesName, correctedSpeciesName, correctedFormName ?? formName, formName, correctedGender, correctedHeldItem, correctedAbilityName, correctedNatureName, correctedBallName, levelValue, la, nickname)).ToArray();
-
-        // Find the index of the first move line
-        int moveSetIndex = Array.FindIndex(correctedLines, line => line.StartsWith("- "));
-
-        // Insert the mark line above the move set if it exists, otherwise add it at the end
-        if (!string.IsNullOrEmpty(markLine))
-        {
-            if (moveSetIndex != -1)
+            if (autoCorrectConfig.AutoCorrectLevel && !string.IsNullOrWhiteSpace(levelValue))
             {
-                var updatedLines = new List<string>(correctedLines);
-                updatedLines.Insert(moveSetIndex, markLine);
-                correctedLines = updatedLines.ToArray();
+                var levelVerifier = new LevelVerifier();
+                levelVerifier.Verify(la);
+                if (!la.Valid)
+                {
+                    correctionMessages.Add($"Level was incorrect. Adjusted to **Level 100**.");
+                }
             }
-            else
+
+            if (autoCorrectConfig.AutoCorrectMovesLearnset && lines.Any(line => line.StartsWith("- ")))
             {
-                // Replace the invalid mark line with the corrected line
-                int invalidMarkIndex = Array.FindIndex(correctedLines, line => line.StartsWith(".RibbonMark"));
-                if (invalidMarkIndex != -1)
-                    correctedLines[invalidMarkIndex] = markLine;
+                await ValidateMovesAsync(lines, pk, la, gameStrings, speciesName, correctedFormName ?? formName, correctionMessages);
+            }
+
+            if (autoCorrectConfig.AutoCorrectIVs && lines.Any(line => line.StartsWith("IVs:")))
+            {
+                if (!ValidateIVs(pk, la, lines))
+                    RemoveIVLine(lines);
+            }
+
+            if (autoCorrectConfig.AutoCorrectEVs && lines.Any(line => line.StartsWith("EVs:")))
+            {
+                if (!ValidateEVs(lines))
+                    RemoveEVLine(lines);
+            }
+
+            if (lines.Any(line => line.StartsWith("Shiny:", StringComparison.OrdinalIgnoreCase)))
+            {
+                VerifyShiny(pk, la, lines, correctionMessages, speciesName);
+            }
+
+            string? markLine = null;
+            List<string> markCorrectionMessages = new List<string>();
+            if (autoCorrectConfig.AutoCorrectMarks && lines.Any(line => line.StartsWith(".RibbonMark")))
+            {
+                var markVerifier = new MarkVerifier();
+                markVerifier.Verify(la);
+                if (!la.Valid)
+                {
+                    (markLine, markCorrectionMessages) = await CorrectMarks(pk, la.EncounterOriginal, lines);
+                }
+            }
+
+            correctionMessages.AddRange(markCorrectionMessages);
+
+            (string correctedHeldItem, string heldItemCorrectionMessage) = ValidateHeldItem(lines, pk, itemlist, heldItem);
+
+            if (!string.IsNullOrEmpty(heldItemCorrectionMessage))
+            {
+                correctionMessages.Add(heldItemCorrectionMessage);
+            }
+
+            string correctedGender = gender;
+            string genderCorrectionMessage = string.Empty;
+            if (autoCorrectConfig.AutoCorrectGender && !string.IsNullOrEmpty(gender))
+            {
+                (correctedGender, genderCorrectionMessage) = ValidateGender(pk, gender, speciesName);
+                if (!string.IsNullOrEmpty(genderCorrectionMessage))
+                {
+                    correctionMessages.Add(genderCorrectionMessage);
+                }
+            }
+
+            string[] correctedLines = lines.Select((line, i) => CorrectLine(line, i, speciesName, correctedSpeciesName, correctedFormName ?? formName, formName, correctedGender, gender, correctedHeldItem, heldItem, correctedAbilityName, correctedNatureName, correctedBallName, levelValue, la, nickname)).ToArray();
+
+            // TODO:  Validate Scale Line and remove if necessary.
+
+            // Find the index of the first move line
+            int moveSetIndex = Array.FindIndex(correctedLines, line => line.StartsWith("- "));
+
+            // Insert the mark line above the move set if it exists, otherwise add it at the end
+            if (!string.IsNullOrEmpty(markLine))
+            {
+                if (moveSetIndex != -1)
+                {
+                    var updatedLines = new List<string>(correctedLines);
+                    updatedLines.Insert(moveSetIndex, markLine);
+                    correctedLines = updatedLines.ToArray();
+                }
                 else
-                    correctedLines = correctedLines.Append(markLine).ToArray();
+                {
+                    // Replace the invalid mark line with the corrected line
+                    int invalidMarkIndex = Array.FindIndex(correctedLines, line => line.StartsWith(".RibbonMark"));
+                    if (invalidMarkIndex != -1)
+                        correctedLines[invalidMarkIndex] = markLine;
+                    else
+                        correctedLines = correctedLines.Append(markLine).ToArray();
+                }
             }
-        }
 
-        string finalShowdownSet = string.Join(Environment.NewLine, correctedLines);
+            string finalShowdownSet = string.Join(Environment.NewLine, correctedLines);
 
-        return (finalShowdownSet, correctionMessages);
+            return (finalShowdownSet, correctionMessages);
+        });
     }
 
     private static (string speciesName, string formName, string gender, string heldItem, string nickname) ParseSpeciesLine(string speciesLine)
@@ -192,7 +227,6 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         {
             heldItem = speciesLine[(heldItemIndex + 3)..].Trim();
             speciesLine = speciesLine[..heldItemIndex].Trim();
-            //LogUtil.LogInfo($"Parsed held item: {heldItem}", nameof(ParseSpeciesLine));
         }
 
         int firstParenIndex = speciesLine.IndexOf('(');
@@ -205,9 +239,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             if (textInParentheses == "M" || textInParentheses == "F")
             {
                 gender = textInParentheses;
-               // LogUtil.LogInfo($"Parsed gender: {gender}", nameof(ParseSpeciesLine));
                 speciesName = speciesLine[..firstParenIndex].Trim();
-                //LogUtil.LogInfo($"Parsed species name: {speciesName}", nameof(ParseSpeciesLine));
             }
             else
             {
@@ -218,26 +250,22 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
                     if (genderInParentheses == "M" || genderInParentheses == "F")
                     {
                         gender = genderInParentheses;
-                        //LogUtil.LogInfo($"Parsed gender: {gender}", nameof(ParseSpeciesLine));
                         textInParentheses = textInParentheses[..secondParenIndex].Trim();
                     }
                 }
 
                 speciesName = textInParentheses;
-                //LogUtil.LogInfo($"Parsed species name: {speciesName}", nameof(ParseSpeciesLine));
 
                 string remainingText = speciesLine[..firstParenIndex].Trim();
                 if (!string.IsNullOrEmpty(remainingText))
                 {
                     nickname = remainingText;
-                    //LogUtil.LogInfo($"Parsed nickname: {nickname}", nameof(ParseSpeciesLine));
                 }
             }
         }
         else
         {
             speciesName = speciesLine.Trim();
-            //LogUtil.LogInfo($"Parsed species name: {speciesName}", nameof(ParseSpeciesLine));
         }
 
         speciesName = speciesName.Replace(")", string.Empty);
@@ -247,10 +275,8 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         {
             formName = speciesName[(formSeparatorIndex + 1)..].Trim();
             speciesName = speciesName[..formSeparatorIndex].Trim();
-            //LogUtil.LogInfo($"Parsed form name: {formName}", nameof(ParseSpeciesLine));
         }
 
-        //LogUtil.LogInfo($"Final parsed values - Species: {speciesName}, Form: {formName}, Gender: {gender}, Held Item: {heldItem}, Nickname: {nickname}", nameof(ParseSpeciesLine));
         return (speciesName, formName, gender, heldItem, nickname);
     }
 
@@ -278,7 +304,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         return (abilityName, natureName, ballName, levelValue);
     }
 
-    private static string CorrectLine(string line, int index, string speciesName, string correctedSpeciesName, string correctedFormName, string formName, string correctedGender, string correctedHeldItem, string correctedAbilityName, string correctedNatureName, string correctedBallName, string levelValue, LegalityAnalysis la, string nickname)
+    private static string CorrectLine(string line, int index, string speciesName, string correctedSpeciesName, string correctedFormName, string formName, string correctedGender, string gender, string correctedHeldItem, string heldItem, string correctedAbilityName, string correctedNatureName, string correctedBallName, string levelValue, LegalityAnalysis la, string nickname)
     {
         if (index == 0) // Species line
         {
@@ -295,16 +321,15 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             {
                 sb.Append(finalCorrectedName);
             }
-            if (!string.IsNullOrEmpty(correctedGender))
-            {
-                sb.Append(" (");
-                sb.Append(correctedGender);
-                sb.Append(')');
-            }
             if (!string.IsNullOrEmpty(correctedHeldItem))
             {
                 sb.Append(" @ ");
                 sb.Append(correctedHeldItem);
+            }
+            else if (!string.IsNullOrEmpty(heldItem))
+            {
+                sb.Append(" @ ");
+                sb.Append(heldItem);
             }
             return sb.ToString();
         }
@@ -437,6 +462,21 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
                     return (string.Empty, correctionMessage);
                 }
             }
+            else
+            {
+                // Add this block to handle unrecognized items
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    string line = lines[i];
+                    if (line.Contains(" @ "))
+                    {
+                        lines[i] = line.Split(new[] { " @ " }, StringSplitOptions.None)[0];
+                        break;
+                    }
+                }
+                string correctionMessage = $"Held item **{heldItem}** is not recognized. Removed the held item.";
+                return (string.Empty, correctionMessage);
+            }
         }
         return (heldItem, string.Empty);
     }
@@ -456,12 +496,11 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         return fuzzyItem.Distance >= 80 ? fuzzyItem.Item : null;
     }
 
-    private static void VerifyShiny(PKM pk, LegalityAnalysis la, string[] lines, List<string> correctionMessages)
+    private static void VerifyShiny(PKM pk, LegalityAnalysis la, string[] lines, List<string> correctionMessages, string speciesName)
     {
         var enc = la.EncounterMatch;
         if (!enc.Shiny.IsValid(pk))
         {
-            string speciesName = SpeciesName.GetSpeciesNameGeneration(pk.Species, (int)LanguageID.English, pk.Format);
             correctionMessages.Add($"{speciesName} cannot be shiny. Setting to **Shiny: No**.");
             for (int i = 0; i < lines.Length; i++)
             {
@@ -474,19 +513,17 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         }
     }
 
-    private static void ValidateMoves(string[] lines, PKM pk, LegalityAnalysis la, GameStrings gameStrings, string speciesName, string formName, List<string> correctionMessages)
+    private static async Task ValidateMovesAsync(string[] lines, PKM pk, LegalityAnalysis la, GameStrings gameStrings, string speciesName, string formName, List<string> correctionMessages)
     {
         var moveLines = lines.Where(line => line.StartsWith("- ")).ToArray();
-        var correctedMoveLines = new List<string>(); // Create a list to store corrected move lines
-        var validMoves = GetValidMoves(pk, gameStrings, speciesName, formName);
-        var usedMoves = new HashSet<string>(); // Create a HashSet to track used moves
-
-        for (int i = 0; i < moveLines.Length && i < 4; i++) // Validate up to four moves
+        var correctedMoveLines = new List<string>();
+        var validMoves = await GetValidMovesAsync(pk, gameStrings, speciesName, formName);
+        var usedMoves = new HashSet<string>();
+        for (int i = 0; i < moveLines.Length && i < 4; i++)
         {
             var moveLine = moveLines[i];
             var moveName = moveLine[2..].Trim();
-            var correctedMoveName = GetClosestMove(moveName, validMoves);
-
+            var correctedMoveName = await GetClosestMoveAsync(moveName, validMoves);
             if (!string.IsNullOrEmpty(correctedMoveName))
             {
                 if (!usedMoves.Contains(correctedMoveName))
@@ -495,8 +532,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
                     usedMoves.Add(correctedMoveName);
                     if (moveName != correctedMoveName)
                     {
-                        var speciesNameEN = SpeciesName.GetSpeciesNameGeneration(pk.Species, (int)LanguageID.English, pk.Format);
-                        correctionMessages.Add($"{speciesNameEN} cannot learn {moveName}. Replaced with **{correctedMoveName}**.");
+                        correctionMessages.Add($"{speciesName} cannot learn {moveName}. Replaced with **{correctedMoveName}**.");
                     }
                 }
                 else
@@ -507,13 +543,11 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
                         var randomMove = unusedValidMoves[new Random().Next(unusedValidMoves.Count)];
                         correctedMoveLines.Add($"- {randomMove}");
                         usedMoves.Add(randomMove);
-                        var speciesNameEN = SpeciesName.GetSpeciesNameGeneration(pk.Species, (int)LanguageID.English, pk.Format);
-                        correctionMessages.Add($"{speciesNameEN} cannot learn {moveName}. Replaced with **{randomMove}**.");
+                        correctionMessages.Add($"{speciesName} cannot learn {moveName}. Replaced with **{randomMove}**.");
                     }
                 }
             }
         }
-
         // Replace the original move lines with the corrected move lines
         for (int i = 0; i < moveLines.Length; i++)
         {
@@ -521,7 +555,7 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
             if (i < correctedMoveLines.Count)
             {
                 lines[Array.IndexOf(lines, moveLine)] = correctedMoveLines[i];
-                LogUtil.LogInfo(correctedMoveLines[i], nameof(AutoCorrectShowdown<T>));
+                LogUtil.LogInfo("ShowdownSet", $"Corrected move: {correctedMoveLines[i]}");
             }
             else
             {
@@ -530,184 +564,190 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         }
     }
 
-    private static string[] GetValidMoves(PKM pk, GameStrings gameStrings, string speciesName, string formName)
+    private static async Task<string[]> GetValidMovesAsync(PKM pk, GameStrings gameStrings, string speciesName, string formName)
     {
-        var speciesIndex = Array.IndexOf(gameStrings.specieslist, speciesName);
-        var form = pk.Form;
-
-        var learnSource = GetLearnSource(pk);
-        var validMoves = new List<string>();
-
-        if (learnSource is LearnSource9SV learnSource9SV)
+        return await Task.Run(() =>
         {
-            if (learnSource9SV.TryGetPersonal((ushort)speciesIndex, form, out var personalInfo))
+            var speciesIndex = Array.IndexOf(gameStrings.specieslist, speciesName);
+            var form = pk.Form;
+
+            var learnSource = GetLearnSource(pk);
+            var validMoves = new List<string>();
+
+            if (learnSource is LearnSource9SV learnSource9SV)
             {
-                var evo = new EvoCriteria
+                if (learnSource9SV.TryGetPersonal((ushort)speciesIndex, form, out var personalInfo))
                 {
-                    Species = (ushort)speciesIndex,
-                    Form = form,
-                    LevelMax = 100,
-                };
-
-                // Level-up moves
-                var learnset = learnSource9SV.GetLearnset((ushort)speciesIndex, form);
-                validMoves.AddRange(learnset.GetMoveRange(evo.LevelMax).ToArray()
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // Egg moves
-                var eggMoves = learnSource9SV.GetEggMoves((ushort)speciesIndex, form).ToArray();
-                validMoves.AddRange(eggMoves
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // Reminder moves
-                var reminderMoves = learnSource9SV.GetReminderMoves((ushort)speciesIndex, form).ToArray();
-                validMoves.AddRange(reminderMoves
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // TM moves
-                var tmMoves = personalInfo.RecordPermitIndexes.ToArray();
-                validMoves.AddRange(tmMoves
-                    .Where(m => personalInfo.GetIsLearnTM(Array.IndexOf(tmMoves, m)))
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-            }
-        }
-        else if (learnSource is LearnSource8BDSP learnSource8BDSP)
-        {
-            if (learnSource8BDSP.TryGetPersonal((ushort)speciesIndex, form, out var personalInfo))
-            {
-                var evo = new EvoCriteria
-                {
-                    Species = (ushort)speciesIndex,
-                    Form = form,
-                    LevelMax = 100,
-                };
-
-                // Level-up moves
-                var learnset = learnSource8BDSP.GetLearnset((ushort)speciesIndex, form);
-                validMoves.AddRange(learnset.GetMoveRange(evo.LevelMax).ToArray()
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // Egg moves
-                var eggMoves = learnSource8BDSP.GetEggMoves((ushort)speciesIndex, form).ToArray();
-                validMoves.AddRange(eggMoves
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // TM moves
-                var tmMoves = LearnSource8BDSP.TMHM_BDSP.ToArray();
-                validMoves.AddRange(tmMoves
-                    .Where(m => personalInfo.GetIsLearnTM(Array.IndexOf(tmMoves, m)))
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-            }
-        }
-        else if (learnSource is LearnSource8LA learnSource8LA)
-        {
-            if (learnSource8LA.TryGetPersonal((ushort)speciesIndex, form, out var personalInfo))
-            {
-                var evo = new EvoCriteria
-                {
-                    Species = (ushort)speciesIndex,
-                    Form = form,
-                    LevelMax = 100,
-                };
-
-                // Level-up moves
-                var learnset = learnSource8LA.GetLearnset((ushort)speciesIndex, form);
-                validMoves.AddRange(learnset.GetMoveRange(evo.LevelMax).ToArray()
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // Move shop (TM) moves
-                var tmMoves = personalInfo.RecordPermitIndexes.ToArray();
-                validMoves.AddRange(tmMoves
-                    .Where(m => personalInfo.GetIsLearnMoveShop(m))
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-            }
-        }
-        else if (learnSource is LearnSource8SWSH learnSource8SWSH)
-        {
-            if (learnSource8SWSH.TryGetPersonal((ushort)speciesIndex, form, out var personalInfo))
-            {
-                var evo = new EvoCriteria
-                {
-                    Species = (ushort)speciesIndex,
-                    Form = form,
-                    LevelMax = 100,
-                };
-
-                // Level-up moves
-                var learnset = learnSource8SWSH.GetLearnset((ushort)speciesIndex, form);
-                validMoves.AddRange(learnset.GetMoveRange(evo.LevelMax).ToArray()
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // Egg moves
-                var eggMoves = learnSource8SWSH.GetEggMoves((ushort)speciesIndex, form).ToArray();
-                validMoves.AddRange(eggMoves
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // TR moves
-                var trMoves = personalInfo.RecordPermitIndexes.ToArray();
-                validMoves.AddRange(trMoves
-                    .Where(m => personalInfo.GetIsLearnTR(Array.IndexOf(trMoves, m)))
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-            }
-        }
-        else if (learnSource is LearnSource7GG learnSource7GG)
-        {
-            if (learnSource7GG.TryGetPersonal((ushort)speciesIndex, form, out var personalInfo))
-            {
-                var evo = new EvoCriteria
-                {
-                    Species = (ushort)speciesIndex,
-                    Form = form,
-                    LevelMax = 100,
-                };
-
-                // Level-up moves (including Move Reminder)
-                var learnset = learnSource7GG.GetLearnset((ushort)speciesIndex, form);
-                validMoves.AddRange(learnset.GetMoveRange(100).ToArray() // 100 is the bonus for Move Reminder in LGPE
-                    .Select(m => gameStrings.movelist[m])
-                    .Where(m => !string.IsNullOrEmpty(m)));
-
-                // TM moves and special tutor moves
-                for (int move = 0; move < gameStrings.movelist.Length; move++)
-                {
-                    var learnInfo = learnSource7GG.GetCanLearn(pk, personalInfo, evo, (ushort)move);
-                    if (learnInfo.Method is TMHM or Tutor)
+                    var evo = new EvoCriteria
                     {
-                        var moveName = gameStrings.movelist[move];
-                        if (!string.IsNullOrEmpty(moveName))
-                            validMoves.Add(moveName);
+                        Species = (ushort)speciesIndex,
+                        Form = form,
+                        LevelMax = 100,
+                    };
+
+                    // Level-up moves
+                    var learnset = learnSource9SV.GetLearnset((ushort)speciesIndex, form);
+                    validMoves.AddRange(learnset.GetMoveRange(evo.LevelMax).ToArray()
+                        .Select(m => gameStrings.movelist[m])
+                        .Where(m => !string.IsNullOrEmpty(m)));
+
+                    // Egg moves
+                    var eggMoves = learnSource9SV.GetEggMoves((ushort)speciesIndex, form).ToArray();
+                    validMoves.AddRange(eggMoves
+                        .Select(m => gameStrings.movelist[m])
+                        .Where(m => !string.IsNullOrEmpty(m)));
+
+                    // Reminder moves
+                    var reminderMoves = learnSource9SV.GetReminderMoves((ushort)speciesIndex, form).ToArray();
+                    validMoves.AddRange(reminderMoves
+                        .Select(m => gameStrings.movelist[m])
+                        .Where(m => !string.IsNullOrEmpty(m)));
+
+                    // TM moves
+                    var tmMoves = personalInfo.RecordPermitIndexes.ToArray();
+                    validMoves.AddRange(tmMoves
+                        .Where(m => personalInfo.GetIsLearnTM(Array.IndexOf(tmMoves, m)))
+                        .Select(m => gameStrings.movelist[m])
+                        .Where(m => !string.IsNullOrEmpty(m)));
+                }
+            }
+            else if (learnSource is LearnSource8BDSP learnSource8BDSP)
+            {
+                if (learnSource8BDSP.TryGetPersonal((ushort)speciesIndex, form, out var personalInfo))
+                {
+                    var evo = new EvoCriteria
+                    {
+                        Species = (ushort)speciesIndex,
+                        Form = form,
+                        LevelMax = 100,
+                    };
+
+                    // Level-up moves
+                    var learnset = learnSource8BDSP.GetLearnset((ushort)speciesIndex, form);
+                    validMoves.AddRange(learnset.GetMoveRange(evo.LevelMax).ToArray()
+                        .Select(m => gameStrings.movelist[m])
+                        .Where(m => !string.IsNullOrEmpty(m)));
+
+                    // Egg moves
+                    var eggMoves = learnSource8BDSP.GetEggMoves((ushort)speciesIndex, form).ToArray();
+                    validMoves.AddRange(eggMoves
+                        .Select(m => gameStrings.movelist[m])
+                        .Where(m => !string.IsNullOrEmpty(m)));
+
+                    // TM moves
+                    var tmMoves = LearnSource8BDSP.TMHM_BDSP.ToArray();
+                    validMoves.AddRange(tmMoves
+                        .Where(m => personalInfo.GetIsLearnTM(Array.IndexOf(tmMoves, m)))
+                        .Select(m => gameStrings.movelist[m])
+                        .Where(m => !string.IsNullOrEmpty(m)));
+                }
+            }
+            else if (learnSource is LearnSource8LA learnSource8LA)
+            {
+                if (learnSource8LA.TryGetPersonal((ushort)speciesIndex, form, out var personalInfo))
+                {
+                    var evo = new EvoCriteria
+                    {
+                        Species = (ushort)speciesIndex,
+                        Form = form,
+                        LevelMax = 100,
+                    };
+
+                    // Level-up moves
+                    var learnset = learnSource8LA.GetLearnset((ushort)speciesIndex, form);
+                    validMoves.AddRange(learnset.GetMoveRange(evo.LevelMax).ToArray()
+                        .Select(m => gameStrings.movelist[m])
+                        .Where(m => !string.IsNullOrEmpty(m)));
+
+                    // Move shop (TM) moves
+                    var tmMoves = personalInfo.RecordPermitIndexes.ToArray();
+                    validMoves.AddRange(tmMoves
+                        .Where(m => personalInfo.GetIsLearnMoveShop(m))
+                        .Select(m => gameStrings.movelist[m])
+                        .Where(m => !string.IsNullOrEmpty(m)));
+                }
+            }
+            else if (learnSource is LearnSource8SWSH learnSource8SWSH)
+            {
+                if (learnSource8SWSH.TryGetPersonal((ushort)speciesIndex, form, out var personalInfo))
+                {
+                    var evo = new EvoCriteria
+                    {
+                        Species = (ushort)speciesIndex,
+                        Form = form,
+                        LevelMax = 100,
+                    };
+
+                    // Level-up moves
+                    var learnset = learnSource8SWSH.GetLearnset((ushort)speciesIndex, form);
+                    validMoves.AddRange(learnset.GetMoveRange(evo.LevelMax).ToArray()
+                        .Select(m => gameStrings.movelist[m])
+                        .Where(m => !string.IsNullOrEmpty(m)));
+
+                    // Egg moves
+                    var eggMoves = learnSource8SWSH.GetEggMoves((ushort)speciesIndex, form).ToArray();
+                    validMoves.AddRange(eggMoves
+                        .Select(m => gameStrings.movelist[m])
+                        .Where(m => !string.IsNullOrEmpty(m)));
+
+                    // TR moves
+                    var trMoves = personalInfo.RecordPermitIndexes.ToArray();
+                    validMoves.AddRange(trMoves
+                        .Where(m => personalInfo.GetIsLearnTR(Array.IndexOf(trMoves, m)))
+                        .Select(m => gameStrings.movelist[m])
+                        .Where(m => !string.IsNullOrEmpty(m)));
+                }
+            }
+            else if (learnSource is LearnSource7GG learnSource7GG)
+            {
+                if (learnSource7GG.TryGetPersonal((ushort)speciesIndex, form, out var personalInfo))
+                {
+                    var evo = new EvoCriteria
+                    {
+                        Species = (ushort)speciesIndex,
+                        Form = form,
+                        LevelMax = 100,
+                    };
+
+                    // Level-up moves (including Move Reminder)
+                    var learnset = learnSource7GG.GetLearnset((ushort)speciesIndex, form);
+                    validMoves.AddRange(learnset.GetMoveRange(100).ToArray() // 100 is the bonus for Move Reminder in LGPE
+                        .Select(m => gameStrings.movelist[m])
+                        .Where(m => !string.IsNullOrEmpty(m)));
+
+                    // TM moves and special tutor moves
+                    for (int move = 0; move < gameStrings.movelist.Length; move++)
+                    {
+                        var learnInfo = learnSource7GG.GetCanLearn(pk, personalInfo, evo, (ushort)move);
+                        if (learnInfo.Method is TMHM or Tutor)
+                        {
+                            var moveName = gameStrings.movelist[move];
+                            if (!string.IsNullOrEmpty(moveName))
+                                validMoves.Add(moveName);
+                        }
                     }
                 }
             }
-        }
-        return validMoves.Distinct().ToArray();
+            return validMoves.Distinct().ToArray();
+        });
     }
 
-    private static string GetClosestMove(string userMove, string[] validMoves)
+    private static async Task<string> GetClosestMoveAsync(string userMove, string[] validMoves)
     {
-        // LogUtil.LogInfo($"User move: {userMove}", nameof(AutoCorrectShowdown<T>)); // Debug Stuff
-        // LogUtil.LogInfo($"Valid moves: {string.Join(", ", validMoves)}", nameof(AutoCorrectShowdown<T>)); // Debug Stuff
+        return await Task.Run(() =>
+        {
+            // LogUtil.LogInfo($"User move: {userMove}", nameof(AutoCorrectShowdown<T>)); // Debug Stuff
+            // LogUtil.LogInfo($"Valid moves: {string.Join(", ", validMoves)}", nameof(AutoCorrectShowdown<T>)); // Debug Stuff
 
-        var fuzzyMove = validMoves
+            var fuzzyMove = validMoves
             .Select(m => (Move: m, Distance: Fuzz.Ratio(userMove.ToLower(), m.ToLower())))
             .OrderByDescending(m => m.Distance)
             .FirstOrDefault();
 
-        // LogUtil.LogInfo($"Closest move: {fuzzyMove.Move}, Distance: {fuzzyMove.Distance}", nameof(AutoCorrectShowdown<T>)); // Debug Stuff
+            // LogUtil.LogInfo($"Closest move: {fuzzyMove.Move}, Distance: {fuzzyMove.Distance}", nameof(AutoCorrectShowdown<T>)); // Debug Stuff
 
-        return fuzzyMove.Move;
+            return fuzzyMove.Move;
+        });
     }
 
     private static ILearnSource GetLearnSource(PKM pk)
@@ -939,21 +979,27 @@ public static class AutoCorrectShowdown<T> where T : PKM, new()
         return true;
     }
 
-    private static Task<string> ValidateGender(PKM pk, string gender, string speciesName)
+    private static (string correctedGender, string correctionMessage) ValidateGender(PKM pk, string gender, string speciesName)
     {
+        string correctionMessage = string.Empty;
         if (!string.IsNullOrEmpty(gender))
         {
-            var gv = new GenderVerifier();
-            var la = new LegalityAnalysis(pk);
-            gv.Verify(la);
+            // Extract the gender value from the parentheses
+            string genderValue = gender.Trim('(', ')');
 
-            if (!la.Valid)
+            PersonalInfo personalInfo = pk.PersonalInfo;
+            if (personalInfo.Genderless)
             {
                 gender = string.Empty;
+                correctionMessage = $"{speciesName} is genderless. Removing gender.";
+            }
+            else if ((personalInfo.OnlyFemale && genderValue != "F") || (personalInfo.OnlyMale && genderValue != "M"))
+            {
+                gender = string.Empty;
+                correctionMessage = $"{speciesName} can't be {genderValue}. Removing gender.";
             }
         }
-
-        return Task.FromResult(gender);
+        return (gender, correctionMessage);
     }
 
     private static void RemoveIVLine(string[] lines)
