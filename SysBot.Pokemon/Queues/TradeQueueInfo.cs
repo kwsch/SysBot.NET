@@ -194,17 +194,19 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
         }
     }
 
-    public QueueResultAdd AddToTradeQueue(TradeEntry<T> trade, ulong userID, bool sudo = false)
+    public QueueResultAdd AddToTradeQueue(TradeEntry<T> trade, ulong userID, bool allowMultiple = false, bool sudo = false)
     {
         lock (_sync)
         {
-            if (UsersInQueue.Any(z => z.UserID == userID) && !sudo)
+            if (UsersInQueue.Any(z => z.UserID == userID) && !allowMultiple && !sudo)
                 return QueueResultAdd.AlreadyInQueue;
 
             if (Hub.Config.Legality.ResetHOMETracker && trade.Trade.TradeData is IHomeTrack t)
                 t.Tracker = 0;
 
-            var priority = sudo ? PokeTradePriorities.Tier1 : PokeTradePriorities.TierFree;
+            var priority = sudo ? PokeTradePriorities.Tier1 :
+                           trade.Trade.IsFavored ? PokeTradePriorities.Tier2 :
+                           PokeTradePriorities.TierFree;
             var queue = Hub.Queues.GetQueue(trade.Type);
 
             queue.Enqueue(trade.Trade, priority);
