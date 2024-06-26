@@ -1,6 +1,7 @@
 using PKHeX.Core;
 using PKHeX.Core.AutoMod;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -33,7 +34,37 @@ public static class AutoLegalityWrapper
 
     public static PKM GetLegal(this ITrainerInfo sav, IBattleTemplate set, out string res)
     {
+        var originalPriority = EncounterMovesetGenerator.PriorityList;
+
+        var prelimResult = sav.GetLegalFromSet(set);
+        var prelimPkm = prelimResult.Created;
+
+        if (HasPerfectIVs(prelimPkm))
+        {
+            EncounterMovesetGenerator.PriorityList = new List<EncounterTypeGroup>
+        {
+            EncounterTypeGroup.Egg,
+            EncounterTypeGroup.Static,
+            EncounterTypeGroup.Slot,
+            EncounterTypeGroup.Mystery,
+            EncounterTypeGroup.Trade
+        };
+        }
+        else
+        {
+            EncounterMovesetGenerator.PriorityList = new List<EncounterTypeGroup>
+        {
+            EncounterTypeGroup.Static,
+            EncounterTypeGroup.Slot,
+            EncounterTypeGroup.Egg,
+            EncounterTypeGroup.Mystery,
+            EncounterTypeGroup.Trade
+        };
+        }
         var result = sav.GetLegalFromSet(set);
+
+        EncounterMovesetGenerator.PriorityList = originalPriority;
+
         res = result.Status switch
         {
             LegalizationResult.Regenerated => "Regenerated",
@@ -43,6 +74,12 @@ public static class AutoLegalityWrapper
             _ => "",
         };
         return result.Created;
+    }
+
+    private static bool HasPerfectIVs(PKM pkm)
+    {
+        return pkm.IV_HP == 31 && pkm.IV_ATK == 31 && pkm.IV_DEF == 31 &&
+               pkm.IV_SPA == 31 && pkm.IV_SPD == 31 && pkm.IV_SPE == 31;
     }
 
     public static string GetLegalizationHint(IBattleTemplate set, ITrainerInfo sav, PKM pk) => set.SetAnalysis(sav, pk);
