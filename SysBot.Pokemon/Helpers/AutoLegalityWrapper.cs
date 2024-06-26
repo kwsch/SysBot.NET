@@ -10,7 +10,7 @@ namespace SysBot.Pokemon;
 public static class AutoLegalityWrapper
 {
     // The list of encounter types in the priority we prefer if no order is specified.
-    private static readonly EncounterTypeGroup[] EncounterPriority = [EncounterTypeGroup.Egg, EncounterTypeGroup.Slot, EncounterTypeGroup.Static, EncounterTypeGroup.Mystery, EncounterTypeGroup.Trade];
+    private static readonly EncounterTypeGroup[] EncounterPriority = [EncounterTypeGroup.Slot, EncounterTypeGroup.Egg, EncounterTypeGroup.Static, EncounterTypeGroup.Mystery, EncounterTypeGroup.Trade];
 
     private static bool Initialized;
 

@@ -63,11 +63,10 @@ public class LegalitySettings
     [Category(Generate), Description("MGDB directory path for Wonder Cards.")]
     public string MGDBPath { get; set; } = string.Empty;
 
-    [Browsable(false)]
     [Category(Generate), Description("The order in which Pokémon encounter types are attempted.")]
     public List<EncounterTypeGroup> PrioritizeEncounters { get; set; } =
     [
-        EncounterTypeGroup.Egg, EncounterTypeGroup.Slot,
+        EncounterTypeGroup.Slot, EncounterTypeGroup.Egg,
         EncounterTypeGroup.Static, EncounterTypeGroup.Mystery,
         EncounterTypeGroup.Trade,
     ];
