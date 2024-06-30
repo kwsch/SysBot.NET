@@ -429,7 +429,9 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         public string BattleReadyPKMFolder { get; set; } = string.Empty;
     }
 
-    [Category(Miscellaneous), Description("Miscellaneous Settings"), DisplayName("Miscellaneous")]
+    [Category(Miscellaneous)]
+    [Description("Turns off the Switch's screen during trades")]
+    [DisplayName("Screen Off")]
     public bool ScreenOff { get; set; } = false;
 
     /// <summary>
