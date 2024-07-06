@@ -170,11 +170,13 @@ namespace SysBot.Pokemon.Helpers
                     9 or 10 => "蛋",
                     _ => "Egg",
                 };
+                ClearNicknameTrash(pk);
             }
             else
             {
                 pk.IsNicknamed = false;
                 pk.Nickname = "";
+                ClearNicknameTrash(pk);
             }
 
             pk.IsEgg = true;
@@ -440,6 +442,46 @@ namespace SysBot.Pokemon.Helpers
             else if (analysis.Valid)
                 pkm = pkMet;
             return pkm;
+        }
+
+        private static void ClearNicknameTrash(PKM pokemon)
+        {
+            switch (pokemon)
+            {
+                case PK9 pk9:
+                    ClearTrash(pk9.NicknameTrash, pk9.Nickname);
+                    break;
+                case PA8 pa8:
+                    ClearTrash(pa8.NicknameTrash, pa8.Nickname);
+                    break;
+                case PB8 pb8:
+                    ClearTrash(pb8.NicknameTrash, pb8.Nickname);
+                    break;
+                case PB7 pb7:
+                    ClearTrash(pb7.NicknameTrash, pb7.Nickname);
+                    break;
+                case PK8 pk8:
+                    ClearTrash(pk8.NicknameTrash, pk8.Nickname);
+                    break;
+            }
+        }
+
+        private static void ClearTrash(Span<byte> trash, string name)
+        {
+            trash.Clear();
+            int maxLength = trash.Length / 2;
+            int actualLength = Math.Min(name.Length, maxLength);
+            for (int i = 0; i < actualLength; i++)
+            {
+                char value = name[i];
+                trash[i * 2] = (byte)value;
+                trash[(i * 2) + 1] = (byte)(value >> 8);
+            }
+            if (actualLength < maxLength)
+            {
+                trash[actualLength * 2] = 0x00;
+                trash[(actualLength * 2) + 1] = 0x00;
+            }
         }
     }
 }
