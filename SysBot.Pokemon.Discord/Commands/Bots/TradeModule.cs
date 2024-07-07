@@ -754,7 +754,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     private static List<string> ParseBatchTradeContent(string content)
     {
-        var delimiters = new[] { "---", "—-" }; // Includes both three hyphens and an em dash followed by a hyphen
+        var delimiters = new[] { "---", "—-", "\n\n" }; // Includes both three hyphens and an em dash followed by a hyphen for phone users, and just a normal space in between.
         return content.Split(delimiters, StringSplitOptions.RemoveEmptyEntries)
                             .Select(trade => trade.Trim())
                             .ToList();
