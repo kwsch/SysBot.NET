@@ -170,13 +170,11 @@ namespace SysBot.Pokemon.Helpers
                     9 or 10 => "蛋",
                     _ => "Egg",
                 };
-                ClearNicknameTrash(pk);
             }
             else
             {
                 pk.IsNicknamed = false;
                 pk.Nickname = "";
-                ClearNicknameTrash(pk);
             }
 
             pk.IsEgg = true;
@@ -229,6 +227,7 @@ namespace SysBot.Pokemon.Helpers
                 pb8.HandlingTrainerMemoryFeeling = 0;
                 pb8.HandlingTrainerMemoryIntensity = 0;
                 pb8.DynamaxLevel = pb8.GetSuggestedDynamaxLevel(pb8, 0);
+                ClearNicknameTrash(pk);
             }
             else if (pk is PK9 pk9)
             {
