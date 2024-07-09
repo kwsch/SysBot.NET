@@ -1,9 +1,11 @@
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using PKHeX.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.Discord;
@@ -177,6 +179,47 @@ public class SudoModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
         var objects = users.Select(GetReference);
         SysCordSettings.Settings.UserBlacklist.RemoveAll(z => objects.Any(o => o.ID == z.ID));
         await ReplyAsync("Done.").ConfigureAwait(false);
+    }
+
+    [Command("banTrade")]
+    [Alias("bant")]
+    [Summary("Bans a user from trading with a reason.")]
+    [RequireSudo]
+    public async Task BanTradeUser(ulong userNID, string? userName = null, [Remainder] string? banReason = null)
+    {
+        await Context.Message.DeleteAsync();
+        var dmChannel = await Context.User.CreateDMChannelAsync();
+        try
+        {
+            // Check if the ban reason is provided
+            if (string.IsNullOrWhiteSpace(banReason))
+            {
+                await dmChannel.SendMessageAsync("No reason was supplied. Please use the command as follows:\n.banTrade {NID} {optional: Name} {Reason}\nExample: .banTrade 123456789 Spamming trades");
+                return;
+            }
+
+            // Use a default name if none is provided
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                userName = "Unknown";
+            }
+
+            var me = SysCord<T>.Runner;
+            var hub = me.Hub;
+            var bannedUser = new RemoteControlAccess
+            {
+                ID = userNID,
+                Name = userName,
+                Comment = $"Banned by {Context.User.Username} on {DateTime.Now:yyyy.MM.dd-hh:mm:ss}. Reason: {banReason}"
+            };
+
+            hub.Config.TradeAbuse.BannedIDs.AddIfNew([bannedUser]);
+            await dmChannel.SendMessageAsync($"Done. User {userName} with NID {userNID} has been banned from trading.");
+        }
+        catch (Exception ex)
+        {
+            await dmChannel.SendMessageAsync($"An error occurred: {ex.Message}");
+        }
     }
 
     protected static IEnumerable<ulong> GetIDs(string content)
