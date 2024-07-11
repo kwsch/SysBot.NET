@@ -743,13 +743,18 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
 #pragma warning disable CS8601 // Possible null reference assignment.
             cln.OriginalTrainerName = tradeDetails.OT;
 #pragma warning restore CS8601 // Possible null reference assignment.
-            ClearOTTrash(cln, tradeDetails);
             cln.SetDisplayTID((uint)tradeDetails.TID);
             cln.SetDisplaySID((uint)tradeDetails.SID);
             cln.Language = (int)LanguageID.English; // Set the appropriate language ID
+            ClearOTTrash(cln, tradeDetails);
             if (!toSend.IsNicknamed)
                 cln.ClearNickname();
-            cln.RefreshChecksum();
+
+            if (toSend.IsShiny)
+                cln.PID = (uint)((cln.TID16 ^ cln.SID16 ^ (cln.PID & 0xFFFF) ^ toSend.ShinyXor) << 16) | (cln.PID & 0xFFFF);
+
+            if (!toSend.ChecksumValid)
+                cln.RefreshChecksum();
             var tradelgpe = new LegalityAnalysis(cln);
             if (tradelgpe.Valid)
             {
