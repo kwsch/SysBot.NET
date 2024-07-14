@@ -249,7 +249,10 @@ namespace SysBot.Pokemon.Helpers
             Span<ushort> relearn = stackalloc ushort[4];
             la.GetSuggestedRelearnMoves(relearn, enc);
             pk.SetRelearnMoves(relearn);
-
+            if (pk is ITechRecord t)
+            {
+                t.ClearRecordFlags();
+            }
             pk.SetSuggestedMoves();
 
             pk.Move1_PPUps = pk.Move2_PPUps = pk.Move3_PPUps = pk.Move4_PPUps = 0;
