@@ -165,7 +165,6 @@ namespace SysBot.Pokemon.Discord
         {
             return generationOrGame.ToLowerInvariant() switch
             {
-                "3" or "gen3" => EncounterEvent.MGDB_G3,
                 "4" or "gen4" => EncounterEvent.MGDB_G4,
                 "5" or "gen5" => EncounterEvent.MGDB_G5,
                 "6" or "gen6" => EncounterEvent.MGDB_G6,
