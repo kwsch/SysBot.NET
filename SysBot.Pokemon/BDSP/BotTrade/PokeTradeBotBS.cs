@@ -738,31 +738,18 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
 
         var partnerCheck = CheckPartnerReputation(this, poke, trainerNID, tradePartner.TrainerName, AbuseSettings, token);
         if (partnerCheck != PokeTradeResult.Success)
-        {
-            // Try to get out of the box.
-            if (!await ExitBoxToUnionRoom(token).ConfigureAwait(false))
-                return PokeTradeResult.RecoverReturnOverworld;
-
-            // Leave the Union room if we chose not to stay.
-            if (!distroRemainInRoom)
-            {
-                Log("Trying to get out of the Union Room.");
-                if (!await EnsureOutsideOfUnionRoom(token).ConfigureAwait(false))
-                    return PokeTradeResult.RecoverReturnOverworld;
-            }
             return PokeTradeResult.SuspiciousActivity;
+
+        await Task.Delay(2_000, token).ConfigureAwait(false);
+
+        // Confirm Box 1 Slot 1
+        if (poke.Type == PokeTradeType.Specific)
+        {
+            for (int i = 0; i < 5; i++)
+                await Click(A, 0_500, token).ConfigureAwait(false);
         }
 
-        await Task.Delay(2_000 + Hub.Config.Timings.ExtraTimeOpenBox, token).ConfigureAwait(false);
-
-        //// Confirm Box 1 Slot 1
-        //if (poke.Type == PokeTradeType.Specific)
-        //{
-        //    for (int i = 0; i < 5; i++)
-        //        await Click(A, 0_500, token).ConfigureAwait(false);
-        //}
-
-        poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. **TID**: {tradePartner.TID7} **SID**: {tradePartner.SID7} Waiting for a Pokémon...");
+        poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. Waiting for a Pokémon...");
 
         // Requires at least one trade for this pointer to make sense, so cache it here.
         LinkTradePokemonOffset = await SwitchConnection.PointerAll(Offsets.LinkTradePartnerPokemonPointer, token).ConfigureAwait(false);
@@ -773,57 +760,33 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         // Wait for user input... Needs to be different from the previously offered Pokémon.
         var tradeOffered = await ReadUntilChanged(LinkTradePokemonOffset, lastOffered, 25_000, 1_000, false, true, token).ConfigureAwait(false);
         if (!tradeOffered)
-        {
             return PokeTradeResult.TrainerTooSlow;
-        }
 
-        List<PB8> ls = new List<PB8>();
-        ls.Add(poke.TradeData);
+        // If we detected a change, they offered something.
+        var offered = await ReadPokemon(LinkTradePokemonOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
+        if (offered.Species == 0 || !offered.ChecksumValid)
+            return PokeTradeResult.TrainerTooSlow;
 
-        PB8 offered = toSend;
-        int counting = 0;
-        foreach (var send in ls)
+        if (Hub.Config.Legality.UseTradePartnerInfo && !poke.IgnoreAutoOT)
         {
-            counting++;
-            toSend = send;
-
-            await SetBoxPokemonAbsolute(BoxStartOffset, toSend, token, sav).ConfigureAwait(false);
-
-            if (ls.Count > 1) LogUtil.LogInfo($"Batch: Waiting to exchange {counting}th Pokémon {ShowdownTranslator<PB8>.GameStringsZh.Species[toSend.Species]}", nameof(PokeTradeBotBS));
-
-            // If we detected a change, they offered something.
-            offered = await ReadPokemon(LinkTradePokemonOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
-            if (offered.Species == 0 || !offered.ChecksumValid)
-            {
-                return PokeTradeResult.TrainerTooSlow;
-            }
-
-            //lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
-
-            if (Hub.Config.Legality.UseTradePartnerInfo && !poke.IgnoreAutoOT)
-            {
-               toSend = await ApplyAutoOT(toSend, offered, sav, tradePartner.TrainerName, token);
-            }
-
-            PokeTradeResult update;
-            var trainer = new PartnerDataHolder(0, tradePartner.TrainerName, tradePartner.TID7);
-            (toSend, update) = await GetEntityToSend(sav, poke, offered, toSend, trainer, token).ConfigureAwait(false);
-            if (update != PokeTradeResult.Success)
-                return update;
-
-            var tradeResult = await ConfirmAndStartTrading(poke, token).ConfigureAwait(false);
-            if (tradeResult != PokeTradeResult.Success)
-                return tradeResult;
-
-            if (token.IsCancellationRequested)
-            {
-                return PokeTradeResult.RoutineCancel;
-            }
+            toSend = await ApplyAutoOT(toSend, offered, sav, tradePartner.TrainerName, token);
         }
+
+        PokeTradeResult update;
+        var trainer = new PartnerDataHolder(0, tradePartner.TrainerName, tradePartner.TID7);
+        (toSend, update) = await GetEntityToSend(sav, poke, offered, toSend, trainer, token).ConfigureAwait(false);
+        if (update != PokeTradeResult.Success)
+            return update;
+
+        var tradeResult = await ConfirmAndStartTrading(poke, token).ConfigureAwait(false);
+        if (tradeResult != PokeTradeResult.Success)
+            return tradeResult;
+
+        if (token.IsCancellationRequested)
+            return PokeTradeResult.RoutineCancel;
 
         // Trade was Successful!
         var received = await ReadPokemon(BoxStartOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
-
         // Pokémon in b1s1 is same as the one they were supposed to receive (was never sent).
         if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend) && received.Checksum == toSend.Checksum)
         {
@@ -838,23 +801,18 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         // Only log if we completed the trade.
         UpdateCountsAndExport(poke, received, toSend);
 
-        // Log for Trade Abuse tracking.
-        LogSuccessfulTrades(poke, trainerNID, tradePartner.TrainerName);
+        // Still need to wait out the trade animation.
+        for (var i = 0; i < 30; i++)
+            await Click(A, 0_500, token).ConfigureAwait(false);
 
-        // Try to get out of the box.
-        if (!await ExitBoxToUnionRoom(token).ConfigureAwait(false))
+        Log("Trying to get out of the Union Room.");
+        // Now get out of the Union Room.
+        if (!await EnsureOutsideOfUnionRoom(token).ConfigureAwait(false))
             return PokeTradeResult.RecoverReturnOverworld;
-
-        // Leave the Union room if we chose not to stay.
-        if (!distroRemainInRoom)
-        {
-            Log("Trying to get out of the Union Room.");
-            if (!await EnsureOutsideOfUnionRoom(token).ConfigureAwait(false))
-                return PokeTradeResult.RecoverReturnOverworld;
-        }
 
         // Sometimes they offered another mon, so store that immediately upon leaving Union Room.
         lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(LinkTradePokemonOffset, 8, token).ConfigureAwait(false);
+
         return PokeTradeResult.Success;
     }
 
