@@ -1,9 +1,9 @@
 <h1 align="center">
     <a href="https://amplication.com/#gh-light-mode-only">
-    <img src="https://github.com/bdawg1989/MergeBot/assets/80122551/6f75fec2-fa54-47e5-ab22-c2097031ec40">
+    <img src="https://github.com/user-attachments/assets/fd831c6e-e0b2-49c7-9ed8-2027d437cc29">
     </a>
     <a href="https://amplication.com/#gh-dark-mode-only">
-    <img src="https://github.com/bdawg1989/MergeBot/assets/80122551/6f75fec2-fa54-47e5-ab22-c2097031ec40">
+    <img src="https://github.com/user-attachments/assets/fd831c6e-e0b2-49c7-9ed8-2027d437cc29">
     </a>
 </h1>
 
@@ -35,23 +35,23 @@
   <img src="https://github.com/bdawg1989/MergeBot/assets/80122551/3670e7c2-fa06-4b69-960e-6360e360ba9f" alt="Recording #25">
 </div>
 
-<h1>MergeBot - The Ultimate Discord Trading Bot / SysBot for Pokémon!</h1>
-<p>Introducing MergeBot, the ultimate Discord trading bot designed specifically for Pokémon enthusiasts! Whether you're a passionate collector, a competitive battler, or simply love everything about these adorable creatures, MergeBot is here to revolutionize your Pokémon trading experience on Discord.</p>
+<h1>SysBot.NET - The Ultimate Discord Trading Bot / SysBot for Pokémon!</h1>
+<p>Introducing SysBot, the ultimate Discord trading bot designed specifically for Pokémon enthusiasts! Whether you're a passionate collector, a competitive battler, or simply love everything about these adorable creatures, SysBot is here to revolutionize your Pokémon trading experience on Discord.</p>
 <h2>Key Features</h2>
 <ul>
-  <li><strong>Seamless Pokémon Trading:</strong> Engage in effortless Pokémon trading with MergeBot using intuitive commands. Request specific Pokémon, items, or even mystery eggs to expand your collection!</li>
-  <li><strong>Legality Verification:</strong> Ensure the legitimacy of your Pokémon with MergeBot's advanced legality checking feature. Verify if a Pokémon is legal and compliant with game rules, giving you peace of mind in your trades.</li>
+  <li><strong>Seamless Pokémon Trading:</strong> Engage in effortless Pokémon trading with SysBot using intuitive commands. Request specific Pokémon, items, or even mystery eggs to expand your collection!</li>
+  <li><strong>Legality Verification:</strong> Ensure the legitimacy of your Pokémon with SysBot's advanced legality checking feature. Verify if a Pokémon is legal and compliant with game rules, giving you peace of mind in your trades.</li>
   <li><strong>Pokémon Cloning and Dumping:</strong> Easily clone your cherished Pokémon or dump Pokémon data for analysis and sharing with fellow trainers.</li>
-  <li><strong>Exclusive Event Pokémon:</strong> Gain access to rare and exclusive event Pokémon by requesting them from MergeBot's extensive event database. Never miss out on limited-time Pokémon events again!</li>
-  <li><strong>Battle-Ready Pokémon:</strong> Obtain battle-ready Pokémon with optimized stats, moves, and abilities through MergeBot, giving you a competitive edge in battles.</li>
+  <li><strong>Exclusive Event Pokémon:</strong> Gain access to rare and exclusive event Pokémon by requesting them from SysBot's extensive event database. Never miss out on limited-time Pokémon events again!</li>
+  <li><strong>Battle-Ready Pokémon:</strong> Obtain battle-ready Pokémon with optimized stats, moves, and abilities through SysBot, giving you a competitive edge in battles.</li>
   <li><strong>Customizable Announcements:</strong> Set up personalized announcements and notifications for trades, server events, or any other important messages, keeping your community informed and engaged.</li>
-  <li><strong>Seed Checking and Shiny Hunting:</strong> Utilize MergeBot's seed checking feature to determine the seed of your Pokémon and discover the next shiny frame, increasing your chances of encountering that elusive shiny Pokémon!</li>
-  <li><strong>VGC Team Generation:</strong> Generate random VGC teams from a specified pool of Pokémon using MergeBot, providing inspiration for your next competitive team composition.</li>
-  <li><strong>Comprehensive Bot Management:</strong> Seamlessly manage MergeBot's settings, including blacklists, whitelists, logging, and more, ensuring a tailored and smooth experience for your Discord server.</li>
+  <li><strong>Seed Checking and Shiny Hunting:</strong> Utilize SysBot's seed checking feature to determine the seed of your Pokémon and discover the next shiny frame, increasing your chances of encountering that elusive shiny Pokémon!</li>
+  <li><strong>VGC Team Generation:</strong> Generate random VGC teams from a specified pool of Pokémon using SysBot, providing inspiration for your next competitive team composition.</li>
+  <li><strong>Comprehensive Bot Management:</strong> Seamlessly manage SysBot's settings, including blacklists, whitelists, logging, and more, ensuring a tailored and smooth experience for your Discord server.</li>
 </ul>
-<p>With its extensive array of commands and modules, MergeBot provides a comprehensive solution for all your Pokémon trading and management needs within Discord. It combines convenience, reliability, and user-friendliness to deliver an unparalleled Pokémon experience.</p>
-<p>Trade, collect, and battle your way to becoming the ultimate Pokémon master with MergeBot by your side!</p>
-<p>Explore the detailed command list below to discover the full potential of MergeBot and elevate your Pokémon trading experience to new heights.</p>
+<p>With its extensive array of commands and modules, SysBot provides a comprehensive solution for all your Pokémon trading and management needs within Discord. It combines convenience, reliability, and user-friendliness to deliver an unparalleled Pokémon experience.</p>
+<p>Trade, collect, and battle your way to becoming the ultimate Pokémon master with SysBot by your side!</p>
+<p>Explore the detailed command list below to discover the full potential of SysBot and elevate your Pokémon trading experience to new heights.</p>
 
 <h2>GIF Showcase</h2>
 <table>
@@ -287,9 +287,9 @@
 
 - [PKHeX-AIO](https://github.com/bdawg1989/PKHeX-ALL-IN-ONE) - A single .exe with ALM, TeraFinder, and PokeNamer plugins included.  No extra folders and plugin.dll's to keep up with.
 
-## MergeBot - The Ultimate TradeBot
+## SysBot - The Ultimate TradeBot
 
-- [Source Code](https://github.com/bdawg1989/MergeBot)
+- [Source Code](https://github.com/bdawg1989/SysBot)
 
 ## Grand Oak - SysBot Helper
 - A discord bot that helps with legality issues if someone submits a wrong showdown format.  [Join My Discord To Learn More](https://discord.gg/GtUu9BmCzy)
