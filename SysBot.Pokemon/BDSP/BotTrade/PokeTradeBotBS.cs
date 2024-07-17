@@ -665,7 +665,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
             await RestartGameBDSP(token).ConfigureAwait(false);
             return PokeTradeResult.RecoverEnterUnionRoom;
         }
-
         await RequestUnionRoomTrade(token).ConfigureAwait(false);
         poke.TradeSearching(this);
         var waitPartner = Hub.Config.Trade.TradeConfiguration.TradeWaitTime;
@@ -678,6 +677,8 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
 
             if (--waitPartner <= 0)
             {
+                // Ensure we exit the union room when no trainer is found.
+                await EnsureOutsideOfUnionRoom(token).ConfigureAwait(false);
                 return PokeTradeResult.NoTrainerFound;
             }
         }
@@ -694,6 +695,8 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
                 break;
             if (--waitPartner <= 0)
             {
+                // Ensure we exit the union room if the partner is too slow.
+                await EnsureOutsideOfUnionRoom(token).ConfigureAwait(false);
                 return PokeTradeResult.TrainerTooSlow;
             }
         }
@@ -705,13 +708,15 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         // Can happen if they quit out of talking to us.
         if (!await IsPartnerParamLoaded(token).ConfigureAwait(false))
         {
+            // Ensure we exit the union room if the partner is too slow.
+            await EnsureOutsideOfUnionRoom(token).ConfigureAwait(false);
             return PokeTradeResult.TrainerTooSlow;
         }
 
         var tradePartner = await GetTradePartnerInfo(token).ConfigureAwait(false);
         var trainerNID = GetFakeNID(tradePartner.TrainerName, tradePartner.TrainerID);
         RecordUtil<PokeTradeBotSWSH>.Record($"Initiating\t{trainerNID:X16}\t{tradePartner.TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
-        Log($"Found Link Trade partner: {tradePartner.TrainerName}-{trainerNID})");
+        Log($"Found Link Trade partner: ({tradePartner.TrainerName}-{trainerNID})");
 
         var tradeCodeStorage = new TradeCodeStorage();
         var existingTradeDetails = tradeCodeStorage.GetTradeDetails(poke.Trainer.ID);
@@ -802,8 +807,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         UpdateCountsAndExport(poke, received, toSend);
 
         // Still need to wait out the trade animation.
-        for (var i = 0; i < 30; i++)
-            await Click(A, 0_500, token).ConfigureAwait(false);
+        await Task.Delay(12_000, token).ConfigureAwait(false);
 
         Log("Trying to get out of the Union Room.");
         // Now get out of the Union Room.
@@ -907,6 +911,8 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
 
     private async Task RequestUnionRoomTrade(CancellationToken token)
     {
+        // Move to middle of room
+        await PressAndHold(DUP, 2_000, 0_250, token).ConfigureAwait(false);
         // Y-button trades always put us in a place where we can open the call menu without having to move.
         Log("Attempting to open the Y menu.");
         await Click(Y, 1_000, token).ConfigureAwait(false);
