@@ -359,6 +359,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
             poke.SendNotification(this, $"Found Partner - OT: {tradepartnersav2.OT}, TID: {tid7}, SID: {sid7}");
         }
 
+
         if (poke.Type == PokeTradeType.Dump)
         {
             var result = await ProcessDumpTradeAsync(poke, token).ConfigureAwait(false);
@@ -378,7 +379,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
         poke.SendNotification(this, "You have 15 seconds to select your trade pokemon");
         Log("Waiting on Trade Screen...");
 
-        await Task.Delay(15_000).ConfigureAwait(false);
+        await Task.Delay(5_000, token).ConfigureAwait(false);
         var tradeResult = await ConfirmAndStartTrading(poke, 0, token);
         if (tradeResult != PokeTradeResult.Success)
         {
@@ -410,9 +411,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
         poke.TradeFinished(this, received);
 
         // Still need to wait out the trade animation.
-
-        for (var i = 0; i < 30; i++)
-            await Click(B, 0_500, token).ConfigureAwait(false);
+        await Task.Delay(10_000, token).ConfigureAwait(false);
 
         await ExitTrade(false, token).ConfigureAwait(false);
         return PokeTradeResult.Success;
@@ -449,6 +448,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
             {
                 // If we don't detect a B1S1 change, the trade didn't go through in that time.
                 Log("Did not detect a change in slot 1.");
+                await Click(B, 1_000, token).ConfigureAwait(false);
                 return PokeTradeResult.TrainerTooSlow;
             }
 
@@ -723,19 +723,34 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
                 return;
             }
 
+            // Press B to bring up the exit screen
+            Log("Exiting the trade...");
             await Click(B, 1_000, token).ConfigureAwait(false);
             if (await IsOnOverworldStandard(token))
                 return;
 
-            await Click(BitConverter.ToUInt16(await SwitchConnection.ReadBytesMainAsync(ScreenOff, 2, token), 0) == Boxscreen ? A : B, 1_000, token).ConfigureAwait(false);
-            if (await IsOnOverworldStandard(token))
-                return;
+            // Press A to confirm the exit
+            Log("Pressing A to exit...");
+            await Click(A, 1_000, token).ConfigureAwait(false);
 
+            // Wait 10 seconds
+            await Task.Delay(10_000, token);
+
+            // Press B three more times to navigate back to the overworld
+            Log("Pressing B to back all the way out.");
             await Click(B, 1_000, token).ConfigureAwait(false);
-            if (await IsOnOverworldStandard(token))
-                return;
+            await Click(B, 1_000, token).ConfigureAwait(false);
+            await Click(B, 1_000, token).ConfigureAwait(false);
 
-            ctr -= 3_000;
+            // Check if we are on the overworld
+            Log("Checking if we are on overworld.");
+            if (await IsOnOverworldStandard(token))
+            {
+                Log("Successfully on overworld.");
+                return;
+            }
+
+            ctr -= 6_000; // Subtract 6 seconds for the additional B presses and delay
         }
     }
 
