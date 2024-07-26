@@ -4,7 +4,7 @@
     <PackageReference Include="Discord.Net" Version="3.13.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    <PackageReference Include="PKHeX.Core" Version="24.7.3" />
+    <PackageReference Include="PKHeX.Core" Version="24.7.27" />
     <ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />
     <ProjectReference Include="..\SysBot.Pokemon\SysBot.Pokemon.csproj" />
   </ItemGroup>
