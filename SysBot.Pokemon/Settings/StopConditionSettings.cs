@@ -29,6 +29,9 @@ public class StopConditionSettings
     [Category(StopConditions), Description("Selects the shiny type to stop on.")]
     public TargetShinyType ShinyTarget { get; set; } = TargetShinyType.DisableOption;
 
+    [Category(StopConditions), Description("Allows filtering for min or max size to stop on.")]
+    public TargetHeightType HeightTarget { get; set; } = TargetHeightType.DisableOption;
+
     [Category(StopConditions), Description("Stop only on Pokémon that have a mark.")]
     public bool MarkOnly { get; set; }
 
@@ -82,6 +85,21 @@ public class StopConditionSettings
             if (!settings.MatchShinyAndIV && shinymatch)
                 return true;
             if (settings.MatchShinyAndIV && !shinymatch)
+                return false;
+        }
+
+        if (settings.HeightTarget != TargetHeightType.DisableOption && pk is PK8 p)
+        {
+            var value = p.HeightScalar;
+            bool heightmatch = settings.HeightTarget switch
+            {
+                TargetHeightType.MinOnly => value is 0,
+                TargetHeightType.MaxOnly => value is 255,
+                TargetHeightType.MinOrMax => value is 0 or 255,
+                _ => throw new ArgumentException(nameof(TargetHeightType)),
+            };
+
+            if (!heightmatch)
                 return false;
         }
 
@@ -176,4 +194,12 @@ public enum TargetShinyType
     AnyShiny,       // Match any shiny regardless of type
     StarOnly,       // Match star shiny only
     SquareOnly,     // Match square shiny only
+}
+
+public enum TargetHeightType
+{
+    DisableOption,  // Doesn't care
+    MinOnly,        // 0 Height only
+    MaxOnly,        // 255 Height only
+    MinOrMax,       // 0 or 255 Height
 }
