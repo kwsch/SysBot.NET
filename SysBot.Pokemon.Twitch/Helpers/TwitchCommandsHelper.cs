@@ -22,7 +22,7 @@ public static class TwitchCommandsHelper<T> where T : PKM, new()
             return false;
         }
         var template = AutoLegalityWrapper.GetTemplate(set);
-        if (template.Species < 1)
+        if (template.Species == 0)
         {
             msg = $"Skipping trade, @{username}: Please read what you are supposed to type as the command argument.";
             return false;
@@ -41,7 +41,7 @@ public static class TwitchCommandsHelper<T> where T : PKM, new()
 
             if (!pkm.CanBeTraded())
             {
-                msg = $"Skipping trade, @{username}: Provided Pokémon content is blocked from trading!";
+                msg = $"Skipping trade, @{username}: Provided PokÃ©mon content is blocked from trading!";
                 return false;
             }
 
@@ -58,7 +58,7 @@ public static class TwitchCommandsHelper<T> where T : PKM, new()
                 }
             }
 
-            var reason = result == "Timeout" ? "Set took too long to generate." : "Unable to legalize the Pokémon.";
+            var reason = result == "Timeout" ? "Set took too long to generate." : "Unable to legalize the PokÃ©mon.";
             msg = $"Skipping trade, @{username}: {reason}";
         }
         catch (Exception ex)
