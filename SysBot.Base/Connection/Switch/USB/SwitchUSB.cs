@@ -34,8 +34,8 @@ public abstract class SwitchUSB : IConsoleConnection
     public int BaseDelay { get; set; } = 1;
     public int DelayFactor { get; set; } = 1000;
 
-    private readonly object _sync = new();
-    private static readonly object _registry = new();
+    private readonly Lock _sync = new();
+    private static readonly Lock _registry = new();
 
     public void Reset()
     {

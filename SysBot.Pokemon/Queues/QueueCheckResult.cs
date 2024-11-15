@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon;
 
@@ -6,22 +6,14 @@ namespace SysBot.Pokemon;
 /// Stores data for indicating how a queue position/presence check resulted.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public sealed record QueueCheckResult<T> where T : PKM, new()
+public sealed record QueueCheckResult<T>(
+    bool InQueue = false,
+    TradeEntry<T>? Detail = default,
+    int Position = -1,
+    int QueueCount = -1)
+    where T : PKM, new()
 {
-    public readonly bool InQueue;
-    public readonly TradeEntry<T>? Detail;
-    public readonly int Position;
-    public readonly int QueueCount;
-
     public static readonly QueueCheckResult<T> None = new();
-
-    public QueueCheckResult(bool inQueue = false, TradeEntry<T>? detail = default, int position = -1, int queueCount = -1)
-    {
-        InQueue = inQueue;
-        Detail = detail;
-        Position = position;
-        QueueCount = queueCount;
-    }
 
     public string GetMessage()
     {

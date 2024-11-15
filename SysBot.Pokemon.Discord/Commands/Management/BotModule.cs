@@ -1,12 +1,12 @@
-﻿using Discord;
+using Discord;
 using Discord.Commands;
 using PKHeX.Core;
-using System;
-using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.Discord;
 
+// ReSharper disable once UnusedType.Global
 public class BotModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
 {
     [Command("botStatus")]
@@ -15,19 +15,22 @@ public class BotModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new(
     public async Task GetStatusAsync()
     {
         var me = SysCord<T>.Runner;
-        var bots = me.Bots.Select(z => z.Bot).OfType<PokeRoutineExecutorBase>().ToArray();
-        if (bots.Length == 0)
+        var sb = new StringBuilder();
+        foreach (var bot in me.Bots)
+        {
+            if (bot.Bot is not PokeRoutineExecutorBase b)
+                continue;
+            sb.AppendLine(GetDetailedSummary(b));
+        }
+        if (sb.Length == 0)
         {
             await ReplyAsync("No bots configured.").ConfigureAwait(false);
             return;
         }
-
-        var summaries = bots.Select(GetDetailedSummary);
-        var lines = string.Join(Environment.NewLine, summaries);
-        await ReplyAsync(Format.Code(lines)).ConfigureAwait(false);
+        await ReplyAsync(Format.Code(sb.ToString())).ConfigureAwait(false);
     }
 
-    private static string GetDetailedSummary(PokeRoutineExecutorBase z)
+    private static string GetDetailedSummary<TBot>(TBot z) where TBot: PokeRoutineExecutorBase
     {
         return $"- {z.Connection.Name} | {z.Connection.Label} - {z.Config.CurrentRoutineType} ~ {z.LastTime:hh:mm:ss} | {z.LastLogged}";
     }

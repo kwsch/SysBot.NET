@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Text;
 
@@ -6,6 +6,11 @@ namespace SysBot.Pokemon;
 
 public static class StringsUtil
 {
+    private static readonly System.Buffers.SearchValues<char> adBadList = System.Buffers.SearchValues.Create(".\\/,*;．・。");
+
+    private static readonly string[] TLD = ["tv", "gg", "yt"];
+    private static readonly string[] TLD2 = ["com", "org", "net"];
+
     /// <summary>
     /// Remove all non-alphanumeric characters, convert wide chars to narrow, and converts the final string to lowercase.
     /// </summary>
@@ -21,33 +26,58 @@ public static class StringsUtil
         return string.Concat(sanitized.Select(char.ToLower));
     }
 
-    private static readonly char[] Blacklist = ['.', '\\', '/', ',', '*', ';', '．', '・', '。'];
-    private static readonly string[] TLD = ["tv", "gg", "yt"];
-    private static readonly string[] TLD2 = ["com", "org", "net"];
+    /// <summary>
+    /// Lesser sanitization to only include whitespace lowercase characters.
+    /// </summary>
+    private static int Sanitize(ReadOnlySpan<char> input, Span<char> output)
+    {
+        int ctr = 0;
+        foreach (var c in input)
+        {
+            if (char.IsWhiteSpace(c))
+                continue;
+            output[ctr++] = char.ToLowerInvariant(c);
+        }
+        return ctr;
+    }
 
     /// <summary>
     /// Checks the input <see cref="text"/> to see if it is selfish spam.
     /// </summary>
     /// <param name="text">String to check</param>
     /// <returns>True if spam, false if natural.</returns>
-    public static bool IsSpammyString(string text)
+    public static bool IsSpammyString(ReadOnlySpan<char> text)
     {
-        if (text.IndexOfAny(Blacklist) >= 0)
+        if (text.IndexOfAny(adBadList) >= 0)
             return true;
 
         if (text.Length <= 6)
             return false;
 
-        text = text.Replace(" ", "");
-        if (text.Contains("pkm", StringComparison.InvariantCultureIgnoreCase))
+        Span<char> despaced = stackalloc char[text.Length];
+        int len = Sanitize(text, despaced);
+        return IsSpammyValue(despaced[..len]);
+    }
+
+    private static bool IsSpammyValue(ReadOnlySpan<char> text)
+    {
+        const StringComparison mode = StringComparison.Ordinal;
+
+        if (text.Contains("pkm", mode))
             return true;
 
-        if (TLD.Any(z => text.EndsWith(z, StringComparison.InvariantCultureIgnoreCase)))
-            return true;
-        if (TLD2.Any(z => text.EndsWith(z, StringComparison.InvariantCultureIgnoreCase)))
-            return true;
-        if (TLD.Any(z => text.StartsWith(z, StringComparison.InvariantCultureIgnoreCase)))
-            return true;
+        foreach (var tld in TLD)
+        {
+            if (text.StartsWith(tld, mode))
+                return true;
+            if (text.EndsWith(tld, mode))
+                return true;
+        }
+        foreach (var tld in TLD2)
+        {
+            if (text.EndsWith(tld, mode))
+                return true;
+        }
         return false;
     }
 }

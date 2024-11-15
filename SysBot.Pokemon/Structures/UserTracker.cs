@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace SysBot.Pokemon;
 
@@ -7,7 +8,7 @@ public class TrackedUserLog
 {
     private const int Capacity = 1000;
     private readonly List<TrackedUser> Users = new(Capacity);
-    private readonly object _sync = new();
+    private readonly Lock _sync = new();
     private int ReplaceIndex;
 
     public TrackedUser? TryRegister(ulong networkID, string name, ulong remoteID)
@@ -83,18 +84,7 @@ public class TrackedUserLog
     }
 }
 
-public sealed record TrackedUser
+public sealed record TrackedUser(ulong NetworkID, string Name, ulong RemoteID)
 {
-    public readonly string Name;
-    public readonly ulong RemoteID;
-    public readonly ulong NetworkID;
-    public readonly DateTime Time;
-
-    public TrackedUser(ulong NetworkID, string name, ulong remoteID)
-    {
-        this.NetworkID = NetworkID;
-        Name = name;
-        RemoteID = remoteID;
-        Time = DateTime.Now;
-    }
+    public readonly DateTime Time = DateTime.Now;
 }

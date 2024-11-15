@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Windows.Forms;
 using SysBot.Base;
 
@@ -12,7 +13,7 @@ public sealed class TextBoxForwarder(TextBoxBase Box) : ILogForwarder
     /// <summary>
     /// Synchronize access to the TextBox. Only the GUI thread should be writing to it.
     /// </summary>
-    private readonly object _logLock = new();
+    private readonly Lock _logLock = new();
 
     public void Forward(string message, string identity)
     {
