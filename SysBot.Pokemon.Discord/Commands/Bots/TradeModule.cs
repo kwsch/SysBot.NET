@@ -5,6 +5,7 @@ using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.Discord;
@@ -50,9 +51,21 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         content = ReusableActions.StripCodeBlock(content);
         var set = new ShowdownSet(content);
         var template = AutoLegalityWrapper.GetTemplate(set);
-        if (set.InvalidLines.Count != 0)
+        if (set.InvalidLines.Count != 0 || set.Species is 0)
         {
-            var msg = $"Unable to parse Showdown Set:\n{string.Join("\n", set.InvalidLines)}";
+            var sb = new StringBuilder(128);
+            sb.AppendLine("Unable to parse Showdown Set.");
+            if (set.InvalidLines.Count != 0)
+            {
+                sb.AppendLine("Invalid lines detected:\n```");
+                foreach (var line in set.InvalidLines)
+                    sb.AppendLine(line);
+                sb.AppendLine("```");
+            }
+            if (set.Species is 0)
+                sb.AppendLine("Species could not be identified. Check your spelling.");
+
+            var msg = sb.ToString();
             await ReplyAsync(msg).ConfigureAwait(false);
             return;
         }

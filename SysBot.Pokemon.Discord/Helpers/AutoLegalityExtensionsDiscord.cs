@@ -11,7 +11,7 @@ public static class AutoLegalityExtensionsDiscord
 {
     public static async Task ReplyWithLegalizedSetAsync(this ISocketMessageChannel channel, ITrainerInfo sav, ShowdownSet set)
     {
-        if (set.Species <= 0)
+        if (set.Species == 0)
         {
             await channel.SendMessageAsync("Oops! I wasn't able to interpret your message! If you intended to convert something, please double check what you're pasting!").ConfigureAwait(false);
             return;
