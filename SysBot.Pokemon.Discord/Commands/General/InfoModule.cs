@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.Commands;
 using System;
 using System.Diagnostics;
@@ -67,14 +67,13 @@ public class InfoModule : ModuleBase<SocketCommandContext>
 
         var info = attribute.InformationalVersion;
         var split = info.Split('+');
-        if (split.Length >= 2)
-        {
-            var version = split[0];
-            var revision = split[1];
-            if (DateTime.TryParseExact(revision, "yyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var buildTime))
-                return (inclVersion ? $"{version} " : "") + $@"{buildTime:yy-MM-dd\.hh\:mm}";
-            return inclVersion ? version : _default;
-        }
-        return _default;
+        if (split.Length < 2)
+            return _default;
+
+        var version = split[0];
+        var revision = split[1];
+        if (DateTime.TryParseExact(revision, "yyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var buildTime))
+            return (inclVersion ? $"{version} " : "") + $@"{buildTime:yy-MM-dd\.hh\:mm}";
+        return !inclVersion ? _default : version;
     }
 }

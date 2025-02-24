@@ -111,7 +111,7 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
 
     private async Task ClickAsyncImpl(SwitchButton button, BotSource<PokeBotState> bot)
     {
-        if (!Enum.IsDefined(typeof(SwitchButton), button))
+        if (!Enum.IsDefined(button))
         {
             await ReplyAsync($"Unknown button value: {button}").ConfigureAwait(false);
             return;
@@ -125,7 +125,7 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
 
     private async Task SetStickAsyncImpl(SwitchStick s, short x, short y, ushort ms, BotSource<PokeBotState> bot)
     {
-        if (!Enum.IsDefined(typeof(SwitchStick), s))
+        if (!Enum.IsDefined(s))
         {
             await ReplyAsync($"Unknown stick: {s}").ConfigureAwait(false);
             return;

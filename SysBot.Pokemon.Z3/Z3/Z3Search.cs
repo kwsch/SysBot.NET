@@ -39,11 +39,10 @@ public static class Z3Search
             bool added = false;
             for (int i = 1; i <= 5; i++) // fixed IV count
             {
-                if (IsMatch(seed, ivs, i))
-                {
-                    result.Add(new SeedSearchResult(Z3SearchResult.Success, seed, i, mode));
-                    added = true;
-                }
+                if (!IsMatch(seed, ivs, i))
+                    continue;
+                result.Add(new SeedSearchResult(Z3SearchResult.Success, seed, i, mode));
+                added = true;
             }
             if (!added)
                 result.Add(new SeedSearchResult(Z3SearchResult.SeedMismatch, seed, 0, mode));
@@ -81,10 +80,8 @@ public static class Z3Search
         for (int i = 0; i < fixed_ivs; i++)
         {
             int slot;
-            do
-            {
-                slot = (int)rng.NextInt(6);
-            } while (check_ivs[slot] != -1);
+            do slot = (int)rng.NextInt(6);
+            while (check_ivs[slot] != -1);
 
             if (ivs[slot] != 31)
                 return false;

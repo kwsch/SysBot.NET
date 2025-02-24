@@ -1,8 +1,9 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace SysBot.Pokemon;
 
@@ -13,7 +14,7 @@ namespace SysBot.Pokemon;
 public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
     where T : PKM, new()
 {
-    private readonly object _sync = new();
+    private readonly Lock _sync = new();
     private readonly List<TradeEntry<T>> UsersInQueue = [];
     public readonly PokeTradeHub<T> Hub = Hub;
 

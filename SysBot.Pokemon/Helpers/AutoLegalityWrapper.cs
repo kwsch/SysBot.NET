@@ -120,13 +120,24 @@ public static class AutoLegalityWrapper
         ParseSettings.ChangeLocalizationStrings(GameInfo.Strings.movelist, GameInfo.Strings.specieslist);
     }
 
-    public static bool CanBeTraded(this PKM pkm)
+    public static bool CanBeTraded(this PKM pk)
     {
-        if (pkm.IsNicknamed && StringsUtil.IsSpammyString(pkm.Nickname))
-            return false;
-        if (StringsUtil.IsSpammyString(pkm.OriginalTrainerName) && !IsFixedOT(new LegalityAnalysis(pkm).EncounterOriginal, pkm))
-            return false;
-        return !FormInfo.IsFusedForm(pkm.Species, pkm.Form, pkm.Format);
+        if (pk.IsNicknamed)
+        {
+            Span<char> nick = stackalloc char[pk.TrashCharCountNickname];
+            int len = pk.LoadString(pk.NicknameTrash, nick);
+            nick = nick[..len];
+            if (StringsUtil.IsSpammyString(nick))
+                return false;
+        }
+        {
+            Span<char> ot = stackalloc char[pk.TrashCharCountTrainer];
+            int len = pk.LoadString(pk.OriginalTrainerTrash, ot);
+            ot = ot[..len];
+            if (StringsUtil.IsSpammyString(ot) && !IsFixedOT(new LegalityAnalysis(pk).EncounterOriginal, pk))
+                return false;
+        }
+        return !FormInfo.IsFusedForm(pk.Species, pk.Form, pk.Format);
     }
 
     public static bool IsFixedOT(IEncounterTemplate t, PKM pkm) => t switch

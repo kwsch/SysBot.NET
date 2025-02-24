@@ -16,7 +16,7 @@ public partial class BotController : UserControl
     public BotController()
     {
         InitializeComponent();
-        var opt = (BotControlCommand[])Enum.GetValues(typeof(BotControlCommand));
+        var opt = Enum.GetValues<BotControlCommand>();
 
         for (int i = 1; i < opt.Length; i++)
         {
