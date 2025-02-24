@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using PKHeX.Core;
 using SysBot.Pokemon;
 using Xunit;
@@ -19,7 +19,7 @@ public class PokePoolTests
         pool.Add(a);
         pool.Add(b);
 
-        pool.Count.Should().BeGreaterOrEqualTo(2);
+        pool.Count.Should().BeGreaterThanOrEqualTo(2);
 
         while (true) { if (ReferenceEquals(pool.GetRandomPoke(), a)) break; }
         while (true) { if (ReferenceEquals(pool.GetRandomPoke(), b)) break; }

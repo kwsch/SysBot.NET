@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
-    <PackageReference Include="NLog" Version="5.2.8" />
+    <PackageReference Include="NLog" Version="5.4.0" />
     <PackageReference Include="LibUsbDotNet" Version="2.2.29" />
   </ItemGroup>
 
