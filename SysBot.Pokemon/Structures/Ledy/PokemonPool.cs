@@ -121,14 +121,6 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
             loadedAny = true;
         }
 
-        // Anti-spam: Same trainer names.
-        if (Files.Count != 1 && Files.Select(z => z.Value.RequestInfo.OriginalTrainerName).Distinct().Count() == 1)
-        {
-            LogUtil.LogInfo("Provided pool to distribute has the same OT for all loaded. Pool is not valid; please distribute from a variety of trainers.", nameof(PokemonPool<T>));
-            surpriseBlocked = Count;
-            Files.Clear();
-        }
-
         if (surpriseBlocked == Count)
             LogUtil.LogInfo("Surprise trading will fail; failed to load any compatible files.", nameof(PokemonPool<T>));
 

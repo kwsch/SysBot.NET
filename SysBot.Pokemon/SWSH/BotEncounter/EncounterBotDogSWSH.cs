@@ -38,7 +38,7 @@ public sealed class EncounterBotDogSWSH(PokeBotState Config, PokeTradeHub<PK8> H
             await Task.Delay(15_000, token).ConfigureAwait(false);
 
             while (!await IsOnBattleMenu(token).ConfigureAwait(false))
-                await Task.Delay(0_100, token).ConfigureAwait (false);
+                await Task.Delay(0_100, token).ConfigureAwait(false);
             await Task.Delay(0_100, token).ConfigureAwait(false);
 
             if (await HandleEncounter(pk, token).ConfigureAwait(false))
