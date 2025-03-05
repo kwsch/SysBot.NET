@@ -1,4 +1,4 @@
-﻿using SysBot.Pokemon.WinForms.Properties;
+using SysBot.Pokemon.WinForms.Properties;
 
 namespace SysBot.Pokemon.WinForms
 {
@@ -186,6 +186,7 @@ namespace SysBot.Pokemon.WinForms
             this.RTB_Logs.Size = new System.Drawing.Size(449, 283);
             this.RTB_Logs.TabIndex = 0;
             this.RTB_Logs.Text = "";
+            this.RTB_Logs.HideSelection = false;
             // 
             // B_Stop
             // 
