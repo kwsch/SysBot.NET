@@ -38,6 +38,7 @@ public sealed class TextBoxForwarder(TextBoxBase Box) : ILogForwarder
         {
             var lines = Box.Lines;
             Box.Lines = lines[(lines.Length / 4)..];
+            Box.Refresh();
         }
 
         Box.AppendText(line);
