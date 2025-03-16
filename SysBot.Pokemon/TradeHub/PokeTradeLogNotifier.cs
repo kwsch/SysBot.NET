@@ -28,7 +28,7 @@ public class PokeTradeLogNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
         // Print the nickname for Ledy trades so we can see what was requested.
         var ledyname = string.Empty;
         if (info.Trainer.TrainerName == "Random Distribution" && result.IsNicknamed)
-            ledyname = $" ({result.Nickname})";
+            ledyname = $" (Nickname: \"{result.Nickname}\")";
 
         LogUtil.LogInfo($"Finished trading {info.Trainer.TrainerName} {GameInfo.GetStrings(1).Species[info.TradeData.Species]} for {GameInfo.GetStrings(1).Species[result.Species]}{ledyname}", routine.Connection.Label);
         OnFinish?.Invoke(routine);
