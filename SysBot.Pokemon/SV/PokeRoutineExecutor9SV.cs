@@ -206,7 +206,7 @@ public abstract class PokeRoutineExecutor9SV(PokeBotState Config) : PokeRoutineE
             }
         }
 
-        await Task.Delay(5_000 + timing.ExtraTimeLoadOverworld, token).ConfigureAwait(false);
+        await Task.Delay(timing.ExtraTimeLoadOverworld, token).ConfigureAwait(false);
         Log("Back in the overworld!");
     }
 
