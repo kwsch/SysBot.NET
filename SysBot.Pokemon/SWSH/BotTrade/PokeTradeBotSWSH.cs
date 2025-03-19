@@ -58,7 +58,6 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         }
 
         Log($"Ending {nameof(PokeTradeBotSWSH)} loop.");
-        await HardStop().ConfigureAwait(false);
     }
 
     public override Task HardStop()

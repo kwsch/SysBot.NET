@@ -1,4 +1,4 @@
-﻿using SysBot.Base;
+using SysBot.Base;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,7 +28,6 @@ public class RemoteControlBotSWSH(PokeBotState Config) : PokeRoutineExecutor8SWS
         }
 
         Log($"Ending {nameof(RemoteControlBotSWSH)} loop.");
-        await HardStop().ConfigureAwait(false);
     }
 
     public override async Task HardStop()

@@ -67,7 +67,6 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         }
 
         Log($"Ending {nameof(PokeTradeBotBS)} loop.");
-        await HardStop().ConfigureAwait(false);
     }
 
     public override Task HardStop()

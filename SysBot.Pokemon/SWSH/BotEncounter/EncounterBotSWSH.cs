@@ -57,7 +57,6 @@ public abstract class EncounterBotSWSH : PokeRoutineExecutor8SWSH, IEncounterBot
         }
 
         Log($"Ending {GetType().Name} loop.");
-        await HardStop().ConfigureAwait(false);
     }
 
     public override async Task HardStop()

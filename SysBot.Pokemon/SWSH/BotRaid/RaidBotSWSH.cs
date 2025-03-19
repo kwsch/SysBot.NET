@@ -47,7 +47,6 @@ public class RaidBotSWSH(PokeBotState Config, PokeTradeHub<PK8> Hub) : PokeRouti
         }
 
         Log($"Ending {nameof(RaidBotSWSH)} loop.");
-        await HardStop().ConfigureAwait(false);
     }
 
     private async Task InnerLoop(CancellationToken token)
