@@ -15,8 +15,10 @@ namespace SysBot.Pokemon.Discord;
 // Copyright 2017, Christopher F. <foxbot@protonmail.com>
 public class InfoModule : ModuleBase<SocketCommandContext>
 {
-    private const string detail = "I am an open-source Discord bot powered by PKHeX.Core and other open-source software.";
+    private const string detail = "I am an open-source Discord bot powered by PKHeX.Core and other open-source software, edited by the Brother Dudes.";
     private const string repo = "https://github.com/kwsch/SysBot.NET";
+    private const string fork = "https://github.com/Havokx89/DudeBot.NET";
+    private const string dcord = "https://chinchou.net";
 
     [Command("info")]
     [Alias("about", "whoami", "owner")]
@@ -31,7 +33,9 @@ public class InfoModule : ModuleBase<SocketCommandContext>
         };
 
         builder.AddField("Info",
-            $"- [Source Code]({repo})\n" +
+            $"- {Format.Bold("Original Source")}: [SysBot.NET]({repo})\n" +
+            $"- {Format.Bold("Current Fork")}: [DudeBot.NET]({fork})\n" +
+            $"- {Format.Bold("Join the Discord for support!")}: [In Link We Trust]({dcord}) \n" +
             $"- {Format.Bold("Owner")}: {app.Owner} ({app.Owner.Id})\n" +
             $"- {Format.Bold("Library")}: Discord.Net ({DiscordConfig.Version})\n" +
             $"- {Format.Bold("Uptime")}: {GetUptime()}\n" +
