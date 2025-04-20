@@ -18,7 +18,7 @@ For support on setting up your own instance of DudeBot.NET, feel free to join th
 
 # Example Implementations
 
-The driving force to develop this project is automated bots for Nintendo Switch Pokémon games. An example implementation is provided in this repo to demonstrate interesting tasks this framework is capable of performing. Refer to the [Wiki](https://github.com/kwsch/SysBot.NET/wiki) for more details on the supported Pokémon features.
+The driving force to develop this project is automated bots for Nintendo Switch Pokémon games. An example implementation is provided in this repo to demonstrate interesting tasks this framework is capable of performing. Refer to the [Wiki](https://github.com/Havokx89/DudeBot.NET/wiki) for more details on the supported Pokémon features.
 
 ## SysBot.Pokemon:
 - Class library using SysBot.Base to contain logic related to creating & running Sword/Shield bots.
