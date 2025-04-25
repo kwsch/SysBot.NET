@@ -37,19 +37,19 @@ public class DiscordSettings
     // Whitelists
 
     [Category(Roles), Description("Users with this role are allowed to enter the Trade queue.")]
-    public RemoteControlAccessList RoleCanTrade { get; set; } = new() { AllowIfEmpty = false };
+    public RemoteControlAccessList RoleCanTrade { get; set; } = new() { AllowIfEmpty = true };
 
     [Category(Roles), Description("Users with this role are allowed to enter the Seed Check queue.")]
-    public RemoteControlAccessList RoleCanSeedCheck { get; set; } = new() { AllowIfEmpty = false };
+    public RemoteControlAccessList RoleCanSeedCheck { get; set; } = new() { AllowIfEmpty = true };
 
     [Category(Roles), Description("Users with this role are allowed to enter the Clone queue.")]
-    public RemoteControlAccessList RoleCanClone { get; set; } = new() { AllowIfEmpty = false };
+    public RemoteControlAccessList RoleCanClone { get; set; } = new() { AllowIfEmpty = true };
 
     [Category(Roles), Description("Users with this role are allowed to enter the Dump queue.")]
-    public RemoteControlAccessList RoleCanDump { get; set; } = new() { AllowIfEmpty = false };
+    public RemoteControlAccessList RoleCanDump { get; set; } = new() { AllowIfEmpty = true };
 
     [Category(Roles), Description("Users with this role are allowed to use SupportTrade.")]
-    public RemoteControlAccessList RoleCanSupportTrade { get; set; } = new() { AllowIfEmpty = false };
+    public RemoteControlAccessList RoleCanSupportTrade { get; set; } = new() { AllowIfEmpty = true };
 
     [Category(Roles), Description("Users with this role are allowed to remotely control the console (if running as Remote Control Bot.")]
     public RemoteControlAccessList RoleRemoteControl { get; set; } = new() { AllowIfEmpty = false };
@@ -93,5 +93,5 @@ public class DiscordSettings
     public bool ConvertPKMToShowdownSet { get; set; } = true;
 
     [Category(Operation), Description("Bot can reply with a ShowdownSet in Any channel the bot can see, instead of only channels the bot has been whitelisted to run in. Only make this true if you want the bot to serve more utility in non-bot channels.")]
-    public bool ConvertPKMReplyAnyChannel { get; set; }
+    public bool ConvertPKMReplyAnyChannel { get; set; } = false;
 }
