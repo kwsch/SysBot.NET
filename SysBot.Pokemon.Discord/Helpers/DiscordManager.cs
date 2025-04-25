@@ -19,6 +19,7 @@ public class DiscordManager(DiscordSettings Config)
     public RemoteControlAccessList RolesClone => Config.RoleCanClone;
     public RemoteControlAccessList RolesTrade => Config.RoleCanTrade;
     public RemoteControlAccessList RolesSeed => Config.RoleCanSeedCheck;
+    public RemoteControlAccessList RolesSupportTrade => Config.RoleCanSupportTrade;
     public RemoteControlAccessList RolesDump => Config.RoleCanDump;
     public RemoteControlAccessList RolesRemoteControl => Config.RoleRemoteControl;
 
@@ -54,6 +55,7 @@ public class DiscordManager(DiscordSettings Config)
         nameof(RolesSeed) => RolesSeed,
         nameof(RolesDump) => RolesDump,
         nameof(RolesRemoteControl) => RolesRemoteControl,
+        nameof(RolesSupportTrade) => RolesSupportTrade,
         _ => throw new ArgumentOutOfRangeException(nameof(type)),
     };
 }

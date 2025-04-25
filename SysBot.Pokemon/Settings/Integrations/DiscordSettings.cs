@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace SysBot.Pokemon;
 
@@ -47,6 +47,9 @@ public class DiscordSettings
 
     [Category(Roles), Description("Users with this role are allowed to enter the Dump queue.")]
     public RemoteControlAccessList RoleCanDump { get; set; } = new() { AllowIfEmpty = false };
+
+    [Category(Roles), Description("Users with this role are allowed to use SupportTrade.")]
+    public RemoteControlAccessList RoleCanSupportTrade { get; set; } = new() { AllowIfEmpty = false };
 
     [Category(Roles), Description("Users with this role are allowed to remotely control the console (if running as Remote Control Bot.")]
     public RemoteControlAccessList RoleRemoteControl { get; set; } = new() { AllowIfEmpty = false };

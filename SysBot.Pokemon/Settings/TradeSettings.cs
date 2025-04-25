@@ -35,6 +35,9 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     [Category(Dumping), Description("Dump Trade: If enabled, Dumping routine will output legality check information to the user.")]
     public bool DumpTradeLegalityCheck { get; set; } = true;
 
+    [Category(TradeConfig), Description("Select default species for \"ItemTrade\", if configured.")]
+    public Species ItemTradeSpecies { get; set; } = Species.None;
+
     [Category(TradeConfig), Description("When enabled, the screen will be turned off during normal bot loop operation to save power.")]
     public bool ScreenOff { get; set; }
 
@@ -54,6 +57,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     private int _completedTrades;
     private int _completedSeedChecks;
     private int _completedClones;
+    private int _completedSupportTrades;
     private int _completedDumps;
 
     [Category(Counts), Description("Completed Surprise Trades")]
@@ -91,6 +95,13 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         set => _completedClones = value;
     }
 
+    [Category(Counts), Description("Completed Support Trades (Specific User)")]
+    public int CompletedSupportTrades
+    {
+        get => _completedSupportTrades;
+        set => _completedSupportTrades = value;
+    }
+
     [Category(Counts), Description("Completed Dump Trades (Specific User)")]
     public int CompletedDumps
     {
@@ -107,6 +118,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     public void AddCompletedDistribution() => Interlocked.Increment(ref _completedDistribution);
     public void AddCompletedDumps() => Interlocked.Increment(ref _completedDumps);
     public void AddCompletedClones() => Interlocked.Increment(ref _completedClones);
+    public void AddCompletedSupportTrades() => Interlocked.Increment(ref _completedSupportTrades);
 
     public IEnumerable<string> GetNonZeroCounts()
     {
@@ -124,5 +136,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
             yield return $"Distribution Trades: {CompletedDistribution}";
         if (CompletedSurprise != 0)
             yield return $"Surprise Trades: {CompletedSurprise}";
+        if (CompletedSupportTrades != 0)
+            yield return $"Support Trades: {CompletedSupportTrades}";
     }
 }
