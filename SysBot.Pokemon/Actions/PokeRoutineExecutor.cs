@@ -138,7 +138,7 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
         bool quit = false;
         var user = poke.Trainer;
         var isDistribution = poke.Type == PokeTradeType.Random;
-        var useridmsg = isDistribution ? "" : $" ({user.ID})";
+        var useridmsg = isDistribution ? "" : $" (NID: {TrainerNID})";
         var list = isDistribution ? PreviousUsersDistribution : PreviousUsers;
 
         // Matches to a list of banned NIDs, in case the user ever manages to enter a trade.
@@ -162,7 +162,7 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
         if (previous != null)
         {
             var delta = DateTime.Now - previous.Time; // Time that has passed since last trade.
-            Log($"Last traded with {user.TrainerName} {delta.TotalMinutes:F1} minutes ago (OT: {TrainerName}).");
+            Log($"Last traded with NID: {TrainerNID} {delta.TotalMinutes:F1} minutes ago (OT: {TrainerName}).");
 
             // Allows setting a cooldown for repeat trades. If the same user is encountered within the cooldown period for the same trade type, the user is warned and the trade will be ignored.
             var cd = AbuseSettings.TradeCooldown;     // Time they must wait before trading again.
@@ -197,9 +197,14 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
                     quit = true;
                 }
 
-                var msg = $"Found {user.TrainerName}{useridmsg} using multiple accounts.\nPreviously traded with {previous.Name} ({previous.RemoteID}) {delta.TotalMinutes:F1} minutes ago on OT: {TrainerName}.";
+                var msg = $"Found {user.TrainerName}{useridmsg} using multiple accounts.\n";
+
+                msg += $"Previous: {previous.Name} (Discord ID: {previous.RemoteID})\n" +
+                       $"Current: {user.TrainerName} (Discord ID: {user.ID})";
+
+
                 if (AbuseSettings.EchoNintendoOnlineIDMulti)
-                    msg += $"\nID: {TrainerNID}";
+                    msg += $"\nNID: {TrainerNID}";
                 if (!string.IsNullOrWhiteSpace(AbuseSettings.MultiAbuseEchoMention))
                     msg = $"{AbuseSettings.MultiAbuseEchoMention} {msg}";
                 EchoUtil.Echo(msg);
