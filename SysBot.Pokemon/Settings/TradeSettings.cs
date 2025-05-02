@@ -92,7 +92,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         [Category(TradeConfig), Description("Checks Nickname and OT for spam. Can't be turned off."), DisplayName("Enable Spam Check")]
         public bool EnableSpamCheck { get; protected set; } = true;
 
-        [Category(TradeConfig), Description("Maximum number of Pokémon in single trade. Batch mode will be closed if this configuration is less than 1"), DisplayName("Maximum Pokémon per Trade")]
+        [Category(TradeConfig), Description("Maximum pokemons of single trade. Batch mode will be closed if this configuration is less than 1"), DisplayName("Maximum Pokémon per Trade")]
         public int MaxPkmsPerTrade { get; set; } = 1;
 
         [Category(TradeConfig), Description("Dump Trade: Dumping routine will stop after a maximum number of dumps from a single user."), DisplayName("Maximum Dumps per Trade")]
@@ -272,7 +272,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
 
         private bool _useEmbeds = true;
 
-        [Category(EmbedSettings), Description("If true, will show embeds in your discord trade channels of what the user is trading. False will show default text."), DisplayName("Use Embeds")]
+        [Category(EmbedSettings), Description("If true, will show beautiful embeds in your discord trade channels of what the user is trading. False will show default text."), DisplayName("Use Embeds")]
         public bool UseEmbeds
         {
             get => _useEmbeds;
@@ -287,7 +287,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         {
             if (!_useEmbeds)
             {
-                PreferredImageSize = ImageSize.Size128x128;
+                PreferredImageSize = ImageSize.Size256x256;
                 MoveTypeEmojis = false;
                 ShowScale = false;
                 ShowTeraType = false;
@@ -300,7 +300,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         [Category(EmbedSettings), Description("Preferred Species Image Size for Embeds."), DisplayName("Species Image Size")]
-        public ImageSize PreferredImageSize { get; set; } = ImageSize.Size128x128;
+        public ImageSize PreferredImageSize { get; set; } = ImageSize.Size256x256;
 
         [Category(EmbedSettings), Description("Will show Move Type Icons next to moves in trade embed (Discord only). Requires user to upload the emojis to their server."), DisplayName("Show Move Type Emojis")]
         public bool MoveTypeEmojis { get; set; } = false;
@@ -408,7 +408,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         public bool AllowRequests { get; set; } = true;
 
         [Category(VGCPastesConfig), Description("GID of Spreadsheet tab you would like to pull from. Hint: https://docs.google.com/spreadsheets/d/ID/gid=1837599752"), DisplayName("GID of Spreadsheet Tab")]
-        public int GID { get; set; } = 972834435; // Reg I Tab
+        public int GID { get; set; } = 1837599752; // Reg F Tab
     }
 
     [Category(RequestFolders), TypeConverter(typeof(CategoryConverter<RequestFolderSettingsCategory>))]
@@ -526,7 +526,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         [Category(CountStats), Description("When enabled, the counts will be emitted when a status check is requested.")]
-        public bool EmitCountsOnStatusCheck { get; set; } = true;
+        public bool EmitCountsOnStatusCheck { get; set; }
 
         public void AddCompletedTrade() => Interlocked.Increment(ref _completedTrades);
 
@@ -586,9 +586,9 @@ public class TradeSettings : IBotStateSettings, ICountSettings
 
     public enum ImageSize
     {
-        Size128x128,
+        Size256x256,
 
-        Size256x256
+        Size128x128
     }
 
     public enum MoveType

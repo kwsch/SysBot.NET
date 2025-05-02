@@ -145,7 +145,7 @@ namespace SysBot.Pokemon.Discord
                     return;
                 }
 
-                var namer = new VGCNamer();
+                var namer = new FileNamer();
 #pragma warning disable CA1416 // Validate platform compatibility
                 var pokemonImages = new List<System.Drawing.Image>();
 #pragma warning restore CA1416 // Validate platform compatibility

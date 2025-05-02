@@ -78,7 +78,7 @@ namespace SysBot.Pokemon.Discord
                         return;
                     }
 
-                    var namer = new VGCNamer();
+                    var namer = new FileNamer();
 #pragma warning disable CA1416 // Validate platform compatibility
                     var pokemonImages = new List<System.Drawing.Image>();
 #pragma warning restore CA1416 // Validate platform compatibility
@@ -115,7 +115,7 @@ namespace SysBot.Pokemon.Discord
                                 }
 
                                 var speciesName = GameInfo.GetStrings("en").Species[set.Species];
-                                var fileName = namer.GetName(pk); // Use VGCNamer to generate the file name
+                                var fileName = namer.GetName(pk); // Use FileNamer to generate the file name
                                 var entry = archive.CreateEntry($"{fileName}.{pk.Extension}");
                                 await using var entryStream = entry.Open();
                                 await entryStream.WriteAsync(pk.Data.AsMemory(0, pk.Data.Length)).ConfigureAwait(false);

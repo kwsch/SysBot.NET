@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Pokemon.Discord;
 using SysBot.Pokemon.Twitch;
 using System.Threading;
@@ -11,15 +11,28 @@ namespace SysBot.Pokemon.ConsoleApp;
 /// </summary>
 public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
 {
-    public PokeBotRunnerImpl(PokeTradeHub<T> hub, BotFactory<T> fac) : base(hub, fac) { }
-    public PokeBotRunnerImpl(PokeTradeHubConfig config, BotFactory<T> fac) : base(config, fac) { }
-
     private static TwitchBot<T>? Twitch;
+    private readonly ProgramConfig _config;
+
+    public PokeBotRunnerImpl(PokeTradeHub<T> hub, BotFactory<T> fac, ProgramConfig config) : base(hub, fac)
+    {
+        _config = config;
+    }
 
     protected override void AddIntegrations()
     {
         AddDiscordBot(Hub.Config.Discord);
         AddTwitchBot(Hub.Config.Twitch);
+    }
+
+    private void AddDiscordBot(DiscordSettings config)
+    {
+        var token = config.Token;
+        if (string.IsNullOrWhiteSpace(token))
+            return;
+
+        var bot = new SysCord<T>(this, _config);
+        Task.Run(() => bot.MainAsync(token, CancellationToken.None), CancellationToken.None);
     }
 
     private void AddTwitchBot(TwitchSettings config)
@@ -39,15 +52,5 @@ public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
         Twitch = new TwitchBot<T>(config, Hub);
         if (config.DistributionCountDown)
             Hub.BotSync.BarrierReleasingActions.Add(() => Twitch.StartingDistribution(config.MessageStart));
-    }
-
-    private void AddDiscordBot(DiscordSettings config)
-    {
-        var token = config.Token;
-        if (string.IsNullOrWhiteSpace(token))
-            return;
-
-        var bot = new SysCord<T>(this);
-        Task.Run(() => bot.MainAsync(token, CancellationToken.None), CancellationToken.None);
     }
 }

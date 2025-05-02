@@ -21,6 +21,7 @@ public class InfoModule : ModuleBase<SocketCommandContext>
     private const string fork = "https://github.com/Havokx89/DudeBot.NET";
     private const string dcord = "https://chinchou.net";
 
+
     [Command("info")]
     [Alias("about", "whoami", "owner")]
     public async Task InfoAsync()
@@ -57,8 +58,9 @@ public class InfoModule : ModuleBase<SocketCommandContext>
         await ReplyAsync("Here's a bit about me!", embed: builder.Build()).ConfigureAwait(false);
     }
 
-    private static string GetUptime() => (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss");
     private static string GetHeapSize() => Math.Round(GC.GetTotalMemory(true) / (1024.0 * 1024.0), 2).ToString(CultureInfo.CurrentCulture);
+
+    private static string GetUptime() => (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss");
 
     private static string GetVersionInfo(string assemblyName, bool inclVersion = true)
     {
@@ -72,13 +74,14 @@ public class InfoModule : ModuleBase<SocketCommandContext>
 
         var info = attribute.InformationalVersion;
         var split = info.Split('+');
-        if (split.Length < 2)
-            return _default;
-
-        var version = split[0];
-        var revision = split[1];
-        if (DateTime.TryParseExact(revision, "yyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var buildTime))
-            return (inclVersion ? $"{version} " : "") + $@"{buildTime:yy-MM-dd\.hh\:mm}";
-        return !inclVersion ? _default : version;
+        if (split.Length >= 2)
+        {
+            var version = split[0];
+            var revision = split[1];
+            if (DateTime.TryParseExact(revision, "yyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var buildTime))
+                return (inclVersion ? $"{version} " : "") + $@"{buildTime:yy-MM-dd\.hh\:mm}";
+            return inclVersion ? version : _default;
+        }
+        return _default;
     }
 }

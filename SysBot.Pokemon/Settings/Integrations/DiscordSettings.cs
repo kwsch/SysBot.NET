@@ -81,10 +81,10 @@ public class DiscordSettings
     public bool BotEmbedStatus { get; set; } = true;
 
     [Category(Startup), Description("Custom Status for playing a game.")]
-    public string BotGameStatus { get; set; } = "DudeBot.NET: Pokémon";
+    public string BotGameStatus { get; set; } = "SysBot.NET: Pokémon";
 
-    [Category(Startup), Description("Will add online/offline emoji to channel name based on current status.  Whitelisted channels only."), DisplayName("Channel status emoji")]
-    public bool ChannelStatus { get; set; } = false;
+    [Category(Startup), Description("Will add online/offline emoji to channel name based on current status.  Whitelisted channels only.")]
+    public bool ChannelStatus { get; set; } = true;
 
     [Category(Channels), Description("Channels with these IDs are the only channels where the bot acknowledges commands.")]
     public RemoteControlAccessList ChannelWhitelist { get; set; } = new();
@@ -126,19 +126,19 @@ public class DiscordSettings
     public bool ReturnPKMs { get; set; } = true;
 
     [Category(Roles), Description("Users with this role are allowed to enter the Clone queue.")]
-    public RemoteControlAccessList RoleCanClone { get; set; } = new() { AllowIfEmpty = true };
+    public RemoteControlAccessList RoleCanClone { get; set; } = new() { AllowIfEmpty = false };
 
     [Category(Roles), Description("Users with this role are allowed to enter the Dump queue.")]
-    public RemoteControlAccessList RoleCanDump { get; set; } = new() { AllowIfEmpty = true };
+    public RemoteControlAccessList RoleCanDump { get; set; } = new() { AllowIfEmpty = false };
 
     [Category(Roles), Description("Users with this role are allowed to enter the FixOT queue.")]
-    public RemoteControlAccessList RoleCanFixOT { get; set; } = new() { AllowIfEmpty = true };
+    public RemoteControlAccessList RoleCanFixOT { get; set; } = new() { AllowIfEmpty = false };
 
     [Category(Roles), Description("Users with this role are allowed to enter the Seed Check/Special Request queue.")]
-    public RemoteControlAccessList RoleCanSeedCheckorSpecialRequest { get; set; } = new() { AllowIfEmpty = true };
+    public RemoteControlAccessList RoleCanSeedCheckorSpecialRequest { get; set; } = new() { AllowIfEmpty = false };
 
     [Category(Roles), Description("Users with this role are allowed to enter the Trade queue.")]
-    public RemoteControlAccessList RoleCanTrade { get; set; } = new() { AllowIfEmpty = true };
+    public RemoteControlAccessList RoleCanTrade { get; set; } = new() { AllowIfEmpty = false };
 
     [Category(Roles), Description("Users with this role are allowed to join the queue with a better position.")]
     public RemoteControlAccessList RoleFavored { get; set; } = new() { AllowIfEmpty = false };

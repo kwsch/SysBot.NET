@@ -13,14 +13,14 @@ public class DistributionSettings : ISynchronizationSetting
     [Category(Distribute), Description("When enabled, idle LinkTrade bots will randomly distribute PKM files from the DistributeFolder.")]
     public bool DistributeWhileIdle { get; set; } = true;
 
-    [Category(Distribute), Description("Distribution Trade Link Code uses the Min and Max range rather than the fixed trade code.")]
-    public bool RandomCode { get; set; }
-
     [Category(Distribute), Description("When set to true, Random Ledy nickname-swap trades will quit rather than trade a random entity from the pool.")]
     public bool LedyQuitIfNoMatch { get; set; }
 
     [Category(Distribute), Description("When set to something other than None, the Random Trades will require this species in addition to the nickname match.")]
     public Species LedySpecies { get; set; } = Species.None;
+
+    [Category(Distribute), Description("Distribution Trade Link Code uses the Min and Max range rather than the fixed trade code.")]
+    public bool RandomCode { get; set; }
 
     [Category(Distribute), Description("For BDSP, the distribution bot will go to a specific room and remain there until the bot is stopped.")]
     public bool RemainInUnionRoomBDSP { get; set; } = true;
@@ -40,7 +40,7 @@ public class DistributionSettings : ISynchronizationSetting
     public double SynchronizeTimeout { get; set; } = 90;
 
     [Category(Distribute), Description("Distribution Trade Link Code.")]
-    public int TradeCode { get; set; } = 12345678;
+    public int TradeCode { get; set; } = 7196;
 
     public override string ToString() => "Distribution Trade Settings";
 }

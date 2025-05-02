@@ -1,8 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-	<ItemGroup>
-    <PackageReference Include="NLog" Version="5.4.0" />
+  <ItemGroup>
+    <PackageReference Include="NLog" Version="5.3.4" />
     <PackageReference Include="LibUsbDotNet" Version="2.2.29" />
   </ItemGroup>
-
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
 </Project>

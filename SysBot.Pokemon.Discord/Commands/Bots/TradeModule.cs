@@ -1734,7 +1734,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
         if (milestone > 0)
         {
-            string imageUrl = $"https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/{milestone:D3}.png";
+            string imageUrl = $"https://raw.githubusercontent.com//Havokx89/Bot-Sprite-Images/main/{milestone:D3}.png";
             return new EmbedBuilder()
                 .WithTitle($"{user.Username}'s Trading Status")
                 .WithColor(new Color(255, 215, 0)) // Gold

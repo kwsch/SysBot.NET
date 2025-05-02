@@ -15,13 +15,13 @@ public class LegalitySettings
     [Category(Generate), Description("Allow users to submit further customization with Batch Editor commands.")]
     public bool AllowBatchCommands { get; set; } = true;
 
-    [Category(Generate), Description("Allow users to submit custom OT, TID, SID, and OT Gender in Showdown sets. If false, defaults to bot data."), DisplayName("Allow trainer data")]
+    [Category(Generate), Description("Allow users to submit custom OT, TID, SID, and OT Gender in Showdown sets.")]
     public bool AllowTrainerDataOverride { get; set; } = true;
 
     [Category(Generate), Description("Prevents trading Pokémon that require a HOME Tracker, even if the file has one already."), DisplayName("Disallow Non-Native Pokémon")]
     public bool DisallowNonNatives { get; set; } = false;
 
-    [Category(Generate), Description("Prevents trading Pokémon that already have a HOME Tracker."), DisplayName("Disallow Home-Tracked Pokémon")]
+    [Category(Generate), Description("Prevents trading Pokémon that already have a HOME Tracker."), DisplayName("Disallow Home Tracked Pokémon")]
     public bool DisallowTracked { get; set; } = false;
 
     [Category(Generate), Description("Bot will create an Easter Egg Pokémon if provided an illegal set.")]
@@ -88,16 +88,16 @@ public class LegalitySettings
 
     [Browsable(false)]
     [Category(Generate), Description("Adds Battle Version for games that support it (SWSH only) for using past-gen Pokémon in online competitive play.")]
-    public bool SetBattleVersion { get; set; } = false;
+    public bool SetBattleVersion { get; set; }
 
     [Category(Generate), Description("Set a matching ball (based on color) for any generated Pokémon.")]
     public bool SetMatchingBalls { get; set; } = true;
 
     [Category(Generate), Description("Maximum time in seconds to spend when generating a set before canceling. This prevents difficult sets from freezing the bot.")]
-    public int Timeout { get; set; } = 45;
+    public int Timeout { get; set; } = 15;
 
-    [Category(Misc), Description("Apply valid Pokémon with the connected trainer's OT/SID/TID during the trade."), DisplayName("AutoOT")]
-    public bool UseTradePartnerInfo { get; set; } = true;
+    [Category(Misc), Description("Apply valid Pokémon with the trainer's OT/SID/TID mid-trade"), DisplayName("AutoOT")]
+    public bool UseTradePartnerInfo { get; set; } = false;
 
     public override string ToString() => "Legality Generating Settings";
 }
