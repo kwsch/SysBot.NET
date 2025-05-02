@@ -1,4 +1,4 @@
-﻿namespace SysBot.Base;
+namespace SysBot.Base;
 
 /// <summary>
 /// Valid configuration request types for the Nintendo Switch to be sent as a <see cref="SwitchCommand"/>.
@@ -19,6 +19,8 @@ public enum SwitchConfigureParameter
     /// sys-botbase Echoes the command request back after processing the command if this is set.
     /// </summary>
     echoCommands,
+
+    controllerType,
 
     /// <summary>
     /// Amount of time (milliseconds) Hid polling rate for virtual functions

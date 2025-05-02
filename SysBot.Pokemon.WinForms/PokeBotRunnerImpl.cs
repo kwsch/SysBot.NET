@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Pokemon.Discord;
 using SysBot.Pokemon.Twitch;
 using SysBot.Pokemon.WinForms;
@@ -13,17 +13,33 @@ namespace SysBot.Pokemon;
 /// </summary>
 public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
 {
-    public PokeBotRunnerImpl(PokeTradeHub<T> hub, BotFactory<T> fac) : base(hub, fac) { }
-    public PokeBotRunnerImpl(PokeTradeHubConfig config, BotFactory<T> fac) : base(config, fac) { }
-
-    private TwitchBot<T>? Twitch;
     private YouTubeBot<T>? YouTube;
+    private static TwitchBot<T>? Twitch;
+    private readonly ProgramConfig _config;
+
+    public PokeBotRunnerImpl(PokeTradeHub<T> hub, BotFactory<T> fac, ProgramConfig config) : base(hub, fac)
+    {
+        _config = config;
+    }
+
+    public PokeBotRunnerImpl(PokeTradeHubConfig config, BotFactory<T> fac, ProgramConfig programConfig) : base(config, fac)
+    {
+        _config = programConfig;
+    }
 
     protected override void AddIntegrations()
     {
         AddDiscordBot(Hub.Config.Discord.Token);
         AddTwitchBot(Hub.Config.Twitch);
         AddYouTubeBot(Hub.Config.YouTube);
+    }
+
+    private void AddDiscordBot(string apiToken)
+    {
+        if (string.IsNullOrWhiteSpace(apiToken))
+            return;
+        var bot = new SysCord<T>(this, _config);
+        Task.Run(() => bot.MainAsync(apiToken, CancellationToken.None));
     }
 
     private void AddTwitchBot(TwitchSettings config)
@@ -62,13 +78,5 @@ public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
 
         YouTube = new YouTubeBot<T>(Hub.Config.YouTube, Hub);
         Hub.BotSync.BarrierReleasingActions.Add(() => YouTube.StartingDistribution(config.MessageStart));
-    }
-
-    private void AddDiscordBot(string apiToken)
-    {
-        if (string.IsNullOrWhiteSpace(apiToken))
-            return;
-        var bot = new SysCord<T>(this);
-        Task.Run(() => bot.MainAsync(apiToken, CancellationToken.None));
     }
 }

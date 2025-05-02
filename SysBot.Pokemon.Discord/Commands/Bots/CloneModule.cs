@@ -14,21 +14,69 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [Alias("c")]
     [Summary("Clones the Pokémon you show via Link Trade.")]
     [RequireQueueRole(nameof(DiscordManager.RolesClone))]
-    public Task CloneAsync(int code)
+    public async Task CloneAsync(int code)
     {
+        // Check if the user is already in the queue
+        var userID = Context.User.Id;
+        if (Info.IsUserInQueue(userID))
+        {
+            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            return;
+        }
+
         var sig = Context.User.GetFavor();
-        return QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone);
+        var lgcode = Info.GetRandomLGTradeCode();
+
+        // Add to queue asynchronously
+        _ = QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone, Context.User, false, 1, 1, false, false, false, lgcode);
+
+        // Immediately send a confirmation message without waiting
+        var confirmationMessage = await ReplyAsync("Processing your clone request...").ConfigureAwait(false);
+
+        // Use a fire-and-forget approach for the delay and deletion
+        _ = Task.Delay(2000).ContinueWith(async _ =>
+        {
+            if (Context.Message is IUserMessage userMessage)
+                await userMessage.DeleteAsync().ConfigureAwait(false);
+
+            if (confirmationMessage != null)
+                await confirmationMessage.DeleteAsync().ConfigureAwait(false);
+        }).ConfigureAwait(false);
     }
 
     [Command("clone")]
     [Alias("c")]
     [Summary("Clones the Pokémon you show via Link Trade.")]
     [RequireQueueRole(nameof(DiscordManager.RolesClone))]
-    public Task CloneAsync([Summary("Trade Code")][Remainder] string code)
+    public async Task CloneAsync([Summary("Trade Code")][Remainder] string code)
     {
+        // Check if the user is already in the queue
+        var userID = Context.User.Id;
+        if (Info.IsUserInQueue(userID))
+        {
+            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            return;
+        }
+
         int tradeCode = Util.ToInt32(code);
         var sig = Context.User.GetFavor();
-        return QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone);
+        var lgcode = Info.GetRandomLGTradeCode();
+
+        // Add to queue asynchronously
+        _ = QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode(userID) : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone, Context.User, false, 1, 1, false, false, false, lgcode);
+
+        // Immediately send a confirmation message without waiting
+        var confirmationMessage = await ReplyAsync("Processing your clone request...").ConfigureAwait(false);
+
+        // Use a fire-and-forget approach for the delay and deletion
+        _ = Task.Delay(2000).ContinueWith(async _ =>
+        {
+            if (Context.Message is IUserMessage userMessage)
+                await userMessage.DeleteAsync().ConfigureAwait(false);
+
+            if (confirmationMessage != null)
+                await confirmationMessage.DeleteAsync().ConfigureAwait(false);
+        }).ConfigureAwait(false);
     }
 
     [Command("clone")]
@@ -37,7 +85,8 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     [RequireQueueRole(nameof(DiscordManager.RolesClone))]
     public Task CloneAsync()
     {
-        var code = Info.GetRandomTradeCode();
+        var userID = Context.User.Id;
+        var code = Info.GetRandomTradeCode(userID);
         return CloneAsync(code);
     }
 

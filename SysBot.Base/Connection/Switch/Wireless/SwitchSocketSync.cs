@@ -28,15 +28,6 @@ public sealed class SwitchSocketSync(IWirelessConnectionConfig cfg) : SwitchSock
         Label = Name;
     }
 
-    public override void Reset()
-    {
-        if (Connected)
-            Disconnect();
-        else
-            InitializeSocket();
-        Connect();
-    }
-
     public override void Disconnect()
     {
         Log("Disconnecting from device...");
@@ -52,27 +43,12 @@ public sealed class SwitchSocketSync(IWirelessConnectionConfig cfg) : SwitchSock
         InitializeSocket();
     }
 
-    private int Read(byte[] buffer, int size) => Connection.Receive(buffer, size, 0);
-    public int Send(byte[] buffer) => Connection.Send(buffer);
-
-    private byte[] ReadResponse(int length)
+    public ulong GetHeapBase()
     {
-        // give it time to push data back
-        Thread.Sleep((MaximumTransferSize / DelayFactor) + BaseDelay);
-        var size = (length * 2) + 1;
-        var buffer = ArrayPool<byte>.Shared.Rent(size);
-        _ = Read(buffer, size);
-        var mem = buffer.AsMemory(0, size);
-        var result = DecodeResult(mem, length);
-        ArrayPool<byte>.Shared.Return(buffer, true);
-        return result;
-    }
-    private static byte[] DecodeResult(ReadOnlyMemory<byte> buffer, int length)
-    {
-        var result = new byte[length];
-        var span = buffer.Span[..^1]; // Last byte is always a terminator
-        Decoder.LoadHexBytesTo(span, result, 2);
-        return result;
+        Send(SwitchCommand.GetHeapBase());
+        byte[] baseBytes = ReadResponse(8);
+        Array.Reverse(baseBytes, 0, 8);
+        return BitConverter.ToUInt64(baseBytes, 0);
     }
 
     public ulong GetMainNsoBase()
@@ -83,21 +59,38 @@ public sealed class SwitchSocketSync(IWirelessConnectionConfig cfg) : SwitchSock
         return BitConverter.ToUInt64(baseBytes, 0);
     }
 
-    public ulong GetHeapBase()
-    {
-        Send(SwitchCommand.GetHeapBase());
-        byte[] baseBytes = ReadResponse(8);
-        Array.Reverse(baseBytes, 0, 8);
-        return BitConverter.ToUInt64(baseBytes, 0);
-    }
-
     public byte[] ReadBytes(uint offset, int length) => Read(Heap, offset, length);
-    public byte[] ReadBytesMain(ulong offset, int length) => Read(Main, offset, length);
+
     public byte[] ReadBytesAbsolute(ulong offset, int length) => Read(Absolute, offset, length);
 
+    public byte[] ReadBytesMain(ulong offset, int length) => Read(Main, offset, length);
+
+    public override void Reset()
+    {
+        if (Connected)
+            Disconnect();
+        else
+            InitializeSocket();
+        Connect();
+    }
+
+    public int Send(byte[] buffer) => Connection.Send(buffer);
+
     public void WriteBytes(ReadOnlySpan<byte> data, uint offset) => Write(Heap, data, offset);
-    public void WriteBytesMain(ReadOnlySpan<byte> data, ulong offset) => Write(Main, data, offset);
+
     public void WriteBytesAbsolute(ReadOnlySpan<byte> data, ulong offset) => Write(Absolute, data, offset);
+
+    public void WriteBytesMain(ReadOnlySpan<byte> data, ulong offset) => Write(Main, data, offset);
+
+    private static byte[] DecodeResult(ReadOnlyMemory<byte> buffer, int length)
+    {
+        var result = new byte[length];
+        var span = buffer.Span[..^1]; // Last byte is always a terminator
+        Decoder.LoadHexBytesTo(span, result, 2);
+        return result;
+    }
+
+    private int Read(byte[] buffer, int size) => Connection.Receive(buffer, size, 0);
 
     private byte[] Read(ICommandBuilder b, ulong offset, int length)
     {
@@ -121,6 +114,19 @@ public sealed class SwitchSocketSync(IWirelessConnectionConfig cfg) : SwitchSock
             var bytes = ReadResponse(len);
             bytes.CopyTo(result, i);
         }
+        return result;
+    }
+
+    private byte[] ReadResponse(int length)
+    {
+        // give it time to push data back
+        Thread.Sleep((MaximumTransferSize / DelayFactor) + BaseDelay);
+        var size = (length * 2) + 1;
+        var buffer = ArrayPool<byte>.Shared.Rent(size);
+        var _ = Read(buffer, size);
+        var mem = buffer.AsMemory(0, size);
+        var result = DecodeResult(mem, length);
+        ArrayPool<byte>.Shared.Return(buffer, true);
         return result;
     }
 

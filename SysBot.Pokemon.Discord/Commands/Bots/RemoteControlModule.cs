@@ -40,6 +40,24 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
         await ClickAsyncImpl(b, bot).ConfigureAwait(false);
     }
 
+    [Command("setScreenOff")]
+    [Alias("screenOff", "scrOff")]
+    [Summary("Turns the screen off")]
+    [RequireSudo]
+    public async Task SetScreenOffAsync()
+    {
+        await SetScreen(false).ConfigureAwait(false);
+    }
+
+    [Command("setScreenOn")]
+    [Alias("screenOn", "scrOn")]
+    [Summary("Turns the screen on")]
+    [RequireSudo]
+    public async Task SetScreenOnAsync()
+    {
+        await SetScreen(true).ConfigureAwait(false);
+    }
+
     [Command("setStick")]
     [Summary("Sets the stick to the specified position.")]
     [RequireRoleAccess(nameof(DiscordManager.RolesRemoteControl))]
@@ -70,26 +88,49 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
         await SetStickAsyncImpl(s, x, y, ms, bot).ConfigureAwait(false);
     }
 
-    [Command("setScreenOn")]
-    [Alias("screenOn", "scrOn")]
-    [Summary("Turns the screen on")]
-    [RequireSudo]
-    public Task SetScreenOnAsync([Remainder] string ip)
+    private static BotSource<PokeBotState>? GetBot(string ip)
     {
-        return SetScreen(true, ip);
+        var r = SysCord<T>.Runner;
+        return r.GetBot(ip) ?? r.Bots.Find(x => x.IsRunning); // safe fallback for users who mistype IP address for single bot instances
     }
 
-    [Command("setScreenOff")]
-    [Alias("screenOff", "scrOff")]
-    [Summary("Turns the screen off")]
-    [RequireSudo]
-    public Task SetScreenOffAsync([Remainder] string ip)
+    private static bool IsRemoteControlBot(RoutineExecutor<PokeBotState> botstate)
+        => botstate is RemoteControlBotSWSH or RemoteControlBotBS or RemoteControlBotLA or RemoteControlBotSV;
+
+    private async Task ClickAsyncImpl(SwitchButton button, BotSource<PokeBotState> bot)
     {
-        return SetScreen(false, ip);
+        if (!Enum.IsDefined(typeof(SwitchButton), button))
+        {
+            await ReplyAsync($"Unknown button value: {button}").ConfigureAwait(false);
+            return;
+        }
+
+        var b = bot.Bot;
+        var crlf = b is SwitchRoutineExecutor<PokeBotState> { UseCRLF: true };
+        await b.Connection.SendAsync(SwitchCommand.Click(button, crlf), CancellationToken.None).ConfigureAwait(false);
+        await ReplyAsync($"{b.Connection.Name} has performed: {button}").ConfigureAwait(false);
     }
 
-    private async Task SetScreen(bool on, string ip)
+    private static string GetRunningBotIP()
     {
+        var r = SysCord<T>.Runner;
+        var runningBot = r.Bots.Find(x => x.IsRunning);
+
+        // Check if a running bot is found
+        if (runningBot != null)
+        {
+            return runningBot.Bot.Config.Connection.IP;
+        }
+        else
+        {
+            // Default IP address or logic if no running bot is found
+            return "192.168.1.1";
+        }
+    }
+
+    private async Task SetScreen(bool on)
+    {
+        string ip = RemoteControlModule<T>.GetRunningBotIP();
         var bot = GetBot(ip);
         if (bot == null)
         {
@@ -103,29 +144,9 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
         await ReplyAsync("Screen state set to: " + (on ? "On" : "Off")).ConfigureAwait(false);
     }
 
-    private static BotSource<PokeBotState>? GetBot(string ip)
-    {
-        var r = SysCord<T>.Runner;
-        return r.GetBot(ip) ?? r.Bots.Find(x => x.IsRunning); // safe fallback for users who mistype IP address for single bot instances
-    }
-
-    private async Task ClickAsyncImpl(SwitchButton button, BotSource<PokeBotState> bot)
-    {
-        if (!Enum.IsDefined(button))
-        {
-            await ReplyAsync($"Unknown button value: {button}").ConfigureAwait(false);
-            return;
-        }
-
-        var b = bot.Bot;
-        var crlf = b is SwitchRoutineExecutor<PokeBotState> { UseCRLF: true };
-        await b.Connection.SendAsync(SwitchCommand.Click(button, crlf), CancellationToken.None).ConfigureAwait(false);
-        await ReplyAsync($"{b.Connection.Name} has performed: {button}").ConfigureAwait(false);
-    }
-
     private async Task SetStickAsyncImpl(SwitchStick s, short x, short y, ushort ms, BotSource<PokeBotState> bot)
     {
-        if (!Enum.IsDefined(s))
+        if (!Enum.IsDefined(typeof(SwitchStick), s))
         {
             await ReplyAsync($"Unknown stick: {s}").ConfigureAwait(false);
             return;
@@ -139,7 +160,4 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
         await b.Connection.SendAsync(SwitchCommand.ResetStick(s, crlf), CancellationToken.None).ConfigureAwait(false);
         await ReplyAsync($"{b.Connection.Name} has reset the stick position.").ConfigureAwait(false);
     }
-
-    private static bool IsRemoteControlBot(RoutineExecutor<PokeBotState> botstate)
-        => botstate is RemoteControlBotSWSH or RemoteControlBotBS or RemoteControlBotLA or RemoteControlBotSV;
 }

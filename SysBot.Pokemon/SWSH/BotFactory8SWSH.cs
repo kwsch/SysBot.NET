@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using System;
 
 namespace SysBot.Pokemon;
@@ -12,6 +12,7 @@ public sealed class BotFactory8SWSH : BotFactory<PK8>
             or PokeRoutineType.LinkTrade
             or PokeRoutineType.Clone
             or PokeRoutineType.Dump
+            or PokeRoutineType.FixOT
             or PokeRoutineType.SeedCheck
             => new PokeTradeBotSWSH(Hub, cfg),
 
@@ -34,6 +35,7 @@ public sealed class BotFactory8SWSH : BotFactory<PK8>
             or PokeRoutineType.Clone
             or PokeRoutineType.Dump
             or PokeRoutineType.SeedCheck
+            or PokeRoutineType.FixOT
             => true,
 
         PokeRoutineType.RaidBot => true,

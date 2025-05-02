@@ -1,5 +1,6 @@
 using PKHeX.Core;
 using SysBot.Base;
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,34 +10,60 @@ namespace SysBot.Pokemon;
 public interface IPokeBotRunner
 {
     PokeTradeHubConfig Config { get; }
+
     bool RunOnce { get; }
+
     bool IsRunning { get; }
 
     void StartAll();
+
     void StopAll();
+
     void InitializeStart();
 
     void Add(PokeRoutineExecutorBase newbot);
+
     void Remove(IConsoleBotConfig state, bool callStop);
 
     BotSource<PokeBotState>? GetBot(PokeBotState state);
+
     PokeRoutineExecutorBase CreateBotFromConfig(PokeBotState cfg);
+
     bool SupportsRoutine(PokeRoutineType pokeRoutineType);
+
+    event EventHandler BotStopped;
 }
 
-public abstract class PokeBotRunner<T>(PokeTradeHub<T> hub, BotFactory<T> Factory)
-    : BotRunner<PokeBotState>, IPokeBotRunner
-    where T : PKM, new()
+public abstract class PokeBotRunner<T> : BotRunner<PokeBotState>, IPokeBotRunner where T : PKM, new()
 {
-    public PokeTradeHub<T> Hub => hub;
+    public readonly PokeTradeHub<T> Hub;
+
+    private readonly BotFactory<T> Factory;
+
+    public event EventHandler BotStopped;
 
     public PokeTradeHubConfig Config => Hub.Config;
 
-    protected PokeBotRunner(PokeTradeHubConfig config, BotFactory<T> factory) : this(new PokeTradeHub<T>(config), factory)
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+    protected PokeBotRunner(PokeTradeHub<T> hub, BotFactory<T> factory)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
+        Hub = hub;
+        Factory = factory;
     }
 
-    protected virtual void AddIntegrations() { }
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+    protected PokeBotRunner(PokeTradeHubConfig config, BotFactory<T> factory)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    {
+        Factory = factory;
+        Hub = new PokeTradeHub<T>(config);
+    }
+
+    protected virtual void AddIntegrations()
+    { }
 
     public override void Add(RoutineExecutor<PokeBotState> bot)
     {
@@ -76,10 +103,14 @@ public abstract class PokeBotRunner<T>(PokeTradeHub<T> hub, BotFactory<T> Factor
 
     public override void StopAll()
     {
+        // Raise the BotStopped event
+        BotStopped?.Invoke(this, EventArgs.Empty);
+
         base.StopAll();
 
         // bots currently don't de-register
         Thread.Sleep(100);
+
         int count = Hub.BotSync.Barrier.ParticipantCount;
         if (count != 0)
             Hub.BotSync.Barrier.RemoveParticipants(count);
@@ -111,8 +142,12 @@ public abstract class PokeBotRunner<T>(PokeTradeHub<T> hub, BotFactory<T> Factor
     }
 
     public PokeRoutineExecutorBase CreateBotFromConfig(PokeBotState cfg) => Factory.CreateBot(Hub, cfg);
+
     public BotSource<PokeBotState>? GetBot(PokeBotState state) => base.GetBot(state);
+
     void IPokeBotRunner.Remove(IConsoleBotConfig state, bool callStop) => Remove(state, callStop);
+
     public void Add(PokeRoutineExecutorBase newbot) => Add((RoutineExecutor<PokeBotState>)newbot);
+
     public bool SupportsRoutine(PokeRoutineType t) => Factory.SupportsRoutine(t);
 }

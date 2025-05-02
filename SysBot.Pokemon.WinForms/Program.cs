@@ -7,6 +7,7 @@ namespace SysBot.Pokemon.WinForms;
 internal static class Program
 {
     public static readonly string WorkingDirectory = Environment.CurrentDirectory = Path.GetDirectoryName(Environment.ProcessPath)!;
+
     public static string ConfigPath { get; private set; } = Path.Combine(WorkingDirectory, "config.json");
 
     /// <summary>

@@ -1,5 +1,6 @@
 using Discord;
 using PKHeX.Core;
+using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -13,10 +14,14 @@ public static class NetUtil
         return await client.GetByteArrayAsync(url).ConfigureAwait(false);
     }
 
-    public static async Task<Download<PKM>> DownloadPKMAsync(IAttachment att)
+    // add wondercard trading - thanks manu
+    public static async Task<Download<PKM>> DownloadPKMAsync(IAttachment att, SimpleTrainerInfo? defTrainer = null)
     {
         var result = new Download<PKM> { SanitizedFileName = Format.Sanitize(att.Filename) };
-        if (!EntityDetection.IsSizePlausible(att.Size))
+        var extension = System.IO.Path.GetExtension(result.SanitizedFileName);
+        var isMyg = MysteryGift.IsMysteryGift(att.Size) && extension != ".pb7";
+
+        if (!EntityDetection.IsSizePlausible(att.Size) && !isMyg)
         {
             result.ErrorMessage = $"{result.SanitizedFileName}: Invalid size.";
             return result;
@@ -26,9 +31,25 @@ public static class NetUtil
 
         // Download the resource and load the bytes into a buffer.
         var buffer = await DownloadFromUrlAsync(url).ConfigureAwait(false);
-        var prefer = EntityFileExtension.GetContextFromExtension(result.SanitizedFileName);
-        var pkm = EntityFormat.GetFromBytes(buffer, prefer);
-        if (pkm == null)
+
+        PKM? pkm = null;
+        try
+        {
+            if (isMyg)
+            {
+                pkm = MysteryGift.GetMysteryGift(buffer, extension)?.ConvertToPKM(defTrainer ?? new SimpleTrainerInfo());
+            }
+            else
+            {
+                pkm = EntityFormat.GetFromBytes(buffer, EntityFileExtension.GetContextFromExtension(result.SanitizedFileName, EntityContext.None));
+            }
+        }
+        catch (ArgumentException)
+        {
+            //Item wondercard
+        }
+
+        if (pkm is null)
         {
             result.ErrorMessage = $"{result.SanitizedFileName}: Invalid pkm attachment.";
             return result;
@@ -42,8 +63,11 @@ public static class NetUtil
 
 public sealed class Download<T> where T : class
 {
-    public bool Success;
     public T? Data;
-    public string? SanitizedFileName;
+
     public string? ErrorMessage;
+
+    public string? SanitizedFileName;
+
+    public bool Success;
 }

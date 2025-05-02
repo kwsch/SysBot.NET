@@ -13,12 +13,19 @@ public enum PokeRoutineType
 
     /// <summary> Performs the behavior of all trade bots. </summary>
     FlexTrade = 2,
+
     /// <summary> Performs only P2P Link Trades of specific data. </summary>
     LinkTrade = 3,
+
+    /// <summary> Performs batch link trades. </summary>
+    Batch = 3,
+
     /// <summary> Performs a seed check without transferring data from the bot. </summary>
     SeedCheck = 4,
+
     /// <summary> Performs a clone operation on the partner's data, sending them a copy of what they show. </summary>
     Clone = 5,
+
     /// <summary> Exports files for all data shown to the bot. </summary>
     Dump = 6,
 
@@ -31,8 +38,11 @@ public enum PokeRoutineType
     /// <summary> Triggers reset encounters until the criteria is satisfied. </summary>
     Reset = 1_001,
 
-    /// <summary> Triggers encounters with Sword &amp; Shield box legend until the criteria is satisfied. </summary>
+    /// <summary> Triggers encounters with Sword & Shield box legend until the criteria is satisfied. </summary>
     DogBot = 1_002,
+
+    /// <summary> Attempts to fix advert names and minor legality issues of what a trade partner shows. </summary>
+    FixOT = 6002,
 
     /// <summary> Retrieves eggs from the Day Care. </summary>
     EggFetch = 1_003,

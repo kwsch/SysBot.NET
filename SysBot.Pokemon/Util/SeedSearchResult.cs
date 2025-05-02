@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace SysBot.Pokemon;
@@ -7,10 +7,13 @@ public class SeedSearchResult(Z3SearchResult Type, ulong Seed, int FlawlessIVCou
 {
     public static readonly SeedSearchResult None = new(Z3SearchResult.SeedNone, default, 0, SeedCheckResults.ClosestOnly);
 
-    public readonly Z3SearchResult Type = Type;
-    public readonly ulong Seed = Seed;
     public readonly int FlawlessIVCount = FlawlessIVCount;
+
     public readonly SeedCheckResults Mode = Mode;
+
+    public readonly ulong Seed = Seed;
+
+    public readonly Z3SearchResult Type = Type;
 
     public override string ToString()
     {

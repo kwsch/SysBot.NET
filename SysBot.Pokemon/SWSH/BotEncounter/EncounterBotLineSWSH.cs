@@ -8,6 +8,12 @@ namespace SysBot.Pokemon;
 
 public sealed class EncounterBotLineSWSH(PokeBotState Config, PokeTradeHub<PK8> Hub) : EncounterBotSWSH(Config, Hub)
 {
+    public override async Task RebootAndStop(CancellationToken t)
+    {
+        await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
+        await HardStop().ConfigureAwait(false);
+    }
+
     protected override async Task EncounterLoop(SAV8SWSH sav, CancellationToken token)
     {
         while (!token.IsCancellationRequested)
@@ -31,9 +37,9 @@ public sealed class EncounterBotLineSWSH(PokeBotState Config, PokeTradeHub<PK8> 
                 continue;
             }
 
-            while (!await IsOnBattleMenu(token).ConfigureAwait(false))
-                await Task.Delay(0_100, token).ConfigureAwait(false);
-            await Task.Delay(0_100, token).ConfigureAwait(false);
+            // Offsets are flickery so make sure we see it 3 times.
+            for (int i = 0; i < 3; i++)
+                await ReadUntilChanged(BattleMenuOffset, BattleMenuReady, 5_000, 0_100, true, token).ConfigureAwait(false);
 
             if (await HandleEncounter(pk, token).ConfigureAwait(false))
                 return;
@@ -64,6 +70,7 @@ public sealed class EncounterBotLineSWSH(PokeBotState Config, PokeTradeHub<PK8> 
                         await SetStick(LEFT, 0, 30000, 2_400, token).ConfigureAwait(false);
                         await SetStick(LEFT, 0, 0, 0_100, token).ConfigureAwait(false); // reset
                         break;
+
                     case EncounterMode.HorizontalLine:
                         await SetStick(LEFT, -30000, 0, 2_400, token).ConfigureAwait(false);
                         await SetStick(LEFT, 0, 0, 0_100, token).ConfigureAwait(false); // reset

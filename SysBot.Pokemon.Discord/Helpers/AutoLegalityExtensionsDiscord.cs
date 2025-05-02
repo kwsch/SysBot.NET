@@ -2,6 +2,7 @@ using Discord;
 using Discord.WebSocket;
 using PKHeX.Core;
 using SysBot.Base;
+using SysBot.Pokemon.Helpers;
 using System;
 using System.Threading.Tasks;
 
@@ -11,7 +12,7 @@ public static class AutoLegalityExtensionsDiscord
 {
     public static async Task ReplyWithLegalizedSetAsync(this ISocketMessageChannel channel, ITrainerInfo sav, ShowdownSet set)
     {
-        if (set.Species == 0)
+        if (set.Species <= 0)
         {
             await channel.SendMessageAsync("Oops! I wasn't able to interpret your message! If you intended to convert something, please double check what you're pasting!").ConfigureAwait(false);
             return;
@@ -21,16 +22,18 @@ public static class AutoLegalityExtensionsDiscord
         {
             var template = AutoLegalityWrapper.GetTemplate(set);
             var pkm = sav.GetLegal(template, out var result);
+            if (pkm is PK8 && pkm.Nickname.ToLower() == "egg" && Breeding.CanHatchAsEgg(pkm.Species))
+                TradeExtensions<PK8>.EggTrade(pkm, template);
+            else if (pkm is PB8 && pkm.Nickname.ToLower() == "egg" && Breeding.CanHatchAsEgg(pkm.Species))
+                TradeExtensions<PB8>.EggTrade(pkm, template);
+            else if (pkm is PK9 && pkm.Nickname.ToLower() == "egg" && Breeding.CanHatchAsEgg(pkm.Species))
+                TradeExtensions<PK9>.EggTrade(pkm, template);
+
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
             if (!la.Valid)
             {
-                var reason = result switch
-                {
-                    "Timeout" => $"That {spec} set took too long to generate.",
-                    "VersionMismatch" => "Request refused: PKHeX and Auto-Legality Mod version mismatch.",
-                    _ => $"I wasn't able to create a {spec} from that set.",
-                };
+                var reason = result == "Timeout" ? $"That {spec} set took too long to generate." : result == "VersionMismatch" ? "Request refused: PKHeX and Auto-Legality Mod version mismatch." : $"I wasn't able to create a {spec} from that set.";
                 var imsg = $"Oops! {reason}";
                 if (result == "Failed")
                     imsg += $"\n{AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm)}";

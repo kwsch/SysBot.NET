@@ -1,4 +1,4 @@
-﻿namespace SysBot.Base;
+namespace SysBot.Base;
 
 /// <summary>
 /// List of bots saved in the config.

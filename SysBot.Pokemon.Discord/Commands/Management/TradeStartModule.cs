@@ -1,11 +1,17 @@
-﻿using Discord;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using PKHeX.Core;
 using SysBot.Base;
+using SysBot.Pokemon.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Color = System.Drawing.Color;
+using DiscordColor = Discord.Color;
 
 namespace SysBot.Pokemon.Discord;
 
@@ -13,6 +19,8 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
 {
     private class TradeStartAction(ulong ChannelId, Action<PokeRoutineExecutorBase, PokeTradeDetail<T>> messager, string channel)
         : ChannelAction<PokeRoutineExecutorBase, PokeTradeDetail<T>>(ChannelId, messager, channel);
+
+    private static DiscordSocketClient? _discordClient;
 
     private static readonly Dictionary<ulong, TradeStartAction> Channels = [];
 
@@ -23,8 +31,11 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
     }
 
 #pragma warning disable RCS1158 // Static member in generic type should use a type parameter.
+
     public static void RestoreTradeStarting(DiscordSocketClient discord)
     {
+        _discordClient = discord; // Store the DiscordSocketClient instance
+
         var cfg = SysCordSettings.Settings;
         foreach (var ch in cfg.TradeStartingChannels)
         {
@@ -63,19 +74,64 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
 
     private static void AddLogChannel(ISocketMessageChannel c, ulong cid)
     {
-        void Logger(PokeRoutineExecutorBase bot, PokeTradeDetail<T> detail)
+        async void Logger(PokeRoutineExecutorBase bot, PokeTradeDetail<T> detail)
         {
-            if (detail.Type == PokeTradeType.Random)
-                return;
-            c.SendMessageAsync(GetMessage(bot, detail));
+            if (detail.Type == PokeTradeType.Random) return;
+
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+            var user = _discordClient.GetUser(detail.Trainer.ID);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+            if (user == null) { Console.WriteLine($"User not found for ID {detail.Trainer.ID}."); return; }
+
+            string speciesName = detail.TradeData != null ? GameInfo.Strings.Species[detail.TradeData.Species] : "";
+            string ballImgUrl = "https://raw.githubusercontent.com/Havokx89/sprites/36e891cc02fe283cd70d9fc8fef2f3c490096d6c/imgs/difficulty.png";
+
+            if (detail.TradeData != null && detail.Type != PokeTradeType.Clone && detail.Type != PokeTradeType.Dump && detail.Type != PokeTradeType.Seed && detail.Type != PokeTradeType.FixOT)
+            {
+                var ballName = GameInfo.GetStrings(1).balllist[detail.TradeData.Ball]
+                    .Replace(" ", "").Replace("(LA)", "").ToLower();
+                ballName = ballName == "pokéball" ? "pokeball" : (ballName.Contains("(la)") ? "la" + ballName : ballName);
+                ballImgUrl = $"https://raw.githubusercontent.com/Havokx89/sprites/main/AltBallImg/28x28/{ballName}.png";
+            }
+
+            string tradeTitle = detail.IsMysteryMon ? "✨ Mystery Pokémon" : detail.IsMysteryEgg ? "✨ Mystery Egg" : detail.Type switch
+            {
+                PokeTradeType.Clone => "Cloned Pokémon",
+                PokeTradeType.Dump => "Pokémon Dump",
+                PokeTradeType.FixOT => "Cloned Pokémon (Fixing OT Info)",
+                PokeTradeType.Seed => "Cloned Pokémon (Special Request)",
+                _ => speciesName
+            };
+
+            string embedImageUrl = detail.IsMysteryMon ? "https://i.imgur.com/FdESYAv.png" : detail.IsMysteryEgg ? "https://raw.githubusercontent.com/Havokx89/sprites/main/mysteryegg3.png" : detail.Type switch
+            {
+                PokeTradeType.Clone => "https://raw.githubusercontent.com/Havokx89/sprites/main/clonepod.png",
+                PokeTradeType.Dump => "https://raw.githubusercontent.com/Havokx89/sprites/main/AltBallImg/128x128/dumpball.png",
+                PokeTradeType.FixOT => "https://raw.githubusercontent.com/Havokx89/sprites/main/AltBallImg/128x128/rocketball.png",
+                PokeTradeType.Seed => "https://raw.githubusercontent.com/Havokx89/sprites/main/specialrequest.png",
+                _ => detail.TradeData != null ? TradeExtensions<T>.PokeImg(detail.TradeData, false, true) : ""
+            };
+
+            var (r, g, b) = await GetDominantColorAsync(embedImageUrl);
+
+            string footerText = detail.Type == PokeTradeType.Clone || detail.Type == PokeTradeType.Dump || detail.Type == PokeTradeType.Seed || detail.Type == PokeTradeType.FixOT
+                ? "Initializing trade now."
+                : $"Initializing trade now. Enjoy your {(detail.IsMysteryMon ? "✨ Mystery Pokémon" : detail.IsMysteryEgg ? "✨ Mystery Egg" : speciesName)}!";
+
+            var embed = new EmbedBuilder()
+                .WithColor(new DiscordColor(r, g, b))
+                .WithThumbnailUrl(embedImageUrl)
+                .WithAuthor($"Up Next: {user.Username}", user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl())
+                .WithDescription($"**Receiving**: {tradeTitle}\n**Trade ID**: {detail.ID}")
+                .WithFooter($"{footerText}\u200B", ballImgUrl)
+                .WithTimestamp(DateTime.Now)
+                .Build();
+
+            await c.SendMessageAsync(embed: embed);
         }
 
-        Action<PokeRoutineExecutorBase, PokeTradeDetail<T>> l = Logger;
-        SysCord<T>.Runner.Hub.Queues.Forwarders.Add(l);
-        static string GetMessage(PokeRoutineExecutorBase bot, PokeTradeDetail<T> detail) => $"> [{DateTime.Now:hh:mm:ss}] - {bot.Connection.Label} is now trading (ID {detail.ID}) {detail.Trainer.TrainerName}";
-
-        var entry = new TradeStartAction(cid, l, c.Name);
-        Channels.Add(cid, entry);
+        SysCord<T>.Runner.Hub.Queues.Forwarders.Add(Logger);
+        Channels.Add(cid, new TradeStartAction(cid, Logger, c.Name));
     }
 
     [Command("startInfo")]
@@ -121,4 +177,83 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
         Name = channel.Name,
         Comment = $"Added by {Context.User.Username} on {DateTime.Now:yyyy.MM.dd-hh:mm:ss}",
     };
+
+    public static async Task<(int R, int G, int B)> GetDominantColorAsync(string imagePath)
+    {
+        try
+        {
+            Bitmap image = await LoadImageAsync(imagePath);
+
+            var colorCount = new Dictionary<Color, int>();
+#pragma warning disable CA1416 // Validate platform compatibility
+            for (int y = 0; y < image.Height; y++)
+            {
+#pragma warning disable CA1416 // Validate platform compatibility
+                for (int x = 0; x < image.Width; x++)
+                {
+#pragma warning disable CA1416 // Validate platform compatibility
+                    var pixelColor = image.GetPixel(x, y);
+#pragma warning restore CA1416 // Validate platform compatibility
+
+                    if (pixelColor.A < 128 || pixelColor.GetBrightness() > 0.9) continue;
+
+                    var brightnessFactor = (int)(pixelColor.GetBrightness() * 100);
+                    var saturationFactor = (int)(pixelColor.GetSaturation() * 100);
+                    var combinedFactor = brightnessFactor + saturationFactor;
+
+                    var quantizedColor = Color.FromArgb(
+                        pixelColor.R / 10 * 10,
+                        pixelColor.G / 10 * 10,
+                        pixelColor.B / 10 * 10
+                    );
+
+                    if (colorCount.ContainsKey(quantizedColor))
+                    {
+                        colorCount[quantizedColor] += combinedFactor;
+                    }
+                    else
+                    {
+                        colorCount[quantizedColor] = combinedFactor;
+                    }
+                }
+#pragma warning restore CA1416 // Validate platform compatibility
+            }
+#pragma warning restore CA1416 // Validate platform compatibility
+
+#pragma warning disable CA1416 // Validate platform compatibility
+            image.Dispose();
+#pragma warning restore CA1416 // Validate platform compatibility
+
+            if (colorCount.Count == 0)
+                return (255, 255, 255);
+
+            var dominantColor = colorCount.Aggregate((a, b) => a.Value > b.Value ? a : b).Key;
+            return (dominantColor.R, dominantColor.G, dominantColor.B);
+        }
+        catch (Exception ex)
+        {
+            // Log or handle exceptions as needed
+            Console.WriteLine($"Error processing image from {imagePath}. Error: {ex.Message}");
+            return (255, 255, 255);  // Default to white if an exception occurs
+        }
+    }
+
+    private static async Task<Bitmap> LoadImageAsync(string imagePath)
+    {
+        if (imagePath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        {
+            using var httpClient = new HttpClient();
+            using var response = await httpClient.GetAsync(imagePath);
+            await using var stream = await response.Content.ReadAsStreamAsync();
+#pragma warning disable CA1416 // Validate platform compatibility
+            return new Bitmap(stream);
+#pragma warning restore CA1416 // Validate platform compatibility
+        }
+        else
+        {
+#pragma warning disable CA1416 // Validate platform compatibility
+            return new Bitmap(imagePath);
+#pragma warning restore CA1416 // Validate platform compatibility
+        }
+    }
 }

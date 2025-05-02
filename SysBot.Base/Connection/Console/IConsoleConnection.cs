@@ -6,29 +6,9 @@ namespace SysBot.Base;
 public interface IConsoleConnection
 {
     /// <summary>
-    /// Internal differentiation for the Bot
+    /// Base amount of time (in milliseconds) to wait when sending successive commands.
     /// </summary>
-    string Name { get; }
-
-    /// <summary>
-    /// Customized Label for the bot (potentially based on in-game values).
-    /// </summary>
-    string Label { get; set; }
-
-    /// <summary>
-    /// Connects to the device.
-    /// </summary>
-    void Connect();
-
-    /// <summary>
-    /// Resets the connection to the device, usually by calling <see cref="Disconnect"/> then <see cref="Connect"/> in a clean manner.
-    /// </summary>
-    void Reset();
-
-    /// <summary>
-    /// Disconnects from the device.
-    /// </summary>
-    void Disconnect();
+    int BaseDelay { get; set; }
 
     /// <summary>
     /// Indicates if the device is currently connected.
@@ -37,22 +17,15 @@ public interface IConsoleConnection
     bool Connected { get; }
 
     /// <summary>
-    /// Logs a message for the connection.
+    /// Slows down the communication for successive commands by dividing the packet length to get a delay (in milliseconds).
     /// </summary>
-    /// <param name="message">Anything you want the bot to log.</param>
-    void Log(string message);
+    /// <remarks>Set this value >= the <see cref="MaximumTransferSize"/> to result in 0 bonus delay.</remarks>
+    int DelayFactor { get; set; }
 
     /// <summary>
-    /// Logs an information message for the connection.
+    /// Customized Label for the bot (potentially based on in-game values).
     /// </summary>
-    /// <param name="message"></param>
-    void LogInfo(string message);
-
-    /// <summary>
-    /// Logs an error message for the connection.
-    /// </summary>
-    /// <param name="message"></param>
-    void LogError(string message);
+    string Label { get; set; }
 
     /// <summary>
     /// Maximum amount of data to be sent in a single packet to the device.
@@ -61,13 +34,40 @@ public interface IConsoleConnection
     int MaximumTransferSize { get; set; }
 
     /// <summary>
-    /// Base amount of time (in milliseconds) to wait when sending successive commands.
+    /// Internal differentiation for the Bot
     /// </summary>
-    int BaseDelay { get; set; }
+    string Name { get; }
 
     /// <summary>
-    /// Slows down the communication for successive commands by dividing the packet length to get a delay (in milliseconds).
+    /// Connects to the device.
     /// </summary>
-    /// <remarks>Set this value >= the <see cref="MaximumTransferSize"/> to result in 0 bonus delay.</remarks>
-    int DelayFactor { get; set; }
+    void Connect();
+
+    /// <summary>
+    /// Disconnects from the device.
+    /// </summary>
+    void Disconnect();
+
+    /// <summary>
+    /// Logs a message for the connection.
+    /// </summary>
+    /// <param name="message">Anything you want the bot to log.</param>
+    void Log(string message);
+
+    /// <summary>
+    /// Logs an error message for the connection.
+    /// </summary>
+    /// <param name="message"></param>
+    void LogError(string message);
+
+    /// <summary>
+    /// Logs an information message for the connection.
+    /// </summary>
+    /// <param name="message"></param>
+    void LogInfo(string message);
+
+    /// <summary>
+    /// Resets the connection to the device, usually by calling <see cref="Disconnect"/> then <see cref="Connect"/> in a clean manner.
+    /// </summary>
+    void Reset();
 }

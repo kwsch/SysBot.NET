@@ -7,26 +7,14 @@ public class BotSource<T>(RoutineExecutor<T> Bot)
     where T : class, IConsoleBotConfig
 {
     public readonly RoutineExecutor<T> Bot = Bot;
+
     private CancellationTokenSource Source = new();
 
-    public bool IsRunning { get; private set; }
     public bool IsPaused { get; private set; }
 
+    public bool IsRunning { get; private set; }
+
     private bool IsStopping { get; set; }
-
-    public void Stop()
-    {
-        if (!IsRunning || IsStopping)
-            return;
-
-        IsStopping = true;
-        Source.Cancel();
-        Source = new CancellationTokenSource();
-
-        Task.Run(async () => await Bot.HardStop()
-            .ContinueWith(ReportFailure, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously)
-            .ContinueWith(_ => IsPaused = IsRunning = IsStopping = false));
-    }
 
     public void Pause()
     {
@@ -37,6 +25,41 @@ public class BotSource<T>(RoutineExecutor<T> Bot)
         Task.Run(Bot.SoftStop)
             .ContinueWith(ReportFailure, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously)
             .ContinueWith(_ => IsPaused = false, TaskContinuationOptions.OnlyOnFaulted);
+    }
+
+    public void RebootAndStop()
+    {
+        if (IsPaused)
+            Stop(); // can't soft-resume; just re-launch
+
+        if (IsRunning || IsStopping)
+            return;
+
+        Task.Run(() => Bot.RebootAndStopAsync(Source.Token)
+            .ContinueWith(ReportFailure, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously)
+            .ContinueWith(_ => IsRunning = false));
+
+        IsRunning = true;
+    }
+
+    public void Restart()
+    {
+        bool ok = true;
+        Task.Run(Bot.Connection.Reset).ContinueWith(task =>
+        {
+            ok = false;
+            ReportFailure(task);
+        }, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously)
+        .ContinueWith(_ =>
+        {
+            if (ok)
+                Start();
+        }, TaskContinuationOptions.RunContinuationsAsynchronously | TaskContinuationOptions.NotOnFaulted);
+    }
+
+    public void Resume()
+    {
+        Start();
     }
 
     public void Start()
@@ -53,19 +76,18 @@ public class BotSource<T>(RoutineExecutor<T> Bot)
             .ContinueWith(_ => IsRunning = false));
     }
 
-    public void Restart()
+    public void Stop()
     {
-        bool ok = true;
-        Task.Run(Bot.Connection.Reset).ContinueWith(task =>
-        {
-            ok = false;
-            ReportFailure(task);
-        }, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously)
-        .ContinueWith(_ =>
-        {
-            if (ok)
-                Start();
-        }, TaskContinuationOptions.RunContinuationsAsynchronously | TaskContinuationOptions.NotOnFaulted);
+        if (!IsRunning || IsStopping)
+            return;
+
+        IsStopping = true;
+        Source.Cancel();
+        Source = new CancellationTokenSource();
+
+        Task.Run(async () => await Bot.HardStop()
+            .ContinueWith(ReportFailure, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously)
+            .ContinueWith(_ => IsPaused = IsRunning = IsStopping = false));
     }
 
     private void ReportFailure(Task finishedTask)
@@ -93,10 +115,5 @@ public class BotSource<T>(RoutineExecutor<T> Bot)
                 LogUtil.LogError("Inner message: " + e.Message, ident);
             LogUtil.LogError("Inner stacktrace: " + e.StackTrace, ident);
         }
-    }
-
-    public void Resume()
-    {
-        Start();
     }
 }

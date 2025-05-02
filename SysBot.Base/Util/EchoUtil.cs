@@ -1,26 +1,25 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace SysBot.Base;
-
 public static class EchoUtil
 {
     public static readonly List<Action<string>> Forwarders = [];
+    public static readonly List<Action<string>> AbuseForwarders = [];
 
     public static void Echo(string message)
     {
         foreach (var fwd in Forwarders)
         {
-            try
-            {
-                fwd(message);
-            }
-            catch (Exception ex)
-            {
-                LogUtil.LogInfo($"Exception: {ex} occurred while trying to echo: {message} to the forwarder: {fwd}", "Echo");
-                LogUtil.LogSafe(ex, "Echo");
-            }
+            fwd(message);
         }
-        LogUtil.LogInfo(message, "Echo");
+    }
+
+    public static void EchoAbuseMessage(string message)
+    {
+        foreach (var fwd in AbuseForwarders)
+        {
+            fwd(message);
+        }
     }
 }

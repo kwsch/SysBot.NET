@@ -7,16 +7,35 @@ using System.Windows.Forms;
 
 namespace SysBot.Pokemon.WinForms;
 
+public enum BotControlCommand
+{
+    None,
+
+    Start,
+
+    Stop,
+
+    Idle,
+
+    Resume,
+
+    Restart,
+
+    RebootAndStop,
+}
+
 public partial class BotController : UserControl
 {
-    public PokeBotState State { get; private set; } = new();
-    private IPokeBotRunner? Runner;
     public EventHandler? Remove;
+
+    private DateTime LastUpdateStatus = DateTime.Now;
+
+    private IPokeBotRunner? Runner;
 
     public BotController()
     {
         InitializeComponent();
-        var opt = Enum.GetValues<BotControlCommand>();
+        var opt = (BotControlCommand[])Enum.GetValues(typeof(BotControlCommand));
 
         for (int i = 1; i < opt.Length; i++)
         {
@@ -40,20 +59,8 @@ public partial class BotController : UserControl
         }
     }
 
-    private void RcMenuOnOpening(object? sender, CancelEventArgs? e)
-    {
-        var bot = Runner?.GetBot(State);
-        if (bot is null)
-            return;
-
-        foreach (var tsi in RCMenu.Items.OfType<ToolStripMenuItem>())
-        {
-            var text = tsi.Text;
-            tsi.Enabled = Enum.TryParse(text, out BotControlCommand cmd)
-                ? cmd.IsUsable(bot.IsRunning, bot.IsPaused)
-                : !bot.IsRunning;
-        }
-    }
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    public PokeBotState State { get; private set; } = new();
 
     public void Initialize(IPokeBotRunner runner, PokeBotState cfg)
     {
@@ -63,13 +70,25 @@ public partial class BotController : UserControl
         L_Description.Text = string.Empty;
     }
 
+    public void ReadState()
+    {
+        var bot = GetBot();
+
+        if (InvokeRequired)
+        {
+            BeginInvoke((MethodInvoker)(() => ReloadStatus(bot)));
+        }
+        else
+        {
+            ReloadStatus(bot);
+        }
+    }
+
     public void ReloadStatus()
     {
         var bot = GetBot().Bot;
         L_Left.Text = $"{bot.Connection.Name}{Environment.NewLine}{State.InitialRoutine}";
     }
-
-    private DateTime LastUpdateStatus = DateTime.Now;
 
     public void ReloadStatus(BotSource<PokeBotState> b)
     {
@@ -121,28 +140,11 @@ public partial class BotController : UserControl
         {
             // blend from green->red, favoring green until near saturation
             var factor = seconds / (double)threshold;
-            var blend = Blend(bad, good, factor * factor);
-            PB_Lamp.BackColor = blend;
+            PB_Lamp.BackColor = Blend(bad, good, factor * factor);
         }
     }
 
-    private static Color Blend(Color color, Color backColor, double amount)
-    {
-        byte r = (byte)((color.R * amount) + (backColor.R * (1 - amount)));
-        byte g = (byte)((color.G * amount) + (backColor.G * (1 - amount)));
-        byte b = (byte)((color.B * amount) + (backColor.B * (1 - amount)));
-        return Color.FromArgb(r, g, b);
-    }
-
-    public void TryRemove()
-    {
-        var bot = GetBot();
-        if (!Runner!.Config.SkipConsoleBotCreation)
-            bot.Stop();
-        Remove?.Invoke(this, EventArgs.Empty);
-    }
-
-    public void SendCommand(BotControlCommand cmd, bool echo = true)
+    public void SendCommand(BotControlCommand cmd)
     {
         if (Runner?.Config.SkipConsoleBotCreation != false)
         {
@@ -157,24 +159,43 @@ public partial class BotController : UserControl
                 Runner.InitializeStart();
                 bot.Start(); break;
             case BotControlCommand.Stop: bot.Stop(); break;
+            case BotControlCommand.RebootAndStop: bot.RebootAndStop(); break;
             case BotControlCommand.Resume: bot.Resume(); break;
             case BotControlCommand.Restart:
-            {
-                var prompt = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Are you sure you want to restart the connection?");
-                if (prompt != DialogResult.Yes)
-                    return;
+                {
+                    var prompt = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Are you sure you want to restart the connection?");
+                    if (prompt != DialogResult.Yes)
+                        return;
 
-                Runner.InitializeStart();
-                bot.Restart();
-                break;
-            }
+                    Runner.InitializeStart();
+                    bot.Restart();
+                    break;
+                }
             default:
                 WinFormsUtil.Alert($"{cmd} is not a command that can be sent to the Bot.");
                 return;
         }
-        if (echo)
-            EchoUtil.Echo($"{bot.Bot.Connection.Name} ({bot.Bot.Config.InitialRoutine}) has been issued a command to {cmd}.");
     }
+
+    public void TryRemove()
+    {
+        var bot = GetBot();
+        if (!Runner!.Config.SkipConsoleBotCreation)
+            bot.Stop();
+        Remove?.Invoke(this, EventArgs.Empty);
+    }
+
+    private static Color Blend(Color color, Color backColor, double amount)
+    {
+        byte r = (byte)((color.R * amount) + (backColor.R * (1 - amount)));
+        byte g = (byte)((color.G * amount) + (backColor.G * (1 - amount)));
+        byte b = (byte)((color.B * amount) + (backColor.B * (1 - amount)));
+        return Color.FromArgb(r, g, b);
+    }
+
+    private void BotController_MouseEnter(object? sender, EventArgs e) => BackColor = Color.LightSkyBlue;
+
+    private void BotController_MouseLeave(object? sender, EventArgs e) => BackColor = Color.Transparent;
 
     private BotSource<PokeBotState> GetBot()
     {
@@ -187,32 +208,20 @@ public partial class BotController : UserControl
         return bot;
     }
 
-    private void BotController_MouseEnter(object? sender, EventArgs e) => BackColor = Color.LightSkyBlue;
-    private void BotController_MouseLeave(object? sender, EventArgs e) => BackColor = Color.Transparent;
-
-    public void ReadState()
+    private void RcMenuOnOpening(object? sender, CancelEventArgs? e)
     {
-        var bot = GetBot();
+        var bot = Runner?.GetBot(State);
+        if (bot is null)
+            return;
 
-        if (InvokeRequired)
+        foreach (var tsi in RCMenu.Items.OfType<ToolStripMenuItem>())
         {
-            BeginInvoke((MethodInvoker)(() => ReloadStatus(bot)));
-        }
-        else
-        {
-            ReloadStatus(bot);
+            var text = tsi.Text;
+            tsi.Enabled = Enum.TryParse(text, out BotControlCommand cmd)
+                ? cmd.IsUsable(bot.IsRunning, bot.IsPaused)
+                : !bot.IsRunning;
         }
     }
-}
-
-public enum BotControlCommand
-{
-    None,
-    Start,
-    Stop,
-    Idle,
-    Resume,
-    Restart,
 }
 
 public static class BotControlCommandExtensions

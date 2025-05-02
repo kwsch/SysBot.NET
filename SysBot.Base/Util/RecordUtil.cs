@@ -1,34 +1,29 @@
-﻿using NLog;
-using NLog.Config;
-using NLog.Targets;
 using System.IO;
+using System;
 
-namespace SysBot.Base;
-
-public static class RecordUtil<T>
+namespace SysBot.Base.Util
 {
-    private static LoggingConfiguration GetConfig()
+    public static class RecordUtil<T>
     {
-        var config = new LoggingConfiguration();
-        const string dir = "records";
-        Directory.CreateDirectory(dir);
-        var name = typeof(T).Name;
-        var record = new FileTarget("record")
+        private static readonly string LogPath;
+
+        static RecordUtil()
         {
-            FileName = Path.Combine(dir, $"{name}.txt"),
-            ConcurrentWrites = true,
+            const string dir = "records";
+            Directory.CreateDirectory(dir);
+            LogPath = Path.Combine(dir, $"{typeof(T).Name}.txt");
+        }
 
-            ArchiveEvery = FileArchivePeriod.None,
-            ArchiveNumbering = ArchiveNumberingMode.Sequence,
-            ArchiveFileName = Path.Combine(dir, $"{name}.{{#}}.txt"),
-            ArchiveAboveSize = 104857600, // 100MB (never)
-            MaxArchiveFiles = 14,
-        };
-        config.AddRule(LogLevel.Debug, LogLevel.Fatal, record);
-        return config;
+        public static void Record(string message)
+        {
+            try
+            {
+                File.AppendAllText(LogPath, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\t{message}{Environment.NewLine}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to write to log: {ex.Message}");
+            }
+        }
     }
-
-    // ReSharper disable once StaticMemberInGenericType
-    private static readonly Logger Logger = new LogFactory { Configuration = GetConfig() }.GetCurrentClassLogger();
-    public static void Record(string message) => Logger.Log(LogLevel.Info, message);
 }

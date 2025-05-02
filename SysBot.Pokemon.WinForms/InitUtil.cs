@@ -11,9 +11,10 @@ public static class InitUtil
         {
             ProgramMode.SWSH => new SAV8SWSH(),
             ProgramMode.BDSP => new SAV8BS(),
-            ProgramMode.LA   => new SAV8LA(),
-            ProgramMode.SV   => new SAV9SV(),
-            _                => throw new System.ArgumentOutOfRangeException(nameof(mode)),
+            ProgramMode.LA => new SAV8LA(),
+            ProgramMode.SV => new SAV9SV(),
+            ProgramMode.LGPE => new SAV7b(),
+            _ => throw new System.ArgumentOutOfRangeException(nameof(mode)),
         };
 
         SetUpSpriteCreator(sav8);

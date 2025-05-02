@@ -10,54 +10,6 @@ public class SeedCheckModule<T> : ModuleBase<SocketCommandContext> where T : PKM
 {
     private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
 
-    [Command("seedCheck")]
-    [Alias("checkMySeed", "checkSeed", "seed", "s", "sc")]
-    [Summary("Checks the seed for a Pokémon.")]
-    [RequireQueueRole(nameof(DiscordManager.RolesSeed))]
-    public Task SeedCheckAsync(int code)
-    {
-        var sig = Context.User.GetFavor();
-        return QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed);
-    }
-
-    [Command("seedCheck")]
-    [Alias("checkMySeed", "checkSeed", "seed", "s", "sc")]
-    [Summary("Checks the seed for a Pokémon.")]
-    [RequireQueueRole(nameof(DiscordManager.RolesSeed))]
-    public Task SeedCheckAsync([Summary("Trade Code")][Remainder] string code)
-    {
-        int tradeCode = Util.ToInt32(code);
-        var sig = Context.User.GetFavor();
-        return QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode() : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed);
-    }
-
-    [Command("seedCheck")]
-    [Alias("checkMySeed", "checkSeed", "seed", "s", "sc")]
-    [Summary("Checks the seed for a Pokémon.")]
-    [RequireQueueRole(nameof(DiscordManager.RolesSeed))]
-    public Task SeedCheckAsync()
-    {
-        var code = Info.GetRandomTradeCode();
-        return SeedCheckAsync(code);
-    }
-
-    [Command("seedList")]
-    [Alias("sl", "scq", "seedCheckQueue", "seedQueue", "seedList")]
-    [Summary("Prints the users in the Seed Check queue.")]
-    [RequireSudo]
-    public async Task GetSeedListAsync()
-    {
-        string msg = Info.GetTradeList(PokeRoutineType.SeedCheck);
-        var embed = new EmbedBuilder();
-        embed.AddField(x =>
-        {
-            x.Name = "Pending Trades";
-            x.Value = msg;
-            x.IsInline = false;
-        });
-        await ReplyAsync("These are the users who are currently waiting:", embed: embed.Build()).ConfigureAwait(false);
-    }
-
     [Command("findFrame")]
     [Alias("ff", "getFrameData")]
     [Summary("Prints the next shiny frame from the provided seed.")]
@@ -84,5 +36,76 @@ public class SeedCheckModule<T> : ModuleBase<SocketCommandContext> where T : PKM
             x.IsInline = false;
         });
         await ReplyAsync($"Here are the details for `{r.Seed:X16}`:", embed: embed.Build()).ConfigureAwait(false);
+    }
+
+    [Command("seedList")]
+    [Alias("sl", "scq", "seedCheckQueue", "seedQueue", "seedList")]
+    [Summary("Prints the users in the Seed Check queue.")]
+    [RequireSudo]
+    public async Task GetSeedListAsync()
+    {
+        string msg = Info.GetTradeList(PokeRoutineType.SeedCheck);
+        var embed = new EmbedBuilder();
+        embed.AddField(x =>
+        {
+            x.Name = "Pending Trades";
+            x.Value = msg;
+            x.IsInline = false;
+        });
+        await ReplyAsync("These are the users who are currently waiting:", embed: embed.Build()).ConfigureAwait(false);
+    }
+
+    [Command("seedCheck")]
+    [Alias("checkMySeed", "checkSeed", "seed", "s", "sc", "specialrequest", "sr")]
+    [Summary("Checks the seed for a Pokémon.")]
+    [RequireQueueRole(nameof(DiscordManager.RolesSeed))]
+    public async Task SeedCheckAsync(int code)
+    {
+        // Check if the user is already in the queue
+        var userID = Context.User.Id;
+        if (Info.IsUserInQueue(userID))
+        {
+            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            return;
+        }
+        var sig = Context.User.GetFavor();
+        await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed).ConfigureAwait(false);
+    }
+
+    [Command("seedCheck")]
+    [Alias("checkMySeed", "checkSeed", "seed", "s", "sc", "specialrequest", "sr")]
+    [Summary("Checks the seed for a Pokémon.")]
+    [RequireQueueRole(nameof(DiscordManager.RolesSeed))]
+    public async Task SeedCheckAsync([Summary("Trade Code")][Remainder] string code)
+    {
+        // Check if the user is already in the queue
+        var userID = Context.User.Id;
+        if (Info.IsUserInQueue(userID))
+        {
+            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            return;
+        }
+        int tradeCode = Util.ToInt32(code);
+        var sig = Context.User.GetFavor();
+        await QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode(userID) : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed).ConfigureAwait(false);
+    }
+
+    [Command("seedCheck")]
+    [Alias("checkMySeed", "checkSeed", "seed", "s", "sc", "specialrequest", "sr")]
+    [Summary("Checks the seed for a Pokémon.")]
+    [RequireQueueRole(nameof(DiscordManager.RolesSeed))]
+    public async Task SeedCheckAsync()
+    {
+        // Check if the user is already in the queue
+        var userID = Context.User.Id;
+        if (Info.IsUserInQueue(userID))
+        {
+            await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
+            return;
+        }
+        var code = Info.GetRandomTradeCode(userID);
+        await SeedCheckAsync(code).ConfigureAwait(false);
+        if (Context.Message is IUserMessage userMessage)
+            await userMessage.DeleteAsync().ConfigureAwait(false);
     }
 }

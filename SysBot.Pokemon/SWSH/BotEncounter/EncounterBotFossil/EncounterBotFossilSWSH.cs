@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;
@@ -8,8 +8,11 @@ namespace SysBot.Pokemon;
 
 public class EncounterBotFossilSWSH : EncounterBotSWSH
 {
-    private readonly FossilSettings Settings;
+    private static readonly PK8 Blank = new();
+
     private readonly IDumper DumpSetting;
+
+    private readonly FossilSettings Settings;
 
     public EncounterBotFossilSWSH(PokeBotState Config, PokeTradeHub<PK8> hub) : base(Config, hub)
     {
@@ -17,7 +20,11 @@ public class EncounterBotFossilSWSH : EncounterBotSWSH
         DumpSetting = Hub.Config.Folder;
     }
 
-    private static readonly PK8 Blank = new();
+    public override async Task RebootAndStop(CancellationToken t)
+    {
+        await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
+        await HardStop().ConfigureAwait(false);
+    }
 
     protected override async Task EncounterLoop(SAV8SWSH sav, CancellationToken token)
     {

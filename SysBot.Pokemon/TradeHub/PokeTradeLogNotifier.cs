@@ -7,32 +7,7 @@ namespace SysBot.Pokemon;
 
 public class PokeTradeLogNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new()
 {
-    public void TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
-    {
-        LogUtil.LogInfo($"Starting trade loop for {info.Trainer.TrainerName}, sending {GameInfo.GetStrings(1).Species[info.TradeData.Species]}", routine.Connection.Label);
-    }
-
-    public void TradeSearching(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
-    {
-        LogUtil.LogInfo($"Searching for trade with {info.Trainer.TrainerName}, sending {GameInfo.GetStrings(1).Species[info.TradeData.Species]}", routine.Connection.Label);
-    }
-
-    public void TradeCanceled(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeResult msg)
-    {
-        LogUtil.LogInfo($"Canceling trade with {info.Trainer.TrainerName}, because {msg}.", routine.Connection.Label);
-        OnFinish?.Invoke(routine);
-    }
-
-    public void TradeFinished(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result)
-    {
-        // Print the nickname for Ledy trades so we can see what was requested.
-        var ledyname = string.Empty;
-        if (info.Trainer.TrainerName == "Random Distribution" && result.IsNicknamed)
-            ledyname = $" (Nickname: \"{result.Nickname}\")";
-
-        LogUtil.LogInfo($"Finished trading {info.Trainer.TrainerName} {GameInfo.GetStrings(1).Species[info.TradeData.Species]} for {GameInfo.GetStrings(1).Species[result.Species]}{ledyname}", routine.Connection.Label);
-        OnFinish?.Invoke(routine);
-    }
+    public Action<PokeRoutineExecutor<T>>? OnFinish { get; set; }
 
     public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, string message)
     {
@@ -53,5 +28,25 @@ public class PokeTradeLogNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
         LogUtil.LogInfo(message, routine.Connection.Label);
     }
 
-    public Action<PokeRoutineExecutor<T>>? OnFinish { get; set; }
+    public void TradeCanceled(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeResult msg)
+    {
+        LogUtil.LogInfo($"Canceling trade with {info.Trainer.TrainerName}, because {msg}.", routine.Connection.Label);
+        OnFinish?.Invoke(routine);
+    }
+
+    public void TradeFinished(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result)
+    {
+        LogUtil.LogInfo($"Finished trading {info.Trainer.TrainerName} {GameInfo.GetStrings(1).Species[info.TradeData.Species]} for {GameInfo.GetStrings(1).Species[result.Species]}", routine.Connection.Label);
+        OnFinish?.Invoke(routine);
+    }
+
+    public void TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
+    {
+        LogUtil.LogInfo($"Starting trade loop for {info.Trainer.TrainerName}, sending {GameInfo.GetStrings(1).Species[info.TradeData.Species]}", routine.Connection.Label);
+    }
+
+    public void TradeSearching(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
+    {
+        LogUtil.LogInfo($"Searching for trade with {info.Trainer.TrainerName}, sending {GameInfo.GetStrings(1).Species[info.TradeData.Species]}", routine.Connection.Label);
+    }
 }

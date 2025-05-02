@@ -11,13 +11,26 @@ namespace SysBot.Pokemon;
 
 public abstract class EncounterBotSWSH : PokeRoutineExecutor8SWSH, IEncounterBot
 {
-    protected readonly PokeTradeHub<PK8> Hub;
-    private readonly IDumper DumpSetting;
-    private readonly EncounterSettings Settings;
-    private readonly int[] DesiredMinIVs;
-    private readonly int[] DesiredMaxIVs;
-    public ICountSettings Counts => Settings;
     public readonly IReadOnlyList<string> UnwantedMarks;
+
+    protected readonly byte[] BattleMenuReady = [0, 0, 0, 255];
+
+    protected readonly PokeTradeHub<PK8> Hub;
+
+    protected int encounterCount;
+
+    // Cached offsets that stay the same per session.
+    protected ulong OverworldOffset;
+
+    private readonly int[] DesiredMaxIVs;
+
+    private readonly int[] DesiredMinIVs;
+
+    private readonly IDumper DumpSetting;
+
+    private readonly EncounterSettings Settings;
+
+    private bool IsWaiting;
 
     protected EncounterBotSWSH(PokeBotState Config, PokeTradeHub<PK8> hub) : base(Config)
     {
@@ -28,10 +41,15 @@ public abstract class EncounterBotSWSH : PokeRoutineExecutor8SWSH, IEncounterBot
         StopConditionSettings.ReadUnwantedMarks(Hub.Config.StopConditions, out UnwantedMarks);
     }
 
-    // Cached offsets that stay the same per session.
-    protected ulong OverworldOffset;
+    public ICountSettings Counts => Settings;
 
-    protected int encounterCount;
+    public void Acknowledge() => IsWaiting = false;
+
+    public override async Task HardStop()
+    {
+        await ResetStick(CancellationToken.None).ConfigureAwait(false);
+        await CleanExit(CancellationToken.None).ConfigureAwait(false);
+    }
 
     public override async Task MainLoop(CancellationToken token)
     {
@@ -57,15 +75,25 @@ public abstract class EncounterBotSWSH : PokeRoutineExecutor8SWSH, IEncounterBot
         }
 
         Log($"Ending {GetType().Name} loop.");
-    }
-
-    public override async Task HardStop()
-    {
-        await ResetStick(CancellationToken.None).ConfigureAwait(false);
-        await CleanExit(CancellationToken.None).ConfigureAwait(false);
+        await HardStop().ConfigureAwait(false);
     }
 
     protected abstract Task EncounterLoop(SAV8SWSH sav, CancellationToken token);
+
+    protected async Task FleeToOverworld(CancellationToken token)
+    {
+        // This routine will always escape a battle.
+        await Click(DUP, 0_200, token).ConfigureAwait(false);
+        await Click(A, 1_000, token).ConfigureAwait(false);
+
+        while (await IsInBattle(token).ConfigureAwait(false))
+        {
+            await Click(B, 0_500, token).ConfigureAwait(false);
+            await Click(B, 1_000, token).ConfigureAwait(false);
+            await Click(DUP, 0_200, token).ConfigureAwait(false);
+            await Click(A, 1_000, token).ConfigureAwait(false);
+        }
+    }
 
     // return true if breaking loop
     protected async Task<bool> HandleEncounter(PK8 pk, CancellationToken token)
@@ -105,11 +133,17 @@ public abstract class EncounterBotSWSH : PokeRoutineExecutor8SWSH, IEncounterBot
         return false;
     }
 
+    protected Task ResetStick(CancellationToken token)
+    {
+        // If aborting the sequence, we might have the stick set at some position. Clear it just in case.
+        return SetStick(LEFT, 0, 0, 0_500, token); // reset
+    }
+
     private static string GetModeMessage(ContinueAfterMatch mode) => mode switch
     {
-        ContinueAfterMatch.Continue             => "Continuing...",
+        ContinueAfterMatch.Continue => "Continuing...",
         ContinueAfterMatch.PauseWaitAcknowledge => "Waiting for instructions to continue.",
-        ContinueAfterMatch.StopExit             => "Stopping routine execution; restart the bot to search again.",
+        ContinueAfterMatch.StopExit => "Stopping routine execution; restart the bot to search again.",
         _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, "Match result type was invalid."),
     };
 
@@ -136,29 +170,5 @@ public abstract class EncounterBotSWSH : PokeRoutineExecutor8SWSH, IEncounterBot
 
         Settings.AddCompletedEncounters();
         return "encounters";
-    }
-
-    private bool IsWaiting;
-    public void Acknowledge() => IsWaiting = false;
-
-    protected Task ResetStick(CancellationToken token)
-    {
-        // If aborting the sequence, we might have the stick set at some position. Clear it just in case.
-        return SetStick(LEFT, 0, 0, 0_500, token); // reset
-    }
-
-    protected async Task FleeToOverworld(CancellationToken token)
-    {
-        // This routine will always escape a battle.
-        await Click(DUP, 0_200, token).ConfigureAwait(false);
-        await Click(A, 1_000, token).ConfigureAwait(false);
-
-        while (await IsInBattle(token).ConfigureAwait(false))
-        {
-            await Click(B, 0_500, token).ConfigureAwait(false);
-            await Click(B, 1_000, token).ConfigureAwait(false);
-            await Click(DUP, 0_200, token).ConfigureAwait(false);
-            await Click(A, 1_000, token).ConfigureAwait(false);
-        }
     }
 }

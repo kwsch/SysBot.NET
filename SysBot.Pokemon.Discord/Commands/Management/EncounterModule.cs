@@ -1,4 +1,4 @@
-﻿using Discord.Commands;
+using Discord.Commands;
 using PKHeX.Core;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,8 +12,7 @@ public class EchoModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
     [RequireSudo]
     public async Task TossAsync(string name = "")
     {
-        var bots = SysCord<T>.Runner.Bots.Select(z => z.Bot);
-        foreach (var b in bots)
+        foreach (var b in SysCord<T>.Runner.Bots.Select(z => z.Bot))
         {
             if (b is not IEncounterBot x)
                 continue;

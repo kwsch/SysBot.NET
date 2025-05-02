@@ -7,12 +7,15 @@ namespace SysBot.Base;
 /// </summary>
 public interface ISwitchConnectionSync : IConsoleConnectionSync
 {
-    ulong GetMainNsoBase();
     ulong GetHeapBase();
 
-    byte[] ReadBytesMain(ulong offset, int length);
+    ulong GetMainNsoBase();
+
     byte[] ReadBytesAbsolute(ulong offset, int length);
 
-    void WriteBytesMain(ReadOnlySpan<byte> data, ulong offset);
+    byte[] ReadBytesMain(ulong offset, int length);
+
     void WriteBytesAbsolute(ReadOnlySpan<byte> data, ulong offset);
+
+    void WriteBytesMain(ReadOnlySpan<byte> data, ulong offset);
 }

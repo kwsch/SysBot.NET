@@ -1,4 +1,4 @@
-﻿using Google.Apis.YouTube.v3.Data;
+using Google.Apis.YouTube.v3.Data;
 using PKHeX.Core;
 using StreamingClient.Base.Util;
 using SysBot.Base;
@@ -12,11 +12,11 @@ namespace SysBot.Pokemon.YouTube;
 
 public class YouTubeBot<T> where T : PKM, new()
 {
-    private ChatClient client;
+    private readonly PokeTradeHub<T> Hub;
+
     private readonly YouTubeSettings Settings;
 
-    private readonly PokeTradeHub<T> Hub;
-    private TradeQueueInfo<T> Info => Hub.Queues.Info;
+    private ChatClient client;
 
     public YouTubeBot(YouTubeSettings settings, PokeTradeHub<T> hub)
     {
@@ -51,6 +51,8 @@ public class YouTubeBot<T> where T : PKM, new()
         });
     }
 
+    private TradeQueueInfo<T> Info => Hub.Queues.Info;
+
     public void StartingDistribution(string message)
     {
         Task.Run(async () =>
@@ -68,26 +70,6 @@ public class YouTubeBot<T> where T : PKM, new()
             if (!string.IsNullOrWhiteSpace(message))
                 await client.SendMessage(message).ConfigureAwait(false);
         });
-    }
-
-    private string HandleCommand(LiveChatMessage m, string cmd, string args)
-    {
-        if (!m.AuthorDetails.IsChatOwner.Equals(true) && Settings.IsSudo(m.AuthorDetails.DisplayName))
-            return string.Empty; // sudo only commands
-
-        if (args.Length > 0)
-            return "Commands don't use arguments. Try again with just the command code.";
-
-        return cmd switch
-        {
-            "pr" => (Info.Hub.Ledy.Pool.Reload(Hub.Config.Folder.DistributeFolder)
-                ? $"Reloaded from folder. Pool count: {Info.Hub.Ledy.Pool.Count}"
-                : "Failed to reload from folder."),
-
-            "pc" => $"The pool count is: {Info.Hub.Ledy.Pool.Count}",
-
-            _ => string.Empty,
-        };
     }
 
     private static void Logger_LogOccurred(object? sender, Log e)
@@ -119,5 +101,25 @@ public class YouTubeBot<T> where T : PKM, new()
                 // ignored
             }
         }
+    }
+
+    private string HandleCommand(LiveChatMessage m, string cmd, string args)
+    {
+        if (!m.AuthorDetails.IsChatOwner.Equals(true) && Settings.IsSudo(m.AuthorDetails.DisplayName))
+            return string.Empty; // sudo only commands
+
+        if (args.Length > 0)
+            return "Commands don't use arguments. Try again with just the command code.";
+
+        return cmd switch
+        {
+            "pr" => (Info.Hub.Ledy.Pool.Reload(Hub.Config.Folder.DistributeFolder)
+                ? $"Reloaded from folder. Pool count: {Info.Hub.Ledy.Pool.Count}"
+                : "Failed to reload from folder."),
+
+            "pc" => $"The pool count is: {Info.Hub.Ledy.Pool.Count}",
+
+            _ => string.Empty,
+        };
     }
 }

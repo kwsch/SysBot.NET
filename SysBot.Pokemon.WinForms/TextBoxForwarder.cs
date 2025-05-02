@@ -1,7 +1,7 @@
-using System;
-using System.Threading;
-using System.Windows.Forms;
 using SysBot.Base;
+
+using System;
+using System.Windows.Forms;
 
 namespace SysBot.Pokemon.WinForms;
 
@@ -13,7 +13,7 @@ public sealed class TextBoxForwarder(TextBoxBase Box) : ILogForwarder
     /// <summary>
     /// Synchronize access to the TextBox. Only the GUI thread should be writing to it.
     /// </summary>
-    private readonly Lock _logLock = new();
+    private readonly object _logLock = new();
 
     public void Forward(string message, string identity)
     {
@@ -38,7 +38,6 @@ public sealed class TextBoxForwarder(TextBoxBase Box) : ILogForwarder
         {
             var lines = Box.Lines;
             Box.Lines = lines[(lines.Length / 4)..];
-            Box.Refresh();
         }
 
         Box.AppendText(line);

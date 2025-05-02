@@ -1,5 +1,6 @@
 using Discord;
 using Discord.Commands;
+using SysBot.Pokemon.Helpers;
 using System;
 using System.Diagnostics;
 using System.Globalization;

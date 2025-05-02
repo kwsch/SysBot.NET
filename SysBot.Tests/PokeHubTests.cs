@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using PKHeX.Core;
 using SysBot.Pokemon;
 using Xunit;
@@ -19,7 +19,7 @@ public class PokeHubTests
         var a = new T { Species = 5 };
         pool.Add(a);
 
-        var trade = hub.Queues.TryDequeue(PokeRoutineType.FlexTrade, out _, out _);
+        var trade = hub.Queues.TryDequeue(PokeRoutineType.FlexTrade, out _, out _, null);
         trade.Should().BeFalse();
 
         var ledy = hub.Queues.TryDequeueLedy(out var detail);
