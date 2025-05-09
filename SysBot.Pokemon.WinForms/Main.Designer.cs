@@ -275,6 +275,7 @@ namespace SysBot.Pokemon.WinForms
             B_Restart.Text = "Restart All";
             B_Restart.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             B_Restart.UseVisualStyleBackColor = true;
+            B_Restart.Click += B_Restart_Click;
             // 
             // B_Update
             // 
@@ -290,6 +291,7 @@ namespace SysBot.Pokemon.WinForms
             B_Update.Text = "Update";
             B_Update.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             B_Update.UseVisualStyleBackColor = true;
+            B_Update.Click += B_Update_Click;
             // 
             // Main
             // 
