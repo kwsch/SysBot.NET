@@ -583,7 +583,8 @@ namespace SysBot.Pokemon.Helpers
             [(int)Species.Skeledirge] = [(new(2025, 03, 06), new(2025, 03, 13))], // Skeledirge
             [(int)Species.Quaquaval] = [(new(2025, 03, 14), new(2025, 03, 20))], // Quaquaval
             [(int)Species.Tyranitar] = [(new(2025, 03, 28), new(2025, 03, 30)), (new(2025, 04, 04), new(2025, 04, 06))], // Tyranitar
-            [(int)Species.Salamence] = [(new(2025, 04, 18), new(2025, 04, 20)), (new(2025, 04, 25), new(2025, 04, 27))] // Salamence
+            [(int)Species.Salamence] = [(new(2025, 04, 18), new(2025, 04, 20)), (new(2025, 04, 25), new(2025, 04, 27))], // Salamence
+            [(int)Species.Metagross] = [(new(2025, 05, 09), new(2025, 05, 11)), (new(2025, 05, 12), new(2025, 05, 19))], // Metagross
         };
 
         public static void CheckAndSetUnrivaledDate(PKM pk)
