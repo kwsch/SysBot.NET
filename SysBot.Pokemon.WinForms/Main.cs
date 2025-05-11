@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace SysBot.Pokemon.WinForms;
 
@@ -242,7 +243,7 @@ public sealed partial class Main : Form
         {
             var details = cfg.Connection;
             TB_IP.Text = details.IP;
-            NUD_Port.Value = details.Port;
+            NUD_Port.Text = details.Port.ToString();
             CB_Protocol.SelectedIndex = (int)details.Protocol;
             CB_Routine.SelectedValue = (int)cfg.InitialRoutine;
         };
@@ -258,7 +259,7 @@ public sealed partial class Main : Form
     private PokeBotState CreateNewBotConfig()
     {
         var ip = TB_IP.Text;
-        var port = (int)NUD_Port.Value;
+        var port = int.TryParse(NUD_Port.Text, out var p) ? p : 6000;
         var cfg = BotConfigUtil.GetConfig<SwitchConnectionConfig>(ip, port);
         cfg.Protocol = (SwitchProtocol)WinFormsUtil.GetIndex(CB_Protocol);
 
@@ -276,6 +277,11 @@ public sealed partial class Main : Form
 
     private void CB_Protocol_SelectedIndexChanged(object sender, EventArgs e)
     {
-        TB_IP.Visible = CB_Protocol.SelectedIndex == 0;
+        var isWifi = CB_Protocol.SelectedIndex == 0;
+        TB_IP.Visible = isWifi;
+        NUD_Port.ReadOnly = isWifi;
+
+        if (isWifi)
+            NUD_Port.Text = "6000";
     }
 }
