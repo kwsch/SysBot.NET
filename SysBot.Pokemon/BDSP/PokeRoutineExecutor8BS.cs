@@ -184,7 +184,7 @@ public abstract class PokeRoutineExecutor8BS(PokeBotState Config) : PokeRoutineE
         await Click(A, 1_000 + timing.ExtraTimeLoadProfile, token).ConfigureAwait(false);
 
         // Menus here can go in the order: Update Prompt -> Profile -> Starts Game
-        //  The user can optionally turn on the setting if they know of a breaking system update incoming.
+        // The user can optionally turn on the setting if they know of a breaking system update incoming.
         if (timing.AvoidSystemUpdate)
         {
             await Task.Delay(1_000, token).ConfigureAwait(false); // Reduce the chance of misclicking here.
