@@ -460,7 +460,7 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
 
     private async Task<PokeTradeResult> ProcessCloneTradeAsync(PokeTradeDetail<PB7> detail, SAV7b sav, CancellationToken token)
     {
-        detail.SendNotification(this, "Highlight the Pokemon in your box You would like Cloned up to 6 at a time! You have 5 seconds between highlights to move to the next pokemon.(The first 5 starts now!). If you would like to less than 6 remain on the same pokemon until the trade begins.");
+        detail.SendNotification(this, "Highlight the Pokemon in your box that you'd like to clone! You have 5 seconds to select the Pokémon.");
         await Task.Delay(10_000);
         var offereddatac = await SwitchConnection.ReadBytesAsync(OfferedPokemon, 0x104, token);
         var offeredpbmc = new PB7(offereddatac);
@@ -468,9 +468,9 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
         clonelist.Add(offeredpbmc);
         detail.SendNotification(this, $"You added {(Species)offeredpbmc.Species} to the clone list");
 
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < 1; i++)
         {
-            await Task.Delay(5_000);
+            await Task.Delay(2_000);
             var newoffereddata = await SwitchConnection.ReadBytesAsync(OfferedPokemon, 0x104, token);
             var newofferedpbm = new PB7(newoffereddata);
             if (clonelist.Any(z => SearchUtil.HashByDetails(z) == SearchUtil.HashByDetails(newofferedpbm)))
@@ -488,9 +488,8 @@ public class PokeTradeBotLGPE(PokeTradeHub<PB7> Hub, PokeBotState Config) : Poke
         var clonestring = new StringBuilder();
         foreach (var k in clonelist)
             clonestring.AppendLine($"{(Species)k.Species}");
-        detail.SendNotification(this, clonestring.ToString());
 
-        detail.SendNotification(this, "Exiting Trade to inject clones, please reconnect using the same link code.");
+        detail.SendNotification(this, "Exiting Trade to inject clone, please reconnect using the same link code. \n I'll notify you soon when to search!");
         await ExitTrade(false, token);
         foreach (var g in clonelist)
         {
