@@ -81,7 +81,7 @@ public class DiscordSettings
     public bool BotEmbedStatus { get; set; } = true;
 
     [Category(Startup), Description("Custom Status for playing a game.")]
-    public string BotGameStatus { get; set; } = "SysBot.NET: Pokémon";
+    public string BotGameStatus { get; set; } = "DudeBot.NET: Pokémon";
 
     [Category(Startup), Description("Will add online/offline emoji to channel name based on current status.  Whitelisted channels only.")]
     public bool ChannelStatus { get; set; } = true;

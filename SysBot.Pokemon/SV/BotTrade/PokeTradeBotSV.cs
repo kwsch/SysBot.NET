@@ -1385,7 +1385,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         else if (itemReq != SpecialTradeType.None && itemReq != SpecialTradeType.Shinify)
             poke.SendNotification(this, "Special request successful!");
         else if (itemReq == SpecialTradeType.Shinify)
-            poke.SendNotification(this, "Shinify success!  Thanks for being part of the community!");
+            poke.SendNotification(this, "Shinify request successful!");
 
         Log("Confirming trade.");
         var tradeResult = await ConfirmAndStartTrading(poke, token).ConfigureAwait(false);

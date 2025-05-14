@@ -897,7 +897,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState config) : Poke
         else if (itemReq != SpecialTradeType.None && itemReq != SpecialTradeType.Shinify)
             poke.SendNotification(this, "Special request successful!");
         else if (itemReq == SpecialTradeType.Shinify)
-            poke.SendNotification(this, "Shinify success! Thanks for being part of the community!");
+            poke.SendNotification(this, "Shinify request successful!");
 
         // Continue with the rest of the successful trade logic
         Log($"Trade completed. Received {GameInfo.GetStrings(1).Species[received.Species]} from user, sent {GameInfo.GetStrings(1).Species[toSend.Species]}.");

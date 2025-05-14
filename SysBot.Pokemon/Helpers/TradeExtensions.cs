@@ -149,7 +149,10 @@ namespace SysBot.Pokemon.Helpers
             }
 
             pkm.Ball = 21;
+            pkm.OriginalTrainerName = "Ditto";
+            pkm.CurrentHandler = 0;
             pkm.IVs = [31, nickname.Contains(dittoStats[0]) ? 0 : 31, 31, nickname.Contains(dittoStats[1]) ? 0 : 31, nickname.Contains(dittoStats[2]) ? 0 : 31, 31];
+            pkm.SetSuggestedHyperTrainingData();
             TrashBytes(pkm, new LegalityAnalysis(pkm));
         }
 
@@ -208,6 +211,7 @@ namespace SysBot.Pokemon.Helpers
             pk.SetEVs([0, 0, 0, 0, 0, 0]);
 
             MarkingApplicator.SetMarkings(pk);
+            RibbonApplicator.RemoveAllValidRibbons(pk);
 
             pk.ClearRelearnMoves();
 
@@ -259,7 +263,6 @@ namespace SysBot.Pokemon.Helpers
             pk.Move1_PPUps = pk.Move2_PPUps = pk.Move3_PPUps = pk.Move4_PPUps = 0;
             pk.SetMaximumPPCurrent(pk.Moves);
             pk.SetSuggestedHyperTrainingData();
-            pk.SetSuggestedRibbons(template, enc, true);
         }
 
         public static string FormOutput(ushort species, byte form, out string[] formString)
