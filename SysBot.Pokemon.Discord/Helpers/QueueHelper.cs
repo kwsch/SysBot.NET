@@ -85,7 +85,7 @@ public static class QueueHelper<T> where T : PKM, new()
 
         var pokeName = "";
         if (t == PokeTradeType.Specific && pk.Species != 0)
-            pokeName = $" Receiving: {GameInfo.GetStrings(1).Species[pk.Species]}.";
+            pokeName = $" Receiving: {GameInfo.GetStrings("en").Species[pk.Species]}.";
         msg = $"{user.Mention} - Added to the {type} queue{ticketID}. Current Position: {position.Position}.{pokeName}";
 
         var botct = Info.Hub.Bots.Count;
