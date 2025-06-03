@@ -58,6 +58,11 @@ public static class LogUtil
         Log(message, identity);
     }
 
+    public static void LogInfo(string v, object label)
+    {
+        throw new NotImplementedException();
+    }
+
     public static void LogSafe(Exception exception, string identity)
     {
         Logger.Log(LogLevel.Error, $"Exception from {identity}:");

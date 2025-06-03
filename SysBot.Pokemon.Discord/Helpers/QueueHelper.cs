@@ -359,7 +359,7 @@ public static class QueueHelper<T> where T : PKM, new()
             embedImageUrl = speciesImageUrl;
         }
 
-        var strings = GameInfo.GetStrings(1);
+        var strings = GameInfo.GetStrings("en");
         string ballName = strings.balllist[pk.Ball];
         if (ballName.Contains("(LA)"))
         {

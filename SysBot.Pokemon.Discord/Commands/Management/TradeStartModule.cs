@@ -88,7 +88,8 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
 
             if (detail.TradeData != null && detail.Type != PokeTradeType.Clone && detail.Type != PokeTradeType.Dump && detail.Type != PokeTradeType.Seed && detail.Type != PokeTradeType.FixOT)
             {
-                var ballName = GameInfo.GetStrings(1).balllist[detail.TradeData.Ball]
+                LogUtil.LogInfo($"Notifying {detail.Trainer.TrainerName} about their {GameInfo.GetStrings("en").Species[detail.TradeData.Species]}", bot.Connection.Label);
+                var ballName = GameInfo.GetStrings("en").balllist[detail.TradeData.Ball]
                     .Replace(" ", "").Replace("(LA)", "").ToLower();
                 ballName = ballName == "pokéball" ? "pokeball" : (ballName.Contains("(la)") ? "la" + ballName : ballName);
                 ballImgUrl = $"https://raw.githubusercontent.com/Havokx89/sprites/main/AltBallImg/28x28/{ballName}.png";
