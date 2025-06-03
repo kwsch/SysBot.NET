@@ -8,50 +8,92 @@ namespace SysBot.Pokemon.Helpers.ShowdownHelpers
 {
     public class AbilityHelper<T> where T : PKM, new()
     {
-        public static Task<(string? Ability, bool Corrected)> GetClosestAbility(string userAbility, ushort speciesIndex, GameStrings gameStrings, IPersonalAbility12 personalInfo)
+        public static Task<(string? Ability, bool Corrected)> GetClosestAbility(string userAbility, ushort speciesIndex, BattleTemplateLocalization inputLocalization, BattleTemplateLocalization targetLocalization, IPersonalAbility12 personalInfo)
         {
-            var abilities = Enumerable.Range(0, personalInfo.AbilityCount)
-                .Select(i => gameStrings.abilitylist[personalInfo.GetAbilityAtIndex(i)])
+            return GetClosestAbility(userAbility, speciesIndex, inputLocalization.Strings, targetLocalization.Strings, personalInfo);
+        }
+
+        public static Task<(string? Ability, bool Corrected)> GetClosestAbility(string userAbility, ushort speciesIndex, GameStrings inputStrings, GameStrings targetStrings, IPersonalAbility12 personalInfo)
+        {
+            if (string.IsNullOrEmpty(userAbility))
+                return Task.FromResult<(string? Ability, bool Corrected)>((null, false));
+
+            var validAbilityIndices = Enumerable.Range(0, personalInfo.AbilityCount)
+                .Select(i => personalInfo.GetAbilityAtIndex(i))
+                .Where(index => index > 0 && index < targetStrings.abilitylist.Length)
+                .ToList();
+
+            if (validAbilityIndices.Count == 0)
+                return Task.FromResult<(string? Ability, bool Corrected)>((null, false));
+
+            var targetAbilities = validAbilityIndices
+                .Select(index => targetStrings.abilitylist[index])
                 .Where(a => !string.IsNullOrEmpty(a))
                 .ToList();
 
-            // LogUtil.LogInfo($"Extracted abilities for species index {speciesIndex}: {string.Join(", ", abilities)}", nameof(GetClosestAbility));
+            // Step 1: Try exact match in target language
+            var exactMatch = targetAbilities.FirstOrDefault(a => string.Equals(a, userAbility, StringComparison.OrdinalIgnoreCase));
+            if (exactMatch != null)
+                return Task.FromResult((exactMatch, false));
 
-            if (string.IsNullOrEmpty(userAbility))
+            // Step 2: Try exact match in input language, then translate to target
+            if (inputStrings != targetStrings)
             {
-                // LogUtil.LogInfo("User-provided ability is null or empty. No correction needed.", nameof(GetClosestAbility));
-                return Task.FromResult<(string? Ability, bool Corrected)>((null, false));
+                var inputAbilities = validAbilityIndices
+                    .Select(index => inputStrings.abilitylist[index])
+                    .Where(a => !string.IsNullOrEmpty(a))
+                    .ToList();
+
+                var inputExactMatch = inputAbilities.FirstOrDefault(a => string.Equals(a, userAbility, StringComparison.OrdinalIgnoreCase));
+                if (inputExactMatch != null)
+                {
+                    var inputIndex = Array.IndexOf(inputStrings.abilitylist, inputExactMatch);
+                    if (inputIndex >= 0 && inputIndex < targetStrings.abilitylist.Length)
+                    {
+                        var translatedAbility = targetStrings.abilitylist[inputIndex];
+                        if (!string.IsNullOrEmpty(translatedAbility))
+                            return Task.FromResult((translatedAbility, true));
+                    }
+                }
             }
 
-            // LogUtil.LogInfo($"User-provided ability: {userAbility}", nameof(GetClosestAbility));
-
-            var fuzzyAbility = abilities
+            // Step 3: Fuzzy match in target language
+            var targetFuzzyMatch = targetAbilities
                 .Select(a => (Ability: a, Distance: Fuzz.Ratio(userAbility, a)))
                 .OrderByDescending(a => a.Distance)
                 .FirstOrDefault();
 
-            // LogUtil.LogInfo($"Closest matching ability: {fuzzyAbility.Ability} (Distance: {fuzzyAbility.Distance})", nameof(GetClosestAbility));
+            if (targetFuzzyMatch.Distance >= 60)
+                return Task.FromResult((targetFuzzyMatch.Ability, true));
 
-            var correctedAbility = fuzzyAbility.Distance >= 60 ? fuzzyAbility.Ability : null;
-
-            if (correctedAbility == null)
+            // Step 4: Fuzzy match in input language, then translate to target
+            if (inputStrings != targetStrings)
             {
-                // If no closest match is found, fallback to a random valid ability
-                correctedAbility = abilities[new Random().Next(abilities.Count)];
+                var inputAbilities = validAbilityIndices
+                    .Select(index => inputStrings.abilitylist[index])
+                    .Where(a => !string.IsNullOrEmpty(a))
+                    .ToList();
+
+                var inputFuzzyMatch = inputAbilities
+                    .Select(a => (Ability: a, Distance: Fuzz.Ratio(userAbility, a)))
+                    .OrderByDescending(a => a.Distance)
+                    .FirstOrDefault();
+
+                if (inputFuzzyMatch.Distance >= 60)
+                {
+                    var inputIndex = Array.IndexOf(inputStrings.abilitylist, inputFuzzyMatch.Ability);
+                    if (inputIndex >= 0 && inputIndex < targetStrings.abilitylist.Length)
+                    {
+                        var translatedAbility = targetStrings.abilitylist[inputIndex];
+                        if (!string.IsNullOrEmpty(translatedAbility))
+                            return Task.FromResult((translatedAbility, true));
+                    }
+                }
             }
 
-            var corrected = correctedAbility != null && !string.Equals(correctedAbility, userAbility, StringComparison.OrdinalIgnoreCase);
-
-            //if (corrected)
-            //{
-            //    LogUtil.LogInfo($"Ability corrected from '{userAbility}' to '{correctedAbility}'", nameof(GetClosestAbility));
-            //}
-            //else
-            //{
-            //    LogUtil.LogInfo($"No ability correction needed. User-provided ability '{userAbility}' is valid.", nameof(GetClosestAbility));
-            //}
-
-            return Task.FromResult((correctedAbility, corrected));
+            // Step 5: Fallback to random valid ability in target language
+            var fallbackAbility = targetAbilities[new Random().Next(targetAbilities.Count)];
+            return Task.FromResult((fallbackAbility, true));
         }
     }
 }

@@ -6,15 +6,25 @@ using SysBot.Base;
 using SysBot.Pokemon.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.Discord
 {
+    /// <summary>
+    /// Module for generating and trading random eggs with perfect IVs and shiny status.
+    /// </summary>
+    /// <typeparam name="T">Type of Pokémon to generate</typeparam>
     public class MysteryEggModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
     {
         private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
         private static readonly Random Random = new();
+        private static readonly Dictionary<GameVersion, Queue<ushort>> ShuffledSpeciesDecks = new();
 
+        /// <summary>
+        /// Command to generate and trade a mystery egg to the user.
+        /// </summary>
+        /// <returns>Asynchronous task</returns>
         [Command("mysteryegg")]
         [Alias("me")]
         [Summary("Trades an egg generated from a random Pokémon.")]
@@ -42,23 +52,28 @@ namespace SysBot.Pokemon.Discord
             });
         }
 
+        /// <summary>
+        /// Generates a legal egg from a random breedable Pokémon.
+        /// </summary>
+        /// <param name="maxAttempts">Maximum number of attempts to generate a legal egg</param>
+        /// <returns>A legal egg Pokémon, or null if generation fails</returns>
         public static T? GenerateLegalMysteryEgg(int maxAttempts = 10)
         {
             var gameVersion = GetGameVersion();
 
-            // PLA doesn't have breeding
             if (gameVersion == GameVersion.PLA)
                 return null;
 
-            var breedableSpecies = GetBreedableSpecies(gameVersion);
-
-            if (breedableSpecies.Count == 0)
-                return null;
+            // Initialize the species deck if needed
+            if (!ShuffledSpeciesDecks.TryGetValue(gameVersion, out var deck) || deck.Count == 0)
+            {
+                InitializeSpeciesDeck(gameVersion);
+            }
 
             for (int attempt = 0; attempt < maxAttempts; attempt++)
             {
-                // Pick a random species from our filtered list
-                var speciesId = breedableSpecies[Random.Next(breedableSpecies.Count)];
+                // Get next species from our shuffled deck
+                ushort speciesId = GetNextSpeciesFromDeck(gameVersion);
                 var speciesName = GameInfo.GetStrings("en").specieslist[speciesId];
 
                 var showdownSet = new ShowdownSet(speciesName);
@@ -73,7 +88,6 @@ namespace SysBot.Pokemon.Discord
                 if (pk is not T validPk)
                     continue;
 
-                // Convert to egg
                 TradeExtensions<T>.EggTrade(validPk, template);
                 SetHaX(validPk);
 
@@ -85,6 +99,102 @@ namespace SysBot.Pokemon.Discord
             return null;
         }
 
+        /// <summary>
+        /// Initializes the species deck for a game version using EggEncounter classes to validate breedable species.
+        /// </summary>
+        /// <param name="gameVersion">Game version to initialize the deck for</param>
+        private static void InitializeSpeciesDeck(GameVersion gameVersion)
+        {
+            var breedableSpecies = new List<ushort>();
+
+            // Get max species ID based on game version
+            ushort maxSpecies = gameVersion switch
+            {
+                GameVersion.SV => (ushort)PersonalTable.SV.MaxSpeciesID,
+                GameVersion.SWSH => (ushort)PersonalTable.SWSH.MaxSpeciesID,
+                GameVersion.BDSP => (ushort)PersonalTable.BDSP.MaxSpeciesID,
+                _ => (ushort)1010, // Reasonable default
+            };
+
+            // Check each species using the appropriate EggEncounter class
+            for (ushort species = 1; species <= maxSpecies; species++)
+            {
+                try
+                {
+                    IEncounterEgg? encounter = gameVersion switch
+                    {
+                        GameVersion.BDSP => new EncounterEgg8b(species, 0, gameVersion),
+                        GameVersion.SWSH => new EncounterEgg8(species, 0, gameVersion),
+                        GameVersion.SV => new EncounterEgg9(species, 0, gameVersion),
+                        _ => null
+                    };
+
+                    if (encounter != null)
+                    {
+                        // Check if this is a base form (we only want base forms for mystery eggs)
+                        var pi = GetPersonalInfo(gameVersion, species);
+                        if (pi != null && pi.EvoStage == 1)
+                        {
+                            breedableSpecies.Add(species);
+                        }
+                    }
+                }
+                catch
+                {
+                    // Skip species that throw exceptions during encounter creation
+                }
+            }
+
+            // Shuffle and store the deck
+            var shuffled = breedableSpecies.OrderBy(_ => Random.Next()).ToList();
+            ShuffledSpeciesDecks[gameVersion] = new Queue<ushort>(shuffled);
+        }
+
+        /// <summary>
+        /// Gets personal info for a species in a specific game version.
+        /// </summary>
+        /// <param name="gameVersion">Game version</param>
+        /// <param name="species">Species ID</param>
+        /// <returns>PersonalInfo object or null if not found</returns>
+        private static PersonalInfo? GetPersonalInfo(GameVersion gameVersion, ushort species)
+        {
+            try
+            {
+                return gameVersion switch
+                {
+                    GameVersion.SV => PersonalTable.SV.GetFormEntry(species, 0),
+                    GameVersion.SWSH => PersonalTable.SWSH.GetFormEntry(species, 0),
+                    GameVersion.BDSP => PersonalTable.BDSP.GetFormEntry(species, 0),
+                    _ => null
+                };
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the next species from the shuffled deck for the specified game version.
+        /// </summary>
+        /// <param name="gameVersion">Game version to get species for</param>
+        /// <returns>Species ID to use for egg generation</returns>
+        private static ushort GetNextSpeciesFromDeck(GameVersion gameVersion)
+        {
+            if (!ShuffledSpeciesDecks.TryGetValue(gameVersion, out var deck) || deck.Count == 0)
+            {
+                InitializeSpeciesDeck(gameVersion);
+                deck = ShuffledSpeciesDecks[gameVersion];
+            }
+
+            return deck.Dequeue();
+        }
+
+        /// <summary>
+        /// Processes the mystery egg trade request.
+        /// </summary>
+        /// <param name="code">Link trade code</param>
+        /// <returns>Asynchronous task</returns>
         private async Task ProcessMysteryEggTradeAsync(int code)
         {
             var mysteryEgg = GenerateLegalMysteryEgg(10);
@@ -103,12 +213,22 @@ namespace SysBot.Pokemon.Discord
             }
         }
 
+        /// <summary>
+        /// Deletes a message after a specified delay.
+        /// </summary>
+        /// <param name="message">Message to delete</param>
+        /// <param name="delayMilliseconds">Delay in milliseconds</param>
+        /// <returns>Asynchronous task</returns>
         private static async Task DeleteMessageAfterDelay(IUserMessage message, int delayMilliseconds)
         {
             await Task.Delay(delayMilliseconds).ConfigureAwait(false);
             await message.DeleteAsync().ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Sets HaX properties on a Pokémon (perfect IVs, shiny, etc.).
+        /// </summary>
+        /// <param name="pk">Pokémon to modify</param>
         public static void SetHaX(PKM pk)
         {
             pk.IVs = [31, 31, 31, 31, 31, 31];
@@ -118,6 +238,10 @@ namespace SysBot.Pokemon.Discord
             pk.RefreshChecksum();
         }
 
+        /// <summary>
+        /// Gets the appropriate game version based on the generic type parameter.
+        /// </summary>
+        /// <returns>Game version for the current type</returns>
         public static GameVersion GetGameVersion()
         {
             if (typeof(T) == typeof(PK8))
@@ -132,91 +256,23 @@ namespace SysBot.Pokemon.Discord
                 throw new ArgumentException("Unsupported game version.");
         }
 
-        public static List<ushort> GetBreedableSpecies(GameVersion gameVersion)
-        {
-            var breedableSpecies = new List<ushort>();
-
-            // Get the appropriate personal table based on game version
-            var personalTable = GetPersonalTable(gameVersion);
-
-            // Get the max species ID based on the PersonalTable
-            ushort maxSpecies = GetMaxSpeciesID(personalTable);
-
-            for (ushort speciesId = 1; speciesId <= maxSpecies; speciesId++)
-            {
-                // Skip species that aren't in the game
-                if (!IsSpeciesInGame(personalTable, speciesId))
-                    continue;
-
-                var pi = GetFormEntry(personalTable, speciesId, 0);
-
-                // Check if the species is breedable and is a base form
-                if (IsBreedable(pi) && pi.EvoStage == 1)
-                {
-                    breedableSpecies.Add(speciesId);
-                }
-            }
-
-            return breedableSpecies;
-        }
-
-        private static bool IsSpeciesInGame(object personalTable, ushort species)
-        {
-            return personalTable switch
-            {
-                PersonalTable9SV pt => pt.IsSpeciesInGame(species),
-                PersonalTable8SWSH pt => pt.IsSpeciesInGame(species),
-                PersonalTable8BDSP pt => pt.IsSpeciesInGame(species),
-                _ => false,
-            };
-        }
-
-        private static ushort GetMaxSpeciesID(object personalTable)
-        {
-            return personalTable switch
-            {
-                PersonalTable9SV pt => pt.MaxSpeciesID,
-                PersonalTable8SWSH pt => pt.MaxSpeciesID,
-                PersonalTable8BDSP pt => pt.MaxSpeciesID,
-                _ => throw new ArgumentException("Unsupported personal table type."),
-            };
-        }
-
-        private static bool IsBreedable(PersonalInfo pi)
-        {
-            // If either egg group is "Undiscovered" (15), then the Pokémon can't breed
-            if (pi.EggGroup1 == 15 || pi.EggGroup2 == 15)
-                return false;
-
-            // If both egg groups are "Invalid" (0), then the Pokémon can't breed
-            if (pi.EggGroup1 == 0 && pi.EggGroup2 == 0)
-                return false;
-
-            return true;
-        }
-
-        private static PersonalInfo GetFormEntry(object personalTable, ushort species, byte form)
-        {
-            return personalTable switch
-            {
-                PersonalTable9SV pt => pt.GetFormEntry(species, form),
-                PersonalTable8SWSH pt => pt.GetFormEntry(species, form),
-                PersonalTable8BDSP pt => pt.GetFormEntry(species, form),
-                _ => throw new ArgumentException("Unsupported personal table type."),
-            };
-        }
-
-        private static object GetPersonalTable(GameVersion gameVersion)
-        {
-            return gameVersion switch
-            {
-                GameVersion.SV => PersonalTable.SV,
-                GameVersion.SWSH => PersonalTable.SWSH,
-                GameVersion.BDSP => PersonalTable.BDSP,
-                _ => throw new ArgumentException("Unsupported game version."),
-            };
-        }
-
+        /// <summary>
+        /// Adds a trade to the queue.
+        /// </summary>
+        /// <param name="code">Link trade code</param>
+        /// <param name="trainerName">Trainer name</param>
+        /// <param name="pk">Pokémon to trade</param>
+        /// <param name="sig">Request significance</param>
+        /// <param name="usr">User requesting the trade</param>
+        /// <param name="isBatchTrade">Whether this is part of a batch trade</param>
+        /// <param name="batchTradeNumber">Batch trade number</param>
+        /// <param name="totalBatchTrades">Total batch trades</param>
+        /// <param name="isHiddenTrade">Whether this is a hidden trade</param>
+        /// <param name="isMysteryEgg">Whether this is a mystery egg trade</param>
+        /// <param name="lgcode">List of picture codes for Let's Go trades</param>
+        /// <param name="tradeType">Type of trade</param>
+        /// <param name="ignoreAutoOT">Whether to ignore auto OT</param>
+        /// <returns>Asynchronous task</returns>
         private async Task AddTradeToQueueAsync(
            int code,
            string trainerName,
@@ -262,6 +318,11 @@ namespace SysBot.Pokemon.Discord
                 ignoreAutoOT: ignoreAutoOT).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Generates a random list of picture codes for Let's Go trades.
+        /// </summary>
+        /// <param name="count">Number of picture codes to generate</param>
+        /// <returns>List of random picture codes</returns>
         private static List<Pictocodes> GenerateRandomPictocodes(int count)
         {
             List<Pictocodes> randomPictocodes = new();

@@ -13,7 +13,7 @@ public class PokeDataOffsetsSV
 
     public const string ScarletID = "0100A3D008C5C000";
 
-    public const string SVGameVersion = "3.0.1";
+    public const string SVGameVersion = "4.0.0";
 
     public const string VioletID = "01008F6008C5E000";
 

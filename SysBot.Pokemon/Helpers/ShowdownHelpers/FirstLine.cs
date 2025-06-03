@@ -8,79 +8,106 @@ namespace SysBot.Pokemon.Helpers.ShowdownHelpers
 {
     public class FirstLine<T> where T : PKM, new()
     {
-        public static async Task<string?> GetClosestSpecies(string userSpecies, string[]? formNames = null)
+        public static async Task<string?> GetClosestSpecies(string userSpecies, BattleTemplateLocalization? inputLoc = null, BattleTemplateLocalization? targetLoc = null, string[]? formNames = null)
         {
-            var gameStrings = GameInfoHelpers<T>.GetGameStrings();
-            var sortedSpecies = gameStrings.specieslist.OrderBy(name => name);
+            inputLoc ??= BattleTemplateLocalization.Default;
+            targetLoc ??= BattleTemplateLocalization.Default;
 
             var speciesName = userSpecies.Split('-')[0].Trim();
             var formNamePart = userSpecies.Contains('-') ? string.Join("-", userSpecies.Split('-').Skip(1)).Trim() : string.Empty;
 
-            // LogUtil.LogInfo($"Comparing species: {speciesName}", nameof(AutoCorrectShowdown<T>));
-
-            var fuzzySpecies = sortedSpecies
-                .Where(s => !string.IsNullOrEmpty(s))
-                .Select(s => (Species: s, Distance: Fuzz.Ratio(speciesName, s)))
-                .OrderByDescending(s => s.Distance)
-                .FirstOrDefault();
-
-            // LogUtil.LogInfo($"Closest species found: {fuzzySpecies.Species} with distance {fuzzySpecies.Distance}", nameof(AutoCorrectShowdown<T>));
-
-            if (fuzzySpecies.Distance >= 80)
+            // Try exact match in target language first
+            var exactMatch = Array.FindIndex(targetLoc.Strings.specieslist, s => s.Equals(speciesName, StringComparison.OrdinalIgnoreCase));
+            if (exactMatch > 0)
             {
-                var correctedSpecies = fuzzySpecies.Species;
-
-                if (!string.IsNullOrEmpty(formNamePart))
-                {
-                    if (formNames != null)
-                    {
-                        var closestFormName = await GetClosestFormName(formNamePart, formNames).ConfigureAwait(false);
-                        // LogUtil.LogInfo($"Form names being compared against: {string.Join(", ", formNames)}", nameof(AutoCorrectShowdown<T>));
-                        // LogUtil.LogInfo($"Closest form found: {closestFormName}", nameof(AutoCorrectShowdown<T>));
-
-                        if (closestFormName != null)
-                        {
-                            return $"{correctedSpecies}-{closestFormName}";
-                        }
-                    }
-                    return $"{correctedSpecies}-{formNamePart}";
-                }
-                return correctedSpecies;
+                var correctedSpecies = targetLoc.Strings.specieslist[exactMatch];
+                return await HandleFormName(correctedSpecies, formNamePart, formNames, inputLoc, targetLoc);
             }
+
+            // Try fuzzy match in target language
+            var targetFuzzyMatch = GetBestFuzzyMatch(speciesName, targetLoc.Strings.specieslist, 80);
+            if (targetFuzzyMatch != null)
+            {
+                return await HandleFormName(targetFuzzyMatch, formNamePart, formNames, inputLoc, targetLoc);
+            }
+
+            // Try to find in input language and translate to target
+            if (inputLoc != targetLoc)
+            {
+                var inputMatch = Array.FindIndex(inputLoc.Strings.specieslist, s => s.Equals(speciesName, StringComparison.OrdinalIgnoreCase));
+                if (inputMatch > 0 && inputMatch < targetLoc.Strings.specieslist.Length)
+                {
+                    var translatedSpecies = targetLoc.Strings.specieslist[inputMatch];
+                    return await HandleFormName(translatedSpecies, formNamePart, formNames, inputLoc, targetLoc);
+                }
+
+                // Try fuzzy match in input language and translate
+                var inputFuzzyMatch = GetBestFuzzyMatch(speciesName, inputLoc.Strings.specieslist, 80);
+                if (inputFuzzyMatch != null)
+                {
+                    var inputIndex = Array.IndexOf(inputLoc.Strings.specieslist, inputFuzzyMatch);
+                    if (inputIndex > 0 && inputIndex < targetLoc.Strings.specieslist.Length)
+                    {
+                        var translatedSpecies = targetLoc.Strings.specieslist[inputIndex];
+                        return await HandleFormName(translatedSpecies, formNamePart, formNames, inputLoc, targetLoc);
+                    }
+                }
+            }
+
             return null;
         }
 
-        public static Task<string?> GetClosestFormName(string userFormName, string[] validFormNames)
+        private static async Task<string> HandleFormName(string correctedSpecies, string formNamePart, string[]? formNames, BattleTemplateLocalization inputLoc, BattleTemplateLocalization targetLoc)
         {
-            // LogUtil.LogInfo($"Comparing form name: {userFormName}", nameof(AutoCorrectShowdown<T>));
+            if (!string.IsNullOrEmpty(formNamePart) && formNames != null)
+            {
+                var closestFormName = await GetClosestFormName(formNamePart, formNames, inputLoc, targetLoc);
+                if (closestFormName != null)
+                {
+                    return $"{correctedSpecies}-{closestFormName}";
+                }
+                return $"{correctedSpecies}-{formNamePart}";
+            }
+            return correctedSpecies;
+        }
 
-            var (FormName, Distance) = validFormNames
+        public static Task<string?> GetClosestFormName(string userFormName, string[] validFormNames, BattleTemplateLocalization? inputLoc = null, BattleTemplateLocalization? targetLoc = null)
+        {
+            inputLoc ??= BattleTemplateLocalization.Default;
+            targetLoc ??= BattleTemplateLocalization.Default;
+
+            // Try exact match first
+            var exactMatch = validFormNames.FirstOrDefault(f => f.Equals(userFormName, StringComparison.OrdinalIgnoreCase));
+            if (exactMatch != null)
+                return Task.FromResult<string?>(exactMatch);
+
+            // Try fuzzy match
+            var fuzzyMatch = GetBestFuzzyMatch(userFormName, validFormNames, 70);
+            if (fuzzyMatch != null)
+                return Task.FromResult<string?>(fuzzyMatch);
+
+            // Forms are species-specific and generated dynamically, so cross-language translation
+            // is more complex and handled by PKHeX's FormConverter system
+            // Return the best match even if below threshold
+            var fallbackMatch = validFormNames
                 .Where(f => !string.IsNullOrEmpty(f))
                 .Select(f => (FormName: f, Distance: Fuzz.Ratio(userFormName, f)))
                 .OrderByDescending(f => f.Distance)
                 .ThenBy(f => f.FormName.Length)
-                .FirstOrDefault();
+                .FirstOrDefault().FormName;
 
-            // LogUtil.LogInfo($"Closest form name found: {fuzzyFormName.FormName} with distance {fuzzyFormName.Distance}", nameof(AutoCorrectShowdown<T>));
-
-            // Lowered threshold to 70 and added fallback logic
-            if (Distance >= 70)
-            {
-                return Task.FromResult<string?>(FormName);
-            }
-
-            // Fallback: return the closest match even if it doesn't meet the threshold
-            return Task.FromResult<string?>(FormName);
+            return Task.FromResult<string?>(fallbackMatch);
         }
 
-        public static (string, string) ValidateHeldItem(string[] lines, PKM pk, string[] itemlist, string heldItem)
+        public static (string, string) ValidateHeldItem(string[] lines, PKM pk, BattleTemplateLocalization inputLoc, BattleTemplateLocalization targetLoc, string heldItem)
         {
             if (!string.IsNullOrEmpty(heldItem))
             {
-                string correctedHeldItem = GetClosestItem(heldItem, itemlist);
+                string? correctedHeldItem = GetClosestItem(heldItem, inputLoc, targetLoc, pk.Context);
                 if (correctedHeldItem != null)
                 {
-                    int itemIndex = Array.IndexOf(itemlist, correctedHeldItem);
+                    var targetItemList = targetLoc.Strings.GetItemStrings(pk.Context);
+                    int itemIndex = Array.IndexOf(targetItemList, correctedHeldItem);
                     if (ItemRestrictions.IsHeldItemAllowed(itemIndex, pk.Context))
                     {
                         if (correctedHeldItem != heldItem)
@@ -88,7 +115,7 @@ namespace SysBot.Pokemon.Helpers.ShowdownHelpers
                             string correctionMessage = $"Held item was incorrect. Adjusted from **{heldItem}** to **{correctedHeldItem}**.";
                             return (correctedHeldItem, correctionMessage);
                         }
-                        return (heldItem, string.Empty); // Item was valid, no correction needed
+                        return (heldItem, string.Empty);
                     }
                     else
                     {
@@ -99,48 +126,117 @@ namespace SysBot.Pokemon.Helpers.ShowdownHelpers
                 else
                 {
                     string correctionMessage = $"Held item **{heldItem}** is not recognized. Removed the held item.";
-                    return (string.Empty, correctionMessage); // Return empty string for unrecognized item
+                    return (string.Empty, correctionMessage);
                 }
             }
-            return (heldItem, string.Empty); // No item or valid item, no correction needed
+            return (heldItem, string.Empty);
         }
 
-        public static string? GetClosestItem(string userItem, string[] itemlist)
+        public static string? GetClosestItem(string userItem, BattleTemplateLocalization inputLoc, BattleTemplateLocalization targetLoc, EntityContext context)
         {
-            // LogUtil.LogInfo($"Getting closest item for: {userItem}", nameof(AutoCorrectShowdown<T>));
+            var targetItemList = targetLoc.Strings.GetItemStrings(context);
 
-            var fuzzyItem = itemlist
-                .Where(item => !string.IsNullOrEmpty(item))
-                .Select(item => (Item: item, Distance: Fuzz.Ratio(userItem.ToLower(), item.ToLower())))
-                .OrderByDescending(item => item.Distance)
-                .FirstOrDefault();
+            // Try exact match in target language first
+            var exactMatch = Array.FindIndex(targetItemList, item => item.Equals(userItem, StringComparison.OrdinalIgnoreCase));
+            if (exactMatch > 0)
+                return targetItemList[exactMatch];
 
-            // LogUtil.LogInfo($"Closest item: {fuzzyItem.Item}, Distance: {fuzzyItem.Distance}", nameof(AutoCorrectShowdown<T>));
+            // Try fuzzy match in target language
+            var targetFuzzyMatch = GetBestFuzzyMatch(userItem, targetItemList, 80);
+            if (targetFuzzyMatch != null)
+                return targetFuzzyMatch;
 
-            return fuzzyItem.Distance >= 80 ? fuzzyItem.Item : null;
+            // Try to find in input language and translate to target
+            if (inputLoc != targetLoc)
+            {
+                var inputItemList = inputLoc.Strings.GetItemStrings(context);
+                var inputMatch = Array.FindIndex(inputItemList, item => item.Equals(userItem, StringComparison.OrdinalIgnoreCase));
+                if (inputMatch > 0 && inputMatch < targetItemList.Length)
+                    return targetItemList[inputMatch];
+
+                // Try fuzzy match in input language and translate
+                var inputFuzzyMatch = GetBestFuzzyMatch(userItem, inputItemList, 80);
+                if (inputFuzzyMatch != null)
+                {
+                    var inputIndex = Array.IndexOf(inputItemList, inputFuzzyMatch);
+                    if (inputIndex > 0 && inputIndex < targetItemList.Length)
+                        return targetItemList[inputIndex];
+                }
+            }
+
+            return null;
         }
 
-        public static (string correctedGender, string correctionMessage) ValidateGender(PKM pk, string gender, string speciesName)
+        public static (string correctedGender, string correctionMessage) ValidateGender(PKM pk, string gender, string speciesName, BattleTemplateLocalization? inputLoc = null, BattleTemplateLocalization? targetLoc = null)
         {
+            inputLoc ??= BattleTemplateLocalization.Default;
+            _ = targetLoc ?? BattleTemplateLocalization.Default;
+
             string correctionMessage = string.Empty;
+            string correctedGender = gender;
+
             if (!string.IsNullOrEmpty(gender))
             {
-                // Extract the gender value from the parentheses
-                string genderValue = gender.Trim('(', ')');
-
                 PersonalInfo personalInfo = pk.PersonalInfo;
+
+                // Normalize gender to M/F format
+                string normalizedGender = NormalizeGender(gender, inputLoc);
+
+                // First check if the species is genderless
                 if (personalInfo.Genderless)
                 {
-                    gender = string.Empty;
+                    correctedGender = string.Empty;
                     correctionMessage = $"{speciesName} is genderless. Removing gender.";
                 }
-                else if ((personalInfo.OnlyFemale && genderValue != "F") || (personalInfo.OnlyMale && genderValue != "M"))
+                // Check if only female and gender is male
+                else if (personalInfo.OnlyFemale && normalizedGender == "M")
                 {
-                    gender = string.Empty;
-                    correctionMessage = $"{speciesName} can't be {genderValue}. Removing gender.";
+                    correctedGender = string.Empty;
+                    correctionMessage = $"{speciesName} can only be female. Removing gender.";
+                }
+                // Check if only male and gender is female
+                else if (personalInfo.OnlyMale && normalizedGender == "F")
+                {
+                    correctedGender = string.Empty;
+                    correctionMessage = $"{speciesName} can only be male. Removing gender.";
+                }
+                else
+                {
+                    // Return normalized M/F format
+                    correctedGender = normalizedGender;
                 }
             }
-            return (gender, correctionMessage);
+
+            return (correctedGender, correctionMessage);
+        }
+
+        private static string NormalizeGender(string gender, BattleTemplateLocalization localization)
+        {
+            // Check if it's already M or F
+            if (gender.Equals("M", StringComparison.OrdinalIgnoreCase))
+                return "M";
+            if (gender.Equals("F", StringComparison.OrdinalIgnoreCase))
+                return "F";
+
+            // Check against localized strings
+            if (gender.Equals(localization.Config.Male, StringComparison.OrdinalIgnoreCase))
+                return "M";
+            if (gender.Equals(localization.Config.Female, StringComparison.OrdinalIgnoreCase))
+                return "F";
+
+            // Default return original if can't normalize
+            return gender;
+        }
+
+        private static string? GetBestFuzzyMatch(string input, string[] candidates, int threshold)
+        {
+            var (Item, Distance) = candidates
+                .Where(candidate => !string.IsNullOrEmpty(candidate))
+                .Select(candidate => (Item: candidate, Distance: Fuzz.Ratio(input.ToLowerInvariant(), candidate.ToLowerInvariant())))
+                .OrderByDescending(x => x.Distance)
+                .FirstOrDefault();
+
+            return Distance >= threshold ? Item : null;
         }
     }
 }

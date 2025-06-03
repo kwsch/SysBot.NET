@@ -287,7 +287,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         {
             if (!_useEmbeds)
             {
-                PreferredImageSize = ImageSize.Size256x256;
+                PreferredImageSize = ImageSize.Size128x128;
                 MoveTypeEmojis = false;
                 ShowScale = false;
                 ShowTeraType = false;
@@ -300,10 +300,10 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         [Category(EmbedSettings), Description("Preferred Species Image Size for Embeds."), DisplayName("Species Image Size")]
-        public ImageSize PreferredImageSize { get; set; } = ImageSize.Size256x256;
+        public ImageSize PreferredImageSize { get; set; } = ImageSize.Size128x128;
 
         [Category(EmbedSettings), Description("Will show Move Type Icons next to moves in trade embed (Discord only). Requires user to upload the emojis to their server."), DisplayName("Show Move Type Emojis")]
-        public bool MoveTypeEmojis { get; set; } = false;
+        public bool MoveTypeEmojis { get; set; } = true;
 
         [Category(EmbedSettings), Description("Custom Emoji information for the move types."), DisplayName("Custom Type Emojis")]
         public List<MoveTypeEmojiInfo> CustomTypeEmojis { get; set; } = new List<MoveTypeEmojiInfo>
@@ -347,8 +347,8 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         [Category(EmbedSettings), Description("The emoji information for displaying the alpha emoji in Legends: Arceus."), DisplayName("Alpha PLA Emoji")]
         public EmojiInfo AlphaPLAEmoji { get; set; } = new EmojiInfo();
 
-        [Category(EmbedSettings), Description("Will show Move Type Icons next to Tera Type in trade embed (Discord only). Requires user to upload the emojis to their server."), DisplayName("Show Tera Type Emojis?")]
-        public bool UseTeraEmojis { get; set; } = false;
+        [Category(EmbedSettings), Description("Will show Move Type Icons next to moves in trade embed (Discord only). Requires user to upload the emojis to their server."), DisplayName("Show Tera Type Emojis?")]
+        public bool UseTeraEmojis { get; set; } = true;
 
         [Category(EmbedSettings), Description("Tera Type Emoji information for the tera types."), DisplayName("Custom Tera Type Emojis")]
         public List<TeraTypeEmojiInfo> TeraTypeEmojis { get; set; } = new List<TeraTypeEmojiInfo>
@@ -391,6 +391,9 @@ public class TradeSettings : IBotStateSettings, ICountSettings
 
         [Category(EmbedSettings), Description("Will show Nature in trade embed (Discord only)."), DisplayName("Show Nature")]
         public bool ShowNature { get; set; } = true;
+
+        [Category(EmbedSettings), Description("Will show Language in trade embed (Discord only)."), DisplayName("Show Language")]
+        public bool ShowLanguage { get; set; } = true;
 
         [Category(EmbedSettings), Description("Will show IVs in trade embed (Discord only)."), DisplayName("Show IVs")]
         public bool ShowIVs { get; set; } = true;
