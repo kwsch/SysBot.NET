@@ -586,6 +586,7 @@ namespace SysBot.Pokemon.Helpers
             [(int)Species.Salamence] = [(new(2025, 04, 18), new(2025, 04, 20)), (new(2025, 04, 25), new(2025, 04, 27))], // Salamence
             [(int)Species.Metagross] = [(new(2025, 05, 09), new(2025, 05, 11)), (new(2025, 05, 12), new(2025, 05, 19))], // Metagross
             [(int)Species.Garchomp] = [(new(2025, 05, 22), new(2025, 05, 25)), (new(2025, 05, 30), new(2025, 06, 01))], // Garchomp
+            [(int)Species.Porygon2] = [(new(2025, 06, 05), new(2025, 06, 15))], // Porygon2
         };
 
         public static void CheckAndSetUnrivaledDate(PKM pk)

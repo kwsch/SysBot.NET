@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using PKHeX.Core;
 using SysBot.Base;
 using SysBot.Pokemon.Helpers;
+using SysBot.Pokemon.Discord.Helpers;
 using System;
 using System.Threading.Tasks;
 
@@ -55,6 +56,8 @@ public static class AutoLegalityExtensionsDiscord
     public static Task ReplyWithLegalizedSetAsync(this ISocketMessageChannel channel, string content, byte gen)
     {
         content = ReusableActions.StripCodeBlock(content);
+        // Normalize user-friendly aliases like "Size: 255" → ".Scale=255"
+        content = BatchNormalizer.NormalizeBatchCommands(content);
         var set = new ShowdownSet(content);
         var sav = AutoLegalityWrapper.GetTrainerInfo(gen);
         return channel.ReplyWithLegalizedSetAsync(sav, set);
@@ -63,6 +66,8 @@ public static class AutoLegalityExtensionsDiscord
     public static Task ReplyWithLegalizedSetAsync<T>(this ISocketMessageChannel channel, string content) where T : PKM, new()
     {
         content = ReusableActions.StripCodeBlock(content);
+        // Normalize user-friendly aliases like "Size: 255" → ".Scale=255"
+        content = BatchNormalizer.NormalizeBatchCommands(content);
         var set = new ShowdownSet(content);
         var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
         return channel.ReplyWithLegalizedSetAsync(sav, set);
