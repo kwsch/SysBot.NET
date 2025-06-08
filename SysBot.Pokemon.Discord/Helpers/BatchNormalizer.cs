@@ -29,6 +29,7 @@ public static class BatchNormalizer
         { "Mark", "Mark" },
         { "Ribbon", "Ribbon" },
         { "GVs", "GVs" },
+        { "Friendship", "OriginalTrainerFriendship" },
 
         // Backwards compatibility to fall back on, if needed. //
         { "Scale", "Scale" },
