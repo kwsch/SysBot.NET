@@ -110,7 +110,7 @@ public static class ReusableActions
     {
         // Create a unique filename for each Pokémon
         var uniqueId = Guid.NewGuid().ToString("N").Substring(0, 8);
-        var fileName = $"{uniqueId}_{Util.CleanFileName(pkm.FileName)}";
+        var fileName = $"{uniqueId}_{PathUtil.CleanFileName(pkm.FileName)}";
         var tmp = Path.Combine(Path.GetTempPath(), fileName);
 
         try
@@ -143,7 +143,7 @@ public static class ReusableActions
     {
         // Create a unique filename for each Pokémon
         var uniqueId = Guid.NewGuid().ToString("N").Substring(0, 8);
-        var fileName = $"{uniqueId}_{Util.CleanFileName(pkm.FileName)}";
+        var fileName = $"{uniqueId}_{PathUtil.CleanFileName(pkm.FileName)}";
         var tmp = Path.Combine(Path.GetTempPath(), fileName);
 
         try
