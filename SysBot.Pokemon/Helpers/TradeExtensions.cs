@@ -208,6 +208,8 @@ namespace SysBot.Pokemon.Helpers
             pk.SetEVs([0, 0, 0, 0, 0, 0]);
 
             MarkingApplicator.SetMarkings(pk);
+            RibbonApplicator.RemoveAllValidRibbons(pk);
+
 
             pk.ClearRelearnMoves();
 
@@ -259,7 +261,6 @@ namespace SysBot.Pokemon.Helpers
             pk.Move1_PPUps = pk.Move2_PPUps = pk.Move3_PPUps = pk.Move4_PPUps = 0;
             pk.SetMaximumPPCurrent(pk.Moves);
             pk.SetSuggestedHyperTrainingData();
-            pk.SetSuggestedRibbons(template, enc, true);
         }
 
         public static string FormOutput(ushort species, byte form, out string[] formString)
@@ -587,6 +588,7 @@ namespace SysBot.Pokemon.Helpers
             [(int)Species.Metagross] = [(new(2025, 05, 09), new(2025, 05, 11)), (new(2025, 05, 12), new(2025, 05, 19))], // Metagross
             [(int)Species.Garchomp] = [(new(2025, 05, 22), new(2025, 05, 25)), (new(2025, 05, 30), new(2025, 06, 01))], // Garchomp
             [(int)Species.Porygon2] = [(new(2025, 06, 05), new(2025, 06, 15))], // Porygon2
+            [(int)Species.Baxcalibur] = [(new(2025, 06, 19), new(2025, 06, 22)), (new(2025, 06, 27), new(2025, 06, 29))], // Baxcalibur
         };
 
         public static void CheckAndSetUnrivaledDate(PKM pk)

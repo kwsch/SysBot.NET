@@ -1,6 +1,8 @@
 using PKHeX.Core;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace SysBot.Pokemon;
 
@@ -72,11 +74,11 @@ public class LegalitySettings
     ];
 
     [Category(Generate), Description("If PrioritizeGame is set to \"True\", uses PrioritizeGameVersion to start looking for encounters. If \"False\", uses newest game as the version. It is recommended to leave this as \"True\".")]
-    public bool PrioritizeGame { get; set; } = true;
+    public bool PrioritizeGame { get; set; } = false;
 
     [Browsable(false)]
     [Category(Generate), Description("Specifies the first game to use to generate encounters, or current game if this field is set to \"Any\". Set PrioritizeGame to \"true\" to enable. It is recommended to leave this as \"Any\".")]
-    public GameVersion PrioritizeGameVersion { get; set; } = GameVersion.Any;
+    public List<GameVersion> PriorityOrder { get; set; } = [.. Enum.GetValues<GameVersion>().Where(ver => ver > GameVersion.Any && ver <= (GameVersion)51)];
 
     // Misc
     [Browsable(false)]

@@ -137,9 +137,10 @@ public static class DetailsExtractor<T> where T : PKM, new()
         embedData.HeldItem = strings.itemlist[pk.HeldItem];
         embedData.Ball = strings.balllist[pk.Ball];
 
-        int[] ivs = pk.IVs;
+        Span<int> ivs = stackalloc int[6];
+        pk.GetIVs(ivs);
         string ivsDisplay;
-        if (ivs.All(iv => iv == 31))
+        if (ivs.ToArray().All(iv => iv == 31))
         {
             ivsDisplay = "6IV";
         }

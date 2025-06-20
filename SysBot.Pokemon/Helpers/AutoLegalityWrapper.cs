@@ -46,7 +46,13 @@ public static class AutoLegalityWrapper
         APILegality.AllowTrainerOverride = cfg.AllowTrainerDataOverride;
         APILegality.AllowBatchCommands = cfg.AllowBatchCommands;
         APILegality.PrioritizeGame = cfg.PrioritizeGame;
-        APILegality.PrioritizeGameVersion = cfg.PrioritizeGameVersion;
+        GameVersion[] validVersions = [.. Enum.GetValues<GameVersion>().Where(ver => ver <= (GameVersion)51 && ver > GameVersion.Any)];
+        foreach (var ver in validVersions)
+        {
+            if (!cfg.PriorityOrder.Contains(ver))
+                cfg.PriorityOrder.Add(ver);
+        }
+        APILegality.PriorityOrder = cfg.PriorityOrder;
         APILegality.SetBattleVersion = cfg.SetBattleVersion;
         APILegality.Timeout = cfg.Timeout;
         var settings = ParseSettings.Settings;

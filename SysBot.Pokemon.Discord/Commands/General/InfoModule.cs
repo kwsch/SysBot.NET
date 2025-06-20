@@ -39,13 +39,14 @@ public class InfoModule : ModuleBase<SocketCommandContext>
             $"- {Format.Bold("Current Fork")}: [DudeBot.NET]({fork})\n" +
             $"- {Format.Bold("Join the Discord for support!")}: [In Link We Trust]({dcord}) \n" +
             $"- {Format.Bold("Owner")}: {app.Owner} ({app.Owner.Id})\n" +
+            $"- {Format.Bold("Build Version")}: DudeBot.NET {TradeBot.Version}\n" +
             $"- {Format.Bold("Library")}: Discord.Net ({DiscordConfig.Version})\n" +
             $"- {Format.Bold("Uptime")}: {GetUptime()}\n" +
             $"- {Format.Bold("Runtime")}: {RuntimeInformation.FrameworkDescription} {RuntimeInformation.ProcessArchitecture} " +
             $"({RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture})\n" +
             $"- {Format.Bold("Buildtime")}: {GetVersionInfo("SysBot.Base", false)}\n" +
             $"- {Format.Bold("Core Version")}: {GetVersionInfo("PKHeX.Core")}\n" +
-            $"- {Format.Bold("AutoLegality Version")}: {GetVersionInfo("PKHeX.Core.AutoMod")}\n"
+            $"- {Format.Bold("AutoLegality Version")}: {GetVersionInfo("PKHeX.Core.AutoMod")}\n" 
         );
 
         builder.AddField("Stats",
