@@ -207,6 +207,11 @@ namespace SysBot.Pokemon.Helpers
             pk.StatNature = pk.Nature;
             pk.SetEVs([0, 0, 0, 0, 0, 0]);
 
+            if (pk.Ball is 1)
+            {
+                pk.Ball = 4; // Change to Poké Ball if it was a Master Ball
+            }
+
             MarkingApplicator.SetMarkings(pk);
             RibbonApplicator.RemoveAllValidRibbons(pk);
 
@@ -244,6 +249,7 @@ namespace SysBot.Pokemon.Helpers
                 pk9.BattleVersion = 0;
                 pk9.TeraTypeOverride = (PKHeX.Core.MoveType)19;
             }
+           
 
             var la = new LegalityAnalysis(pk);
             var enc = la.EncounterMatch;
