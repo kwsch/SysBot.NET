@@ -123,7 +123,7 @@ public static class AutoLegalityWrapper
             OT = fallback.OT,
             Generation = generation,
         };
-        var exist = TrainerSettings.GetSavedTrainerData(version, generation, fallback);
+        var exist = TrainerSettings.GetSavedTrainerData(generation, GameVersion.Any, fallback, (LanguageID)fallback.Language);
         if (exist is SimpleTrainerInfo) // not anything from files; this assumes ALM returns SimpleTrainerInfo for non-user-provided fake templates.
             TrainerSettings.Register(fallback);
     }
@@ -168,15 +168,15 @@ public static class AutoLegalityWrapper
     public static ITrainerInfo GetTrainerInfo<T>() where T : PKM, new()
     {
         if (typeof(T) == typeof(PK8))
-            return TrainerSettings.GetSavedTrainerData(GameVersion.SWSH, 8);
+            return TrainerSettings.GetSavedTrainerData(8, GameVersion.SWSH);
         if (typeof(T) == typeof(PB8))
-            return TrainerSettings.GetSavedTrainerData(GameVersion.BDSP, 8);
+            return TrainerSettings.GetSavedTrainerData(8, GameVersion.BDSP);
         if (typeof(T) == typeof(PA8))
-            return TrainerSettings.GetSavedTrainerData(GameVersion.PLA, 8);
+            return TrainerSettings.GetSavedTrainerData(8, GameVersion.PLA);
         if (typeof(T) == typeof(PK9))
-            return TrainerSettings.GetSavedTrainerData(GameVersion.SV, 9);
+            return TrainerSettings.GetSavedTrainerData(9, GameVersion.SV);
         if (typeof(T) == typeof(PB7))
-            return TrainerSettings.GetSavedTrainerData(GameVersion.GE, 7);
+            return TrainerSettings.GetSavedTrainerData(7, GameVersion.GE);
 
         throw new ArgumentException("Type does not have a recognized trainer fetch.", typeof(T).Name);
     }
