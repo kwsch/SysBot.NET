@@ -31,7 +31,6 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
     }
 
 #pragma warning disable RCS1158 // Static member in generic type should use a type parameter.
-
     public static void RestoreTradeStarting(DiscordSocketClient discord)
     {
         _discordClient = discord; // Store the DiscordSocketClient instance
@@ -72,59 +71,117 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
         await ReplyAsync("Added Start Notification output to this channel!").ConfigureAwait(false);
     }
 
+    private static readonly Dictionary<string, string> BallFileMap = new(StringComparer.OrdinalIgnoreCase)
+{
+    { "poke ball", "poke_ball" },
+    { "great ball", "great_ball" },
+    { "ultra ball", "ultra_ball" },
+    { "master ball", "master_ball" },
+    { "dive ball", "dive_ball" },
+    { "nest ball", "nest_ball" },
+    { "repeat ball", "repeat_ball" },
+    { "timer ball", "timer_ball" },
+    { "luxury ball", "luxury_ball" },
+    { "premier ball", "premier_ball" },
+    { "heal ball", "heal_ball" },
+    { "quick ball", "quick_ball" },
+    { "dusk ball", "dusk_ball" },
+    { "cherish ball", "cherish_ball" },
+    { "friend ball", "friend_ball" },
+    { "level ball", "level_ball" },
+    { "lure ball", "lure_ball" },
+    { "moon ball", "moon_ball" },
+    { "love ball", "love_ball" },
+    { "fast ball", "fast_ball" },
+    { "heavy ball", "heavy_ball" },
+    { "dream ball", "dream_ball" },
+    { "beast ball", "beast_ball" },
+    { "safari ball", "safari_ball" },
+    { "sport ball", "sport_ball" },
+    { "strange ball", "strange_ball" },
+};
+
     private static void AddLogChannel(ISocketMessageChannel c, ulong cid)
     {
         async void Logger(PokeRoutineExecutorBase bot, PokeTradeDetail<T> detail)
         {
-            if (detail.Type == PokeTradeType.Random) return;
+            if (detail.Type == PokeTradeType.Random)
+                return;
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
             var user = _discordClient.GetUser(detail.Trainer.ID);
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-            if (user == null) { Console.WriteLine($"User not found for ID {detail.Trainer.ID}."); return; }
-
-            string speciesName = detail.TradeData != null ? GameInfo.Strings.Species[detail.TradeData.Species] : "";
-            string ballImgUrl = "https://raw.githubusercontent.com/Havokx89/sprites/36e891cc02fe283cd70d9fc8fef2f3c490096d6c/imgs/difficulty.png";
-
-            if (detail.TradeData != null && detail.Type != PokeTradeType.Clone && detail.Type != PokeTradeType.Dump && detail.Type != PokeTradeType.Seed && detail.Type != PokeTradeType.FixOT)
+            if (user == null)
             {
-                var ballName = GameInfo.GetStrings("en").balllist[detail.TradeData.Ball]
-                    .Replace(" ", "").Replace("(LA)", "").ToLower();
-                ballName = ballName == "pokéball" ? "pokeball" : (ballName.Contains("(la)") ? "la" + ballName : ballName);
-                ballImgUrl = $"https://raw.githubusercontent.com/Havokx89/sprites/main/AltBallImg/28x28/{ballName}.png";
+                Console.WriteLine($"User not found for ID {detail.Trainer.ID}.");
+                return;
             }
 
-            string tradeTitle = detail.IsMysteryMon ? "✨ Mystery Pokémon" : detail.IsMysteryEgg ? "✨ Mystery Egg" : detail.Type switch
+            string speciesName = detail.TradeData != null
+                ? GameInfo.Strings.Species[detail.TradeData.Species]
+                : "";
+
+            // Default fallback icon
+            string ballImgUrl = "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/specialrequest.gif";
+
+            if (detail.TradeData != null &&
+                detail.Type is not (PokeTradeType.Clone or PokeTradeType.Dump or PokeTradeType.Seed or PokeTradeType.FixOT))
+            {
+                try
+                {
+                    string rawBallName = GameInfo.GetStrings(1).balllist[detail.TradeData.Ball].Trim();
+
+                    if (BallFileMap.TryGetValue(rawBallName, out string fileName))
+                    {
+                        ballImgUrl = $"https://raw.githack.com/Secludedly/ZE-FusionBot-Sprite-Images/main/AltBallImg/28x28/{fileName}.png";
+                        Console.WriteLine($"Resolved ball icon: {ballImgUrl}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Unknown ball name: '{rawBallName}' — using fallback icon.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error resolving ball image: {ex.Message}");
+                }
+            }
+
+            string tradeTitle = detail.IsMysteryEgg ? "✨ Mystery Egg" : detail.Type switch
             {
                 PokeTradeType.Clone => "Cloned Pokémon",
                 PokeTradeType.Dump => "Pokémon Dump",
-                PokeTradeType.FixOT => "Cloned Pokémon (Fixing OT Info)",
-                PokeTradeType.Seed => "Cloned Pokémon (Special Request)",
+                PokeTradeType.FixOT => "Fixing OT",
+                PokeTradeType.Seed => "Special Request",
                 _ => speciesName
             };
 
-            string embedImageUrl = detail.IsMysteryMon ? "https://i.imgur.com/FdESYAv.png" : detail.IsMysteryEgg ? "https://raw.githubusercontent.com/Havokx89/sprites/main/mysteryegg3.png" : detail.Type switch
-            {
-                PokeTradeType.Clone => "https://raw.githubusercontent.com/Havokx89/sprites/main/clonepod.png",
-                PokeTradeType.Dump => "https://raw.githubusercontent.com/Havokx89/sprites/main/AltBallImg/128x128/dumpball.png",
-                PokeTradeType.FixOT => "https://raw.githubusercontent.com/Havokx89/sprites/main/AltBallImg/128x128/rocketball.png",
-                PokeTradeType.Seed => "https://raw.githubusercontent.com/Havokx89/sprites/main/specialrequest.png",
-                _ => detail.TradeData != null ? TradeExtensions<T>.PokeImg(detail.TradeData, false, true) : ""
-            };
+            string embedImageUrl = detail.IsMysteryEgg
+                ? "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/mysteryegg3.png"
+                : detail.Type switch
+                {
+                    PokeTradeType.Clone => "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/Cloning.png",
+                    PokeTradeType.Dump => "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/Dumping.png",
+                    PokeTradeType.FixOT => "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/FixOTing.png",
+                    PokeTradeType.Seed => "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/Seeding.png",
+                    _ => detail.TradeData != null
+                        ? AbstractTrade<T>.PokeImg(detail.TradeData, false, true)
+                        : ""
+                };
 
             var (r, g, b) = await GetDominantColorAsync(embedImageUrl);
 
-            string footerText = detail.Type == PokeTradeType.Clone || detail.Type == PokeTradeType.Dump || detail.Type == PokeTradeType.Seed || detail.Type == PokeTradeType.FixOT
-                ? "Initializing trade now."
-                : $"Initializing trade now. Enjoy your {(detail.IsMysteryMon ? "✨ Mystery Pokémon" : detail.IsMysteryEgg ? "✨ Mystery Egg" : speciesName)}!";
+            string footerText = detail.Type switch
+            {
+                PokeTradeType.Clone or PokeTradeType.Dump or PokeTradeType.Seed or PokeTradeType.FixOT
+                    => "Now Initializing...",
+                _ => $"Now Initializing...\nYour {(detail.IsMysteryEgg ? "✨ Mystery Egg" : speciesName)} is now on its way!"
+            };
 
             var embed = new EmbedBuilder()
                 .WithColor(new DiscordColor(r, g, b))
                 .WithThumbnailUrl(embedImageUrl)
                 .WithAuthor($"Up Next: {user.Username}", user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl())
-                .WithDescription($"**Receiving**: {tradeTitle}\n**Trade ID**: {detail.ID}")
+                .WithDescription($"**Receiving**: {tradeTitle}\n**Bot Trade ID**: {detail.ID}")
                 .WithFooter($"{footerText}\u200B", ballImgUrl)
-                .WithTimestamp(DateTime.Now)
                 .Build();
 
             await c.SendMessageAsync(embed: embed);
@@ -133,6 +190,8 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
         SysCord<T>.Runner.Hub.Queues.Forwarders.Add(Logger);
         Channels.Add(cid, new TradeStartAction(cid, Logger, c.Name));
     }
+
+
 
     [Command("startInfo")]
     [Summary("Dumps the Start Notification settings.")]
@@ -185,15 +244,11 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
             Bitmap image = await LoadImageAsync(imagePath);
 
             var colorCount = new Dictionary<Color, int>();
-#pragma warning disable CA1416 // Validate platform compatibility
             for (int y = 0; y < image.Height; y++)
             {
-#pragma warning disable CA1416 // Validate platform compatibility
                 for (int x = 0; x < image.Width; x++)
                 {
-#pragma warning disable CA1416 // Validate platform compatibility
                     var pixelColor = image.GetPixel(x, y);
-#pragma warning restore CA1416 // Validate platform compatibility
 
                     if (pixelColor.A < 128 || pixelColor.GetBrightness() > 0.9) continue;
 
@@ -216,13 +271,9 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
                         colorCount[quantizedColor] = combinedFactor;
                     }
                 }
-#pragma warning restore CA1416 // Validate platform compatibility
             }
-#pragma warning restore CA1416 // Validate platform compatibility
 
-#pragma warning disable CA1416 // Validate platform compatibility
             image.Dispose();
-#pragma warning restore CA1416 // Validate platform compatibility
 
             if (colorCount.Count == 0)
                 return (255, 255, 255);
@@ -244,16 +295,12 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
         {
             using var httpClient = new HttpClient();
             using var response = await httpClient.GetAsync(imagePath);
-            await using var stream = await response.Content.ReadAsStreamAsync();
-#pragma warning disable CA1416 // Validate platform compatibility
+            using var stream = await response.Content.ReadAsStreamAsync();
             return new Bitmap(stream);
-#pragma warning restore CA1416 // Validate platform compatibility
         }
         else
         {
-#pragma warning disable CA1416 // Validate platform compatibility
             return new Bitmap(imagePath);
-#pragma warning restore CA1416 // Validate platform compatibility
         }
     }
 }

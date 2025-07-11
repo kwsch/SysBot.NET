@@ -7,38 +7,6 @@ namespace SysBot.Pokemon.Z3;
 
 public static class Z3Search
 {
-    public static IEnumerable<ulong> FindPotentialSeeds(uint ec, uint pid)
-    {
-        foreach (var seed in new XoroMachineSkip(ec, pid))
-            yield return seed;
-    }
-
-    public static IList<SeedSearchResult> GetAllSeeds(uint ec, uint pid, Span<int> ivs, SeedCheckResults mode)
-    {
-        var result = new List<SeedSearchResult>();
-        foreach (var seed in GetSeeds(ec, pid))
-        {
-            // Verify the IVs; at most 5 can match
-            bool added = false;
-            for (int i = 1; i <= 5; i++) // fixed IV count
-            {
-                if (IsMatch(seed, ivs, i))
-                {
-                    result.Add(new SeedSearchResult(Z3SearchResult.Success, seed, i, mode));
-                    added = true;
-                }
-            }
-            if (!added)
-                result.Add(new SeedSearchResult(Z3SearchResult.SeedMismatch, seed, 0, mode));
-        }
-
-        if (result.Count == 0)
-            result.Add(SeedSearchResult.None);
-        else if (result.Any(z => z.Type == Z3SearchResult.Success))
-            result.RemoveAll(z => z.Type != Z3SearchResult.Success);
-        return result;
-    }
-
     public static SeedSearchResult GetFirstSeed(uint ec, uint pid, Span<int> ivs, SeedCheckResults mode)
     {
         var seeds = GetSeeds(ec, pid);
@@ -61,11 +29,45 @@ public static class Z3Search
         return SeedSearchResult.None;
     }
 
+    public static IList<SeedSearchResult> GetAllSeeds(uint ec, uint pid, Span<int> ivs, SeedCheckResults mode)
+    {
+        var result = new List<SeedSearchResult>();
+        var seeds = GetSeeds(ec, pid);
+        foreach (var seed in seeds)
+        {
+            // Verify the IVs; at most 5 can match
+            bool added = false;
+            for (int i = 1; i <= 5; i++) // fixed IV count
+            {
+                if (IsMatch(seed, ivs, i))
+                {
+                    result.Add(new SeedSearchResult(Z3SearchResult.Success, seed, i, mode));
+                    added = true;
+                }
+            }
+            if (!added)
+                result.Add(new SeedSearchResult(Z3SearchResult.SeedMismatch, seed, 0, mode));
+        }
+
+        if (result.Count == 0)
+            result.Add(SeedSearchResult.None);
+        else if (result.Any(z => z.Type == Z3SearchResult.Success))
+            result.RemoveAll(z => z.Type != Z3SearchResult.Success);
+        return result;
+    }
+
     public static IEnumerable<ulong> GetSeeds(uint ec, uint pid)
     {
         foreach (var seed in FindPotentialSeeds(ec, pid))
             yield return seed;
         foreach (var seed in FindPotentialSeeds(ec, pid ^ 0x10000000))
+            yield return seed;
+    }
+
+    public static IEnumerable<ulong> FindPotentialSeeds(uint ec, uint pid)
+    {
+        var seeds = new XoroMachineSkip(ec, pid);
+        foreach (var seed in seeds)
             yield return seed;
     }
 

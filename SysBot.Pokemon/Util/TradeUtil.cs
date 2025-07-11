@@ -1,4 +1,4 @@
-using SysBot.Base;
+﻿using SysBot.Base;
 using System;
 using System.Collections.Generic;
 using static SysBot.Base.SwitchButton;

@@ -35,36 +35,25 @@ namespace SysBot.Pokemon.Discord
     public class EchoModule : ModuleBase<SocketCommandContext>
     {
         private static DiscordSettings? Settings { get; set; }
-
         private class EchoChannel(ulong channelId, string channelName, Action<string> action, Action<byte[], string, EmbedBuilder> raidAction)
         {
             public readonly ulong ChannelID = channelId;
-
             public readonly string ChannelName = channelName;
-
             public readonly Action<string> Action = action;
-
             public readonly Action<byte[], string, EmbedBuilder> RaidAction = raidAction;
-
             public string EmbedResult = string.Empty;
         }
 
         private class EncounterEchoChannel(ulong channelId, string channelName, Action<string, Embed> embedaction)
         {
             public readonly ulong ChannelID = channelId;
-
             public readonly string ChannelName = channelName;
-
             public readonly Action<string, Embed> EmbedAction = embedaction;
-
             public string EmbedResult = string.Empty;
         }
 
         private static readonly Dictionary<ulong, EchoChannel> Channels = [];
-
         private static readonly Dictionary<ulong, EncounterEchoChannel> EncounterChannels = [];
-
-        private static readonly Dictionary<ulong, EchoChannel> AbuseChannels = [];
 
         public static void RestoreChannels(DiscordSocketClient discord, DiscordSettings cfg)
         {
@@ -74,82 +63,7 @@ namespace SysBot.Pokemon.Discord
                 if (discord.GetChannel(ch.ID) is ISocketMessageChannel c)
                     AddEchoChannel(c, ch.ID);
             }
-            foreach (var ch in cfg.AbuseLogChannels)
-            {
-                if (discord.GetChannel(ch.ID) is ISocketMessageChannel c)
-                    AddAbuseEchoChannel(c, ch.ID);
-            }
-        }
-
-        [Command("AddAbuseEchoChannel")]
-        [Alias("aaec")]
-        [Summary("Makes the bot post abuse logs to the channel.")]
-        [RequireSudo]
-        public async Task AddAbuseEchoAsync()
-        {
-            var c = Context.Channel;
-            var cid = c.Id;
-            if (AbuseChannels.TryGetValue(cid, out _))
-            {
-                await ReplyAsync("Already logging abuse in this channel.").ConfigureAwait(false);
-                return;
-            }
-
-            AddAbuseEchoChannel(c, cid);
-            SysCordSettings.Settings.AbuseLogChannels.AddIfNew([GetReference(Context.Channel)]);
-            await ReplyAsync("Added Abuse Log output to this channel!").ConfigureAwait(false);
-        }
-
-        private static void AddAbuseEchoChannel(ISocketMessageChannel c, ulong cid)
-        {
-            async void l(string msg) => await SendMessageWithRetry(c, msg).ConfigureAwait(false);
-            EchoUtil.AbuseForwarders.Add(l);
-            var entry = new EchoChannel(cid, c.Name, l, null);
-            AbuseChannels.Add(cid, entry);
-        }
-
-        public static bool IsAbuseEchoChannel(ISocketMessageChannel c)
-        {
-            var cid = c.Id;
-            return AbuseChannels.TryGetValue(cid, out _);
-        }
-
-        [Command("RemoveAbuseEchoChannel")]
-        [Alias("raec")]
-        [Summary("Removes the abuse logging from the channel.")]
-        [RequireSudo]
-        public async Task RemoveAbuseEchoAsync()
-        {
-            var id = Context.Channel.Id;
-            if (!AbuseChannels.TryGetValue(id, out var echo))
-            {
-                await ReplyAsync("Not logging abuse in this channel.").ConfigureAwait(false);
-                return;
-            }
-            AbuseChannels.Remove(id);
-            SysCordSettings.Settings.AbuseLogChannels.RemoveAll(z => z.ID == id);
-            await ReplyAsync($"Abuse logging removed from channel: {Context.Channel.Name}").ConfigureAwait(false);
-        }
-
-        [Command("ListAbuseEchoChannels")]
-        [Alias("laec")]
-        [Summary("Lists all channels where abuse logging is enabled.")]
-        [RequireSudo]
-        public async Task ListAbuseEchoChannelsAsync()
-        {
-            if (AbuseChannels.Count == 0)
-            {
-                await ReplyAsync("No channels are currently set up for abuse logging.").ConfigureAwait(false);
-                return;
-            }
-
-            var response = "Abuse logging is enabled in the following channels:\n";
-            foreach (var channel in AbuseChannels.Values)
-            {
-                response += $"- {channel.ChannelName} (ID: {channel.ChannelID})\n";
-            }
-
-            await ReplyAsync(response).ConfigureAwait(false);
+            // EchoUtil.Echo("Added echo notification to Discord channel(s) on Bot startup.");
         }
 
         [Command("Announce", RunMode = RunMode.Async)]
@@ -160,9 +74,7 @@ namespace SysBot.Pokemon.Discord
         {
             var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             var formattedTimestamp = $"<t:{unixTimestamp}:F>";
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
             var embedColor = Settings.AnnouncementSettings.RandomAnnouncementColor ? GetRandomColor() : Settings.AnnouncementSettings.AnnouncementEmbedColor.ToDiscordColor();
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
             var thumbnailUrl = Settings.AnnouncementSettings.RandomAnnouncementThumbnail ? GetRandomThumbnail() : GetSelectedThumbnail();
 
             var embedDescription = $"## {announcement}\n\n**Sent: {formattedTimestamp}**";
@@ -212,13 +124,13 @@ namespace SysBot.Pokemon.Discord
         {
             var thumbnailOptions = new List<string>
     {
-        "https://raw.githubusercontent.com/Havokx89/sprites/main/imgs/gengarmegaphone.png",
-        "https://raw.githubusercontent.com/Havokx89/sprites/main/imgs/pikachumegaphone.png",
-        "https://raw.githubusercontent.com/Havokx89/sprites/main/imgs/umbreonmegaphone.png",
-        "https://raw.githubusercontent.com/Havokx89/sprites/main/imgs/sylveonmegaphone.png",
-        "https://raw.githubusercontent.com/Havokx89/sprites/main/imgs/charmandermegaphone.png",
-        "https://raw.githubusercontent.com/Havokx89/sprites/main/imgs/jigglypuffmegaphone.png",
-        "https://raw.githubusercontent.com/Havokx89/sprites/main/imgs/flareonmegaphone.png",
+        "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/imgs/gengarmegaphone.png",
+        "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/imgs/pikachumegaphone.png",
+        "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/imgs/umbreonmegaphone.png",
+        "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/imgs/sylveonmegaphone.png",
+        "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/imgs/charmandermegaphone.png",
+        "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/imgs/jigglypuffmegaphone.png",
+        "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/imgs/flareonmegaphone.png",
     };
             var random = new Random();
             return thumbnailOptions[random.Next(thumbnailOptions.Count)];
@@ -226,7 +138,6 @@ namespace SysBot.Pokemon.Discord
 
         private static string GetSelectedThumbnail()
         {
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
             if (!string.IsNullOrEmpty(Settings.AnnouncementSettings.CustomAnnouncementThumbnailUrl))
             {
                 return Settings.AnnouncementSettings.CustomAnnouncementThumbnailUrl;
@@ -235,21 +146,20 @@ namespace SysBot.Pokemon.Discord
             {
                 return GetUrlFromThumbnailOption(Settings.AnnouncementSettings.AnnouncementThumbnailOption);
             }
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
 
         private static string GetUrlFromThumbnailOption(ThumbnailOption option)
         {
             return option switch
             {
-                ThumbnailOption.Gengar => "https://raw.githubusercontent.com/Havokx89/sprites/main/imgs/gengarmegaphone.png",
-                ThumbnailOption.Pikachu => "https://raw.githubusercontent.com/Havokx89/sprites/main/imgs/pikachumegaphone.png",
-                ThumbnailOption.Umbreon => "https://raw.githubusercontent.com/Havokx89/sprites/main/imgs/umbreonmegaphone.png",
-                ThumbnailOption.Sylveon => "https://raw.githubusercontent.com/Havokx89/sprites/main/imgs/sylveonmegaphone.png",
-                ThumbnailOption.Charmander => "https://raw.githubusercontent.com/Havokx89/sprites/main/imgs/charmandermegaphone.png",
-                ThumbnailOption.Jigglypuff => "https://raw.githubusercontent.com/Havokx89/sprites/main/imgs/jigglypuffmegaphone.png",
-                ThumbnailOption.Flareon => "https://raw.githubusercontent.com/Havokx89/sprites/main/imgs/flareonmegaphone.png",
-                _ => "https://raw.githubusercontent.com/Havokx89/sprites/main/imgs/gengarmegaphone.png",
+                ThumbnailOption.Gengar => "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/imgs/gengarmegaphone.png",
+                ThumbnailOption.Pikachu => "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/imgs/pikachumegaphone.png",
+                ThumbnailOption.Umbreon => "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/imgs/umbreonmegaphone.png",
+                ThumbnailOption.Sylveon => "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/imgs/sylveonmegaphone.png",
+                ThumbnailOption.Charmander => "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/imgs/charmandermegaphone.png",
+                ThumbnailOption.Jigglypuff => "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/imgs/jigglypuffmegaphone.png",
+                ThumbnailOption.Flareon => "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/imgs/flareonmegaphone.png",
+                _ => "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/imgs/flareonmegaphone.png",
             };
         }
 
@@ -308,7 +218,7 @@ namespace SysBot.Pokemon.Discord
                     {
                         await c.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                     }
-                    return true;
+                    return true; 
                 }
                 catch (Exception ex)
                 {

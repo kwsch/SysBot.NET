@@ -2,10 +2,8 @@ namespace SysBot.Pokemon.Helpers
 {
     public static class TradeBot
     {
-        public const string Attribution = "https://chinchou.net";
-
-        public const string ConfigPath = "config.json";
-
         public const string Version = "v1.0.6";
+        public const string Attribution = "https://Chinchou.net";
+        public const string ConfigPath = "config.json";
     }
 }

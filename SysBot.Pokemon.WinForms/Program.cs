@@ -1,13 +1,14 @@
 using System;
+using System.Drawing;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace SysBot.Pokemon.WinForms;
 
-internal static class Program
+static class Program
 {
     public static readonly string WorkingDirectory = Environment.CurrentDirectory = Path.GetDirectoryName(Environment.ProcessPath)!;
-
     public static string ConfigPath { get; private set; } = Path.Combine(WorkingDirectory, "config.json");
 
     /// <summary>
@@ -29,3 +30,4 @@ internal static class Program
         Application.Run(new Main());
     }
 }
+

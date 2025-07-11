@@ -1,4 +1,4 @@
-using PKHeX.Core;
+﻿using PKHeX.Core;
 using SysBot.Base;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,6 +33,16 @@ public class QueueMonitor<T>(PokeTradeHub<T> Hub)
                 : "Changed queue settings: **Users CANNOT join the queue until it is turned back on.**";
             EchoUtil.Echo(state);
         }
+    }
+
+    private static bool UpdateCanQueue(QueueOpening mode, QueueSettings settings, TradeQueueInfo<T> queues, float secWaited)
+    {
+        return mode switch
+        {
+            QueueOpening.Threshold => CheckThreshold(settings, queues),
+            QueueOpening.Interval => CheckInterval(settings, queues, secWaited),
+            _ => false,
+        };
     }
 
     private static bool CheckInterval(QueueSettings settings, TradeQueueInfo<T> queues, float secWaited)
@@ -73,15 +83,5 @@ public class QueueMonitor<T>(PokeTradeHub<T> Hub)
         }
 
         return true;
-    }
-
-    private static bool UpdateCanQueue(QueueOpening mode, QueueSettings settings, TradeQueueInfo<T> queues, float secWaited)
-    {
-        return mode switch
-        {
-            QueueOpening.Threshold => CheckThreshold(settings, queues),
-            QueueOpening.Interval => CheckInterval(settings, queues, secWaited),
-            _ => false,
-        };
     }
 }

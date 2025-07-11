@@ -15,24 +15,15 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
     where T : PKM, new()
 {
     private T Data { get; }
-
     private PokeTradeTrainerInfo Info { get; }
-
     private int Code { get; }
-
     private List<Pictocodes> LGCode { get; }
-
     private SocketUser Trader { get; }
-
     private int BatchTradeNumber { get; }
-
     private int TotalBatchTrades { get; }
-
     private bool IsMysteryEgg { get; }
 
-    private bool IsMysteryMon { get; }
-
-    public DiscordTradeNotifier(T data, PokeTradeTrainerInfo info, int code, SocketUser trader, int batchTradeNumber, int totalBatchTrades, bool isMysteryMon, bool isMysteryEgg, List<Pictocodes> lgcode)
+    public DiscordTradeNotifier(T data, PokeTradeTrainerInfo info, int code, SocketUser trader, int batchTradeNumber, int totalBatchTrades, bool isMysteryEgg, List<Pictocodes> lgcode)
     {
         Data = data;
         Info = info;
@@ -41,12 +32,10 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
         BatchTradeNumber = batchTradeNumber;
         TotalBatchTrades = totalBatchTrades;
         IsMysteryEgg = isMysteryEgg;
-        IsMysteryMon = isMysteryMon;
         LGCode = lgcode;
     }
 
     public Action<PokeRoutineExecutor<T>>? OnFinish { private get; set; }
-
     public readonly PokeTradeHub<T> Hub = SysCord<T>.Runner.Hub;
 
     public void TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
@@ -54,27 +43,27 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
         int language = 2;
         var speciesName = SpeciesName.GetSpeciesName(Data.Species, language);
         var batchInfo = TotalBatchTrades > 1 ? $" (Trade {BatchTradeNumber} of {TotalBatchTrades})" : "";
-        var receive = IsMysteryMon ? " (Mystery Pokémon)" : (Data.Species == 0 ? string.Empty : $" ({Data.Nickname})");
+        var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";
 
         if (Data is PK9)
         {
-            var message = $"Initializing trade{receive}{batchInfo}. Please be ready.";
+            var message = $"**Pokémon:** {receive}{batchInfo}.";
 
             if (TotalBatchTrades > 1 && BatchTradeNumber == 1)
             {
                 message += "\n**Please stay in the trade until all batch trades are completed.**";
             }
 
-            EmbedHelper.SendTradeInitializingEmbedAsync(Trader, speciesName, Code, IsMysteryMon, IsMysteryEgg, message).ConfigureAwait(false);
+            EmbedHelper.SendTradeInitializingEmbedAsync(Trader, speciesName, Code, IsMysteryEgg, message).ConfigureAwait(false);
         }
         else if (Data is PB7)
         {
             var (thefile, lgcodeembed) = CreateLGLinkCodeSpriteEmbed(LGCode);
-            Trader.SendFileAsync(thefile, $"Initializing trade{receive}. Please be ready. Your code is", embed: lgcodeembed).ConfigureAwait(false);
+            Trader.SendFileAsync(thefile, $"**Pokémon:** {receive}.\n**Trade Code:**", embed: lgcodeembed).ConfigureAwait(false);
         }
         else
         {
-            EmbedHelper.SendTradeInitializingEmbedAsync(Trader, speciesName, Code, IsMysteryMon, IsMysteryEgg).ConfigureAwait(false);
+            EmbedHelper.SendTradeInitializingEmbedAsync(Trader, speciesName, Code, IsMysteryEgg).ConfigureAwait(false);
         }
     }
 
@@ -86,7 +75,7 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
 
         if (Data is PB7 && LGCode != null && LGCode.Count != 0)
         {
-            var message = $"I'm waiting for you{trainer}{batchInfo}! My IGN is **{routine.InGameName}**.";
+            var message = $"**Waiting For:** {trainer}{batchInfo}\n**My IGN:** {routine.InGameName}.";
             Trader.SendMessageAsync(message).ConfigureAwait(false);
         }
         else
@@ -95,7 +84,7 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
             if (TotalBatchTrades > 1 && BatchTradeNumber > 1)
             {
                 var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";
-                additionalMessage = $"Now trading{receive} (Trade {BatchTradeNumber} of {TotalBatchTrades}). **Select the Pokémon you wish to trade!**";
+                additionalMessage = $"**Pokémon:** {receive}\n(Trade {BatchTradeNumber} of {TotalBatchTrades}).\n*Select a Pokémon to trade!*";
             }
 
             EmbedHelper.SendTradeSearchingEmbedAsync(Trader, trainer, routine.InGameName, additionalMessage).ConfigureAwait(false);
@@ -112,7 +101,6 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
     {
         OnFinish?.Invoke(routine);
         var tradedToUser = Data.Species;
-
         // Create different messages based on whether this is a single trade or part of a batch
         string message;
         if (TotalBatchTrades > 1)
@@ -127,7 +115,6 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
             // Standard single trade message
             message = tradedToUser != 0 ? $"Trade finished. Enjoy!" : "Trade finished!";
         }
-
         Trader.SendMessageAsync(message).ConfigureAwait(false);
 
         // Always send back the received Pokémon if ReturnPKMs is enabled
@@ -207,13 +194,11 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
             png = destImage;
             spritearray.Add(png);
             codecount++;
+
         }
         int outputImageWidth = spritearray[0].Width + 20;
-
         int outputImageHeight = spritearray[0].Height - 65;
-
         Bitmap outputImage = new Bitmap(outputImageWidth, outputImageHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
         using (Graphics graphics = Graphics.FromImage(outputImage))
         {
             graphics.DrawImage(spritearray[0], new Rectangle(0, 0, spritearray[0].Width, spritearray[0].Height),
@@ -222,12 +207,13 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
                 new Rectangle(new Point(), spritearray[1].Size), GraphicsUnit.Pixel);
             graphics.DrawImage(spritearray[2], new Rectangle(100, 0, spritearray[2].Width, spritearray[2].Height),
                 new Rectangle(new Point(), spritearray[2].Size), GraphicsUnit.Pixel);
+
+            System.Drawing.Image finalembedpic = outputImage;
+            var filename = $"{System.IO.Directory.GetCurrentDirectory()}//finalcode.png";
+            finalembedpic.Save(filename);
+            filename = System.IO.Path.GetFileName($"{System.IO.Directory.GetCurrentDirectory()}//finalcode.png");
+            Embed returnembed = new EmbedBuilder().WithTitle($"{lgcode[0]}, {lgcode[1]}, {lgcode[2]}").WithImageUrl($"attachment://{filename}").Build();
+            return (filename, returnembed);
         }
-        System.Drawing.Image finalembedpic = outputImage;
-        var filename = $"{System.IO.Directory.GetCurrentDirectory()}//finalcode.png";
-        finalembedpic.Save(filename);
-        filename = System.IO.Path.GetFileName($"{System.IO.Directory.GetCurrentDirectory()}//finalcode.png");
-        Embed returnembed = new EmbedBuilder().WithTitle($"{lgcode[0]}, {lgcode[1]}, {lgcode[2]}").WithImageUrl($"attachment://{filename}").Build();
-        return (filename, returnembed);
     }
 }

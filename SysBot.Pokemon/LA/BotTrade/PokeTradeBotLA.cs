@@ -285,11 +285,11 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
                 {
                     detail.IsRetry = true;
                     Hub.Queues.Enqueue(type, detail, Math.Min(priority, PokeTradePriorities.Tier2));
-                    detail.SendNotification(this, $"Oops! Something happened during batch trade {detail.BatchTradeNumber}/{detail.TotalBatchTrades}. I'll requeue you for another attempt.");
+                    detail.SendNotification(this, $"**ERROR**: Unknown issue during batch trade {detail.BatchTradeNumber}/{detail.TotalBatchTrades}.\n**RESULT**: Requeuing...");
                 }
                 else
                 {
-                    detail.SendNotification(this, $"Trade {detail.BatchTradeNumber}/{detail.TotalBatchTrades} failed. Canceling remaining batch trades: {result}");
+                    detail.SendNotification(this, $"**ERROR**: Batch Trade {detail.BatchTradeNumber}/{detail.TotalBatchTrades} failed.\n*Canceling remaining batch trades...*\n**RESULT:** {result}");
                     CleanupAllBatchTradesFromQueue(detail);
                     detail.TradeCanceled(this, result);
                     await ExitTrade(false, token).ConfigureAwait(false);
@@ -313,11 +313,11 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         {
             detail.IsRetry = true;
             Hub.Queues.Enqueue(type, detail, Math.Min(priority, PokeTradePriorities.Tier2));
-            detail.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
+            detail.SendNotification(this, "## **ERROR**\n**Result**: Requeuing...");
         }
         else
         {
-            detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
+            detail.SendNotification(this, $"## **ERROR**\n**Reason**: {result}.");
             detail.TradeCanceled(this, result);
         }
     }
@@ -419,7 +419,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
                 Hub.Queues.StartTrade(this, poke);
             }
 
-            // Loading code entry - only done on first trade
+            // code entry - only done on first trade
             if (isFirstTrade)
             {
                 if (poke.Type != PokeTradeType.Random)
@@ -480,9 +480,9 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 #pragma warning disable CS8604 // Possible null reference argument.
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
                 tradeCodeStorage.UpdateTradeDetails(poke.Trainer.ID,
-                    shouldUpdateOT ? tradePartner.TrainerName : existingTradeDetails.OT,
-                    shouldUpdateTID ? int.Parse(tradePartner.TID7) : existingTradeDetails.TID,
-                    shouldUpdateSID ? int.Parse(tradePartner.SID7) : existingTradeDetails.SID);
+     shouldUpdateOT ? tradePartner.TrainerName : existingTradeDetails.OT,
+     shouldUpdateTID ? int.Parse(tradePartner.TID7) : existingTradeDetails.TID,
+     shouldUpdateSID ? int.Parse(tradePartner.SID7) : existingTradeDetails.SID);
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
 #pragma warning restore CS8604 // Possible null reference argument.
             }
@@ -500,7 +500,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
             // Only send the "Found partner" notification on the first trade of a batch or for single trades
             Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7} (ID: {trainerNID})");
             if (completedTrades == 0 || startingDetail.TotalBatchTrades == 1)
-                poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. **TID**: {tradePartner.TID7} **SID**: {tradePartner.SID7}. Waiting for a Pokémon...");
+                poke.SendNotification(this, $"**Found User**: {tradePartner.TrainerName}\nTID: {tradePartner.TID7}\nSID: {tradePartner.SID7}\nWaiting for a Pokémon...");
 
             // Watch their status to indicate they have offered a Pokémon as well.
             var offering = await ReadUntilChanged(TradePartnerOfferedOffset, [0x3], 25_000, 1_000, true, true, token).ConfigureAwait(false);
@@ -596,7 +596,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
                 Log($"Batch trades complete. Found {allReceived.Count} Pokémon stored for trainer {originalTrainerID}");
 
                 // First send notification that trades are complete
-                poke.SendNotification(this, "All batch trades completed! Thank you for trading!");
+                poke.SendNotification(this, "## **FINISHED!**\nAll batch trades completed!\n\nThanks for trading!");
 
                 // Then finish each trade with the corresponding received Pokemon
                 foreach (var pokemon in allReceived)
@@ -621,12 +621,11 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
                 if (nextDetail == null)
                 {
                     poke.SendNotification(this, "Error in batch sequence. Ending trades.");
-                    SendCollectedPokemonAndCleanup();
                     await ExitTrade(false, token).ConfigureAwait(false);
                     return PokeTradeResult.Success;
                 }
 
-                poke.SendNotification(this, $"Trade {completedTrades} completed! Preparing your next Pokémon ({nextDetail.BatchTradeNumber}/{nextDetail.TotalBatchTrades}). Please stay in the trade screen!");
+                poke.SendNotification(this, $"Trade {completedTrades} completed!\nPreparing your next Pokémon ({nextDetail.BatchTradeNumber}/{nextDetail.TotalBatchTrades}).\n*Please wait on the trade screen!*");
                 poke = nextDetail;
                 isFirstTrade = false;
 
@@ -762,7 +761,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         tradePartner.NID = trainerNID;
         RecordUtil<PokeTradeBotLA>.Record($"Initiating\t{trainerNID:X16}\t{tradePartner.TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
         Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7} (ID: {trainerNID})");
-        poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. **TID**: {tradePartner.TID7} **SID**: {tradePartner.SID7}. Waiting for a Pokémon...");
+        poke.SendNotification(this, $"**Found User**: {tradePartner.TrainerName}\n**TID**: {tradePartner.TID7}\n**SID**: {tradePartner.SID7}.\nWaiting for a Pokémon...");
 
         var tradeCodeStorage = new TradeCodeStorage();
         var existingTradeDetails = tradeCodeStorage.GetTradeDetails(poke.Trainer.ID);
@@ -787,7 +786,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
             return partnerCheck;
         }
 
-        poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. TID: {tradePartner.TID7} SID: {tradePartner.SID7} Waiting for a Pokémon...");
+        poke.SendNotification(this, $"**Found User**: {tradePartner.TrainerName}\n**TID**: {tradePartner.TID7}\n**SID**: {tradePartner.SID7}\nWaiting for a Pokémon...");
 
         if (poke.Type == PokeTradeType.Dump)
         {
@@ -827,7 +826,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 
         if (Hub.Config.Legality.UseTradePartnerInfo && !poke.IgnoreAutoOT)
         {
-           toSend = await ApplyAutoOT(toSend, tradePartner, sav, token);
+            toSend = await ApplyAutoOT(toSend, tradePartner, sav, token);
         }
 
         Log("Confirming trade.");
@@ -1085,7 +1084,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         var la = new LegalityAnalysis(offered);
         if (!la.Valid)
         {
-            Log($"Clone request (from {poke.Trainer.TrainerName}) has detected an invalid Pokémon: {GameInfo.GetStrings("en").Species[offered.Species]}.");
+            Log($"Clone request (from {poke.Trainer.TrainerName}) has detected an invalid Pokémon: {GameInfo.GetStrings(1).Species[offered.Species]}.");
             if (DumpSetting.Dump)
                 DumpPokemon(DumpSetting.DumpFolder, "hacked", offered);
 
@@ -1101,7 +1100,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         if (Hub.Config.Legality.ResetHOMETracker)
             clone.Tracker = 0;
 
-        poke.SendNotification(this, $"**Cloned your {GameInfo.GetStrings("en").Species[clone.Species]}!**\nNow press B to cancel your offer and trade me a Pokémon you don't want.");
+        poke.SendNotification(this, $"**Cloned your {GameInfo.GetStrings(1).Species[clone.Species]}!**\nNow press B to cancel your offer and trade me a Pokémon you don't want.");
         Log($"Cloned a {(Species)clone.Species}. Waiting for user to change their Pokémon...");
 
         if (!await CheckCloneChangedOffer(token).ConfigureAwait(false))
@@ -1174,6 +1173,8 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         }
         else if (config.LedyQuitIfNoMatch)
         {
+            var nickname = offered.IsNicknamed ? $" (Nickname: \"{offered.Nickname}\")" : string.Empty;
+            poke.SendNotification(this, $"No match found for the offered {GameInfo.GetStrings(1).Species[offered.Species]}{nickname}.");
             return (toSend, PokeTradeResult.TrainerRequestBad);
         }
 
@@ -1229,7 +1230,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 
     private async Task<(PA8 toSend, PokeTradeResult check)> HandleFixOT(SAV8LA sav, PokeTradeDetail<PA8> poke, PA8 offered, PartnerDataHolder partner, CancellationToken token)
     {
-        var adOT = TradeExtensions<PA8>.HasAdName(offered, out _);
+        var adOT = AbstractTrade<PA8>.HasAdName(offered, out _);
         var laInit = new LegalityAnalysis(offered);
         if (!adOT && laInit.Valid)
         {
@@ -1242,7 +1243,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
             clone.Tracker = 0;
 
         string shiny = string.Empty;
-        if (!TradeExtensions<PA8>.ShinyLockCheck(offered.Species, TradeExtensions<PA8>.FormOutput(offered.Species, offered.Form, out _), $"{(Ball)offered.Ball}"))
+        if (!AbstractTrade<PA8>.ShinyLockCheck(offered.Species, AbstractTrade<PA8>.FormOutput(offered.Species, offered.Form, out _), $"{(Ball)offered.Ball}"))
             shiny = $"\nShiny: {(offered.ShinyXor == 0 ? "Square" : offered.IsShiny ? "Star" : "No")}";
         else shiny = "\nShiny: No";
 
@@ -1269,7 +1270,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
             var info = new SimpleTrainerInfo { Gender = clone.OriginalTrainerGender, Language = clone.Language, OT = name, TID16 = clone.TID16, SID16 = clone.SID16, Generation = 8 };
             var mg = EncounterEvent.GetAllEvents().Where(x => x.Species == clone.Species && x.Form == clone.Form && x.IsShiny == clone.IsShiny && x.OriginalTrainerName == clone.OriginalTrainerName).ToList();
             if (mg.Count > 0)
-                clone = TradeExtensions<PA8>.CherishHandler(mg.First(), info);
+                clone = AbstractTrade<PA8>.CherishHandler(mg.First(), info);
             else clone = (PA8)sav.GetLegal(AutoLegalityWrapper.GetTemplate(new ShowdownSet(string.Join("\n", set))), out _);
         }
         else
@@ -1277,7 +1278,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
             clone = (PA8)sav.GetLegal(AutoLegalityWrapper.GetTemplate(new ShowdownSet(string.Join("\n", set))), out _);
         }
 
-        clone = (PA8)TradeExtensions<PA8>.TrashBytes(clone, new LegalityAnalysis(clone));
+        clone = (PA8)AbstractTrade<PA8>.TrashBytes(clone, new LegalityAnalysis(clone));
         clone.ResetPartyStats();
 
         var la = new LegalityAnalysis(clone);
@@ -1313,7 +1314,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
     {
         if (toSend is IHomeTrack pk && pk.HasTracker)
         {
-            Log("Home tracker detected.  Can't apply AutoOT.");
+            Log("HOME tracker detected. Can't apply AutoOT.");
             return toSend;
         }
 

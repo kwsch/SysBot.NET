@@ -8,11 +8,8 @@ namespace SysBot.Pokemon;
 
 public class EncounterBotFossilSWSH : EncounterBotSWSH
 {
-    private static readonly PK8 Blank = new();
-
-    private readonly IDumper DumpSetting;
-
     private readonly FossilSettings Settings;
+    private readonly IDumper DumpSetting;
 
     public EncounterBotFossilSWSH(PokeBotState Config, PokeTradeHub<PK8> hub) : base(Config, hub)
     {
@@ -20,11 +17,7 @@ public class EncounterBotFossilSWSH : EncounterBotSWSH
         DumpSetting = Hub.Config.Folder;
     }
 
-    public override async Task RebootAndStop(CancellationToken t)
-    {
-        await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
-        await HardStop().ConfigureAwait(false);
-    }
+    private static readonly PK8 Blank = new();
 
     protected override async Task EncounterLoop(SAV8SWSH sav, CancellationToken token)
     {
@@ -78,7 +71,11 @@ public class EncounterBotFossilSWSH : EncounterBotSWSH
             await SetBoxPokemon(Blank, 0, 0, token).ConfigureAwait(false);
         }
     }
-
+    public override async Task RebootAndStop(CancellationToken t)
+    {
+        await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
+        await HardStop().ConfigureAwait(false);
+    }
     private async Task ReviveFossil(FossilCount count, CancellationToken token)
     {
         Log("Starting fossil revival routine...");

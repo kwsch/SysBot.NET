@@ -12,7 +12,7 @@ namespace SysBot.Pokemon.Helpers
         private readonly TimeSpan _tradeTimeout = TimeSpan.FromMinutes(5);
         private readonly ConcurrentDictionary<(ulong TrainerId, int UniqueTradeID), DateTime> _lastTradeTime = new();
         private readonly ConcurrentDictionary<ulong, List<T>> _receivedPokemon = new();
-        private readonly object _claimLock = new(); 
+        private readonly object _claimLock = new();
 
         public bool CanProcessBatchTrade(PokeTradeDetail<T> trade)
         {
@@ -33,7 +33,7 @@ namespace SysBot.Pokemon.Helpers
 
             var key = (trade.Trainer.ID, trade.UniqueTradeID);
 
-            lock (_claimLock) 
+            lock (_claimLock)
             {
                 // If we already have this batch, make sure it's the same bot
                 if (_activeBatches.TryGetValue(key, out var existingBot))
@@ -50,7 +50,7 @@ namespace SysBot.Pokemon.Helpers
                 }
 
                 return false;
-            } 
+            }
         }
 
         public void CompleteBatchTrade(PokeTradeDetail<T> trade)

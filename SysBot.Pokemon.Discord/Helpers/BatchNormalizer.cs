@@ -29,7 +29,6 @@ public static class BatchNormalizer
         { "Mark", "Mark" },
         { "Ribbon", "Ribbon" },
         { "GVs", "GVs" },
-        { "Friendship", "OriginalTrainerFriendship" },
 
         // Backwards compatibility to fall back on, if needed. //
         { "Scale", "Scale" },
@@ -43,7 +42,19 @@ public static class BatchNormalizer
         { "MetLevel", "MetLevel" },
     };
 
+    // New Showdown format inputs to override Batch commands that start with an equals(=) //
+    private static readonly HashSet<string> EqualCommandKeys = new(StringComparer.OrdinalIgnoreCase)
+{
+        "Generation",
+        "Gen",
+        "WasEgg",
+        "Hatched"
+};
+
+
     //////////////////////////////////// ACCEPTED FORMAT VALUES //////////////////////////////////////
+
+
     /// <summary>
     /// A dictionary for mapping size keywords to their corresponding ranges. ///
     /// </summary>
@@ -132,7 +143,12 @@ public static class BatchNormalizer
     { "Scarlet", 50 }, { "SL", 50 },
     { "Violet", 51 }, { "VL", 51 }
 };
+
+
+
     //////////////////////////////////// NEW COMMAND LOGIC //////////////////////////////////////
+
+
     /// <summary>
     /// Normalizes batch commands from a given content string into a standard Showdown format. This is the logic. ///
     /// </summary>
@@ -244,10 +260,35 @@ public static class BatchNormalizer
                 break; // stop after matching the first key (the period . prefix)
             }
         }
+
+        // Convert "Key: Value" to "=Key=Value" if Batch starts with = prefix //
+        for (int i = 0; i < lines.Length; i++)
+        {
+            string line = lines[i].Trim();
+
+            var match = Regex.Match(line, @"^(\w+)\s*:\s*(.+)$");
+            if (!match.Success) continue;
+
+            string key = match.Groups[1].Value;
+            string val = match.Groups[2].Value.Trim();
+
+            // =Generation= → Generation: or Gen: // Value is a generation number //
+            if (key.Equals("Gen", StringComparison.OrdinalIgnoreCase))
+                key = "Generation";
+            else if (key.Equals("Hatched", StringComparison.OrdinalIgnoreCase))
+                key = "WasEgg";
+
+            if (EqualCommandKeys.Contains(key))
+                lines[i] = $"={key}={val}";
+        }
         return string.Join('\n', lines);
 
     }
+
+
     //////////////////////////////////// HELPER METHODS //////////////////////////////////////
+
+
     /// <summary>
     /// A helper method that attempts to parse a flexible date input into a standard format for MetDate & EggMetDate. ///
     /// </summary>
@@ -286,5 +327,4 @@ public static class BatchNormalizer
         result = -1;
         return false;
     }
-    
 }

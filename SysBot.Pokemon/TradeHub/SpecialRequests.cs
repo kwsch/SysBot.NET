@@ -8,42 +8,43 @@ namespace SysBot.Pokemon
 {
     public static class SpecialRequests
     {
-        private static readonly object _sync2 = new();
-
-        private static readonly string ItemPath = @"0items.txt";
-
-        private static readonly char[] separator = ['\n'];
-
-        private static readonly Dictionary<string, int> UserListSpecialReqCount = [];
-
         public enum SpecialTradeType
         {
             None,
-
             ItemReq,
-
             BallReq,
-
             SanitizeReq,
-
             StatChange,
-
             TeraChange,
-
             Shinify,
-
             WonderCard,
-
             FailReturn
         }
+        private static readonly string ItemPath = @"0items.txt"; // needed for systemctl service on linux for mono to find
+        private static readonly object _sync2 = new();
+        static Dictionary<string, int> SpecificItemRequests { get => CollectItemReqs(); }
 
-        // needed for systemctl service on linux for mono to find
-        private static Dictionary<string, int> SpecificItemRequests { get => CollectItemReqs(); }
+        static readonly Dictionary<string, int> UserListSpecialReqCount = [];
+        private static readonly char[] separator = ['\n'];
 
-        public static void AddToPlayerLimit(string trainerName, int toAddRemove)
+        static Dictionary<string, int> CollectItemReqs()
         {
-            if (UserListSpecialReqCount.ContainsKey(trainerName))
-                UserListSpecialReqCount[trainerName] = Math.Max(0, UserListSpecialReqCount[trainerName] + toAddRemove);
+            Dictionary<string, int> tmp = [];
+            try
+            {
+                lock (_sync2)
+                {
+                    var rawText = File.ReadAllText(ItemPath);
+                    var split = rawText.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var st in split)
+                    {
+                        var reqs = st.Split(',');
+                        tmp.Add(reqs[0], int.Parse(reqs[1]));
+                    }
+                }
+            }
+            catch { }
+            return tmp;
         }
 
         public static SpecialTradeType CheckItemRequest<T>(ref T pk, PokeRoutineExecutor<T> caller, PokeTradeDetail<T> detail, string TrainerName, SaveFile sav) where T : PKM, new()
@@ -78,11 +79,9 @@ namespace SysBot.Pokemon
                         pk.ClearNickname();
                         pk.OriginalTrainerName = TrainerName;
                         break;
-
                     case 3: //great
                         pk.OriginalTrainerName = TrainerName;
                         break;
-
                     case 4: //poke
                         pk.ClearNickname();
                         break;
@@ -123,7 +122,7 @@ namespace SysBot.Pokemon
                     var type = Shiny.AlwaysStar; // antidote or ice heal
                     if (pk.HeldItem == 19 || pk.HeldItem == 21 || pk.IsEgg) // burn heal or awakening
                         type = Shiny.AlwaysSquare;
-                    if (pk.HeldItem == 20 || pk.HeldItem == 21) // ice heal or awakening or fh
+                    if (pk.HeldItem == 20 || pk.HeldItem == 21) // ice heal or awakening or fh 
                         pk.IVs = [31, 31, 31, 31, 31, 31];
 
                     CommonEdits.SetShiny(pk, type);
@@ -177,77 +176,59 @@ namespace SysBot.Pokemon
                     case 1862:
                         teraTypeOverride = MoveType.Normal;
                         break;
-
                     case 1863:
                         teraTypeOverride = MoveType.Fire;
                         break;
-
                     case 1864:
                         teraTypeOverride = MoveType.Water;
                         break;
-
                     case 1865:
                         teraTypeOverride = MoveType.Electric;
                         break;
-
                     case 1866:
                         teraTypeOverride = MoveType.Grass;
                         break;
-
                     case 1867:
                         teraTypeOverride = MoveType.Ice;
                         break;
-
                     case 1868:
                         teraTypeOverride = MoveType.Fighting;
                         break;
-
                     case 1869:
                         teraTypeOverride = MoveType.Poison;
                         break;
-
                     case 1870:
                         teraTypeOverride = MoveType.Ground;
                         break;
-
                     case 1871:
                         teraTypeOverride = MoveType.Flying;
                         break;
-
                     case 1872:
                         teraTypeOverride = MoveType.Psychic;
                         break;
-
                     case 1873:
                         teraTypeOverride = MoveType.Bug;
                         break;
-
                     case 1874:
                         teraTypeOverride = MoveType.Rock;
                         break;
-
                     case 1875:
                         teraTypeOverride = MoveType.Ghost;
                         break;
-
                     case 1876:
                         teraTypeOverride = MoveType.Dragon;
                         break;
-
                     case 1877:
                         teraTypeOverride = MoveType.Dark;
                         break;
-
                     case 1878:
                         teraTypeOverride = MoveType.Steel;
                         break;
-
                     case 1879:
                         teraTypeOverride = MoveType.Fairy;
                         break;
-
                     case 2549:
-                        teraTypeOverride = (MoveType)TeraTypeUtil.Stellar;
+                        teraTypeOverride = (MoveType)TeraTypeUtil.Stellar; 
                         break;
                 }
 
@@ -267,31 +248,24 @@ namespace SysBot.Pokemon
                     case 55: // guard spec
                         pk.Language = (int)LanguageID.Japanese;
                         break;
-
                     case 56: // dire hit
                         pk.Language = (int)LanguageID.English;
                         break;
-
                     case 57: // x atk
                         pk.Language = (int)LanguageID.German;
                         break;
-
                     case 58: // x def
                         pk.Language = (int)LanguageID.French;
                         break;
-
                     case 59: // x spe
                         pk.Language = (int)LanguageID.Spanish;
                         break;
-
                     case 60: // x acc
                         pk.Language = (int)LanguageID.Korean;
                         break;
-
                     case 61: // x spatk
                         pk.Language = (int)LanguageID.ChineseT;
                         break;
-
                     case 62: // x spdef
                         pk.Language = (int)LanguageID.ChineseS;
                         break;
@@ -329,6 +303,7 @@ namespace SysBot.Pokemon
                 LegalizeIfNotLegal(ref pk, caller, detail, TrainerName);
 
                 sst = SpecialTradeType.StatChange;
+
             }
             else if (pk.Nickname.StartsWith("!"))
             {
@@ -377,55 +352,10 @@ namespace SysBot.Pokemon
             return sst;
         }
 
-        private static Dictionary<string, int> CollectItemReqs()
+        public static void AddToPlayerLimit(string trainerName, int toAddRemove)
         {
-            Dictionary<string, int> tmp = [];
-            try
-            {
-                lock (_sync2)
-                {
-                    var rawText = File.ReadAllText(ItemPath);
-                    foreach (var st in rawText.Split(separator, StringSplitOptions.RemoveEmptyEntries))
-                    {
-                        var reqs = st.Split(',');
-                        tmp.Add(reqs[0], int.Parse(reqs[1]));
-                    }
-                }
-            }
-            catch { }
-            return tmp;
-        }
-
-        private static void LegalizeIfNotLegal<T>(ref T pkm, PokeRoutineExecutor<T> caller, PokeTradeDetail<T> detail, string trainerName) where T : PKM, new()
-        {
-            var tempPk = pkm.Clone();
-
-            var la = new LegalityAnalysis(pkm);
-            if (!la.Valid)
-            {
-                detail.SendNotification(caller, "This request isn't legal! Attemping to legalize...");
-                caller.Log(la.Report());
-                try
-                {
-                    pkm = (T)pkm.LegalizePokemon();
-                }
-                catch (Exception e)
-                {
-                    caller.Log("Legalization failed: " + e.Message); return;
-                }
-            }
-            else
-            {
-                return;
-            }
-
-            pkm.OriginalTrainerName = tempPk.OriginalTrainerName;
-
-            la = new LegalityAnalysis(pkm);
-            if (!la.Valid)
-            {
-                pkm = (T)pkm.LegalizePokemon();
-            }
+            if (UserListSpecialReqCount.ContainsKey(trainerName))
+                UserListSpecialReqCount[trainerName] = Math.Max(0, UserListSpecialReqCount[trainerName] + toAddRemove);
         }
 
         private static T? LoadEvent<T>(string v, SaveFile sav) where T : PKM, new()
@@ -454,7 +384,7 @@ namespace SysBot.Pokemon
             if (loadedwc != null)
             {
                 var pkloaded = loadedwc.ConvertToPKM(sav);
-
+                
                 if (!pkloaded.SWSH)
                 {
                     pkloaded = EntityConverter.ConvertToType(pkloaded, typeof(T), out _);
@@ -488,6 +418,38 @@ namespace SysBot.Pokemon
             var la = new LegalityAnalysis(pkm);
             if (!la.Valid)
                 pkm = pkm.LegalizePokemon();
+        }
+
+        private static void LegalizeIfNotLegal<T>(ref T pkm, PokeRoutineExecutor<T> caller, PokeTradeDetail<T> detail, string trainerName) where T : PKM, new()
+        {
+            var tempPk = pkm.Clone();
+
+            var la = new LegalityAnalysis(pkm);
+            if (!la.Valid)
+            {
+                detail.SendNotification(caller, "This request isn't legal! Attemping to legalize...");
+                caller.Log(la.Report());
+                try
+                {
+                    pkm = (T)pkm.LegalizePokemon();
+                }
+                catch (Exception e)
+                {
+                    caller.Log("Legalization failed: " + e.Message); return;
+                }
+            }
+            else
+            {
+                return;
+            }
+
+            pkm.OriginalTrainerName = tempPk.OriginalTrainerName;
+
+            la = new LegalityAnalysis(pkm);
+            if (!la.Valid)
+            {
+                pkm = (T)pkm.LegalizePokemon();
+            }
         }
     }
 }

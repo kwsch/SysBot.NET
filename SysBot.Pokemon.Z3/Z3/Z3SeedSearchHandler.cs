@@ -21,7 +21,8 @@ public class Z3SeedSearchHandler<T> : ISeedSearchHandler<T> where T : PKM, new()
 
         if (settings.ShowAllZ3Results)
         {
-            foreach (var match in Z3Search.GetAllSeeds(ec, pid, IVs, settings.ResultDisplayMode))
+            var matches = Z3Search.GetAllSeeds(ec, pid, IVs, settings.ResultDisplayMode);
+            foreach (var match in matches)
             {
                 var lump = new PokeTradeSummary("Calculated Seed:", match);
                 detail.SendNotification(bot, lump);

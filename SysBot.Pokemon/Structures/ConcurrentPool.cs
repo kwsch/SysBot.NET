@@ -11,9 +11,20 @@ namespace System.Collections.Concurrent;
 [DebuggerDisplay("Count={" + nameof(Count) + "}")]
 public class ConcurrentPool<T> where T : class
 {
+    private readonly object _syncLock = new();
     private readonly List<T> _list = [];
 
-    private readonly object _syncLock = new();
+    public void Add(T item)
+    {
+        lock (_syncLock)
+            _list.Add(item);
+    }
+
+    public void Remove(T item)
+    {
+        lock (_syncLock)
+            _list.Remove(item);
+    }
 
     public int Count
     {
@@ -24,28 +35,10 @@ public class ConcurrentPool<T> where T : class
         }
     }
 
-    public void Add(T item)
-    {
-        lock (_syncLock)
-            _list.Add(item);
-    }
-
     public bool All(Func<T, bool> condition)
     {
         lock (_syncLock)
             return _list.All(condition);
-    }
-
-    public void Clear()
-    {
-        lock (_syncLock)
-            _list.Clear();
-    }
-
-    public void Remove(T item)
-    {
-        lock (_syncLock)
-            _list.Remove(item);
     }
 
     /// <summary>
@@ -71,5 +64,11 @@ public class ConcurrentPool<T> where T : class
     {
         lock (_syncLock)
             return [.. _list];
+    }
+
+    public void Clear()
+    {
+        lock (_syncLock)
+            _list.Clear();
     }
 }

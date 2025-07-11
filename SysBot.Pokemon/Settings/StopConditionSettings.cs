@@ -9,6 +9,31 @@ namespace SysBot.Pokemon;
 public class StopConditionSettings
 {
     private const string StopConditions = nameof(StopConditions);
+    public override string ToString() => "Stop Condition Settings";
+
+    [Category(StopConditions), Description("Stops only on Pokémon of this species. No restrictions if set to \"None\".")]
+    public Species StopOnSpecies { get; set; }
+
+    [Category(StopConditions), Description("Stops only on Pokémon with this FormID. No restrictions if left blank.")]
+    public int? StopOnForm { get; set; }
+
+    [Category(StopConditions), Description("Stop only on Pokémon of the specified nature.")]
+    public Nature TargetNature { get; set; } = Nature.Random;
+
+    [Category(StopConditions), Description("Minimum accepted IVs in the format HP/Atk/Def/SpA/SpD/Spe. Use \"x\" for unchecked IVs and \"/\" as a separator.")]
+    public string TargetMinIVs { get; set; } = "";
+
+    [Category(StopConditions), Description("Maximum accepted IVs in the format HP/Atk/Def/SpA/SpD/Spe. Use \"x\" for unchecked IVs and \"/\" as a separator.")]
+    public string TargetMaxIVs { get; set; } = "";
+
+    [Category(StopConditions), Description("Selects the shiny type to stop on.")]
+    public TargetShinyType ShinyTarget { get; set; } = TargetShinyType.DisableOption;
+
+    [Category(StopConditions), Description("Stop only on Pokémon that have a mark.")]
+    public bool MarkOnly { get; set; }
+
+    [Category(StopConditions), Description("List of marks to ignore separated by commas. Use the full name, e.g. \"Uncommon Mark, Dawn Mark, Prideful Mark\".")]
+    public string UnwantedMarks { get; set; } = "";
 
     [Category(StopConditions), Description("Holds Capture button to record a 30 second clip when a matching Pokémon is found by EncounterBot or Fossilbot.")]
     public bool CaptureVideoClip { get; set; }
@@ -16,35 +41,11 @@ public class StopConditionSettings
     [Category(StopConditions), Description("Extra time in milliseconds to wait after an encounter is matched before pressing Capture for EncounterBot or Fossilbot.")]
     public int ExtraTimeWaitCaptureVideo { get; set; } = 10000;
 
-    [Category(StopConditions), Description("Stop only on Pokémon that have a mark.")]
-    public bool MarkOnly { get; set; }
-
-    [Category(StopConditions), Description("If not empty, the provided string will be prepended to the result found log message to Echo alerts for whomever you specify. For Discord, use <@userIDnumber> to mention.")]
-    public string MatchFoundEchoMention { get; set; } = string.Empty;
-
     [Category(StopConditions), Description("If set to TRUE, matches both ShinyTarget and TargetIVs settings. Otherwise, looks for either ShinyTarget or TargetIVs match.")]
     public bool MatchShinyAndIV { get; set; } = true;
 
-    [Category(StopConditions), Description("Selects the shiny type to stop on.")]
-    public TargetShinyType ShinyTarget { get; set; } = TargetShinyType.DisableOption;
-
-    [Category(StopConditions), Description("Stops only on Pokémon with this FormID. No restrictions if left blank.")]
-    public int? StopOnForm { get; set; }
-
-    [Category(StopConditions), Description("Stops only on Pokémon of this species. No restrictions if set to \"None\".")]
-    public Species StopOnSpecies { get; set; }
-
-    [Category(StopConditions), Description("Maximum accepted IVs in the format HP/Atk/Def/SpA/SpD/Spe. Use \"x\" for unchecked IVs and \"/\" as a separator.")]
-    public string TargetMaxIVs { get; set; } = "";
-
-    [Category(StopConditions), Description("Minimum accepted IVs in the format HP/Atk/Def/SpA/SpD/Spe. Use \"x\" for unchecked IVs and \"/\" as a separator.")]
-    public string TargetMinIVs { get; set; } = "";
-
-    [Category(StopConditions), Description("Stop only on Pokémon of the specified nature.")]
-    public Nature TargetNature { get; set; } = Nature.Random;
-
-    [Category(StopConditions), Description("List of marks to ignore separated by commas. Use the full name, e.g. \"Uncommon Mark, Dawn Mark, Prideful Mark\".")]
-    public string UnwantedMarks { get; set; } = "";
+    [Category(StopConditions), Description("If not empty, the provided string will be prepended to the result found log message to Echo alerts for whomever you specify. For Discord, use <@userIDnumber> to mention.")]
+    public string MatchFoundEchoMention { get; set; } = string.Empty;
 
     public static bool EncounterFound<T>(T pk, int[] targetminIVs, int[] targetmaxIVs, StopConditionSettings settings, IReadOnlyList<string>? marklist) where T : PKM
     {
@@ -97,49 +98,10 @@ public class StopConditionSettings
         return true;
     }
 
-    public static string GetMarkName(IRibbonIndex pk)
-    {
-        for (var mark = RibbonIndex.MarkLunchtime; mark <= RibbonIndex.MarkSlump; mark++)
-        {
-            if (pk.GetRibbon((int)mark))
-                return RibbonStrings.GetName($"Ribbon{mark}");
-        }
-        return "";
-    }
-
-    public static string GetPrintName(PKM pk)
-    {
-        var set = ShowdownParsing.GetShowdownText(pk);
-        if (pk is IRibbonIndex r)
-        {
-            var rstring = GetMarkName(r);
-            if (!string.IsNullOrEmpty(rstring))
-                set += $"\nPokémon found to have **{GetMarkName(r)}**!";
-        }
-        return set;
-    }
-
     public static void InitializeTargetIVs(PokeTradeHubConfig config, out int[] min, out int[] max)
     {
         min = ReadTargetIVs(config.StopConditions, true);
         max = ReadTargetIVs(config.StopConditions, false);
-    }
-
-    public static void ReadUnwantedMarks(StopConditionSettings settings, out IReadOnlyList<string> marks) =>
-        marks = settings.UnwantedMarks.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
-
-    public virtual bool IsUnwantedMark(string mark, IReadOnlyList<string> marklist) => marklist.Contains(mark);
-
-    public override string ToString() => "Stop Condition Settings";
-
-    private static bool HasMark(IRibbonIndex pk)
-    {
-        for (var mark = RibbonIndex.MarkLunchtime; mark <= RibbonIndex.MarkSlump; mark++)
-        {
-            if (pk.GetRibbon((int)mark))
-                return true;
-        }
-        return false;
     }
 
     private static int[] ReadTargetIVs(StopConditionSettings settings, bool min)
@@ -168,17 +130,50 @@ public class StopConditionSettings
         }
         return targetIVs;
     }
+
+    private static bool HasMark(IRibbonIndex pk)
+    {
+        for (var mark = RibbonIndex.MarkLunchtime; mark <= RibbonIndex.MarkSlump; mark++)
+        {
+            if (pk.GetRibbon((int)mark))
+                return true;
+        }
+        return false;
+    }
+
+    public static string GetPrintName(PKM pk)
+    {
+        var set = ShowdownParsing.GetShowdownText(pk);
+        if (pk is IRibbonIndex r)
+        {
+            var rstring = GetMarkName(r);
+            if (!string.IsNullOrEmpty(rstring))
+                set += $"\nPokémon found to have **{GetMarkName(r)}**!";
+        }
+        return set;
+    }
+
+    public static void ReadUnwantedMarks(StopConditionSettings settings, out IReadOnlyList<string> marks) =>
+        marks = settings.UnwantedMarks.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+
+    public virtual bool IsUnwantedMark(string mark, IReadOnlyList<string> marklist) => marklist.Contains(mark);
+
+    public static string GetMarkName(IRibbonIndex pk)
+    {
+        for (var mark = RibbonIndex.MarkLunchtime; mark <= RibbonIndex.MarkSlump; mark++)
+        {
+            if (pk.GetRibbon((int)mark))
+                return RibbonStrings.GetName($"Ribbon{mark}");
+        }
+        return "";
+    }
 }
 
 public enum TargetShinyType
 {
     DisableOption,  // Doesn't care
-
     NonShiny,       // Match nonshiny only
-
     AnyShiny,       // Match any shiny regardless of type
-
     StarOnly,       // Match star shiny only
-
     SquareOnly,     // Match square shiny only
 }

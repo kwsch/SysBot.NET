@@ -14,7 +14,6 @@ public sealed class EncounterBotDogSWSH(PokeBotState Config, PokeTradeHub<PK8> H
         await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
         await HardStop().ConfigureAwait(false);
     }
-
     protected override async Task EncounterLoop(SAV8SWSH sav, CancellationToken token)
     {
         while (!token.IsCancellationRequested)

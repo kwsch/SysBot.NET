@@ -1,4 +1,4 @@
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using PKHeX.Core;
 using System.Threading.Tasks;
@@ -11,7 +11,8 @@ public class LegalityCheckModule : ModuleBase<SocketCommandContext>
     [Summary("Verifies the attachment for legality.")]
     public async Task LegalityCheck()
     {
-        foreach (var att in (System.Collections.Generic.IReadOnlyCollection<Attachment>)Context.Message.Attachments)
+        var attachments = Context.Message.Attachments;
+        foreach (var att in attachments)
             await LegalityCheck(att, false).ConfigureAwait(false);
     }
 
@@ -19,7 +20,8 @@ public class LegalityCheckModule : ModuleBase<SocketCommandContext>
     [Summary("Verifies the attachment for legality with a verbose output.")]
     public async Task LegalityCheckVerbose()
     {
-        foreach (var att in (System.Collections.Generic.IReadOnlyCollection<Attachment>)Context.Message.Attachments)
+        var attachments = Context.Message.Attachments;
+        foreach (var att in attachments)
             await LegalityCheck(att, true).ConfigureAwait(false);
     }
 

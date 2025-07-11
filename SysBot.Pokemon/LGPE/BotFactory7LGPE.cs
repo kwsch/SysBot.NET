@@ -15,7 +15,6 @@ namespace SysBot.Pokemon
 
             _ => throw new ArgumentException(nameof(cfg.NextRoutineType)),
         };
-
         public override bool SupportsRoutine(PokeRoutineType type) => type switch
         {
             PokeRoutineType.FlexTrade or PokeRoutineType.Idle

@@ -87,7 +87,7 @@ public class SeedCheckModule<T> : ModuleBase<SocketCommandContext> where T : PKM
         }
         int tradeCode = Util.ToInt32(code);
         var sig = Context.User.GetFavor();
-        await QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode(userID) : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed).ConfigureAwait(false);
+        await QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode(Context.User.Id, Context.Channel, Context.User) : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed).ConfigureAwait(false);
     }
 
     [Command("seedCheck")]
@@ -103,7 +103,7 @@ public class SeedCheckModule<T> : ModuleBase<SocketCommandContext> where T : PKM
             await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
             return;
         }
-        var code = Info.GetRandomTradeCode(userID);
+        var code = Info.GetRandomTradeCode(Context.User.Id, Context.Channel, Context.User);
         await SeedCheckAsync(code).ConfigureAwait(false);
         if (Context.Message is IUserMessage userMessage)
             await userMessage.DeleteAsync().ConfigureAwait(false);

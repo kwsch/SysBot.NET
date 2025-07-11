@@ -5,6 +5,22 @@ namespace SysBot.Pokemon.Helpers.ShowdownHelpers
 {
     public class GameInfoHelpers<T> where T : PKM, new()
     {
+        public static GameStrings GetGameStrings()
+        {
+            if (typeof(T) == typeof(PK8))
+                return GameInfo.GetStrings(GetLanguageIndex(GameVersion.SWSH));
+            if (typeof(T) == typeof(PB8))
+                return GameInfo.GetStrings(GetLanguageIndex(GameVersion.BDSP));
+            if (typeof(T) == typeof(PA8))
+                return GameInfo.GetStrings(GetLanguageIndex(GameVersion.PLA));
+            if (typeof(T) == typeof(PK9))
+                return GameInfo.GetStrings(GetLanguageIndex(GameVersion.SV));
+            if (typeof(T) == typeof(PB7))
+                return GameInfo.GetStrings(GetLanguageIndex(GameVersion.GE));
+
+            throw new ArgumentException("Type does not have recognized game strings.", typeof(T).Name);
+        }
+
         public static IPersonalAbility12 GetPersonalInfo(ushort speciesIndex)
         {
             if (typeof(T) == typeof(PK8))
@@ -53,32 +69,10 @@ namespace SysBot.Pokemon.Helpers.ShowdownHelpers
             throw new ArgumentException("Type does not have a recognized generation.", typeof(T).Name);
         }
 
-        private static string GetLanguageCode(GameVersion version)
+        public static int GetLanguageIndex(GameVersion version)
         {
-            int languageIndex = GetLanguageIndex(version);
-            return GetLanguageCodeFromIndex(languageIndex);
-        }
-
-        private static int GetLanguageIndex(GameVersion version)
-        {
-            return 2;
-        }
-
-        private static string GetLanguageCodeFromIndex(int index)
-        {
-            return index switch
-            {
-                1 => "ja",
-                2 => "en",
-                3 => "fr",
-                4 => "it",
-                5 => "de",
-                6 => "es",
-                8 => "ko",
-                9 => "zh-Hans",
-                10 => "zh-Hant",
-                _ => "en", // Default to English
-            };
+            const string language = GameLanguage.DefaultLanguage;
+            return GameLanguage.GetLanguageIndex(language);
         }
 
         public static ILearnSource GetLearnSource(PKM pk)

@@ -1,4 +1,4 @@
-using PKHeX.Core;
+﻿using PKHeX.Core;
 using SysBot.Base;
 using System.Collections.Concurrent;
 
@@ -10,17 +10,6 @@ namespace SysBot.Pokemon;
 /// <typeparam name="T">Type of <see cref="PKM"/> to distribute.</typeparam>
 public class PokeTradeHub<T> where T : PKM, new()
 {
-    public static readonly PokeTradeLogNotifier<T> LogNotifier = new();
-
-    /// <summary> Trade Bots only, used to delegate multi-player tasks </summary>
-    public readonly ConcurrentPool<PokeRoutineExecutorBase> Bots = new();
-
-    public readonly BotSynchronizer BotSync;
-
-    public readonly PokeTradeHubConfig Config;
-
-    public readonly TradeQueueManager<T> Queues;
-
     public PokeTradeHub(PokeTradeHubConfig config)
     {
         Config = config;
@@ -32,11 +21,17 @@ public class PokeTradeHub<T> where T : PKM, new()
         Queues = new TradeQueueManager<T>(this);
     }
 
+    public static readonly PokeTradeLogNotifier<T> LogNotifier = new();
+
+    public readonly PokeTradeHubConfig Config;
+    public readonly BotSynchronizer BotSync;
+
+    /// <summary> Trade Bots only, used to delegate multi-player tasks </summary>
+    public readonly ConcurrentPool<PokeRoutineExecutorBase> Bots = new();
     public bool TradeBotsReady => !Bots.All(z => z.Config.CurrentRoutineType == PokeRoutineType.Idle);
+    public readonly TradeQueueManager<T> Queues;
 
     #region Distribution Queue
-
     public readonly LedyDistributor<T> Ledy;
-
-    #endregion Distribution Queue
+    #endregion
 }

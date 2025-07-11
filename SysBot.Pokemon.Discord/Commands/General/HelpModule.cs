@@ -10,9 +10,14 @@ using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.Discord
 {
-    public class HelpModule(CommandService commandService) : ModuleBase<SocketCommandContext>
+    public class HelpModule : ModuleBase<SocketCommandContext>
     {
-        private readonly CommandService _commandService = commandService;
+        private readonly CommandService _commandService;
+
+        public HelpModule(CommandService commandService)
+        {
+            _commandService = commandService;
+        }
 
         [Command("help")]
         [Summary("Shows the available commands.")]
@@ -130,8 +135,12 @@ namespace SysBot.Pokemon.Discord
                 await ReplyAsync($"An error occurred while sending the DM: {ex.Message}");
             }
 
-            if (Context.Message is IUserMessage userMessage)
-                await userMessage.DeleteAsync().ConfigureAwait(false);
+            if (!(Context.Channel is IDMChannel))
+            {
+                // Delete the user's command message
+                if (Context.Message is IUserMessage userMessage)
+                    await userMessage.DeleteAsync().ConfigureAwait(false);
+            }
         }
 
         [Command("help")]
@@ -175,8 +184,12 @@ namespace SysBot.Pokemon.Discord
                 await ReplyAsync($"An error occurred while sending the DM: {ex.Message}");
             }
 
-            if (Context.Message is IUserMessage userMessage)
-                await userMessage.DeleteAsync().ConfigureAwait(false);
+            if (!(Context.Channel is IDMChannel))
+            {
+                // Delete the user's command message
+                if (Context.Message is IUserMessage userMessage)
+                    await userMessage.DeleteAsync().ConfigureAwait(false);
+            }
         }
     }
 }

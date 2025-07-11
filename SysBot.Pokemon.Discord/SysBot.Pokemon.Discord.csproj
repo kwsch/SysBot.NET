@@ -10,7 +10,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AnimatedGif" Version="1.0.5" />
-    <PackageReference Include="Discord.Net" Version="3.17.0" />
+    <PackageReference Include="Discord.Net" Version="3.17.4" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.4" />

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace SysBot.Pokemon;
@@ -6,42 +6,9 @@ namespace SysBot.Pokemon;
 public class TrackedUserLog
 {
     private const int Capacity = 1000;
-
-    private readonly object _sync = new();
-
     private readonly List<TrackedUser> Users = new(Capacity);
-
+    private readonly object _sync = new();
     private int ReplaceIndex;
-
-    public void RemoveAllNID(ulong networkID)
-    {
-        lock (_sync)
-            Users.RemoveAll(z => z.NetworkID == networkID);
-    }
-
-    public void RemoveAllRemoteID(ulong remoteID)
-    {
-        lock (_sync)
-            Users.RemoveAll(z => z.RemoteID == remoteID);
-    }
-
-    public IEnumerable<string> Summarize()
-    {
-        lock (_sync)
-            return Users.FindAll(z => z.NetworkID != 0).ConvertAll(z => $"{z.Name}, ID: {z.NetworkID}, Remote ID: {z.RemoteID}");
-    }
-
-    public TrackedUser? TryGetPreviousNID(ulong trainerNid)
-    {
-        lock (_sync)
-            return Users.Find(z => z.NetworkID == trainerNid);
-    }
-
-    public TrackedUser? TryGetPreviousRemoteID(ulong remoteNid)
-    {
-        lock (_sync)
-            return Users.Find(z => z.RemoteID == remoteNid);
-    }
 
     public TrackedUser? TryRegister(ulong networkID, string name, ulong remoteID)
     {
@@ -58,6 +25,20 @@ public class TrackedUserLog
             return InsertReplace(networkID, name);
     }
 
+    private TrackedUser? InsertReplace(ulong networkID, string name, ulong remoteID = 0)
+    {
+        var index = Users.FindIndex(z => z.NetworkID == networkID);
+        if (index < 0)
+        {
+            Insert(networkID, name, remoteID);
+            return null;
+        }
+
+        var match = Users[index];
+        Users[index] = new TrackedUser(networkID, name, remoteID);
+        return match;
+    }
+
     private void Insert(ulong id, string name, ulong remoteID)
     {
         var user = new TrackedUser(id, name, remoteID);
@@ -71,18 +52,34 @@ public class TrackedUserLog
         ReplaceIndex = (ReplaceIndex + 1) % Capacity;
     }
 
-    private TrackedUser? InsertReplace(ulong networkID, string name, ulong remoteID = 0)
+    public void RemoveAllNID(ulong networkID)
     {
-        var index = Users.FindIndex(z => z.NetworkID == networkID);
-        if (index < 0)
-        {
-            Insert(networkID, name, remoteID);
-            return null;
-        }
+        lock (_sync)
+            Users.RemoveAll(z => z.NetworkID == networkID);
+    }
 
-        var match = Users[index];
-        Users[index] = new TrackedUser(networkID, name, remoteID);
-        return match;
+    public void RemoveAllRemoteID(ulong remoteID)
+    {
+        lock (_sync)
+            Users.RemoveAll(z => z.RemoteID == remoteID);
+    }
+
+    public TrackedUser? TryGetPreviousNID(ulong trainerNid)
+    {
+        lock (_sync)
+            return Users.Find(z => z.NetworkID == trainerNid);
+    }
+
+    public TrackedUser? TryGetPreviousRemoteID(ulong remoteNid)
+    {
+        lock (_sync)
+            return Users.Find(z => z.RemoteID == remoteNid);
+    }
+
+    public IEnumerable<string> Summarize()
+    {
+        lock (_sync)
+            return Users.FindAll(z => z.NetworkID != 0).ConvertAll(z => $"{z.Name}, ID: {z.NetworkID}, Remote ID: {z.RemoteID}");
     }
 }
 

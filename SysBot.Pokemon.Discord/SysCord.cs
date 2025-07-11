@@ -33,15 +33,20 @@ public sealed class SysCord<T> where T : PKM, new()
     private readonly DiscordSocketClient _client;
     private readonly CommandService _commands;
 
+
     private readonly IServiceProvider _services;
 
     private readonly HashSet<string> _validCommands = new HashSet<string>
     {
-        "trade", "t", "clone", "fixOT", "fix", "f", "dittoTrade", "ditto", "dt", "itemTrade", "item", "it",
-        "egg", "Egg", "hidetrade", "ht", "batchTrade", "bt", "batchtradezip", "btz", "listevents", "le",
-        "eventrequest", "er", "battlereadylist", "brl", "battlereadyrequest", "brr", "pokepaste", "pp",
-        "PokePaste", "PP", "randomteam", "rt", "RandomTeam", "Rt", "specialrequestpokemon", "srp",
-        "queueStatus", "qs", "queueClear", "qc", "ts", "tc", "deleteTradeCode", "dtc", "mysteryegg", "me"
+     "BatchTrade", "Batchtrade", "batchTrade", "batchtradezip", "battlereadylist", "battlereadyrequest", "brl", "brr",
+        "BT", "bt", "BTZ", "btz", "C", "c", "CLONE", "Clone", "clone", "CONVERT", "Convert", "convert", "D", "d", "deleteTradeCode",
+        "Ditto", "ditto", "dittoTrade", "dittotrade", "dt", "DTC", "dtc", "DUMP", "Dump", "dump", "Egg", "egg", "er", "eventrequest",
+        "f", "fix", "FixOT", "fixOT", "fixot", "Hello", "hello", "Help", "help", "Hi", "hi", "Hidetrade", "hideTrade", "hidetrade",
+        "HT", "ht", "INFO", "info", "it", "Item", "item", "itemTrade", "joke", "Lc", "LC", "LCV", "lcv", "le", "LE", "Legalize", "legalize",
+        "listevents", "Me", "me", "MysteryEgg", "mysteryegg", "PokePaste", "pokepaste", "PP", "pp", "QC", "Qc", "qc", "QS", "Qs", "qs",
+        "queueClear", "queueclear", "queueStatus", "Random", "random", "RandomTeam", "randomteam", "rt", "SEED", "Seed", "seed",
+        "specialrequestpokemon", "srp", "st", "status", "SURPRISE", "Surprise", "surprise", "surprisetrade", "T", "t", "tc", "TRADE",
+        "Trade", "trade", "ts"
     };
 
     private readonly DiscordManager Manager;
@@ -83,7 +88,7 @@ public sealed class SysCord<T> where T : PKM, new()
 
             // This makes commands get run on the task thread pool instead on the websocket read thread.
             // This ensures long-running logic can't block the websocket connection.
-            DefaultRunMode = RunMode.Async,
+            DefaultRunMode = Hub.Config.Discord.AsyncCommands ? RunMode.Async : RunMode.Sync,
 
             // There's a few more properties you can set,
             // for example, case-insensitive commands.
@@ -173,8 +178,8 @@ public sealed class SysCord<T> where T : PKM, new()
         var botName = string.IsNullOrEmpty(SysCordSettings.HubConfig.BotName) ? "SysBot" : SysCordSettings.HubConfig.BotName;
         var fullStatusMessage = $"**Status**: {botName} is {status}!";
         var thumbnailUrl = status == "Online"
-            ? "https://raw.githubusercontent.com/Havokx89/sprites/main/botgo.png"
-            : "https://raw.githubusercontent.com/Havokx89/sprites/main/botstop.png";
+            ? "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/botgo.png"
+            : "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/botstop.png";
 
         var embed = new EmbedBuilder()
             .WithTitle("Bot Status Report")
@@ -188,38 +193,57 @@ public sealed class SysCord<T> where T : PKM, new()
         {
             try
             {
-                IMessageChannel? channel = _client.GetChannel(channelId) as IMessageChannel;
-                if (channel == null)
+                ITextChannel? textChannel = _client.GetChannel(channelId) as ITextChannel;
+                if (textChannel == null)
                 {
-                    channel = await _client.Rest.GetChannelAsync(channelId) as IMessageChannel;
-                    if (channel == null)
-                    {
-                        LogUtil.LogInfo("SysCord", $"AnnounceBotStatus: Failed to find channel with ID {channelId} even after direct fetch.");
-                        continue;
-                    }
+                    var restChannel = await _client.Rest.GetChannelAsync(channelId);
+                    textChannel = restChannel as ITextChannel;
                 }
 
-                if (_announcementMessageIds.TryGetValue(channelId, out ulong messageId))
+                if (textChannel != null)
                 {
-                    try
+                    if (_announcementMessageIds.TryGetValue(channelId, out ulong messageId))
                     {
-                        await channel.DeleteMessageAsync(messageId);
+                        try
+                        {
+                            await textChannel.DeleteMessageAsync(messageId);
+                        }
+                        catch { }
                     }
-                    catch
+                    var message = await textChannel.SendMessageAsync(embed: embed);
+                    _announcementMessageIds[channelId] = message.Id;
+
+                    if (SysCordSettings.Settings.ChannelStatus)
                     {
-                        // Ignore exception when deleting previous message
+                        try
+                        {
+                            var emoji = status == "Online"
+                            ? SysCordSettings.Settings.OnlineEmoji
+                            : SysCordSettings.Settings.OfflineEmoji;
+                            var currentName = textChannel.Name;
+                            var updatedChannelName = $"{emoji}{TrimStatusEmoji(currentName)}";
+                            if (currentName != updatedChannelName)
+                            {
+                                await textChannel.ModifyAsync(x => x.Name = updatedChannelName);
+                            }
+                        }
+                        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.InsufficientPermissions)
+                        {
+                            LogUtil.LogInfo("SysCord", $"Cannot update channel name for {channelId}: Missing Manage Channel permission");
+                        }
+                        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.RequestEntityTooLarge)
+                        {
+                            LogUtil.LogInfo("SysCord", $"Cannot update channel name for {channelId}: Rate limited");
+                        }
+                        catch (Exception ex)
+                        {
+                            LogUtil.LogInfo("SysCord", $"Failed to update channel name for {channelId}: {ex.Message}");
+                        }
                     }
                 }
-
-                var message = await channel.SendMessageAsync(embed: embed);
-                _announcementMessageIds[channelId] = message.Id;
-                LogUtil.LogInfo("SysCord", $"AnnounceBotStatus: {fullStatusMessage} announced in channel {channelId}.");
-
-                if (SysCordSettings.Settings.ChannelStatus && channel is ITextChannel textChannel)
+                else
                 {
-                    var emoji = status == "Online" ? SysCordSettings.Settings.OnlineEmoji : SysCordSettings.Settings.OfflineEmoji;
-                    var updatedChannelName = $"{emoji}{SysCord<T>.TrimStatusEmoji(textChannel.Name)}";
-                    await textChannel.ModifyAsync(x => x.Name = updatedChannelName);
+                    LogUtil.LogInfo("SysCord", $"Channel {channelId} is not a text channel or could not be found");
                 }
             }
             catch (Exception ex)
@@ -229,7 +253,6 @@ public sealed class SysCord<T> where T : PKM, new()
             }
         }
     }
-
     public async Task HandleBotStart()
     {
         try
@@ -364,16 +387,18 @@ public sealed class SysCord<T> where T : PKM, new()
 
         var responses = new List<string>
         {
-            "You're welcome! ❤️",
-            "No problem at all!",
-            "Anytime, glad to help!",
-            "It's my pleasure! ❤️",
-            "Not a problem! You're welcome!",
-            "Always here to help!",
-            "Glad I could assist!",
-            "Happy to serve!",
-            "Of course! You're welcome!",
-            "Sure thing!"
+        "It is an honor for you to be in my presence.",
+        "You good, homie.",
+        "Always here to help people like you, even if you *are* funny looking.",
+        "It's your pleasure.",
+        "It was a little annoying, but I liked you enough, so yay you.",
+        "You should really be showing appreciation to your parents.",
+        "Yes... thank me! :)",
+        "Not a problem, you weak and meager human! :D",
+        "If you were *truly* appreciative, you'd pay me in dance. Now dance, monkey!",
+        "No hablo Espanol or something...",
+        "Did you really just show me appreciation? Lol, I'm a bot, dummy. I don't care.",
+        "Now give me your dog for the sacrifice."
         };
 
         var randomResponse = responses[new Random().Next(responses.Count)];
@@ -426,7 +451,18 @@ public sealed class SysCord<T> where T : PKM, new()
                 return;
 
             string thanksText = msg.Content.ToLower();
-            if (SysCordSettings.Settings.ReplyToThanks && (thanksText.Contains("thank") || thanksText.Contains("thx")))
+            if (SysCordSettings.Settings.ReplyToThanks &&
+                (thanksText.Contains("thank") || thanksText.Contains("thx") ||
+                (thanksText.Contains("arigato") || thanksText.Contains("the best") ||
+                (thanksText.Contains("amazing") || thanksText.Contains("incredible") ||
+                (thanksText.Contains("i love you") || thanksText.Contains("ilu") ||
+                (thanksText.Contains("i love u") ||
+                (thanksText.Contains("awesome") || thanksText.Contains("thanx") ||
+                (thanksText.Contains("tysm") || thanksText.Contains("wtf") ||
+                (thanksText.Contains("i hate you") || thanksText.Contains("you suck") ||
+                (thanksText.Contains("<3>") || thanksText.Contains(":)") ||
+                (thanksText.Contains("wow") || thanksText.Contains("cool")
+                )))))))))))
             {
                 await SysCord<T>.RespondToThanksMessage(msg).ConfigureAwait(false);
                 return;

@@ -8,7 +8,7 @@ using static SysBot.Pokemon.TradeSettings;
 
 namespace SysBot.Pokemon.Helpers
 {
-    public abstract class TradeExtensions<T> where T : PKM, new()
+    public abstract class AbstractTrade<T> where T : PKM, new()
     {
         public static readonly string[] MarkTitle =
         [
@@ -207,14 +207,8 @@ namespace SysBot.Pokemon.Helpers
             pk.StatNature = pk.Nature;
             pk.SetEVs([0, 0, 0, 0, 0, 0]);
 
-            if (pk.Ball is 1)
-            {
-                pk.Ball = 4; // Change to Poké Ball if it was a Master Ball
-            }
-
             MarkingApplicator.SetMarkings(pk);
             RibbonApplicator.RemoveAllValidRibbons(pk);
-
 
             pk.ClearRelearnMoves();
 
@@ -249,7 +243,6 @@ namespace SysBot.Pokemon.Helpers
                 pk9.BattleVersion = 0;
                 pk9.TeraTypeOverride = (PKHeX.Core.MoveType)19;
             }
-           
 
             var la = new LegalityAnalysis(pk);
             var enc = la.EncounterMatch;
@@ -304,7 +297,6 @@ namespace SysBot.Pokemon.Helpers
                     break;
             }
         }
-
         private static void ClearTrash(Span<byte> trash, string name)
         {
             trash.Clear();
@@ -322,7 +314,6 @@ namespace SysBot.Pokemon.Helpers
                 trash[(actualLength * 2) + 1] = 0x00;
             }
         }
-
         private static void ClearHandlingTrainerTrash(PKM pk)
         {
             switch (pk)
@@ -341,9 +332,7 @@ namespace SysBot.Pokemon.Helpers
 
         public static bool HasAdName(T pk, out string ad)
         {
-            // List of common TLDs to match
-            const string domainPattern = @"(?<=\w)\.(com|org|net|gg|xyz|io|tv|co|me|us|uk|ca|de|fr|jp|au|eu|ch|it|nl|ru|br|in|fun|ph)\b";
-
+            const string domainPattern = @"(?<=\w)\.(com|org|net|gg|xyz|io|tv|co|me|us|uk|ca|de|fr|jp|au|eu|ch|it|nl|ru|br|in|fun|info|blog|int|gov|edu|app|art|biz|bot|buzz|dev|eco|fan|fans|forum|free|game|help|host|inc|icu|live|lol|market|media|news|ninja|now|one|ong|online|page|porn|pro|red|sale|sex|sexy|shop|site|store|stream|tech|tel|top|tube|uno|vip|website|wiki|work|world|wtf|xxx|zero|youtube|zone|nyc|onion|bit|crypto|meme)\b";
             bool ot = Regex.IsMatch(pk.OriginalTrainerName, domainPattern, RegexOptions.IgnoreCase);
             bool nick = Regex.IsMatch(pk.Nickname, domainPattern, RegexOptions.IgnoreCase);
             ad = ot ? pk.OriginalTrainerName : nick ? pk.Nickname : "";
@@ -410,20 +399,20 @@ namespace SysBot.Pokemon.Helpers
 
             if (fullSize)
             {
-                baseLink = "https://raw.githubusercontent.com/Havokx89/HomeImages/master/512x512/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_');
+                baseLink = "https://raw.githubusercontent.com/Secludedly/ZE-FusionBot-HOME-Images/main/512x512/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_');
             }
             else if (preferredImageSize.HasValue)
             {
                 baseLink = preferredImageSize.Value switch
                 {
-                    ImageSize.Size256x256 => "https://raw.githubusercontent.com/Havokx89/HomeImages/master/256x256/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_'),
-                    ImageSize.Size128x128 => "https://raw.githubusercontent.com/Havokx89/HomeImages/master/128x128/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_'),
-                    _ => "https://raw.githubusercontent.com/Havokx89/HomeImages/master/256x256/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_'),
+                    ImageSize.Size256x256 => "https://raw.githubusercontent.com/Secludedly/ZE-FusionBot-HOME-Images/main/256x256/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_'),
+                    ImageSize.Size128x128 => "https://raw.githubusercontent.com/Secludedly/ZE-FusionBot-HOME-Images/main/128x128/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_'),
+                    _ => "https://raw.githubusercontent.com/Secludedly/ZE-FusionBot-HOME-Images/main/256x256/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_'),
                 };
             }
             else
             {
-                baseLink = "https://raw.githubusercontent.com/Havokx89/HomeImages/master/256x256/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_');
+                baseLink = "https://raw.githubusercontent.com/Secludedly/ZE-FusionBot-HOME-Images/main/256x256/poke_capture_0001_000_mf_n_00000000_f_n.png".Split('_');
             }
 
             if (Enum.IsDefined(typeof(GenderDependent), pkm.Species) && !canGmax && pkm.Form is 0)
@@ -438,6 +427,7 @@ namespace SysBot.Pokemon.Helpers
                 (int)Species.Sinistea or (int)Species.Polteageist or (int)Species.Rockruff or (int)Species.Mothim => 0,
                 (int)Species.Alcremie when pkm.IsShiny || canGmax => 0,
                 _ => pkm.Form,
+
             };
 
             if (pkm.Species is (ushort)Species.Sneasel)
@@ -461,7 +451,7 @@ namespace SysBot.Pokemon.Helpers
 
                 string s = pkm.IsShiny ? "r" : "n";
                 string g = md && pkm.Gender is not 1 ? "md" : "fd";
-                return "https://raw.githubusercontent.com/Havokx89/HomeImages/master/256x256/poke_capture_0" + $"{pkm.Species}" + "_00" + $"{pkm.Form}" + "_" + $"{g}" + "_n_00000000_f_" + $"{s}" + ".png";
+                return $"https://raw.githubusercontent.com/Secludedly/ZE-FusionBot-HOME-Images/main/256x256/poke_capture_0" + $"{pkm.Species}" + "_00" + $"{pkm.Form}" + "_" + $"{g}" + "_n_00000000_f_" + $"{s}" + ".png";
             }
 
             baseLink[2] = pkm.Species < 10 ? $"000{pkm.Species}" : pkm.Species < 100 && pkm.Species > 9 ? $"00{pkm.Species}" : pkm.Species >= 1000 ? $"{pkm.Species}" : $"0{pkm.Species}";
@@ -547,6 +537,7 @@ namespace SysBot.Pokemon.Helpers
             [(int)Species.Meganium] = [(new(2024, 04, 05), new(2024, 04, 07)), (new(2024, 04, 12), new(2024, 04, 14))], // Meganium
             [(int)Species.Typhlosion] = [(new(2023, 04, 14), new(2023, 04, 16)), (new(2023, 04, 21), new(2023, 04, 23))], // Typhlosion
             [(int)Species.Feraligatr] = [(new(2024, 11, 01), new(2024, 11, 03)), (new(2024, 11, 08), new(2024, 11, 10))], // Feraligatr
+            [(int)Species.Porygon2] = [(new(2025, 06, 05), new(2025, 06, 15))], // Porygon2
 
             // Generation 3
             [(int)Species.Sceptile] = [(new(2024, 06, 28), new(2024, 06, 30)), (new(2024, 07, 05), new(2024, 07, 07))], // Sceptile
@@ -556,12 +547,10 @@ namespace SysBot.Pokemon.Helpers
             // Generation 4
             [(int)Species.Empoleon] = [(new(2024, 02, 02), new(2024, 02, 04)), (new(2024, 02, 09), new(2024, 02, 11))], // Empoleon
             [(int)Species.Infernape] = [(new(2024, 10, 04), new(2024, 10, 06)), (new(2024, 10, 11), new(2024, 10, 13))],  // Infernape
-            [(int)Species.Torterra] = [(new(2024, 11, 15), new(2024, 11, 17)), (new(2024, 11, 22), new(2024, 11, 24))],  // Torterra
 
             // Generation 5
             [(int)Species.Emboar] = [(new(2024, 06, 14), new(2024, 06, 16)), (new(2024, 06, 21), new(2024, 06, 23))], // Emboar
-            [(int)Species.Serperior] = [(new(2024, 09, 20), new(2024, 09, 22)), (new(2024, 09, 27), new(2024, 09, 29))], // Serperior
-
+            [(int)Species.Serperior] = [(new(2024, 09, 20), new(2024, 09, 22)), (new(2024, 09, 27), new(2024, 09, 29))],  // Serperior
 
             // Generation 6
             [(int)Species.Chesnaught] = [(new(2023, 05, 12), new(2023, 05, 14)), (new(2023, 06, 16), new(2023, 06, 18))], // Chesnaught
@@ -593,7 +582,6 @@ namespace SysBot.Pokemon.Helpers
             [(int)Species.Salamence] = [(new(2025, 04, 18), new(2025, 04, 20)), (new(2025, 04, 25), new(2025, 04, 27))], // Salamence
             [(int)Species.Metagross] = [(new(2025, 05, 09), new(2025, 05, 11)), (new(2025, 05, 12), new(2025, 05, 19))], // Metagross
             [(int)Species.Garchomp] = [(new(2025, 05, 22), new(2025, 05, 25)), (new(2025, 05, 30), new(2025, 06, 01))], // Garchomp
-            [(int)Species.Porygon2] = [(new(2025, 06, 05), new(2025, 06, 15))], // Porygon2
             [(int)Species.Baxcalibur] = [(new(2025, 06, 19), new(2025, 06, 22)), (new(2025, 06, 27), new(2025, 06, 29))], // Baxcalibur
         };
 
@@ -639,8 +627,9 @@ namespace SysBot.Pokemon.Helpers
             int rangeDays = End.DayNumber - Start.DayNumber + 1;
             pk.MetDate = Start.AddDays(Random.Shared.Next(rangeDays));
         }
+    
 
-        public static byte DetectShowdownLanguage(string content)
+            public static byte DetectShowdownLanguage(string content)
         {
             // Check for batch command format: .Language=X
             var batchMatch = Regex.Match(content, @"\.Language=(\d+)");
@@ -744,29 +733,89 @@ namespace SysBot.Pokemon.Helpers
             // Default to English
             return 2;
         }
-    }
+    } }
 
-    // Add the missing method definition for 'SetHandlerandMemory' to the PKMExtensions class.  
-    public static class PKMExtensions
-    {
-        public static void SetHandlerandMemory(this PKM pkm, ITrainerInfo trainerInfo, IEncounterable? encounter)
+
+        // Add the missing method definition for 'SetHandlerandMemory' to the PKMExtensions class. 
+        public static class PKMExtensions
         {
-            // Example implementation based on typical usage of handler and memory settings.  
-            // Adjust the logic as per your application's requirements.  
-
-            // Set the current handler to the trainer's ID.  
-            pkm.CurrentHandler = 0;
-
-            // Set the handling trainer's name and gender.  
-            pkm.HandlingTrainerName = trainerInfo.OT;
-            pkm.HandlingTrainerGender = trainerInfo.Gender;
-
-            // If the encounter is not null, set additional memory details.  
-            if (encounter != null)
+            public static void SetHandlerandMemory(this PKM pkm, ITrainerInfo trainerInfo, IEncounterable? encounter)
             {
-                pkm.MetLocation = encounter.Location;
-                pkm.MetLevel = encounter.LevelMin;
+                // Example implementation based on typical usage of handler and memory settings. 
+                // Adjust the logic as per your application's requirements. 
+                // Set the current handler to the trainer's ID. 
+                pkm.CurrentHandler = 0;
+                // Set the handling trainer's name and gender. 
+                pkm.HandlingTrainerName = trainerInfo.OT;
+                pkm.HandlingTrainerGender = trainerInfo.Gender;
+                // If the encounter is not null, set additional memory details. 
+                if (encounter != null)
+                {
+                    pkm.MetLocation = encounter.Location;
+                    pkm.MetLevel = encounter.LevelMin;
+                }
             }
+        
+
+        private static readonly Dictionary<string, int> BallIdMapping = new Dictionary<string, int>
+        {
+            {"Beast", 26},
+            {"Cherish", 16},
+            {"Dive", 7},
+            {"Dream", 25},
+            {"Dusk", 13},
+            {"Fast", 17},
+            {"Friend", 22},
+            {"Great", 3},
+            {"Heal", 14},
+            {"Heavy", 20},
+            {"Level", 18},
+            {"Love", 21},
+            {"Lure", 19},
+            {"Luxury", 11},
+            {"Master", 1},
+            {"Moon", 23},
+            {"Nest", 8},
+            {"Net", 6},
+            {"Poke", 4},
+            {"Premier", 12},
+            {"Quick", 15},
+            {"Repeat", 9},
+            {"Safari", 5},
+            {"Sport", 24},
+            {"Timer", 10},
+            {"Ultra", 2},
+            // LA Specific Balls
+            {"LAPoke", 28},
+            {"Strange", 27},
+            {"LAGreat", 29},
+            {"LAUltra", 30},
+            {"Feather", 31},
+            {"Wing", 32},
+            {"Jet", 33},
+            {"LAHeavy", 34},
+            {"Leaden", 35},
+            {"Gigaton", 36},
+            {"Origin", 37}
+        };
+        public static string ConvertBalls(string content)
+        {
+            var lines = content.Split('\n');
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].StartsWith("Ball:"))
+                {
+                    foreach (var ballMapping in BallIdMapping)
+                    {
+                        if (lines[i].Contains(ballMapping.Key))
+                        {
+                            lines[i] = $".Ball={ballMapping.Value}";
+                            break;
+                        }
+                    }
+                }
+            }
+            return string.Join('\n', lines);
         }
     }
-}
+

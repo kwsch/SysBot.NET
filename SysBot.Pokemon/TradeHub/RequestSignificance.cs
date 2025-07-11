@@ -1,4 +1,4 @@
-namespace SysBot.Pokemon;
+﻿namespace SysBot.Pokemon;
 
 /// <summary>
 /// Indicates the significance of request data.

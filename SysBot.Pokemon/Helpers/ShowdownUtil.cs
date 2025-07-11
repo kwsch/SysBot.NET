@@ -1,20 +1,9 @@
-using PKHeX.Core;
+﻿using PKHeX.Core;
 
 namespace SysBot.Pokemon;
 
 public static class ShowdownUtil
 {
-    private static readonly string[] splittables =
-        [
-            "Ability:", "EVs:", "IVs:", "Shiny:", "Gigantamax:", "Ball:", "- ", "Level:",
-        "Happiness:", "Language:", "OT:", "OTGender:", "TID:", "SID:", "Alpha:", "Tera Type:",
-        "Adamant Nature", "Bashful Nature", "Brave Nature", "Bold Nature", "Calm Nature",
-        "Careful Nature", "Docile Nature", "Gentle Nature", "Hardy Nature", "Hasty Nature",
-        "Impish Nature", "Jolly Nature", "Lax Nature", "Lonely Nature", "Mild Nature",
-        "Modest Nature", "Naive Nature", "Naughty Nature", "Quiet Nature", "Quirky Nature",
-        "Rash Nature", "Relaxed Nature", "Sassy Nature", "Serious Nature", "Timid Nature",
-    ];
-
     /// <summary>
     /// Converts a single line to a showdown set
     /// </summary>
@@ -43,4 +32,15 @@ public static class ShowdownUtil
         var finalset = restorenick + setstring;
         return new ShowdownSet(finalset);
     }
+
+    private static readonly string[] splittables =
+    [
+        "Ability:", "EVs:", "IVs:", "Shiny:", "Gigantamax:", "Ball:", "- ", "Level:",
+        "Happiness:", "Language:", "OT:", "OTGender:", "TID:", "SID:", "Alpha:", "Tera Type:",
+        "Adamant Nature", "Bashful Nature", "Brave Nature", "Bold Nature", "Calm Nature",
+        "Careful Nature", "Docile Nature", "Gentle Nature", "Hardy Nature", "Hasty Nature",
+        "Impish Nature", "Jolly Nature", "Lax Nature", "Lonely Nature", "Mild Nature",
+        "Modest Nature", "Naive Nature", "Naughty Nature", "Quiet Nature", "Quirky Nature",
+        "Rash Nature", "Relaxed Nature", "Sassy Nature", "Serious Nature", "Timid Nature",
+    ];
 }

@@ -8,6 +8,7 @@ using static SysBot.Base.SwitchButton;
 using System.Threading;
 using System.Threading.Tasks;
 using SysBot.Pokemon.Helpers;
+using System.Xml;
 
 namespace SysBot.Pokemon;
 
@@ -69,13 +70,9 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
     }
 
     public abstract Task<T> ReadBoxPokemon(int box, int slot, CancellationToken token);
-
     public abstract Task<T> ReadPokemon(ulong offset, CancellationToken token);
-
     public abstract Task<T> ReadPokemon(ulong offset, int size, CancellationToken token);
-
     public abstract Task<T> ReadPokemonPointer(IEnumerable<long> jumps, int size, CancellationToken token);
-
     public async Task<T?> ReadUntilPresent(ulong offset, int waitms, int waitInterval, int size, CancellationToken token)
     {
         int msWaited = 0;

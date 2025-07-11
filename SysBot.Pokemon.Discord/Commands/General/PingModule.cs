@@ -1,4 +1,4 @@
-using Discord.Commands;
+﻿using Discord.Commands;
 using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.Discord;

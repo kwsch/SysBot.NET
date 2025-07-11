@@ -11,32 +11,6 @@ namespace SysBot.Pokemon.Helpers
     /// <typeparam name="T"></typeparam>
     public class FileTradeHelper<T> where T : PKM, new()
     {
-        private static readonly Dictionary<Type, int> maxCountInBin = new()
-        {
-            { typeof(PK8), 960 },
-            { typeof(PB8), 1200 },
-            { typeof(PA8), 960 },
-            { typeof(PK9), 960 }
-        };
-
-        private static readonly Dictionary<Type, int> pkmSize = new()
-        {
-            { typeof(PK8), 344 },
-            { typeof(PB8), 344 },
-            { typeof(PA8), 376 },
-            { typeof(PK9), 344 }
-        };
-
-        private static readonly Dictionary<Type, int> pkmSizeInBin = new()
-        {
-            { typeof(PK8), 344 },
-            { typeof(PB8), 344 },
-            { typeof(PA8), 360 },
-            { typeof(PK9), 344 }
-        };
-
-        public static int MaxCountInBin => maxCountInBin[typeof(T)];
-
         /// <summary>
         /// 将bin文件转换成对应版本的PKM list
         /// </summary>
@@ -61,9 +35,6 @@ namespace SysBot.Pokemon.Helpers
             }
             return pkmBytes;
         }
-
-        public static bool ValidBinFileSize(long size) => (size > 0) && (size <= MaxCountInBin * pkmSizeInBin[typeof(T)]) && (size % pkmSizeInBin[typeof(T)] == 0);
-
         /// <summary>
         /// 文件名称是否有效
         /// </summary>
@@ -74,17 +45,17 @@ namespace SysBot.Pokemon.Helpers
             string ext = fileName?.Split('.').Last().ToLower() ?? "";
             return (ext == typeof(T).Name.ToLower()) || (ext == "bin");
         }
-
         /// <summary>
         /// 文件大小是否有效
         /// </summary>
         /// <param name="size"></param>
         /// <returns></returns>
         public static bool ValidFileSize(long size) => ValidPKMFileSize(size) || ValidBinFileSize(size);
-
         public static bool ValidPKMFileSize(long size) => size == pkmSize[typeof(T)];
+        public static bool ValidBinFileSize(long size) => (size > 0) && (size <= MaxCountInBin * pkmSizeInBin[typeof(T)]) && (size % pkmSizeInBin[typeof(T)] == 0);
+        public static int MaxCountInBin => maxCountInBin[typeof(T)];
 
-        private static PKM? GetPKM(byte[] ba) => typeof(T) switch
+        static PKM? GetPKM(byte[] ba) => typeof(T) switch
         {
             Type t when t == typeof(PK8) => new PK8(ba),
             Type t when t == typeof(PB8) => new PB8(ba),
@@ -92,5 +63,29 @@ namespace SysBot.Pokemon.Helpers
             Type t when t == typeof(PK9) => new PK9(ba),
             _ => null
         };
+        static readonly Dictionary<Type, int> pkmSize = new() 
+        {
+            { typeof(PK8), 344 },
+            { typeof(PB8), 344 },
+            { typeof(PA8), 376 },
+            { typeof(PK9), 344 }
+        };
+
+        static readonly Dictionary<Type, int> pkmSizeInBin = new()
+        {
+            { typeof(PK8), 344 },
+            { typeof(PB8), 344 },
+            { typeof(PA8), 360 },
+            { typeof(PK9), 344 }
+        };
+
+        static readonly Dictionary<Type, int> maxCountInBin = new()
+        {
+            { typeof(PK8), 960 },
+            { typeof(PB8), 1200 },
+            { typeof(PA8), 960 },
+            { typeof(PK9), 960 }
+        };
+
     }
 }

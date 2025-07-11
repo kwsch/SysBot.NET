@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Text;
 
@@ -6,6 +5,24 @@ namespace SysBot.Pokemon;
 
 public static class StringsUtil
 {
+    private static readonly char[] Blacklist = ['.', '\\', '/', ',', '*', ';', '．', '・', '。'];
+
+    private static readonly string[] TLD = ["tv", "gg", "yt"];
+
+    private static readonly string[] TLD2 = ["com", "org", "net"];
+
+    /// <summary>
+    /// Checks the input <see cref="text"/> to see if it is selfish spam.
+    /// </summary>
+    /// <param name="text">String to check</param>
+    /// <returns>True if spam, false if natural.</returns>
+    public static bool IsSpammyString(string text)
+    {
+        // No longer checks the content of the string.
+        // This allows any name to be used.
+        return false;
+    }
+
     /// <summary>
     /// Remove all non-alphanumeric characters, convert wide chars to narrow, and converts the final string to lowercase.
     /// </summary>
@@ -19,35 +36,5 @@ public static class StringsUtil
         var normalize = input.Normalize(NormalizationForm.FormKC);
         var sanitized = normalize.Where(char.IsLetterOrDigit);
         return string.Concat(sanitized.Select(char.ToLower));
-    }
-
-    private static readonly char[] Blacklist = ['.', '\\', '/', ',', '*', ';', '．', '・', '。'];
-    private static readonly string[] TLD = ["tv", "gg", "yt"];
-    private static readonly string[] TLD2 = ["com", "org", "net"];
-
-    /// <summary>
-    /// Checks the input <see cref="text"/> to see if it is selfish spam.
-    /// </summary>
-    /// <param name="text">String to check</param>
-    /// <returns>True if spam, false if natural.</returns>
-    public static bool IsSpammyString(string text)
-    {
-        if (text.IndexOfAny(Blacklist) >= 0)
-            return true;
-
-        if (text.Length <= 6)
-            return false;
-
-        text = text.Replace(" ", "");
-        if (text.Contains("pkm", StringComparison.InvariantCultureIgnoreCase))
-            return true;
-
-        if (TLD.Any(z => text.EndsWith(z, StringComparison.InvariantCultureIgnoreCase)))
-            return true;
-        if (TLD2.Any(z => text.EndsWith(z, StringComparison.InvariantCultureIgnoreCase)))
-            return true;
-        if (TLD.Any(z => text.StartsWith(z, StringComparison.InvariantCultureIgnoreCase)))
-            return true;
-        return false;
     }
 }

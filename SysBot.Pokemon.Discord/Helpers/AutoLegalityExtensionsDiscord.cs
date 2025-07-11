@@ -2,8 +2,8 @@ using Discord;
 using Discord.WebSocket;
 using PKHeX.Core;
 using SysBot.Base;
-using SysBot.Pokemon.Helpers;
 using SysBot.Pokemon.Discord.Helpers;
+using SysBot.Pokemon.Helpers;
 using System;
 using System.Threading.Tasks;
 
@@ -15,7 +15,7 @@ public static class AutoLegalityExtensionsDiscord
     {
         if (set.Species <= 0)
         {
-            await channel.SendMessageAsync("Oops! I wasn't able to interpret your message! If you intended to convert something, please double check what you're pasting!").ConfigureAwait(false);
+            await channel.SendMessageAsync("I wasn't able to interpret your message! If you intended to convert something, please double check what you're pasting!").ConfigureAwait(false);
             return;
         }
 
@@ -24,18 +24,18 @@ public static class AutoLegalityExtensionsDiscord
             var template = AutoLegalityWrapper.GetTemplate(set);
             var pkm = sav.GetLegal(template, out var result);
             if (pkm is PK8 && pkm.Nickname.ToLower() == "egg" && Breeding.CanHatchAsEgg(pkm.Species))
-                TradeExtensions<PK8>.EggTrade(pkm, template);
+                AbstractTrade<PK8>.EggTrade(pkm, template);
             else if (pkm is PB8 && pkm.Nickname.ToLower() == "egg" && Breeding.CanHatchAsEgg(pkm.Species))
-                TradeExtensions<PB8>.EggTrade(pkm, template);
+                AbstractTrade<PB8>.EggTrade(pkm, template);
             else if (pkm is PK9 && pkm.Nickname.ToLower() == "egg" && Breeding.CanHatchAsEgg(pkm.Species))
-                TradeExtensions<PK9>.EggTrade(pkm, template);
+                AbstractTrade<PK9>.EggTrade(pkm, template);
 
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
             if (!la.Valid)
             {
                 var reason = result == "Timeout" ? $"That {spec} set took too long to generate." : result == "VersionMismatch" ? "Request refused: PKHeX and Auto-Legality Mod version mismatch." : $"I wasn't able to create a {spec} from that set.";
-                var imsg = $"Oops! {reason}";
+                var imsg = $"An error occurred: {reason}";
                 if (result == "Failed")
                     imsg += $"\n{AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm)}";
                 await channel.SendMessageAsync(imsg).ConfigureAwait(false);
@@ -48,7 +48,7 @@ public static class AutoLegalityExtensionsDiscord
         catch (Exception ex)
         {
             LogUtil.LogSafe(ex, nameof(AutoLegalityExtensionsDiscord));
-            var msg = $"Oops! An unexpected problem happened with this Showdown Set:\n```{string.Join("\n", set.GetSetLines())}```";
+            var msg = $"An unexpected problem happened with this Showdown Set:\n```{string.Join("\n", set.GetSetLines())}```";
             await channel.SendMessageAsync(msg).ConfigureAwait(false);
         }
     }
@@ -56,8 +56,10 @@ public static class AutoLegalityExtensionsDiscord
     public static Task ReplyWithLegalizedSetAsync(this ISocketMessageChannel channel, string content, byte gen)
     {
         content = ReusableActions.StripCodeBlock(content);
+
         // Normalize user-friendly aliases like "Size: 255" → ".Scale=255"
         content = BatchNormalizer.NormalizeBatchCommands(content);
+
         var set = new ShowdownSet(content);
         var sav = AutoLegalityWrapper.GetTrainerInfo(gen);
         return channel.ReplyWithLegalizedSetAsync(sav, set);
@@ -66,8 +68,10 @@ public static class AutoLegalityExtensionsDiscord
     public static Task ReplyWithLegalizedSetAsync<T>(this ISocketMessageChannel channel, string content) where T : PKM, new()
     {
         content = ReusableActions.StripCodeBlock(content);
+
         // Normalize user-friendly aliases like "Size: 255" → ".Scale=255"
         content = BatchNormalizer.NormalizeBatchCommands(content);
+
         var set = new ShowdownSet(content);
         var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
         return channel.ReplyWithLegalizedSetAsync(sav, set);

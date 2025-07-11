@@ -5,78 +5,73 @@ using System.ComponentModel;
 
 namespace SysBot.Pokemon;
 
-public enum FlexBiasMode
-{
-    Add,
-
-    Multiply,
-}
-
-public enum FlexYieldMode
-{
-    LessCheatyFirst,
-
-    Weighted,
-}
-
 public class QueueSettings
 {
     private const string FeatureToggle = nameof(FeatureToggle);
-
+    private const string UserBias = nameof(UserBias);
+    private const string TimeBias = nameof(TimeBias);
     private const string QueueToggle = nameof(QueueToggle);
 
-    private const string TimeBias = nameof(TimeBias);
+    public override string ToString() => "Queue Joining Settings";
 
-    private const string UserBias = nameof(UserBias);
-
-    [Category(FeatureToggle), Description("Allows users to dequeue while being traded.")]
-    public bool CanDequeueIfProcessing { get; set; }
+    // General
 
     [Category(FeatureToggle), Description("Toggles if users can join the queue.")]
     public bool CanQueue { get; set; } = true;
 
-    [Category(TimeBias), Description("Multiplies the amount of users in queue to give an estimate of how much time it will take until the user is processed.")]
-    public float EstimatedDelayFactor { get; set; } = 1.1f;
+    [Category(FeatureToggle), Description("Prevents adding users if there are this many users in the queue already.")]
+    public int MaxQueueCount { get; set; } = 999;
+
+    [Category(FeatureToggle), Description("Allows users to dequeue while being traded.")]
+    public bool CanDequeueIfProcessing { get; set; }
 
     [Category(FeatureToggle), Description("Determines how Flex Mode will process the queues.")]
     public FlexYieldMode FlexMode { get; set; } = FlexYieldMode.Weighted;
 
-    [Category(QueueToggle), Description("Scheduled Mode: Seconds of being closed before the queue unlocks.")]
-    public int IntervalCloseFor { get; set; } = 15 * 60;
-
-    [Category(QueueToggle), Description("Scheduled Mode: Seconds of being open before the queue locks.")]
-    public int IntervalOpenFor { get; set; } = 5 * 60;
-
-    // General
-    [Category(FeatureToggle), Description("Prevents adding users if there are this many users in the queue already.")]
-    public int MaxQueueCount { get; set; } = 999;
-
     [Category(FeatureToggle), Description("Determines when the queue is turned on and off.")]
     public QueueOpening QueueToggleMode { get; set; } = QueueOpening.Threshold;
 
-    [Category(QueueToggle), Description("Threshold Mode: Count of users that will cause the queue to close.")]
-    public int ThresholdLock { get; set; } = 30;
+    // Queue Toggle
 
     [Category(QueueToggle), Description("Threshold Mode: Count of users that will cause the queue to open.")]
     public int ThresholdUnlock { get; set; }
 
-    [Category(UserBias), Description("Biases the Clone Queue's weight based on how many users are in the queue.")]
-    public int YieldMultCountClone { get; set; } = 100;
+    [Category(QueueToggle), Description("Threshold Mode: Count of users that will cause the queue to close.")]
+    public int ThresholdLock { get; set; } = 30;
 
-    [Category(UserBias), Description("Biases the Dump Queue's weight based on how many users are in the queue.")]
-    public int YieldMultCountDump { get; set; } = 100;
+    [Category(QueueToggle), Description("Scheduled Mode: Seconds of being open before the queue locks.")]
+    public int IntervalOpenFor { get; set; } = 5 * 60;
 
-    [Category(UserBias), Description("Biases the FixOT Queue's weight based on how many users are in the queue.")]
-    public int YieldMultCountFixOT { get; set; } = 100;
+    [Category(QueueToggle), Description("Scheduled Mode: Seconds of being closed before the queue unlocks.")]
+    public int IntervalCloseFor { get; set; } = 15 * 60;
 
-    [Category(UserBias), Description("Biases the Seed Check Queue's weight based on how many users are in the queue.")]
-    public int YieldMultCountSeedCheck { get; set; } = 100;
+    // Flex Users
 
     [Category(UserBias), Description("Biases the Trade Queue's weight based on how many users are in the queue.")]
     public int YieldMultCountTrade { get; set; } = 100;
 
+    [Category(UserBias), Description("Biases the Seed Check Queue's weight based on how many users are in the queue.")]
+    public int YieldMultCountSeedCheck { get; set; } = 100;
+
+    [Category(UserBias), Description("Biases the Clone Queue's weight based on how many users are in the queue.")]
+    public int YieldMultCountClone { get; set; } = 100;
+
+    [Category(UserBias), Description("Biases the FixOT Queue's weight based on how many users are in the queue.")]
+    public int YieldMultCountFixOT { get; set; } = 100;
+
+    [Category(UserBias), Description("Biases the Dump Queue's weight based on how many users are in the queue.")]
+    public int YieldMultCountDump { get; set; } = 100;
+
+    // Flex Time
+
     [Category(TimeBias), Description("Determines whether the weight should be added or multiplied to the total weight.")]
     public FlexBiasMode YieldMultWait { get; set; } = FlexBiasMode.Multiply;
+
+    [Category(TimeBias), Description("Checks time elapsed since the user joined the Trade queue, and increases the queue's weight accordingly.")]
+    public int YieldMultWaitTrade { get; set; } = 1;
+
+    [Category(TimeBias), Description("Checks time elapsed since the user joined the Seed Check queue, and increases the queue's weight accordingly.")]
+    public int YieldMultWaitSeedCheck { get; set; } = 1;
 
     [Category(TimeBias), Description("Checks time elapsed since the user joined the Clone queue, and increases the queue's weight accordingly.")]
     public int YieldMultWaitClone { get; set; } = 1;
@@ -87,22 +82,26 @@ public class QueueSettings
     [Category(TimeBias), Description("Checks time elapsed since the user joined the FixOT queue, and increases the queue's weight accordingly.")]
     public int YieldMultWaitFixOT { get; set; } = 1;
 
-    [Category(TimeBias), Description("Checks time elapsed since the user joined the Seed Check queue, and increases the queue's weight accordingly.")]
-    public int YieldMultWaitSeedCheck { get; set; } = 1;
+    [Category(TimeBias), Description("Multiplies the amount of users in queue to give an estimate of how much time it will take until the user is processed.")]
+    public float EstimatedDelayFactor { get; set; } = 1.1f;
 
-    // Queue Toggle
-    // Flex Users
-    // Flex Time
-    [Category(TimeBias), Description("Checks time elapsed since the user joined the Trade queue, and increases the queue's weight accordingly.")]
-    public int YieldMultWaitTrade { get; set; } = 1;
+    private int GetCountBias(PokeTradeType type) => type switch
+    {
+        PokeTradeType.Seed => YieldMultCountSeedCheck,
+        PokeTradeType.Clone => YieldMultCountClone,
+        PokeTradeType.Dump => YieldMultCountDump,
+        PokeTradeType.FixOT => YieldMultCountFixOT,
+        _ => YieldMultCountTrade,
+    };
 
-    /// <summary>
-    /// Estimates the amount of time (minutes) until the user will be processed.
-    /// </summary>
-    /// <param name="position">Position in the queue</param>
-    /// <param name="botct">Amount of bots processing requests</param>
-    /// <returns>Estimated time in Minutes</returns>
-    public float EstimateDelay(int position, int botct) => (EstimatedDelayFactor * position) / botct;
+    private int GetTimeBias(PokeTradeType type) => type switch
+    {
+        PokeTradeType.Seed => YieldMultWaitSeedCheck,
+        PokeTradeType.Clone => YieldMultWaitClone,
+        PokeTradeType.Dump => YieldMultWaitDump,
+        PokeTradeType.FixOT => YieldMultWaitFixOT,
+        _ => YieldMultWaitTrade,
+    };
 
     /// <summary>
     /// Gets the weight of a <see cref="PokeTradeType"/> based on the count of users in the queue and time users have waited.
@@ -126,32 +125,30 @@ public class QueueSettings
         };
     }
 
-    public override string ToString() => "Queue Joining Settings";
+    /// <summary>
+    /// Estimates the amount of time (minutes) until the user will be processed.
+    /// </summary>
+    /// <param name="position">Position in the queue</param>
+    /// <param name="botct">Amount of bots processing requests</param>
+    /// <returns>Estimated time in Minutes</returns>
+    public float EstimateDelay(int position, int botct) => (EstimatedDelayFactor * position) / botct;
+}
 
-    private int GetCountBias(PokeTradeType type) => type switch
-    {
-        PokeTradeType.Seed => YieldMultCountSeedCheck,
-        PokeTradeType.Clone => YieldMultCountClone,
-        PokeTradeType.Dump => YieldMultCountDump,
-        PokeTradeType.FixOT => YieldMultCountFixOT,
-        _ => YieldMultCountTrade,
-    };
+public enum FlexBiasMode
+{
+    Add,
+    Multiply,
+}
 
-    private int GetTimeBias(PokeTradeType type) => type switch
-    {
-        PokeTradeType.Seed => YieldMultWaitSeedCheck,
-        PokeTradeType.Clone => YieldMultWaitClone,
-        PokeTradeType.Dump => YieldMultWaitDump,
-        PokeTradeType.FixOT => YieldMultWaitFixOT,
-        _ => YieldMultWaitTrade,
-    };
+public enum FlexYieldMode
+{
+    LessCheatyFirst,
+    Weighted,
 }
 
 public enum QueueOpening
 {
     Manual,
-
     Threshold,
-
     Interval,
 }

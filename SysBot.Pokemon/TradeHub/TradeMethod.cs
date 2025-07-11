@@ -1,4 +1,4 @@
-namespace SysBot.Pokemon;
+﻿namespace SysBot.Pokemon;
 
 /// <summary>
 /// Differentiates the different types of player initiated in-game trades.

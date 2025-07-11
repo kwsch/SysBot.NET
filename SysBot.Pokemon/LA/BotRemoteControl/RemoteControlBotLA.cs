@@ -7,12 +7,6 @@ namespace SysBot.Pokemon;
 
 public class RemoteControlBotLA(PokeBotState Config) : PokeRoutineExecutor8LA(Config)
 {
-    public override async Task HardStop()
-    {
-        await SetStick(SwitchStick.LEFT, 0, 0, 0_500, CancellationToken.None).ConfigureAwait(false); // reset
-        await CleanExit(CancellationToken.None).ConfigureAwait(false);
-    }
-
     public override async Task MainLoop(CancellationToken token)
     {
         try
@@ -37,6 +31,11 @@ public class RemoteControlBotLA(PokeBotState Config) : PokeRoutineExecutor8LA(Co
         await HardStop().ConfigureAwait(false);
     }
 
+    public override async Task HardStop()
+    {
+        await SetStick(SwitchStick.LEFT, 0, 0, 0_500, CancellationToken.None).ConfigureAwait(false); // reset
+        await CleanExit(CancellationToken.None).ConfigureAwait(false);
+    }
     public override async Task RebootAndStop(CancellationToken t)
     {
         await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
@@ -49,7 +48,6 @@ public class RemoteControlBotLA(PokeBotState Config) : PokeRoutineExecutor8LA(Co
             await MainLoop(t).ConfigureAwait(false);
         }
     }
-
     private class DummyReset : IBotStateSettings
     {
         public bool ScreenOff => true;
