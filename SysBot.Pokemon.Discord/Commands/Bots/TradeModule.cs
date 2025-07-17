@@ -166,13 +166,11 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         pk.ResetPartyStats();
 
         // Ad Name Check
-        
         if (AbstractTrade<T>.HasAdName(pk, out string ad))
         {
             await ReplyAndDeleteAsync("Detected Adname in the Pokémon's name or trainer name, which is not allowed.", 5);
             return;
         }
-        
 
         var sig = Context.User.GetFavor();
         await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, pk, PokeRoutineType.LinkTrade, PokeTradeType.Specific).ConfigureAwait(false);
@@ -295,6 +293,11 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             {
                 var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
                 var pkm = sav.GetLegal(template, out var result);
+                if (pkm == null)
+                {
+                    var response = await ReplyAsync("Set took too long to legalize.");
+                    return;
+                }
                 pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
 
                 if (pkm is not T pk)
@@ -303,8 +306,19 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                     return;
                 }
 
-                // Use the EggTrade method without setting the nickname
-                pk.IsNicknamed = false; // Make sure we don't set a nickname
+                bool versionSpecified = content.Contains(".Version=", StringComparison.OrdinalIgnoreCase);
+                if (!versionSpecified)
+                {
+                    if (pk is PB8 pb8)
+                    {
+                        pb8.Version = (GameVersion)GameVersion.BD;
+                    }
+                    else if (pk is PK8 pk8)
+                    {
+                        pk8.Version = (GameVersion)GameVersion.SW;
+                    }
+                }
+                pk.IsNicknamed = false;
                 AbstractTrade<T>.EggTrade(pk, template);
 
                 var sig = Context.User.GetFavor();
@@ -604,6 +618,18 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
                 if (isEgg && pkm is T eggPk)
                 {
+                    bool versionSpecified = content.Contains(".Version=", StringComparison.OrdinalIgnoreCase);
+                    if (!versionSpecified)
+                    {
+                        if (eggPk is PB8 pb8)
+                        {
+                            pb8.Version = (GameVersion)GameVersion.BD;
+                        }
+                        else if (eggPk is PK8 pk8)
+                        {
+                            pk8.Version = (GameVersion)GameVersion.SW;
+                        }
+                    }
                     eggPk.IsNicknamed = false;
                     AbstractTrade<T>.EggTrade(eggPk, template);
                     pkm = eggPk;
@@ -675,6 +701,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 }
 
                 pk.ResetPartyStats();
+
 
                 if (AbstractTrade<T>.HasAdName(pk, out string ad))
                 {
@@ -1034,11 +1061,11 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                     lgcode = GenerateRandomPictocodes(3);
                 }
 
-                if (AbstractTrade<T>.HasAdName(pk, out string ad))
-                {
-                    await ReplyAndDeleteAsync("Detected Adname in the Pokémon's name or trainer name, which is not allowed.", 5);
-                    return;
-                }
+                    if (AbstractTrade<T>.HasAdName(pk, out string ad))
+                    {
+                        await ReplyAndDeleteAsync("Detected Adname in the Pokémon's name or trainer name, which is not allowed.", 5);
+                        return;
+                    }
 
                 var sig = Context.User.GetFavor();
                 await AddTradeToQueueAsync(batchTradeCode, Context.User.Username, pk, sig, Context.User, isBatchTrade, batchTradeNumber, totalBatchTrades, lgcode: lgcode, tradeType: PokeTradeType.Batch, ignoreAutoOT: ignoreAutoOT, setEdited: false).ConfigureAwait(false);
@@ -1612,7 +1639,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var embed0 = new EmbedBuilder()
             .WithTitle("-------HOME-READY MODULE INSTRUCTIONS-------");
 
-        embed0.WithImageUrl("https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/homereadybreak.png");
+        embed0.WithImageUrl("https://raw.githubusercontent.com/Secludedly/ZE-FusionBot-Sprite-Images/main/homereadybreak.png");
         var message0 = await ReplyAsync(embed: embed0.Build());
 
 
@@ -1621,7 +1648,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                       "- This will search for any Pokemon in the entire module.\n" +
                       "**Example:** `hrl Mewtwo`\n");
 
-        embed1.WithImageUrl("https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/homereadybreak.png");
+        embed1.WithImageUrl("https://raw.githubusercontent.com/Secludedly/ZE-FusionBot-Sprite-Images/main/homereadybreak.png");
         var message1 = await ReplyAsync(embed: embed1.Build());
 
 
@@ -1630,7 +1657,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                       "- This will change the page you're viewing, with or without additional variables.\n" +
                       "**Example:** `hrl 5 Charmander`\n");
 
-        embed2.WithImageUrl("https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/homereadybreak.png");
+        embed2.WithImageUrl("https://raw.githubusercontent.com/Secludedly/ZE-FusionBot-Sprite-Images/main/homereadybreak.png");
         var message2 = await ReplyAsync(embed: embed2.Build());
 
         var embed3 = new EmbedBuilder()
@@ -1638,7 +1665,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                       "- This will trade you the Pokemon through the bot via the designated number.\n" +
                       "**Example:** `hrr 682`\n");
 
-        embed3.WithImageUrl("https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/homereadybreak.png");
+        embed3.WithImageUrl("https://raw.githubusercontent.com/Secludedly/ZE-FusionBot-Sprite-Images/main/homereadybreak.png");
         var message3 = await ReplyAsync(embed: embed3.Build());
 
         _ = Task.Run(async () =>

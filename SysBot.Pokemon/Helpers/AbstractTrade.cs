@@ -228,7 +228,7 @@ namespace SysBot.Pokemon.Helpers
                 pb8.HandlingTrainerMemory = 0;
                 pb8.HandlingTrainerMemoryFeeling = 0;
                 pb8.HandlingTrainerMemoryIntensity = 0;
-                pb8.DynamaxLevel = pb8.GetSuggestedDynamaxLevel(pb8, 0);
+                pb8.DynamaxLevel = 0;
                 ClearNicknameTrash(pk);
             }
             else if (pk is PK9 pk9)
@@ -244,22 +244,27 @@ namespace SysBot.Pokemon.Helpers
                 pk9.TeraTypeOverride = (PKHeX.Core.MoveType)19;
             }
 
+            // Set moves and relearn moves
+            pk.RefreshChecksum();
             var la = new LegalityAnalysis(pk);
             var enc = la.EncounterMatch;
-            pk.MaximizeFriendship();
 
+            // Set egg moves
             Span<ushort> relearn = stackalloc ushort[4];
             la.GetSuggestedRelearnMoves(relearn, enc);
             pk.SetRelearnMoves(relearn);
-            if (pk is ITechRecord t)
-            {
-                t.ClearRecordFlags();
-            }
-            pk.SetSuggestedMoves();
 
+            // Clear tech records
+            if (pk is ITechRecord t)
+                t.ClearRecordFlags();
+
+            // Set level-up moves appropriate for level 1
+            pk.SetSuggestedMoves();
             pk.Move1_PPUps = pk.Move2_PPUps = pk.Move3_PPUps = pk.Move4_PPUps = 0;
             pk.SetMaximumPPCurrent(pk.Moves);
-            pk.SetSuggestedHyperTrainingData();
+            pk.MaximizeFriendship(); // Hatch Egg Faster
+                                     // Final checksum refresh
+            pk.RefreshChecksum();
         }
 
         public static string FormOutput(ushort species, byte form, out string[] formString)
@@ -547,6 +552,7 @@ namespace SysBot.Pokemon.Helpers
             // Generation 4
             [(int)Species.Empoleon] = [(new(2024, 02, 02), new(2024, 02, 04)), (new(2024, 02, 09), new(2024, 02, 11))], // Empoleon
             [(int)Species.Infernape] = [(new(2024, 10, 04), new(2024, 10, 06)), (new(2024, 10, 11), new(2024, 10, 13))],  // Infernape
+            [(int)Species.Torterra] = [(new(2024, 11, 15), new(2024, 11, 17)), (new(2024, 11, 22), new(2024, 11, 24))],  // Torterra
 
             // Generation 5
             [(int)Species.Emboar] = [(new(2024, 06, 14), new(2024, 06, 16)), (new(2024, 06, 21), new(2024, 06, 23))], // Emboar
@@ -583,6 +589,7 @@ namespace SysBot.Pokemon.Helpers
             [(int)Species.Metagross] = [(new(2025, 05, 09), new(2025, 05, 11)), (new(2025, 05, 12), new(2025, 05, 19))], // Metagross
             [(int)Species.Garchomp] = [(new(2025, 05, 22), new(2025, 05, 25)), (new(2025, 05, 30), new(2025, 06, 01))], // Garchomp
             [(int)Species.Baxcalibur] = [(new(2025, 06, 19), new(2025, 06, 22)), (new(2025, 06, 27), new(2025, 06, 29))], // Baxcalibur
+            [(int)Species.Kommoo] = [(new(2025, 07, 11), new(2025, 07, 13)), (new(2025, 07, 18), new(2025, 07, 20))], // Kommo-o
         };
 
         public static void CheckAndSetUnrivaledDate(PKM pk)
@@ -627,9 +634,9 @@ namespace SysBot.Pokemon.Helpers
             int rangeDays = End.DayNumber - Start.DayNumber + 1;
             pk.MetDate = Start.AddDays(Random.Shared.Next(rangeDays));
         }
-    
 
-            public static byte DetectShowdownLanguage(string content)
+
+        public static byte DetectShowdownLanguage(string content)
         {
             // Check for batch command format: .Language=X
             var batchMatch = Regex.Match(content, @"\.Language=(\d+)");
@@ -733,31 +740,32 @@ namespace SysBot.Pokemon.Helpers
             // Default to English
             return 2;
         }
-    } }
+    }
+}
 
 
-        // Add the missing method definition for 'SetHandlerandMemory' to the PKMExtensions class. 
-        public static class PKMExtensions
+// Add the missing method definition for 'SetHandlerandMemory' to the PKMExtensions class. 
+public static class PKMExtensions
+{
+    public static void SetHandlerandMemory(this PKM pkm, ITrainerInfo trainerInfo, IEncounterable? encounter)
+    {
+        // Example implementation based on typical usage of handler and memory settings. 
+        // Adjust the logic as per your application's requirements. 
+        // Set the current handler to the trainer's ID. 
+        pkm.CurrentHandler = 0;
+        // Set the handling trainer's name and gender. 
+        pkm.HandlingTrainerName = trainerInfo.OT;
+        pkm.HandlingTrainerGender = trainerInfo.Gender;
+        // If the encounter is not null, set additional memory details. 
+        if (encounter != null)
         {
-            public static void SetHandlerandMemory(this PKM pkm, ITrainerInfo trainerInfo, IEncounterable? encounter)
-            {
-                // Example implementation based on typical usage of handler and memory settings. 
-                // Adjust the logic as per your application's requirements. 
-                // Set the current handler to the trainer's ID. 
-                pkm.CurrentHandler = 0;
-                // Set the handling trainer's name and gender. 
-                pkm.HandlingTrainerName = trainerInfo.OT;
-                pkm.HandlingTrainerGender = trainerInfo.Gender;
-                // If the encounter is not null, set additional memory details. 
-                if (encounter != null)
-                {
-                    pkm.MetLocation = encounter.Location;
-                    pkm.MetLevel = encounter.LevelMin;
-                }
-            }
-        
+            pkm.MetLocation = encounter.Location;
+            pkm.MetLevel = encounter.LevelMin;
+        }
+    }
 
-        private static readonly Dictionary<string, int> BallIdMapping = new Dictionary<string, int>
+
+    private static readonly Dictionary<string, int> BallIdMapping = new Dictionary<string, int>
         {
             {"Beast", 26},
             {"Cherish", 16},
@@ -798,24 +806,24 @@ namespace SysBot.Pokemon.Helpers
             {"Gigaton", 36},
             {"Origin", 37}
         };
-        public static string ConvertBalls(string content)
+    public static string ConvertBalls(string content)
+    {
+        var lines = content.Split('\n');
+        for (int i = 0; i < lines.Length; i++)
         {
-            var lines = content.Split('\n');
-            for (int i = 0; i < lines.Length; i++)
+            if (lines[i].StartsWith("Ball:"))
             {
-                if (lines[i].StartsWith("Ball:"))
+                foreach (var ballMapping in BallIdMapping)
                 {
-                    foreach (var ballMapping in BallIdMapping)
+                    if (lines[i].Contains(ballMapping.Key))
                     {
-                        if (lines[i].Contains(ballMapping.Key))
-                        {
-                            lines[i] = $".Ball={ballMapping.Value}";
-                            break;
-                        }
+                        lines[i] = $".Ball={ballMapping.Value}";
+                        break;
                     }
                 }
             }
-            return string.Join('\n', lines);
         }
+        return string.Join('\n', lines);
     }
+}
 

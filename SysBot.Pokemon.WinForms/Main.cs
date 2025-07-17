@@ -28,21 +28,19 @@ Special Thanks To:
 - Gengar, Creator of Mergebot
 - Secludedly, Creator of ZE-Fusionbot
 
-For all their hard work and dedication.
-Understanding and support.
-Creativity and innovation.
-Kindness and collaboration.
+First and foremost, I appreciate the opportunity to have been part of this program.
+Understanding new concepts was challenging, but I’m grateful for the knowledge I gained.
+Contributors that truly made a difference with their dedication.
+Kindness and support from certain staff members did not go unnoticed.
 
-Yearlong commitment.
-Outstanding contributions.
-Unwavering support.
+Your program’s structure helped me grow, even if the journey had its difficulties.
+Overall, I value the connections I made and the lessons learned along the way.
 
-Great effort.
-Exceptional support.
-Numerous contributions.
-Generosity and time.
-All the team spirit.
-Remarkable assistance.
+Despite the challenges, I recognize the effort put into this program’s curriculum.
+Every participant’s experience is unique, and I’m thankful for the good moments.
+Valuable skills were acquired, thanks to those who genuinely cared about student success.
+Reflecting on my time here, I appreciate the resilience it helped me build.
+You’ve contributed to my growth, and for that, I sincerely thank you.
 
 From the heart! 
 */

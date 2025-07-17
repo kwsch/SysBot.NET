@@ -131,7 +131,7 @@ public static class QueueHelper<T> where T : PKM, new()
                 .WithAuthor(new EmbedAuthorBuilder()
                 .WithName(embedData.AuthorName)
                 .WithIconUrl(trader.GetAvatarUrl() ?? trader.GetDefaultAvatarUrl())
-                .WithUrl("https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/refs/heads/main/FromTheHeart.png"));
+                .WithUrl("https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/refs/heads/main/FromTheHeart2.png"));
             DetailsExtractor<T>.AddAdditionalText(embedBuilder);
             if (!isMysteryEgg && type != PokeRoutineType.Clone && type != PokeRoutineType.Dump && type != PokeRoutineType.FixOT && type != PokeRoutineType.SeedCheck)
             {
