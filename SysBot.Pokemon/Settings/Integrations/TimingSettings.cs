@@ -5,10 +5,6 @@ namespace SysBot.Pokemon
     public class TimingSettings
     {
         private const string TimingsCategory = "Timings";
-        internal int ExtraTimeDeleteFriend;
-        internal int ExtraTimeLoadRaid;
-        internal int ExtraTimeOpenRaid;
-        internal int ExtraTimeOpenYMenu;
 
         [Category(TimingsCategory), TypeConverter(typeof(ExpandableObjectConverter))]
         public MiscellaneousSettingsCategory MiscellaneousSettings { get; set; } = new();
@@ -21,27 +17,6 @@ namespace SysBot.Pokemon
 
         [Category(TimingsCategory), TypeConverter(typeof(ExpandableObjectConverter))]
         public ClosingGameSettingsCategory ClosingGameSettings { get; set; } = new();
-        public bool AvoidSystemUpdate { get; internal set; }
-        public bool CheckGameDelay { get; internal set; }
-        public int ExtraTimeCheckDLC { get; internal set; }
-        public int ExtraTimeCheckGame { get; internal set; }
-        public int ExtraTimeCloseGame { get; internal set; }
-        public int ExtraTimeConnectOnline { get; internal set; }
-        public int ExtraTimeLoadGame { get; internal set; }
-        public int ExtraTimeLoadOverworld { get; internal set; }
-        public int ExtraTimeLoadProfile { get; internal set; }
-        public int ExtraTimeReturnHome { get; internal set; }
-        public int KeypressTime { get; internal set; }
-        public bool ProfileSelectionRequired { get; internal set; }
-        public int ExtraReconnectDelay { get; internal set; }
-        public int ReconnectAttempts { get; internal set; }
-        public int ExtraTimeAddFriend { get; internal set; }
-        public int ExtraTimeEndRaid { get; internal set; }
-        public int ExtraTimeJoinUnionRoom { get; internal set; }
-        public int ExtraTimeLeaveUnionRoom { get; internal set; }
-        public int ExtraTimeLoadPortal { get; internal set; }
-        public int ExtraTimeOpenBox { get; internal set; }
-        public int ExtraTimeOpenCodeEntry { get; internal set; }
 
         public override string ToString() => "Timing Settings";
     }

@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
 using System.ComponentModel;
 
@@ -25,7 +25,7 @@ public class DistributionSettings : ISynchronizationSetting
     public bool LedyQuitIfNoMatch { get; set; }
 
     [Category(Distribute), Description("Distribution Trade Link Code.")]
-    public int TradeCode { get; set; } = 7196;
+    public int TradeCode { get; set; } = 80008135;
 
     [Category(Distribute), Description("Distribution Trade Link Code uses the Min and Max range rather than the fixed trade code.")]
     public bool RandomCode { get; set; }

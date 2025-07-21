@@ -12,62 +12,62 @@ namespace SysBot.Pokemon;
 
 public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
 {
-    protected PokeDataOffsetsLA Offsets { get; } = new();
     protected PokeRoutineExecutor8LA(PokeBotState Config) : base(Config)
     {
     }
 
-    public override Task<PA8> ReadPokemon(ulong offset, CancellationToken token) => ReadPokemon(offset, BoxFormatSlotSize, token);
+    protected PokeDataOffsetsLA Offsets { get; } = new();
 
-    public override async Task<PA8> ReadPokemon(ulong offset, int size, CancellationToken token)
+    public async Task<bool> CheckIfSoftBanned(ulong offset, CancellationToken token)
     {
-        var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, size, token).ConfigureAwait(false);
-        return new PA8(data);
+        var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 4, token).ConfigureAwait(false);
+        return BitConverter.ToUInt32(data, 0) != 0;
     }
 
-    public override async Task<PA8> ReadPokemonPointer(IEnumerable<long> jumps, int size, CancellationToken token)
+    public async Task CleanExit(CancellationToken token)
     {
-        var (valid, offset) = await ValidatePointerAll(jumps, token).ConfigureAwait(false);
-        if (!valid)
-            return new PA8();
-        return await ReadPokemon(offset, token).ConfigureAwait(false);
+        await SetScreen(ScreenState.On, token).ConfigureAwait(false);
+        Log("Detaching controllers on routine exit.");
+        await DetachController(token).ConfigureAwait(false);
     }
 
-    public async Task<bool> ReadIsChanged(uint offset, byte[] original, CancellationToken token)
+    public async Task CloseGame(PokeTradeHubConfig config, CancellationToken token)
     {
-        var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
-        return !result.SequenceEqual(original);
-    }
+        var timing = config.Timings;
 
-    public override Task<PA8> ReadBoxPokemon(int box, int slot, CancellationToken token)
-    {
-        // Shouldn't be reading anything but box1slot1 here. Slots are not consecutive.
-        var jumps = Offsets.BoxStartPokemonPointer.ToArray();
-        return ReadPokemonPointer(jumps, BoxFormatSlotSize, token);
-    }
-
-    public Task SetBoxPokemonAbsolute(ulong offset, PA8 pkm, CancellationToken token, ITrainerInfo? sav = null)
-    {
-        if (sav != null)
-        {
-            // Update PKM to the current save's handler data
-            pkm.UpdateHandler(sav);
-            pkm.RefreshChecksum();
-        }
-
-        pkm.ResetPartyStats();
-        return SwitchConnection.WriteBytesAbsoluteAsync(pkm.EncryptedBoxData, offset, token);
-    }
-
-    public Task SetCurrentBox(byte box, CancellationToken token)
-    {
-        return SwitchConnection.PointerPoke([box], Offsets.CurrentBoxPointer, token);
+        // Close out of the game
+        await Click(B, 0_500, token).ConfigureAwait(false);
+        await Click(HOME, 2_000 + timing.ClosingGameSettings.ExtraTimeReturnHome, token).ConfigureAwait(false);
+        await Click(X, 1_000, token).ConfigureAwait(false);
+        await Click(A, 5_000 + timing.ClosingGameSettings.ExtraTimeCloseGame, token).ConfigureAwait(false);
+        Log("Closed out of the game!");
     }
 
     public async Task<byte> GetCurrentBox(CancellationToken token)
     {
         var data = await SwitchConnection.PointerPeek(1, Offsets.CurrentBoxPointer, token).ConfigureAwait(false);
         return data[0];
+    }
+
+    public async Task<SAV8LA> GetFakeTrainerSAV(CancellationToken token)
+    {
+        var sav = new SAV8LA();
+        var info = sav.MyStatus;
+        var read = await SwitchConnection.PointerPeek(info.Data.Length, Offsets.MyStatusPointer, token).ConfigureAwait(false);
+        read.ToArray().CopyTo(info.Data);
+        return sav;
+    }
+
+    public async Task<TextSpeedOption> GetTextSpeed(CancellationToken token)
+    {
+        var data = await SwitchConnection.PointerPeek(1, Offsets.TextSpeedPointer, token).ConfigureAwait(false);
+        return (TextSpeedOption)data[0];
+    }
+
+    public async Task<ulong> GetTradePartnerNID(ulong offset, CancellationToken token)
+    {
+        var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 8, token).ConfigureAwait(false);
+        return BitConverter.ToUInt64(data, 0);
     }
 
     public async Task<SAV8LA> IdentifyTrainer(CancellationToken token)
@@ -100,15 +100,6 @@ public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
         return sav;
     }
 
-    public async Task<SAV8LA> GetFakeTrainerSAV(CancellationToken token)
-    {
-        var sav = new SAV8LA();
-        var info = sav.MyStatus;
-        var read = await SwitchConnection.PointerPeek(info.Data.Length, Offsets.MyStatusPointer, token).ConfigureAwait(false);
-        read.ToArray().CopyTo(info.Data);
-        return sav;
-    }
-
     public async Task InitializeHardware(IBotStateSettings settings, CancellationToken token)
     {
         Log("Detaching on startup.");
@@ -120,23 +111,39 @@ public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
         }
     }
 
-    public async Task CleanExit(CancellationToken token)
+    public async Task<bool> IsOnOverworld(ulong offset, CancellationToken token)
     {
-        await SetScreen(ScreenState.On, token).ConfigureAwait(false);
-        Log("Detaching controllers on routine exit.");
-        await DetachController(token).ConfigureAwait(false);
+        var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 1, token).ConfigureAwait(false);
+        return data[0] == 1;
     }
 
-    protected virtual async Task EnterLinkCode(int code, PokeTradeHubConfig config, CancellationToken token)
+    public override Task<PA8> ReadBoxPokemon(int box, int slot, CancellationToken token)
     {
-        // Default implementation to just press directional arrows. Can do via Hid keys, but users are slower than bots at even the default code entry.
-        var keys = TradeUtil.GetPresses(code);
-        foreach (var key in keys)
-        {
-            int delay = config.Timings.KeypressTime;
-            await Click(key, delay, token).ConfigureAwait(false);
-        }
-        // Confirm Code outside of this method (allow synchronization)
+        // Shouldn't be reading anything but box1slot1 here. Slots are not consecutive.
+        var jumps = Offsets.BoxStartPokemonPointer.ToArray();
+        return ReadPokemonPointer(jumps, BoxFormatSlotSize, token);
+    }
+
+    public async Task<bool> ReadIsChanged(uint offset, byte[] original, CancellationToken token)
+    {
+        var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
+        return !result.SequenceEqual(original);
+    }
+
+    public override Task<PA8> ReadPokemon(ulong offset, CancellationToken token) => ReadPokemon(offset, BoxFormatSlotSize, token);
+
+    public override async Task<PA8> ReadPokemon(ulong offset, int size, CancellationToken token)
+    {
+        var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, size, token).ConfigureAwait(false);
+        return new PA8(data);
+    }
+
+    public override async Task<PA8> ReadPokemonPointer(IEnumerable<long> jumps, int size, CancellationToken token)
+    {
+        var (valid, offset) = await ValidatePointerAll(jumps, token).ConfigureAwait(false);
+        if (!valid)
+            return new PA8();
+        return await ReadPokemon(offset, token).ConfigureAwait(false);
     }
 
     public async Task ReOpenGame(PokeTradeHubConfig config, CancellationToken token)
@@ -146,62 +153,58 @@ public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
         await StartGame(config, token).ConfigureAwait(false);
     }
 
-    public Task UnSoftBan(CancellationToken token)
+    public Task SetBoxPokemonAbsolute(ulong offset, PA8 pkm, CancellationToken token, ITrainerInfo? sav = null)
     {
-        Log("Soft ban detected, unbanning.");
-        // Write the value to 0.
-        var data = BitConverter.GetBytes(0);
-        return SwitchConnection.PointerPoke(data, Offsets.SoftbanPointer, token);
+        if (sav != null)
+        {
+            // Update PKM to the current save's handler data
+            pkm.UpdateHandler(sav);
+            pkm.RefreshChecksum();
+        }
+
+        pkm.ResetPartyStats();
+        return SwitchConnection.WriteBytesAbsoluteAsync(pkm.EncryptedBoxData, offset, token);
     }
 
-    public async Task<bool> CheckIfSoftBanned(ulong offset, CancellationToken token)
+    public Task SetCurrentBox(byte box, CancellationToken token)
     {
-        var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 4, token).ConfigureAwait(false);
-        return BitConverter.ToUInt32(data, 0) != 0;
-    }
-
-    public async Task CloseGame(PokeTradeHubConfig config, CancellationToken token)
-    {
-        var timing = config.Timings;
-        // Close out of the game
-        await Click(B, 0_500, token).ConfigureAwait(false);
-        await Click(HOME, 2_000 + timing.ExtraTimeReturnHome, token).ConfigureAwait(false);
-        await Click(X, 1_000, token).ConfigureAwait(false);
-        await Click(A, 5_000 + timing.ExtraTimeCloseGame, token).ConfigureAwait(false);
-        Log("Closed out of the game!");
+        return SwitchConnection.PointerPoke([box], Offsets.CurrentBoxPointer, token);
     }
 
     public async Task StartGame(PokeTradeHubConfig config, CancellationToken token)
     {
+
+        // Open game.
         var timing = config.Timings;
-        var loadPro = timing.ProfileSelectionRequired ? timing.ExtraTimeLoadProfile : 0;
+        var loadPro = timing.OpeningGameSettings.ProfileSelectionRequired ? timing.OpeningGameSettings.ExtraTimeLoadProfile : 0;
 
         await Click(A, 1_000 + loadPro, token).ConfigureAwait(false); // Initial "A" Press to start the Game + a delay if needed for profiles to load
 
         // Menus here can go in the order: Update Prompt -> Profile -> DLC check -> Unable to use DLC.
         //  The user can optionally turn on the setting if they know of a breaking system update incoming.
-        if (timing.AvoidSystemUpdate)
+        if (timing.MiscellaneousSettings.AvoidSystemUpdate)
         {
             await Click(DUP, 0_600, token).ConfigureAwait(false);
-            await Click(A, 1_000 + timing.ExtraTimeLoadProfile, token).ConfigureAwait(false);
+            await Click(A, 1_000 + timing.OpeningGameSettings.ExtraTimeLoadProfile, token).ConfigureAwait(false);
         }
 
         // Only send extra Presses if we need to
-        if (timing.ProfileSelectionRequired)
+        if (timing.OpeningGameSettings.ProfileSelectionRequired)
         {
             await Click(A, 1_000, token).ConfigureAwait(false); // Now we are on the Profile Screen
             await Click(A, 1_000, token).ConfigureAwait(false); // Select the profile
         }
+
         // Digital game copies take longer to load
-        if (timing.CheckGameDelay)
+        if (timing.OpeningGameSettings.CheckGameDelay)
         {
-            await Task.Delay(2_000 + timing.ExtraTimeCheckGame, token).ConfigureAwait(false);
+            await Task.Delay(2_000 + timing.OpeningGameSettings.ExtraTimeCheckGame, token).ConfigureAwait(false);
         }
 
         Log("Restarting the game!");
 
         // Switch Logo and game load screen
-        await Task.Delay(12_000 + timing.ExtraTimeLoadGame, token).ConfigureAwait(false);
+        await Task.Delay(12_000 + timing.OpeningGameSettings.ExtraTimeLoadGame, token).ConfigureAwait(false);
 
         for (int i = 0; i < 8; i++)
             await Click(A, 1_000, token).ConfigureAwait(false);
@@ -211,9 +214,10 @@ public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
         {
             await Task.Delay(1_000, token).ConfigureAwait(false);
             timer -= 1_000;
+
             // We haven't made it back to overworld after a minute, so press A every 6 seconds hoping to restart the game.
             // Don't risk it if hub is set to avoid updates.
-            if (timer <= 0 && !timing.AvoidSystemUpdate)
+            if (timer <= 0 && !timing.MiscellaneousSettings.AvoidSystemUpdate)
             {
                 Log("Still not in the game, initiating rescue protocol!");
                 while (!await IsOnOverworldTitle(token).ConfigureAwait(false))
@@ -226,16 +230,25 @@ public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
         Log("Back in the overworld!");
     }
 
-    public async Task<ulong> GetTradePartnerNID(ulong offset, CancellationToken token)
+    public Task UnSoftBan(CancellationToken token)
     {
-        var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 8, token).ConfigureAwait(false);
-        return BitConverter.ToUInt64(data, 0);
+        Log("Soft ban detected, unbanning.");
+
+        // Write the value to 0.
+        var data = BitConverter.GetBytes(0);
+        return SwitchConnection.PointerPoke(data, Offsets.SoftbanPointer, token);
     }
 
-    public async Task<bool> IsOnOverworld(ulong offset, CancellationToken token)
+    protected virtual async Task EnterLinkCode(int code, PokeTradeHubConfig config, CancellationToken token)
     {
-        var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 1, token).ConfigureAwait(false);
-        return data[0] == 1;
+        // Default implementation to just press directional arrows. Can do via Hid keys, but users are slower than bots at even the default code entry.
+        foreach (var key in TradeUtil.GetPresses(code))
+        {
+            int delay = config.Timings.MiscellaneousSettings.KeypressTime;
+            await Click(key, delay, token).ConfigureAwait(false);
+        }
+
+        // Confirm Code outside of this method (allow synchronization)
     }
 
     // Only used to check if we made it off the title screen; the pointer isn't viable until a few seconds after clicking A.
@@ -245,11 +258,5 @@ public abstract class PokeRoutineExecutor8LA : PokeRoutineExecutor<PA8>
         if (!valid)
             return false;
         return await IsOnOverworld(offset, token).ConfigureAwait(false);
-    }
-
-    public async Task<TextSpeedOption> GetTextSpeed(CancellationToken token)
-    {
-        var data = await SwitchConnection.PointerPeek(1, Offsets.TextSpeedPointer, token).ConfigureAwait(false);
-        return (TextSpeedOption)data[0];
     }
 }

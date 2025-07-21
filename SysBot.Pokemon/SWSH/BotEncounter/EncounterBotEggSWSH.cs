@@ -9,6 +9,8 @@ namespace SysBot.Pokemon;
 
 public class EncounterBotEggSWSH : EncounterBotSWSH
 {
+    private static readonly PK8 Blank = new();
+
     private readonly IDumper DumpSetting;
 
     public EncounterBotEggSWSH(PokeBotState Config, PokeTradeHub<PK8> hub) : base(Config, hub)
@@ -16,7 +18,27 @@ public class EncounterBotEggSWSH : EncounterBotSWSH
         DumpSetting = Hub.Config.Folder;
     }
 
-    private static readonly PK8 Blank = new();
+    public async Task<bool> IsEggReady(CancellationToken token)
+    {
+        // Read a single byte of the Daycare metadata to check the IsEggReady flag.
+        var data = await Connection.ReadBytesAsync(DayCare_Route5_Egg_Is_Ready, 1, token).ConfigureAwait(false);
+        return data[0] == 1;
+    }
+
+    public override async Task RebootAndStop(CancellationToken t)
+    {
+        await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
+        await HardStop().ConfigureAwait(false);
+    }
+
+    public Task SetEggStepCounter(CancellationToken token)
+    {
+        // Set the step counter in the Daycare metadata to 180. This is the threshold that triggers the "Should I create a new egg" subroutine.
+        // When the game executes the subroutine, it will generate a new seed and set the IsEggReady flag.
+        // Just setting the IsEggReady flag won't refresh the seed; we want a different egg every time.
+        var data = new byte[] { 0xB4, 0, 0, 0 }; // 180
+        return Connection.WriteBytesAsync(data, DayCare_Route5_Step_Counter, token);
+    }
 
     protected override async Task EncounterLoop(SAV8SWSH sav, CancellationToken token)
     {
@@ -52,11 +74,7 @@ public class EncounterBotEggSWSH : EncounterBotSWSH
                 return;
         }
     }
-    public override async Task RebootAndStop(CancellationToken t)
-    {
-        await ReOpenGame(new PokeTradeHubConfig(), t).ConfigureAwait(false);
-        await HardStop().ConfigureAwait(false);
-    }
+
     private async Task<int> StepUntilEgg(CancellationToken token)
     {
         Log("Walking around until an egg is ready...");
@@ -86,21 +104,5 @@ public class EncounterBotEggSWSH : EncounterBotSWSH
         }
 
         return -1; // aborted
-    }
-
-    public async Task<bool> IsEggReady(CancellationToken token)
-    {
-        // Read a single byte of the Daycare metadata to check the IsEggReady flag.
-        var data = await Connection.ReadBytesAsync(DayCare_Route5_Egg_Is_Ready, 1, token).ConfigureAwait(false);
-        return data[0] == 1;
-    }
-
-    public Task SetEggStepCounter(CancellationToken token)
-    {
-        // Set the step counter in the Daycare metadata to 180. This is the threshold that triggers the "Should I create a new egg" subroutine.
-        // When the game executes the subroutine, it will generate a new seed and set the IsEggReady flag.
-        // Just setting the IsEggReady flag won't refresh the seed; we want a different egg every time.
-        var data = new byte[] { 0xB4, 0, 0, 0 }; // 180
-        return Connection.WriteBytesAsync(data, DayCare_Route5_Step_Counter, token);
     }
 }
