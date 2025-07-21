@@ -51,7 +51,7 @@ public class DumpModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
 
         int tradeCode = Util.ToInt32(code);
         var sig = Context.User.GetFavor();
-        await QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode((int)Context.User.Id) : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.Dump, PokeTradeType.Dump);
+        await QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode(Context.User.Id) : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.Dump, PokeTradeType.Dump);
     }
 
     [Command("dump")]
@@ -63,7 +63,7 @@ public class DumpModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
         if (await CheckUserInQueueAsync())
             return;
 
-        var code = Info.GetRandomTradeCode(Context.User.Id, Context.Channel, Context.User);
+        var code = Info.GetRandomTradeCode(Context.User.Id);
         await DumpAsync(code);
     }
 

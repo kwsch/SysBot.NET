@@ -37,7 +37,7 @@ public sealed record QueueCheckResult<T> where T : PKM, new()
 
         var pk = Detail.Trade.TradeData;
         if (pk.Species != 0)
-            msg += $", Receiving: {GameInfo.GetStrings(1).Species[pk.Species]}";
+            msg += $", Receiving: {GameInfo.GetStrings("en").Species[pk.Species]}";
 
         if (TotalBatchTrades > 1)
             msg += $" (Batch trade {BatchNumber}/{TotalBatchTrades})";

@@ -25,13 +25,13 @@ public static class LanguageHelper
                 // Handle common language names
                 var explicitLang = languageValue.ToLower() switch
                 {
-                    "japanese" or "jpn" or "日本語" => (byte)LanguageID.Japanese,
-                    "english" or "eng" => (byte)LanguageID.English,
-                    "french" or "fre" or "fra" => (byte)LanguageID.French,
-                    "italian" or "ita" => (byte)LanguageID.Italian,
-                    "german" or "ger" or "deu" => (byte)LanguageID.German,
-                    "spanish" or "spa" or "esp" => (byte)LanguageID.Spanish,
-                    "korean" or "kor" or "한국어" => (byte)LanguageID.Korean,
+                    "japanese" or "jpn" or "ja" or "日本語" => (byte)LanguageID.Japanese,
+                    "english" or "eng" or "en" => (byte)LanguageID.English,
+                    "french" or "fre" or "fra" or "fr" or "français" => (byte)LanguageID.French,
+                    "italian" or "ita" or "it" or "italiano" => (byte)LanguageID.Italian,
+                    "german" or "ger" or "deu" or "de" or "deutsch" => (byte)LanguageID.German,
+                    "spanish" or "spa" or "esp" or "es" or "español" => (byte)LanguageID.Spanish,
+                    "korean" or "kor" or "ko" or "한국어" => (byte)LanguageID.Korean,
                     "chinese" or "chs" or "中文" => (byte)LanguageID.ChineseS,
                     "cht" => (byte)LanguageID.ChineseT,
                     _ => 0

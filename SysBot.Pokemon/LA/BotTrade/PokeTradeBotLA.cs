@@ -1084,7 +1084,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         var la = new LegalityAnalysis(offered);
         if (!la.Valid)
         {
-            Log($"Clone request (from {poke.Trainer.TrainerName}) has detected an invalid Pokémon: {GameInfo.GetStrings(1).Species[offered.Species]}.");
+            Log($"Clone request (from {poke.Trainer.TrainerName}) has detected an invalid Pokémon: {GameInfo.GetStrings("en").Species[offered.Species]}.");
             if (DumpSetting.Dump)
                 DumpPokemon(DumpSetting.DumpFolder, "hacked", offered);
 
@@ -1100,7 +1100,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         if (Hub.Config.Legality.ResetHOMETracker)
             clone.Tracker = 0;
 
-        poke.SendNotification(this, $"**Cloned your {GameInfo.GetStrings(1).Species[clone.Species]}!**\nNow press B to cancel your offer and trade me a Pokémon you don't want.");
+        poke.SendNotification(this, $"**Cloned your {GameInfo.GetStrings("en").Species[clone.Species]}!**\nNow press B to cancel your offer and trade me a Pokémon you don't want.");
         Log($"Cloned a {(Species)clone.Species}. Waiting for user to change their Pokémon...");
 
         if (!await CheckCloneChangedOffer(token).ConfigureAwait(false))
@@ -1174,7 +1174,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         else if (config.LedyQuitIfNoMatch)
         {
             var nickname = offered.IsNicknamed ? $" (Nickname: \"{offered.Nickname}\")" : string.Empty;
-            poke.SendNotification(this, $"No match found for the offered {GameInfo.GetStrings(1).Species[offered.Species]}{nickname}.");
+            poke.SendNotification(this, $"No match found for the offered {GameInfo.GetStrings("en").Species[offered.Species]}{nickname}.");
             return (toSend, PokeTradeResult.TrainerRequestBad);
         }
 
@@ -1230,7 +1230,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 
     private async Task<(PA8 toSend, PokeTradeResult check)> HandleFixOT(SAV8LA sav, PokeTradeDetail<PA8> poke, PA8 offered, PartnerDataHolder partner, CancellationToken token)
     {
-        var adOT = AbstractTrade<PA8>.HasAdName(offered, out _);
+        var adOT = TradeExtensions<PA8>.HasAdName(offered, out _);
         var laInit = new LegalityAnalysis(offered);
         if (!adOT && laInit.Valid)
         {
@@ -1243,7 +1243,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
             clone.Tracker = 0;
 
         string shiny = string.Empty;
-        if (!AbstractTrade<PA8>.ShinyLockCheck(offered.Species, AbstractTrade<PA8>.FormOutput(offered.Species, offered.Form, out _), $"{(Ball)offered.Ball}"))
+        if (!TradeExtensions<PA8>.ShinyLockCheck(offered.Species, TradeExtensions<PA8>.FormOutput(offered.Species, offered.Form, out _), $"{(Ball)offered.Ball}"))
             shiny = $"\nShiny: {(offered.ShinyXor == 0 ? "Square" : offered.IsShiny ? "Star" : "No")}";
         else shiny = "\nShiny: No";
 
@@ -1270,7 +1270,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
             var info = new SimpleTrainerInfo { Gender = clone.OriginalTrainerGender, Language = clone.Language, OT = name, TID16 = clone.TID16, SID16 = clone.SID16, Generation = 8 };
             var mg = EncounterEvent.GetAllEvents().Where(x => x.Species == clone.Species && x.Form == clone.Form && x.IsShiny == clone.IsShiny && x.OriginalTrainerName == clone.OriginalTrainerName).ToList();
             if (mg.Count > 0)
-                clone = AbstractTrade<PA8>.CherishHandler(mg.First(), info);
+                clone = TradeExtensions<PA8>.CherishHandler(mg.First(), info);
             else clone = (PA8)sav.GetLegal(AutoLegalityWrapper.GetTemplate(new ShowdownSet(string.Join("\n", set))), out _);
         }
         else
@@ -1278,7 +1278,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
             clone = (PA8)sav.GetLegal(AutoLegalityWrapper.GetTemplate(new ShowdownSet(string.Join("\n", set))), out _);
         }
 
-        clone = (PA8)AbstractTrade<PA8>.TrashBytes(clone, new LegalityAnalysis(clone));
+        clone = (PA8)TradeExtensions<PA8>.TrashBytes(clone, new LegalityAnalysis(clone));
         clone.ResetPartyStats();
 
         var la = new LegalityAnalysis(clone);

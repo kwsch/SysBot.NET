@@ -24,11 +24,11 @@ public static class AutoLegalityExtensionsDiscord
             var template = AutoLegalityWrapper.GetTemplate(set);
             var pkm = sav.GetLegal(template, out var result);
             if (pkm is PK8 && pkm.Nickname.ToLower() == "egg" && Breeding.CanHatchAsEgg(pkm.Species))
-                AbstractTrade<PK8>.EggTrade(pkm, template);
+                TradeExtensions<PK8>.EggTrade(pkm, template);
             else if (pkm is PB8 && pkm.Nickname.ToLower() == "egg" && Breeding.CanHatchAsEgg(pkm.Species))
-                AbstractTrade<PB8>.EggTrade(pkm, template);
+                TradeExtensions<PB8>.EggTrade(pkm, template);
             else if (pkm is PK9 && pkm.Nickname.ToLower() == "egg" && Breeding.CanHatchAsEgg(pkm.Species))
-                AbstractTrade<PK9>.EggTrade(pkm, template);
+                TradeExtensions<PK9>.EggTrade(pkm, template);
 
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];

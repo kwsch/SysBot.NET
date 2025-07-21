@@ -29,7 +29,7 @@ namespace SysBot.Pokemon.Discord
                 return;
             }
 
-            var code = Info.GetRandomTradeCode((int)userID);
+            var code = Info.GetRandomTradeCode(userID);
             _ = Task.Run(async () =>
             {
                 try
@@ -84,7 +84,7 @@ namespace SysBot.Pokemon.Discord
                     pk = EntityConverter.ConvertToType(pk, typeof(T), out _) ?? pk;
                     if (pk is not T validPk)
                         continue;
-                    AbstractTrade<T>.EggTrade(validPk, template);
+                    TradeExtensions<T>.EggTrade(validPk, template);
 
                     var la = new LegalityAnalysis(validPk);
                     if (la.Valid)

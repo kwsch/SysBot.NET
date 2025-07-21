@@ -560,9 +560,9 @@ public class PokeTradeBotBS : PokeRoutineExecutor8BS, ICountBot, ITradeBot, IDis
         if (token.IsCancellationRequested) return (offered, PokeTradeResult.RoutineCancel);
 
         if (Hub.Config.Discord.ReturnPKMs)
-            poke.SendNotification(this, offered, $"Here's what you showed me - {GameInfo.GetStrings(1).Species[offered.Species]}");
+            poke.SendNotification(this, offered, $"Here's what you showed me - {GameInfo.GetStrings("en").Species[offered.Species]}");
 
-        var adOT = AbstractTrade<PB8>.HasAdName(offered, out _);
+        var adOT = TradeExtensions<PB8>.HasAdName(offered, out _);
         var laInit = new LegalityAnalysis(offered);
         if (!adOT && laInit.Valid)
         {
@@ -575,7 +575,7 @@ public class PokeTradeBotBS : PokeRoutineExecutor8BS, ICountBot, ITradeBot, IDis
             clone.Tracker = 0;
 
         string shiny = string.Empty;
-        if (!AbstractTrade<PB8>.ShinyLockCheck(offered.Species, AbstractTrade<PB8>.FormOutput(offered.Species, offered.Form, out _), $"{(Ball)offered.Ball}"))
+        if (!TradeExtensions<PB8>.ShinyLockCheck(offered.Species, TradeExtensions<PB8>.FormOutput(offered.Species, offered.Form, out _), $"{(Ball)offered.Ball}"))
             shiny = $"\nShiny: {(offered.ShinyXor == 0 ? "Square" : offered.IsShiny ? "Star" : "No")}";
         else shiny = "\nShiny: No";
 
@@ -604,7 +604,7 @@ public class PokeTradeBotBS : PokeRoutineExecutor8BS, ICountBot, ITradeBot, IDis
             var info = new SimpleTrainerInfo { Gender = clone.OriginalTrainerGender, Language = clone.Language, OT = name, TID16 = clone.TID16, SID16 = clone.SID16, Generation = 8 };
             var mg = EncounterEvent.GetAllEvents().Where(x => x.Species == clone.Species && x.Form == clone.Form && x.IsShiny == clone.IsShiny && x.OriginalTrainerName == clone.OriginalTrainerName).ToList();
             if (mg.Count > 0)
-                clone = AbstractTrade<PB8>.CherishHandler(mg.First(), info);
+                clone = TradeExtensions<PB8>.CherishHandler(mg.First(), info);
             else clone = (PB8)sav.GetLegal(AutoLegalityWrapper.GetTemplate(new ShowdownSet(string.Join("\n", set))), out _);
         }
         else
@@ -612,7 +612,7 @@ public class PokeTradeBotBS : PokeRoutineExecutor8BS, ICountBot, ITradeBot, IDis
             clone = (PB8)sav.GetLegal(AutoLegalityWrapper.GetTemplate(new ShowdownSet(string.Join("\n", set))), out _);
         }
 
-        clone = (PB8)AbstractTrade<PB8>.TrashBytes(clone, new LegalityAnalysis(clone));
+        clone = (PB8)TradeExtensions<PB8>.TrashBytes(clone, new LegalityAnalysis(clone));
         clone.ResetPartyStats();
         var la = new LegalityAnalysis(clone);
         if (!la.Valid)
@@ -621,7 +621,7 @@ public class PokeTradeBotBS : PokeRoutineExecutor8BS, ICountBot, ITradeBot, IDis
             return (clone, PokeTradeResult.IllegalTrade);
         }
 
-        AbstractTrade<PB8>.HasAdName(offered, out string detectedAd);
+        TradeExtensions<PB8>.HasAdName(offered, out string detectedAd);
         poke.SendNotification(this, $"{(!laInit.Valid ? "**Legalized" : "**Fixed Nickname/OT for")} {(Species)clone.Species}** (found ad: {detectedAd})! Now confirm the trade!");
         Log($"{(!laInit.Valid ? "Legalized" : "Fixed Nickname/OT for")} {(Species)clone.Species}!");
 
@@ -690,7 +690,7 @@ public class PokeTradeBotBS : PokeRoutineExecutor8BS, ICountBot, ITradeBot, IDis
         {
 
             var nickname = offered.IsNicknamed ? $" (Nickname: \"{offered.Nickname}\")" : string.Empty;
-            poke.SendNotification(this, $"No match found for the offered {GameInfo.GetStrings(1).Species[offered.Species]}{nickname}.");
+            poke.SendNotification(this, $"No match found for the offered {GameInfo.GetStrings("en").Species[offered.Species]}{nickname}.");
             return (toSend, PokeTradeResult.TrainerRequestBad);
         }
 

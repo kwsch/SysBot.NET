@@ -21,19 +21,31 @@ namespace SysBot.Pokemon.Discord
     {
         private static System.Drawing.Image CombineImages(List<System.Drawing.Image> images)
         {
+#pragma warning disable CA1416 // Validate platform compatibility
             int width = images.Sum(img => img.Width);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
             int height = images.Max(img => img.Height);
+#pragma warning restore CA1416 // Validate platform compatibility
 
+#pragma warning disable CA1416 // Validate platform compatibility
             Bitmap combinedImage = new Bitmap(width, height);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
             using (Graphics g = Graphics.FromImage(combinedImage))
             {
                 int offset = 0;
                 foreach (System.Drawing.Image img in images)
                 {
+#pragma warning disable CA1416 // Validate platform compatibility
                     g.DrawImage(img, offset, 0);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                     offset += img.Width;
+#pragma warning restore CA1416 // Validate platform compatibility
                 }
             }
+#pragma warning restore CA1416 // Validate platform compatibility
 
             return combinedImage;
         }
@@ -53,6 +65,7 @@ namespace SysBot.Pokemon.Discord
                     // Extract title from the Pokepaste HTML
                     var titleMatch = Regex.Match(pokePasteHtml, @"<h1>(.*?)</h1>");
                     var title = titleMatch.Success ? titleMatch.Groups[1].Value : "pokepasteteam";
+
                     // Sanitize the title to make it a valid filename
                     title = Regex.Replace(title, "[^a-zA-Z0-9_.-]", "").Trim();
                     if (title.Length > 30) title = title[..30]; // Truncate if too long
@@ -66,9 +79,11 @@ namespace SysBot.Pokemon.Discord
                     }
 
                     var namer = new FileNamer();
+#pragma warning disable CA1416 // Validate platform compatibility
                     var pokemonImages = new List<System.Drawing.Image>();
+#pragma warning restore CA1416 // Validate platform compatibility
 
-                    using var memoryStream = new MemoryStream();
+                    await using var memoryStream = new MemoryStream();
                     using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
                     {
                         foreach (var set in showdownSets)
@@ -102,12 +117,16 @@ namespace SysBot.Pokemon.Discord
                                 var speciesName = GameInfo.GetStrings("en").Species[set.Species];
                                 var fileName = namer.GetName(pk); // Use FileNamer to generate the file name
                                 var entry = archive.CreateEntry($"{fileName}.{pk.Extension}");
-                                using var entryStream = entry.Open();
+                                await using var entryStream = entry.Open();
                                 await entryStream.WriteAsync(pk.Data.AsMemory(0, pk.Data.Length)).ConfigureAwait(false);
 
-                                string speciesImageUrl = AbstractTrade<PK9>.PokeImg(pk, false, false);
+                                string speciesImageUrl = TradeExtensions<PK9>.PokeImg(pk, false, false);
+#pragma warning disable CA1416 // Validate platform compatibility
                                 var speciesImage = await Task.Run(() => System.Drawing.Image.FromStream(new HttpClient().GetStreamAsync(speciesImageUrl).Result)).ConfigureAwait(false);
+#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
                                 pokemonImages.Add(speciesImage);
+#pragma warning restore CA1416 // Validate platform compatibility
                             }
                             catch (Exception ex)
                             {
@@ -125,10 +144,14 @@ namespace SysBot.Pokemon.Discord
                     await Context.User.SendFileAsync(memoryStream, $"{title}.zip", text: "Here's your team!").ConfigureAwait(false);
 
                     // Save the combined image as a file
+#pragma warning disable CA1416 // Validate platform compatibility
                     combinedImage.Save($"{title}.png");
-                    using (var imageStream = new MemoryStream())
+#pragma warning restore CA1416 // Validate platform compatibility
+                    await using (var imageStream = new MemoryStream())
                     {
+#pragma warning disable CA1416 // Validate platform compatibility
                         combinedImage.Save(imageStream, System.Drawing.Imaging.ImageFormat.Png);
+#pragma warning restore CA1416 // Validate platform compatibility
                         imageStream.Position = 0;
 
                         // Send the combined image file with an embed to the channel
@@ -173,8 +196,7 @@ namespace SysBot.Pokemon.Discord
         {
             var showdownSets = new List<ShowdownSet>();
             var regex = new Regex(@"<pre>(.*?)</pre>", RegexOptions.Singleline);
-            var matches = regex.Matches(pokePasteHtml);
-            foreach (Match match in matches)
+            foreach (Match match in regex.Matches(pokePasteHtml))
             {
                 var showdownText = match.Groups[1].Value;
                 showdownText = System.Net.WebUtility.HtmlDecode(Regex.Replace(showdownText, "<.*?>", string.Empty));

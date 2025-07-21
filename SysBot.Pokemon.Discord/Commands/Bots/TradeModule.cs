@@ -44,7 +44,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
 
-        var code = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
+        var code = Info.GetRandomTradeCode(userID);
         var trainerName = Context.User.Username;
         var lgcode = Info.GetRandomLGTradeCode();
         var sig = Context.User.GetFavor();
@@ -113,7 +113,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
 
-        var code = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
+        var code = Info.GetRandomTradeCode(userID);
         await DittoTrade(code, keyword, language, nature).ConfigureAwait(false);
         if (Context.Message is IUserMessage userMessage)
         {
@@ -152,13 +152,13 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var template = AutoLegalityWrapper.GetTemplate(set);
         var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
         var pkm = sav.GetLegal(template, out var result);
-        AbstractTrade<T>.DittoTrade((T)pkm);
+        TradeExtensions<T>.DittoTrade((T)pkm);
         var la = new LegalityAnalysis(pkm);
 
         if (pkm is not T pk || !la.Valid)
         {
             var reason = result == "Timeout" ? "That set took too long to generate." : "I wasn't able to create something from that.";
-            var imsg = $"Aw, shit son! {reason} Here's my best attempt for that Ditto!";
+            var imsg = $"Oops! {reason} Here's my best attempt for that Ditto!";
             await Context.Channel.SendPKMAsync(pkm, imsg).ConfigureAwait(false);
             return;
         }
@@ -166,7 +166,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         pk.ResetPartyStats();
 
         // Ad Name Check
-        if (AbstractTrade<T>.HasAdName(pk, out string ad))
+        if (TradeExtensions<T>.HasAdName(pk, out string ad))
         {
             await ReplyAndDeleteAsync("Detected Adname in the Pokémon's name or trainer name, which is not allowed.", 5);
             return;
@@ -192,7 +192,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
             return;
         }
-        var code = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
+        var code = Info.GetRandomTradeCode(userID);
         await ItemTrade(code, item).ConfigureAwait(false);
     }
 
@@ -265,7 +265,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public async Task TradeEgg([Remainder] string egg)
     {
         var userID = Context.User.Id;
-        var code = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
+        var code = Info.GetRandomTradeCode(userID);
         await TradeEggAsync(code, egg).ConfigureAwait(false);
     }
 
@@ -281,8 +281,8 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         if (Info.IsUserInQueue(userID))
         {
             _ = ReplyAndDeleteAsync("You already have an existing trade in the queue. Please wait until it is processed.", 2);
-            return;
-        }
+                return;
+            }
         content = ReusableActions.StripCodeBlock(content);
         content = BatchNormalizer.NormalizeBatchCommands(content);
         var set = new ShowdownSet(content);
@@ -299,14 +299,14 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                     return;
                 }
                 pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
-
                 if (pkm is not T pk)
                 {
-                    _ = ReplyAndDeleteAsync("I wasn't able to create an egg for that.", 2, Context.Message);
+                    _ = ReplyAndDeleteAsync("Oops! I wasn't able to create an egg for that.", 2, Context.Message);
                     return;
                 }
 
                 bool versionSpecified = content.Contains(".Version=", StringComparison.OrdinalIgnoreCase);
+
                 if (!versionSpecified)
                 {
                     if (pk is PB8 pb8)
@@ -318,12 +318,11 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                         pk8.Version = (GameVersion)GameVersion.SW;
                     }
                 }
-                pk.IsNicknamed = false;
-                AbstractTrade<T>.EggTrade(pk, template);
 
+                pk.IsNicknamed = false;
+                TradeExtensions<T>.EggTrade(pk, template);
                 var sig = Context.User.GetFavor();
                 await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User).ConfigureAwait(false);
-
                 _ = DeleteMessagesAfterDelayAsync(null, Context.Message, 2);
             }
             catch (Exception ex)
@@ -348,7 +347,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public Task HideTradeAsync([Summary("Showdown Set")][Remainder] string content)
     {
         var userID = Context.User.Id;
-        var code = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
+        var code = Info.GetRandomTradeCode(userID);
         return HideTradeAsync(code, content);
     }
 
@@ -380,7 +379,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var ignoreAutoOT = content.Contains("OT:") || content.Contains("TID:") || content.Contains("SID:");
         content = ReusableActions.StripCodeBlock(content);
         content = BatchNormalizer.NormalizeBatchCommands(content);
-        bool isEgg = AbstractTrade<T>.IsEggCheck(content);
+        bool isEgg = TradeExtensions<T>.IsEggCheck(content);
 
         _ = ShowdownParsing.TryParseAnyLanguage(content, out ShowdownSet? set);
 
@@ -390,7 +389,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
 
-        byte finalLanguage = LanguageHelper.GetFinalLanguage(content, set, (byte)Info.Hub.Config.Legality.GenerateLanguage, AbstractTrade<T>.DetectShowdownLanguage);
+        byte finalLanguage = LanguageHelper.GetFinalLanguage(content, set, (byte)Info.Hub.Config.Legality.GenerateLanguage, TradeExtensions<T>.DetectShowdownLanguage);
         var template = AutoLegalityWrapper.GetTemplate(set);
 
         if (set.InvalidLines.Count != 0)
@@ -419,7 +418,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 if (isEgg && pkm is T eggPk)
                 {
                     eggPk.IsNicknamed = false;
-                    AbstractTrade<T>.EggTrade(eggPk, template);
+                    TradeExtensions<T>.EggTrade(eggPk, template);
                     pkm = eggPk;
                     la = new LegalityAnalysis(pkm);
                 }
@@ -476,8 +475,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                     return;
                 }
 
-                AbstractTrade<T>.CheckAndSetUnrivaledDate(pk);
-
                 if (pk.WasEgg)
                     pk.EggMetDate = pk.MetDate;
 
@@ -490,12 +487,12 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
                 pk.ResetPartyStats();
 
-                if (AbstractTrade<T>.HasAdName(pk, out string ad))
+                if (TradeExtensions<T>.HasAdName(pk, out string ad))
                 {
                     await ReplyAndDeleteAsync("Detected Adname in the Pokémon's name or trainer name, which is not allowed.", 5);
                     return;
                 }
-
+         
                 var sig = Context.User.GetFavor();
                 await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, isBatchTrade: false, batchTradeNumber: 1, totalBatchTrades: 1, true, false, lgcode: lgcode, ignoreAutoOT: ignoreAutoOT, setEdited: false).ConfigureAwait(false);
             }
@@ -533,7 +530,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     private async Task HideTradeAsyncAttach([Summary("Ignore AutoOT")] bool ignoreAutoOT = false)
     {
         var userID = Context.User.Id;
-        var code = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
+        var code = Info.GetRandomTradeCode(userID);
         var sig = Context.User.GetFavor();
         await HideTradeAsyncAttach(code, sig, Context.User, ignoreAutoOT: ignoreAutoOT).ConfigureAwait(false);
         if (Context.Message is IUserMessage userMessage)
@@ -549,7 +546,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public Task TradeAsync([Summary("Showdown Set")][Remainder] string content)
     {
         var userID = Context.User.Id;
-        var code = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
+        var code = Info.GetRandomTradeCode(userID);
         return TradeAsync(code, content);
     }
 
@@ -581,7 +578,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var ignoreAutoOT = content.Contains("OT:") || content.Contains("TID:") || content.Contains("SID:");
         content = ReusableActions.StripCodeBlock(content);
         content = BatchNormalizer.NormalizeBatchCommands(content);
-        bool isEgg = AbstractTrade<T>.IsEggCheck(content);
+        bool isEgg = TradeExtensions<T>.IsEggCheck(content);
 
         _ = ShowdownParsing.TryParseAnyLanguage(content, out ShowdownSet? set);
 
@@ -591,7 +588,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
 
-        byte finalLanguage = LanguageHelper.GetFinalLanguage(content, set, (byte)Info.Hub.Config.Legality.GenerateLanguage, AbstractTrade<T>.DetectShowdownLanguage);
+        byte finalLanguage = LanguageHelper.GetFinalLanguage(content, set, (byte)Info.Hub.Config.Legality.GenerateLanguage, TradeExtensions<T>.DetectShowdownLanguage);
         var template = AutoLegalityWrapper.GetTemplate(set);
 
         if (set.InvalidLines.Count != 0)
@@ -619,6 +616,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 if (isEgg && pkm is T eggPk)
                 {
                     bool versionSpecified = content.Contains(".Version=", StringComparison.OrdinalIgnoreCase);
+
                     if (!versionSpecified)
                     {
                         if (eggPk is PB8 pb8)
@@ -630,8 +628,9 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                             pk8.Version = (GameVersion)GameVersion.SW;
                         }
                     }
+
                     eggPk.IsNicknamed = false;
-                    AbstractTrade<T>.EggTrade(eggPk, template);
+                    TradeExtensions<T>.EggTrade(eggPk, template);
                     pkm = eggPk;
                     la = new LegalityAnalysis(pkm);
                 }
@@ -688,8 +687,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                     return;
                 }
 
-                AbstractTrade<T>.CheckAndSetUnrivaledDate(pk);
-
                 if (pk.WasEgg)
                     pk.EggMetDate = pk.MetDate;
 
@@ -702,8 +699,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
                 pk.ResetPartyStats();
 
-
-                if (AbstractTrade<T>.HasAdName(pk, out string ad))
+                if (TradeExtensions<T>.HasAdName(pk, out string ad))
                 {
                     await ReplyAndDeleteAsync("Detected Adname in the Pokémon's name or trainer name, which is not allowed.", 5);
                     return;
@@ -746,7 +742,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public async Task TradeAsyncAttach([Summary("Ignore AutoOT")] bool ignoreAutoOT = false)
     {
         var userID = Context.User.Id;
-        var code = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
+        var code = Info.GetRandomTradeCode(userID);
         var sig = Context.User.GetFavor();
         await Task.Run(async () =>
         {
@@ -792,7 +788,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
 
-        var batchTradeCode = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
+        var batchTradeCode = Info.GetRandomTradeCode(userID);
 
         // Execute the trades in order of request, with delay
         for (int i = 0; i < trades.Count; i++)
@@ -876,7 +872,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
 
-        var batchTradeCode = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
+        var batchTradeCode = Info.GetRandomTradeCode(userID);
         int batchTradeNumber = 1;
 
         foreach (var entry in entries)
@@ -918,16 +914,15 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                     await ReplyAsync($"The {spec} in the provided file is not legal.").ConfigureAwait(false);
                     return;
                 }
-                // Set correct MetDate for Mightiest Mark
-                AbstractTrade<T>.CheckAndSetUnrivaledDate(pk);
+
                 pk.ResetPartyStats();
 
                 var userID = Context.User.Id;
-                var code = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
+                var code = Info.GetRandomTradeCode(userID);
                 var lgcode = Info.GetRandomLGTradeCode();
 
                 // Ad Name Check
-                if (AbstractTrade<T>.HasAdName(pk, out string ad))
+                if (TradeExtensions<T>.HasAdName(pk, out string ad))
                 {
                     await ReplyAndDeleteAsync("Detected Adname in the Pokémon's name or trainer name, which is not allowed.", 5);
                     return;
@@ -960,7 +955,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             return;
         }
 
-        byte finalLanguage = LanguageHelper.GetFinalLanguage(tradeContent, set, (byte)Info.Hub.Config.Legality.GenerateLanguage, AbstractTrade<T>.DetectShowdownLanguage);
+        byte finalLanguage = LanguageHelper.GetFinalLanguage(tradeContent, set, (byte)Info.Hub.Config.Legality.GenerateLanguage, TradeExtensions<T>.DetectShowdownLanguage);
         var template = AutoLegalityWrapper.GetTemplate(set);
 
         if (set.InvalidLines.Count != 0)
@@ -1039,8 +1034,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                     }
                 }
 
-                AbstractTrade<T>.CheckAndSetUnrivaledDate(pk);
-
                 if (pkm.WasEgg)
                     pkm.EggMetDate = pkm.MetDate;
 
@@ -1054,18 +1047,18 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 pk.ResetPartyStats();
 
                 var userID = Context.User.Id;
-                var code = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
+                var code = Info.GetRandomTradeCode(userID);
                 var lgcode = Info.GetRandomLGTradeCode();
                 if (pkm is PB7)
                 {
                     lgcode = GenerateRandomPictocodes(3);
                 }
 
-                    if (AbstractTrade<T>.HasAdName(pk, out string ad))
-                    {
-                        await ReplyAndDeleteAsync("Detected Adname in the Pokémon's name or trainer name, which is not allowed.", 5);
-                        return;
-                    }
+                if (TradeExtensions<T>.HasAdName(pk, out string ad))
+                {
+                    await ReplyAndDeleteAsync("Detected Adname in the Pokémon's name or trainer name, which is not allowed.", 5);
+                    return;
+                }
 
                 var sig = Context.User.GetFavor();
                 await AddTradeToQueueAsync(batchTradeCode, Context.User.Username, pk, sig, Context.User, isBatchTrade, batchTradeNumber, totalBatchTrades, lgcode: lgcode, tradeType: PokeTradeType.Batch, ignoreAutoOT: ignoreAutoOT, setEdited: false).ConfigureAwait(false);
@@ -1227,7 +1220,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 return;
             }
 
-            var code = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
+            var code = Info.GetRandomTradeCode(userID);
             var lgcode = Info.GetRandomLGTradeCode();
             var sig = Context.User.GetFavor();
 
@@ -1395,7 +1388,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
                 return;
             }
 
-            var code = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
+            var code = Info.GetRandomTradeCode(userID);
             var lgcode = Info.GetRandomLGTradeCode();
             var sig = Context.User.GetFavor();
 
@@ -1448,7 +1441,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public Task TradeAsyncAttachUser([Remainder] string _)
     {
         var userID = Context.User.Id;
-        var code = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
+        var code = Info.GetRandomTradeCode(userID);
         return TradeAsyncAttachUser(code, _);
     }
 
@@ -1631,204 +1624,73 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         }
     }
 
-    [Command("homeready")]
-    [Alias("hr")]
-    [Summary("Displays instructions on how to use the HOME-Ready module.")]
-    private async Task HomeReadyInstructionsAsync()
+    [Command("medals")]
+    [Alias("ml")]
+    [Summary("Shows your current trade count and medal status")]
+    public async Task ShowMedalsCommand()
     {
-        var embed0 = new EmbedBuilder()
-            .WithTitle("-------HOME-READY MODULE INSTRUCTIONS-------");
+        var tradeCodeStorage = new TradeCodeStorage();
+        int totalTrades = tradeCodeStorage.GetTradeCount(Context.User.Id);
 
-        embed0.WithImageUrl("https://raw.githubusercontent.com/Secludedly/ZE-FusionBot-Sprite-Images/main/homereadybreak.png");
-        var message0 = await ReplyAsync(embed: embed0.Build());
-
-
-        var embed1 = new EmbedBuilder()
-            .AddField("GET LIST: `hrl <Pokemon>`",
-                      "- This will search for any Pokemon in the entire module.\n" +
-                      "**Example:** `hrl Mewtwo`\n");
-
-        embed1.WithImageUrl("https://raw.githubusercontent.com/Secludedly/ZE-FusionBot-Sprite-Images/main/homereadybreak.png");
-        var message1 = await ReplyAsync(embed: embed1.Build());
-
-
-        var embed2 = new EmbedBuilder()
-            .AddField("CHANGE PAGES: `hrl <page>`",
-                      "- This will change the page you're viewing, with or without additional variables.\n" +
-                      "**Example:** `hrl 5 Charmander`\n");
-
-        embed2.WithImageUrl("https://raw.githubusercontent.com/Secludedly/ZE-FusionBot-Sprite-Images/main/homereadybreak.png");
-        var message2 = await ReplyAsync(embed: embed2.Build());
-
-        var embed3 = new EmbedBuilder()
-            .AddField("TRADING FILES: `hrr <number>`",
-                      "- This will trade you the Pokemon through the bot via the designated number.\n" +
-                      "**Example:** `hrr 682`\n");
-
-        embed3.WithImageUrl("https://raw.githubusercontent.com/Secludedly/ZE-FusionBot-Sprite-Images/main/homereadybreak.png");
-        var message3 = await ReplyAsync(embed: embed3.Build());
-
-        _ = Task.Run(async () =>
+        if (totalTrades == 0)
         {
-            await Task.Delay(90_000);
-            await message0.DeleteAsync();
-            await message1.DeleteAsync();
-            await message2.DeleteAsync();
-        });
-    }
-
-    [Command("homereadyrequest")]
-    [Alias("hrr")]
-    [Summary("Downloads HOME-ready attachments from the specified folder and adds it to the trade queue.")]
-    [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
-    private async Task HOMEReadyRequestAsync(int index)
-    {
-        // Check if the user is already in the queue
-        var userID = Context.User.Id;
-        if (Info.IsUserInQueue(userID))
-        {
-            await ReplyAsync("You're already in a queue. Finish with your current queue before attempting to join another.").ConfigureAwait(false);
-            return;
-        }
-        try
-        {
-            var homeReadyFolderPath = SysCord<T>.Runner.Config.Trade.RequestFolderSettings.HOMEReadyPKMFolder;
-            var botPrefix = SysCord<T>.Runner.Config.Discord.CommandPrefix;
-            var homeReadyFiles = Directory.GetFiles(homeReadyFolderPath)
-                                            .Select(Path.GetFileName)
-                                            .OrderBy(x => x)
-                                            .ToList();
-
-            // Check if the HOME-ready folder path is not set or empty
-            if (string.IsNullOrEmpty(homeReadyFolderPath))
-            {
-                await ReplyAsync("This bot does not have this feature set up.");
-                return;
-            }
-
-            if (index < 1 || index > homeReadyFiles.Count)
-            {
-                await ReplyAsync("Your selection was invalid. Please use a valid file number.").ConfigureAwait(false);
-                return;
-            }
-
-            var selectedFile = homeReadyFiles[index - 1];
-            var fileData = await File.ReadAllBytesAsync(Path.Combine(homeReadyFolderPath, selectedFile));
-
-            var download = new Download<PKM>
-            {
-                Data = EntityFormat.GetFromBytes(fileData),
-                Success = true
-            };
-
-            var pk = GetRequest(download);
-            if (pk == null)
-            {
-                await ReplyAsync("Failed to convert the legal HOME-ready file to the required PKM type.").ConfigureAwait(false);
-                return;
-            }
-
-            var code = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
-            var lgcode = Info.GetRandomLGTradeCode();
-            var sig = Context.User.GetFavor();
-            var tradeMessage = await Context.Channel.SendMessageAsync($"HOME-Ready request added to queue.");
-            await AddTradeToQueueAsync(code, Context.User.Username, pk, sig, Context.User, lgcode: lgcode).ConfigureAwait(false);
-
-        }
-        catch (Exception ex)
-        {
-            await ReplyAsync($"**Error:** {ex.Message}").ConfigureAwait(false);
-        }
-        finally
-        {
-            if (Context.Message is IUserMessage userMessage)
-            {
-                await userMessage.DeleteAsync().ConfigureAwait(false);
-            }
-        }
-
-    }
-
-    [Command("homereadylist")]
-    [Alias("hrl")]
-    [Summary("Lists available HOME-ready files, filtered by a specific letter or substring, then sends the list to the channel.")]
-    private async Task HOMEListAsync([Remainder] string args = "")
-    {
-        const int itemsPerPage = 10; // Number of items per page
-        var homeReadyFolderPath = SysCord<T>.Runner.Config.Trade.RequestFolderSettings.HOMEReadyPKMFolder;
-        var botPrefix = SysCord<T>.Runner.Config.Discord.CommandPrefix;
-
-        // Check if the homeready folder path is not set or empty
-        if (string.IsNullOrEmpty(homeReadyFolderPath))
-        {
-            await ReplyAsync("This bot does not have this feature set up.");
+            await ReplyAsync($"{Context.User.Username}, you haven't made any trades yet. Start trading to earn your first medal!");
             return;
         }
 
-        // Parsing the arguments to separate filter and page number
-        string filter = "";
-        int page = 1; // Declare and initialize the page variable
-        var parts = args.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        int currentMilestone = GetCurrentMilestone(totalTrades);
 
-        if (parts.Length > 0)
+        var embed = CreateMedalsEmbed(Context.User, currentMilestone, totalTrades);
+        await Context.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+    }
+
+    private static int GetCurrentMilestone(int totalTrades)
+    {
+        int[] milestones = { 700, 650, 600, 550, 500, 450, 400, 350, 300, 250, 200, 150, 100, 50, 1 };
+        return milestones.FirstOrDefault(m => totalTrades >= m, 0);
+    }
+
+    private static Embed CreateMedalsEmbed(SocketUser user, int milestone, int totalTrades)
+    {
+        string status = milestone switch
         {
-            // Check if the last part is a number (page number)
-            if (int.TryParse(parts.Last(), out int parsedPage))
-            {
-                page = parsedPage;
-                filter = string.Join(" ", parts.Take(parts.Length - 1));
-            }
-            else
-            {
-                filter = string.Join(" ", parts);
-            }
-        }
+            1 => "Newbie Trainer",
+            50 => "Novice Trainer",
+            100 => "Pokémon Professor",
+            150 => "Pokémon Specialist",
+            200 => "Pokémon Champion",
+            250 => "Pokémon Hero",
+            300 => "Pokémon Elite",
+            350 => "Pokémon Trader",
+            400 => "Pokémon Sage",
+            450 => "Pokémon Legend",
+            500 => "Region Master",
+            550 => "Trade Master",
+            600 => "World Famous",
+            650 => "Pokémon Master",
+            700 => "Pokémon God",
+            _ => "New Trainer"
+        };
 
-        var allHOMEReadyFiles = Directory.GetFiles(homeReadyFolderPath)
-                                           .Select(Path.GetFileName)
-                                           .OrderBy(file => file)
-                                           .ToList();
+        string description = $"Total Trades: **{totalTrades}**\n**Current Status:** {status}";
 
-        var filteredHOMEReadyFiles = allHOMEReadyFiles
-                                       .Where(file => string.IsNullOrWhiteSpace(filter) || file.Contains(filter, StringComparison.OrdinalIgnoreCase))
-                                       .ToList();
-
-        IUserMessage replyMessage;
-
-        // Check if there are no files matching the filter
-        if (!filteredHOMEReadyFiles.Any())
+        if (milestone > 0)
         {
-            replyMessage = await ReplyAsync($"No HOME-ready files found matching the filter '{filter}'.");
+            string imageUrl = $"https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/Medals/{milestone:D3}.png";
+            return new EmbedBuilder()
+                .WithTitle($"{user.Username}'s Trading Status")
+                .WithColor(new Color(255, 215, 0)) // Gold
+                .WithDescription(description)
+                .WithThumbnailUrl(imageUrl)
+                .Build();
         }
         else
         {
-            var pageCount = (int)Math.Ceiling(filteredHOMEReadyFiles.Count / (double)itemsPerPage);
-            page = Math.Clamp(page, 1, pageCount); // Ensure page number is within valid range
-
-            var pageItems = filteredHOMEReadyFiles.Skip((page - 1) * itemsPerPage).Take(itemsPerPage);
-
-            var embed = new EmbedBuilder()
-                .WithTitle($"Available HOME-Ready Files - Filter: '{filter}'")
-                .WithDescription($"Page {page} of {pageCount}")
-                .WithColor(Color.Blue);
-
-            foreach (var item in pageItems)
-
-            {
-                var index = allHOMEReadyFiles.IndexOf(item) + 1; // Get the index from the original list
-                embed.AddField($"{index}. {item}", $"Use `{botPrefix}hrr {index}` to trade this legal HOME-ready file.");
-            }
-
-            // Send confirmation message in the same channel
-            replyMessage = await ReplyAsync($"Use `{botPrefix}hrl <page>` to change the page you are viewing.\n**Current Support:** USUM/LGPE/POGO/BDSP/SWSH/PLA -> SV.");
-            var message = await ReplyAsync(embed: embed.Build());
-
-            // Delay for 10 seconds
-            await Task.Delay(20_000);
-
-            // Delete the message
-            await message.DeleteAsync();
-
+            return new EmbedBuilder()
+                .WithTitle($"{user.Username}'s Trading Status")
+                .WithColor(new Color(255, 215, 0))
+                .WithDescription(description)
+                .Build();
         }
     }
 }

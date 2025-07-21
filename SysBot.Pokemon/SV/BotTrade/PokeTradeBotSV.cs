@@ -525,7 +525,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         var la = new LegalityAnalysis(offered);
         if (!la.Valid)
         {
-            Log($"Clone request (from {poke.Trainer.TrainerName}) has detected an invalid Pokémon: {GameInfo.GetStrings(1).Species[offered.Species]}.");
+            Log($"Clone request (from {poke.Trainer.TrainerName}) has detected an invalid Pokémon: {GameInfo.GetStrings("en").Species[offered.Species]}.");
             if (DumpSetting.Dump)
                 DumpPokemon(DumpSetting.DumpFolder, "hacked", offered);
 
@@ -541,8 +541,8 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         if (Hub.Config.Legality.ResetHOMETracker)
             clone.Tracker = 0;
 
-        poke.SendNotification(this, $"**Cloned your {GameInfo.GetStrings(1).Species[clone.Species]}!**\nNow press B to cancel your offer and trade me a Pokémon you don't want.");
-        Log($"Cloned a {GameInfo.GetStrings(1).Species[clone.Species]}. Waiting for user to change their Pokémon...");
+        poke.SendNotification(this, $"**Cloned your {GameInfo.GetStrings("en").Species[clone.Species]}!**\nNow press B to cancel your offer and trade me a Pokémon you don't want.");
+        Log($"Cloned a {GameInfo.GetStrings("en").Species[clone.Species]}. Waiting for user to change their Pokémon...");
 
         // Separate this out from WaitForPokemonChanged since we compare to old EC from original read.
         var partnerFound = await ReadUntilChanged(TradePartnerOfferedOffset, oldEC, 15_000, 0_200, false, true, token).ConfigureAwait(false);
@@ -579,7 +579,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         if (Hub.Config.Discord.ReturnPKMs)
             poke.SendNotification(this, offered, "Here's what you showed me!");
 
-        var adOT = AbstractTrade<PK9>.HasAdName(offered, out _);
+        var adOT = TradeExtensions<PK9>.HasAdName(offered, out _);
         var laInit = new LegalityAnalysis(offered);
         if (!adOT && laInit.Valid)
         {
@@ -592,7 +592,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             clone.Tracker = 0;
 
         string shiny = string.Empty;
-        if (!AbstractTrade<PK9>.ShinyLockCheck(offered.Species, AbstractTrade<PK9>.FormOutput(offered.Species, offered.Form, out _), $"{(Ball)offered.Ball}"))
+        if (!TradeExtensions<PK9>.ShinyLockCheck(offered.Species, TradeExtensions<PK9>.FormOutput(offered.Species, offered.Form, out _), $"{(Ball)offered.Ball}"))
             shiny = $"\nShiny: {(offered.ShinyXor == 0 ? "Square" : offered.IsShiny ? "Star" : "No")}";
         else shiny = "\nShiny: No";
 
@@ -619,7 +619,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             var info = new SimpleTrainerInfo { Gender = clone.OriginalTrainerGender, Language = clone.Language, OT = name, TID16 = clone.TID16, SID16 = clone.SID16, Generation = 9 };
             var mg = EncounterEvent.GetAllEvents().Where(x => x.Species == clone.Species && x.Form == clone.Form && x.IsShiny == clone.IsShiny && x.OriginalTrainerName == clone.OriginalTrainerName).ToList();
             if (mg.Count > 0)
-                clone = AbstractTrade<PK9>.CherishHandler(mg.First(), info);
+                clone = TradeExtensions<PK9>.CherishHandler(mg.First(), info);
             else clone = (PK9)sav.GetLegal(AutoLegalityWrapper.GetTemplate(new ShowdownSet(string.Join("\n", set))), out _);
         }
         else
@@ -627,7 +627,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             clone = (PK9)sav.GetLegal(AutoLegalityWrapper.GetTemplate(new ShowdownSet(string.Join("\n", set))), out _);
         }
 
-        clone = (PK9)AbstractTrade<PK9>.TrashBytes(clone, new LegalityAnalysis(clone));
+        clone = (PK9)TradeExtensions<PK9>.TrashBytes(clone, new LegalityAnalysis(clone));
         clone.ResetPartyStats();
 
         var la = new LegalityAnalysis(clone);
@@ -704,7 +704,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         else if (config.LedyQuitIfNoMatch)
         {
             var nickname = offered.IsNicknamed ? $" (Nickname: \"{offered.Nickname}\")" : string.Empty;
-            poke.SendNotification(this, $"No match found for the offered {GameInfo.GetStrings(1).Species[offered.Species]}{nickname}.");
+            poke.SendNotification(this, $"No match found for the offered {GameInfo.GetStrings("en").Species[offered.Species]}{nickname}.");
             return (toSend, PokeTradeResult.TrainerRequestBad);
         }
 

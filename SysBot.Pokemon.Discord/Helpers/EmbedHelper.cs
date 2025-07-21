@@ -90,7 +90,7 @@ public static class EmbedHelper
     public static async Task SendTradeFinishedEmbedAsync<T>(IUser user, string message, T pk, bool isMysteryEgg)
         where T : PKM, new()
     {
-        string speciesImageUrl = AbstractTrade<T>.PokeImg(pk, false, true, null);
+        string speciesImageUrl = TradeExtensions<T>.PokeImg(pk, false, true, null);
 
         var embed = new EmbedBuilder()
             .WithTitle("Trade Completed!")

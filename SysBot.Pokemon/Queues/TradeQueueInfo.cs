@@ -1,4 +1,3 @@
-using Discord.WebSocket;
 using PKHeX.Core;
 using SysBot.Base;
 using System;
@@ -208,6 +207,7 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
             var priority = sudo ? PokeTradePriorities.Tier1 :
                            trade.Trade.IsFavored ? PokeTradePriorities.Tier2 :
                            PokeTradePriorities.TierFree;
+
             var queue = Hub.Queues.GetQueue(trade.Type);
 
             queue.Enqueue(trade.Trade, priority);
@@ -218,11 +218,11 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
         }
     }
 
-    public int GetRandomTradeCode(ulong trainerID, ISocketMessageChannel channel, SocketUser user)
+    public int GetRandomTradeCode(ulong trainerID)
     {
         if (Hub.Config.Trade.TradeConfiguration.StoreTradeCodes)
         {
-            return _tradeCodeStorage.GetTradeCode(trainerID, channel, user);
+            return _tradeCodeStorage.GetTradeCode(trainerID);
         }
         else
         {
@@ -237,7 +237,6 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
         {
             code.Add((Pictocodes)Util.Rand.Next(10));
             code.Add(Pictocodes.Pikachu);
-
         }
         return code;
     }
@@ -246,11 +245,5 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
     {
         lock (_sync)
             return UsersInQueue.Count(func);
-    }
-
-    public int GetRandomTradeCode(int trainerID)
-    {
-        ulong id = (ulong)trainerID;
-        return GetRandomTradeCode(id, null, null); // You can safely ignore `null` here if logging isn't mandatory
     }
 }

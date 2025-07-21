@@ -23,6 +23,7 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ReplyAsync("You already have an existing trade in the queue. Please wait until it is processed.").ConfigureAwait(false);
             return;
         }
+
         var sig = Context.User.GetFavor();
         var lgcode = Info.GetRandomLGTradeCode();
 
@@ -62,7 +63,7 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         var lgcode = Info.GetRandomLGTradeCode();
 
         // Add to queue asynchronously
-        _ = QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode(userID, Context.Channel, Context.User) : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone, Context.User, false, 1, 1, false, false, lgcode);
+        _ = QueueHelper<T>.AddToQueueAsync(Context, tradeCode == 0 ? Info.GetRandomTradeCode(userID) : tradeCode, Context.User.Username, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone, Context.User, false, 1, 1, false, false, lgcode);
 
         // Immediately send a confirmation message without waiting
         var confirmationMessage = await ReplyAsync("Processing your clone request...").ConfigureAwait(false);
@@ -85,7 +86,7 @@ public class CloneModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     public Task CloneAsync()
     {
         var userID = Context.User.Id;
-        var code = Info.GetRandomTradeCode(userID, Context.Channel, Context.User);
+        var code = Info.GetRandomTradeCode(userID);
         return CloneAsync(code);
     }
 
