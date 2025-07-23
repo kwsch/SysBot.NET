@@ -231,41 +231,45 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
         }
 
         // Check for users sending to multiple in-game accounts (non-distribution trades)
-        if (!isDistribution && user.ID != 0)
-        {
-            var previous_remote = list.TryGetPreviousRemoteID(user.ID);
-            if (previous_remote != null && previous_remote.NetworkID != TrainerNID)
+
+        if (!AbuseSettings.AllowMultiGame)
+        { 
+            if (!isDistribution && user.ID != 0)
             {
-                var delta = DateTime.Now - previous_remote.Time;
-                var abuseExpiration = TimeSpan.FromMinutes(AbuseSettings.TradeAbuseExpiration);
-
-                if (delta < abuseExpiration)
+                var previous_remote = list.TryGetPreviousRemoteID(user.ID);
+                if (previous_remote != null && previous_remote.NetworkID != TrainerNID)
                 {
-                    var msg = AbuseSettings.EchoNintendoOnlineIDMultiRecipients
-                        ? $"Detected Discord ID: {user.ID} trading with different NIDs.\n" +
-                          $"Previous NID: {previous_remote.NetworkID} (OT: {previous_remote.Name})\n" +
-                          $"Current NID: {TrainerNID} (OT: {TrainerName})"
-                        : $"Detected Discord ID: {user.ID} trading with different in-game accounts.\n" +
-                          $"Previous OT: {previous_remote.Name}\n" +
-                          $"Current OT: {TrainerName}";
+                    var delta = DateTime.Now - previous_remote.Time;
+                    var abuseExpiration = TimeSpan.FromMinutes(AbuseSettings.TradeAbuseExpiration);
 
-                    if (!string.IsNullOrWhiteSpace(AbuseSettings.MultiRecipientEchoMention))
-                        msg = $"{AbuseSettings.MultiRecipientEchoMention} {msg}";
-
-                    EchoUtil.EchoAbuseMessage(msg);
-
-                    if (AbuseSettings.TradeAbuseAction != TradeAbuseAction.Ignore)
+                    if (delta < abuseExpiration)
                     {
-                        if (AbuseSettings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
+                        var msg = AbuseSettings.EchoNintendoOnlineIDMultiRecipients
+                            ? $"Detected Discord ID: {user.ID} trading with different NIDs.\n" +
+                              $"Previous NID: {previous_remote.NetworkID} (OT: {previous_remote.Name})\n" +
+                              $"Current NID: {TrainerNID} (OT: {TrainerName})"
+                            : $"Detected Discord ID: {user.ID} trading with different in-game accounts.\n" +
+                              $"Previous OT: {previous_remote.Name}\n" +
+                              $"Current OT: {TrainerName}";
+
+                        if (!string.IsNullOrWhiteSpace(AbuseSettings.MultiRecipientEchoMention))
+                            msg = $"{AbuseSettings.MultiRecipientEchoMention} {msg}";
+
+                        EchoUtil.EchoAbuseMessage(msg);
+
+                        if (AbuseSettings.TradeAbuseAction != TradeAbuseAction.Ignore)
                         {
-                            await BlockUser(token).ConfigureAwait(false);
-                            if (AbuseSettings.BanIDWhenBlockingUser)
+                            if (AbuseSettings.TradeAbuseAction == TradeAbuseAction.BlockAndQuit)
                             {
-                                AbuseSettings.BannedIDs.AddIfNew(new[] { GetReference(TrainerName, TrainerNID, "Trading with multiple NIDs") });
-                                Log($"Added {TrainerNID} to the BannedIDs list for trading with multiple NIDs.");
+                                await BlockUser(token).ConfigureAwait(false);
+                                if (AbuseSettings.BanIDWhenBlockingUser)
+                                {
+                                    AbuseSettings.BannedIDs.AddIfNew(new[] { GetReference(TrainerName, TrainerNID, "Trading with multiple NIDs") });
+                                    Log($"Added {TrainerNID} to the BannedIDs list for trading with multiple NIDs.");
+                                }
                             }
+                            quit = true;
                         }
-                        quit = true;
                     }
                 }
             }
