@@ -66,6 +66,7 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
     {
         await SetScreenForAllBots(true).ConfigureAwait(false);
     }
+
     [Command("screenOffAll")]
     [Alias("setScreenOffAll", "scrOffAll")]
     [Summary("Turns the screen off for all connected bots")]
@@ -74,6 +75,7 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
     {
         await SetScreenForAllBots(false).ConfigureAwait(false);
     }
+
     private async Task SetScreenForAllBots(bool on)
     {
         var bots = SysCord<T>.Runner.Bots;
@@ -82,6 +84,7 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
             await ReplyAsync("No bots are currently connected.").ConfigureAwait(false);
             return;
         }
+
         int successCount = 0;
         foreach (var bot in bots)
         {
@@ -97,6 +100,7 @@ public class RemoteControlModule<T> : ModuleBase<SocketCommandContext> where T :
                 // Continue with other bots if one fails
             }
         }
+
         await ReplyAsync($"Screen state set to {(on ? "On" : "Off")} for {successCount} out of {bots.Count} bots.").ConfigureAwait(false);
     }
 

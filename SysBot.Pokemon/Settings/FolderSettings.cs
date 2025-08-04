@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.IO;
 
 namespace SysBot.Pokemon;
@@ -18,6 +18,12 @@ public class FolderSettings : IDumper
     [Category(Files), Description("Destination folder: where all received PKM files are dumped to.")]
     public string DumpFolder { get; set; } = string.Empty;
 
+    [Category("Files"), Description("Path to your Events Folder."), DisplayName("ListEvents Folder Path")]
+    public string EventsFolder { get; set; } = string.Empty;
+
+    [Category("Files"), Description("Path to your BattleReady Folder."), DisplayName("Battle-Ready Folder Path")]
+    public string BattleReadyPKMFolder { get; set; } = string.Empty;
+
     public void CreateDefaults(string path)
     {
         var dump = Path.Combine(path, "dump");
@@ -28,5 +34,13 @@ public class FolderSettings : IDumper
         var distribute = Path.Combine(path, "distribute");
         Directory.CreateDirectory(distribute);
         DistributeFolder = distribute;
+
+        var events = Path.Combine(path, "events");
+        Directory.CreateDirectory(events);
+        EventsFolder = events;
+
+        var battleReady = Path.Combine(path, "battleready");
+        Directory.CreateDirectory(battleReady);
+        BattleReadyPKMFolder = battleReady;
     }
 }

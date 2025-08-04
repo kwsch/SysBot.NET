@@ -13,8 +13,8 @@ namespace SysBot.Pokemon.Discord
         [Priority(1)]
         public async Task ConvertShowdown([Summary("Generation/Format")] byte gen, [Remainder][Summary("Showdown Set")] string content)
         {
-            var deleteMessageTask = DeleteCommandMessageAsync(Context.Message, 2000);
-            var convertTask = Task.Run(() => Context.Channel.ReplyWithLegalizedSetAsync(content, gen));
+            var deleteMessageTask = LegalizerModule<T>.DeleteCommandMessageAsync(Context.Message, 2000);
+            var convertTask = Context.Channel.ReplyWithLegalizedSetAsync(content, gen);
             await Task.WhenAll(deleteMessageTask, convertTask).ConfigureAwait(false);
         }
 
@@ -23,8 +23,8 @@ namespace SysBot.Pokemon.Discord
         [Priority(0)]
         public async Task ConvertShowdown([Remainder][Summary("Showdown Set")] string content)
         {
-            var deleteMessageTask = DeleteCommandMessageAsync(Context.Message, 2000);
-            var convertTask = Task.Run(() => Context.Channel.ReplyWithLegalizedSetAsync<T>(content));
+            var deleteMessageTask = LegalizerModule<T>.DeleteCommandMessageAsync(Context.Message, 2000);
+            var convertTask = Context.Channel.ReplyWithLegalizedSetAsync<T>(content);
             await Task.WhenAll(deleteMessageTask, convertTask).ConfigureAwait(false);
         }
 
@@ -32,15 +32,15 @@ namespace SysBot.Pokemon.Discord
         [Summary("Tries to legalize the attached pkm data and output as RegenTemplate.")]
         public async Task LegalizeAsync()
         {
-            var deleteMessageTask = DeleteCommandMessageAsync(Context.Message, 2000);
+            var deleteMessageTask = LegalizerModule<T>.DeleteCommandMessageAsync(Context.Message, 2000);
             var legalizationTasks = Context.Message.Attachments.Select(att =>
-                Task.Run(() => Context.Channel.ReplyWithLegalizedSetAsync(att))
+                Context.Channel.ReplyWithLegalizedSetAsync(att)
             ).ToArray();
 
             await Task.WhenAll(deleteMessageTask, Task.WhenAll(legalizationTasks)).ConfigureAwait(false);
         }
 
-        private async Task DeleteCommandMessageAsync(IUserMessage message, int delayMilliseconds)
+        private static async Task DeleteCommandMessageAsync(IUserMessage message, int delayMilliseconds)
         {
             await Task.Delay(delayMilliseconds).ConfigureAwait(false);
             await message.DeleteAsync().ConfigureAwait(false);

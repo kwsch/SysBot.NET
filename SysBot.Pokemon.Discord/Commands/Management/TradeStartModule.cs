@@ -84,7 +84,7 @@ public class TradeStartModule<T> : ModuleBase<SocketCommandContext> where T : PK
             if (user == null) { Console.WriteLine($"User not found for ID {detail.Trainer.ID}."); return; }
 
             string speciesName = detail.TradeData != null ? GameInfo.Strings.Species[detail.TradeData.Species] : "";
-            string ballImgUrl = "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/refs/heads/main/imgs/difficulty.png";
+            string ballImgUrl = "https://raw.githubusercontent.com/Havokx89/Bot-Sprite-Images/main/imgs/difficulty.png";
 
             if (detail.TradeData != null && detail.Type != PokeTradeType.Clone && detail.Type != PokeTradeType.Dump && detail.Type != PokeTradeType.Seed && detail.Type != PokeTradeType.FixOT)
             {

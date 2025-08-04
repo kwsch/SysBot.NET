@@ -15,7 +15,7 @@ public static class AutoLegalityExtensionsDiscord
     {
         if (set.Species <= 0)
         {
-            await channel.SendMessageAsync("I wasn't able to interpret your message! If you intended to convert something, please double check what you're pasting!").ConfigureAwait(false);
+            await channel.SendMessageAsync("Oops! I wasn't able to interpret your message! If you intended to convert something, please double check what you're pasting!").ConfigureAwait(false);
             return;
         }
 
@@ -35,7 +35,7 @@ public static class AutoLegalityExtensionsDiscord
             if (!la.Valid)
             {
                 var reason = result == "Timeout" ? $"That {spec} set took too long to generate." : result == "VersionMismatch" ? "Request refused: PKHeX and Auto-Legality Mod version mismatch." : $"I wasn't able to create a {spec} from that set.";
-                var imsg = $"An error occurred: {reason}";
+                var imsg = $"Oops! {reason}";
                 if (result == "Failed")
                     imsg += $"\n{AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm)}";
                 await channel.SendMessageAsync(imsg).ConfigureAwait(false);
@@ -48,7 +48,7 @@ public static class AutoLegalityExtensionsDiscord
         catch (Exception ex)
         {
             LogUtil.LogSafe(ex, nameof(AutoLegalityExtensionsDiscord));
-            var msg = $"An unexpected problem happened with this Showdown Set:\n```{string.Join("\n", set.GetSetLines())}```";
+            var msg = $"Oops! An unexpected problem happened with this Showdown Set:\n```{string.Join("\n", set.GetSetLines())}```";
             await channel.SendMessageAsync(msg).ConfigureAwait(false);
         }
     }
@@ -56,10 +56,7 @@ public static class AutoLegalityExtensionsDiscord
     public static Task ReplyWithLegalizedSetAsync(this ISocketMessageChannel channel, string content, byte gen)
     {
         content = ReusableActions.StripCodeBlock(content);
-
-        // Normalize user-friendly aliases like "Size: 255" → ".Scale=255"
         content = BatchNormalizer.NormalizeBatchCommands(content);
-
         var set = new ShowdownSet(content);
         var sav = AutoLegalityWrapper.GetTrainerInfo(gen);
         return channel.ReplyWithLegalizedSetAsync(sav, set);
@@ -68,10 +65,7 @@ public static class AutoLegalityExtensionsDiscord
     public static Task ReplyWithLegalizedSetAsync<T>(this ISocketMessageChannel channel, string content) where T : PKM, new()
     {
         content = ReusableActions.StripCodeBlock(content);
-
-        // Normalize user-friendly aliases like "Size: 255" → ".Scale=255"
         content = BatchNormalizer.NormalizeBatchCommands(content);
-
         var set = new ShowdownSet(content);
         var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
         return channel.ReplyWithLegalizedSetAsync(sav, set);

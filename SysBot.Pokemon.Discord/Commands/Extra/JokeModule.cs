@@ -118,10 +118,34 @@ public class JokeModule : ModuleBase<SocketCommandContext>
         "Did you hear about the guy who died of a Viagra overdose? They couldn't close his casket.",
         "What did the elephant ask the naked man? How do you breathe out of that thing.",
         "What's Moby Dick's dad's name? Papa Boner.",
-        "What's green and smells like pork? Kermit's finger."
-
-
-
+        "What's green and smells like pork? Kermit's finger.",
+        "You must have been born on a highway because that's where most accidents happen.",
+        "They say opposites attract. I hope you meet someone who is good-looking, intelligent, and cultured.",
+        "You've got a face only a mother could love. A mother who's blind in one eye and the other is crusted shut.",
+        "Your moms dick tastes weird.",
+        "Argh! A hideous fiend! Oh wait, no, you're just ugly.",
+        "A wet cat is tougher than you.",
+        "Are you sure you're holding that properly? It doesn't seem to be working very well.",
+        "A goblin with one hand nailed to a tree would be more of a threat than you.",
+        "After seeing your face I'm considering taking up drinking.",
+        "You look like something I drew with my left hand.",
+        "You aren't pretty enough to be this stupid.",
+        "You are aware that people simply tolerate you?",
+        "You're not the sharpest knife in the drawer, but you'd make a spoon jealous.",
+        "New phone, who dis?",
+        "Is your mother going to come save you or are you afraid she'd be too disappointed to visit?",
+        "The last thing you will ever feel of this world will not be the touch of a lover, nor the companionship of friends, nor even the sup of good wine. It'll be a little bit of piss running down your leg.",
+        "Ahh, the taller they are, the harder they fall. Sadly you are short, fat, and more likely to roll away.",
+        "I asked the gods to give me a good challenge, I should have specified I didn’t mean ‘of my patience’.",
+        "I worry my wit may be going over your head. Let’s try this: You suck!",
+        "When I write down the story of my life I think I’ll skip over this little interaction…",
+        "I’d say don’t have children but between your face and your personality I don’t think we need to worry about that.",
+        "Tell me, were your parents siblings or just cousins?",
+        "I’ve seen stupidity, I’ve seen incompetence, but you’ve elevated both to an art form. Bravo!",
+        "There is nothing like a good challenge! Sadly this is nothing like one.",
+        "You couldn't pour water from a boot even if the instructions where printed on the heel.",
+        "Last time you took your hat off you got arrested for mooning.",
+        "Your knuckles look scraped. Did you walk all the way here?"
     };
 
     [Command("joke")]

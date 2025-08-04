@@ -134,6 +134,7 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
     }
 
     [Command("addChannel")]
+    [Alias("ac")]
     [Summary("Adds a channel to the list of channels that are accepting commands.")]
     [RequireOwner]
     public async Task AddChannel()
@@ -306,7 +307,7 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
                     byte[] bytes;
                     try
                     {
-                        bytes = await bot.Bot.Connection.PixelPeek(token).ConfigureAwait(false) ?? Array.Empty<byte>();
+                        bytes = await bot.Bot.Connection.PixelPeek(token).ConfigureAwait(false) ?? [];
                     }
                     catch (Exception ex)
                     {
@@ -378,7 +379,7 @@ public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
     {
         try
         {
-            var jsonData = File.ReadAllText(TradeBot.ConfigPath);
+            var jsonData = File.ReadAllText(DudeBot.ConfigPath);
             var config = JObject.Parse(jsonData);
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.

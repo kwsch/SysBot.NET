@@ -12,7 +12,6 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     private const string CountStats = nameof(CountStats);
     private const string HOMELegality = nameof(HOMELegality);
     private const string TradeConfig = nameof(TradeConfig);
-    private const string AutoCorrectShowdownConfig = nameof(AutoCorrectShowdownConfig);
     private const string VGCPastesConfig = nameof(VGCPastesConfig);
     private const string Miscellaneous = nameof(Miscellaneous);
     private const string RequestFolders = nameof(RequestFolders);
@@ -34,21 +33,11 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     [Category(TradeConfig), Description("Settings related to Trade Configuration."), DisplayName("Trade Configuration"), Browsable(true)]
     public TradeSettingsCategory TradeConfiguration { get; set; } = new();
 
-    [Category(VGCPastesConfig), Description("Settings related to VGCPastes Configuration."), DisplayName("VGC Pastes Configuration"), Browsable(true)]
-    public VGCPastesCategory VGCPastesConfiguration { get; set; } = new();
-
-    [Category(AutoCorrectShowdownConfig), Description("Settings related to Auto Correcting Showdown Sets."), DisplayName("Auto Correct Showdown Settings"), Browsable(true)]
-    public AutoCorrectShowdownCategory AutoCorrectConfig { get; set; } = new();
-
     [Category(EmbedSettings), Description("Settings related to the Trade Embed in Discord."), DisplayName("Trade Embed Settings"), Browsable(true)]
     public TradeEmbedSettingsCategory TradeEmbedSettings { get; set; } = new();
 
-    [Category(RequestFolders), Description("Settings related to Request Folders."), DisplayName("Request Folder Settings"), Browsable(true)]
-    public RequestFolderSettingsCategory RequestFolderSettings { get; set; } = new();
-
     [Category(CountStats), Description("Settings related to Trade Count Statistics."), DisplayName("Trade Count Statistics Settings"), Browsable(true)]
     public CountStatsSettingsCategory CountStatsSettings { get; set; } = new();
-
 
     [Category(TradeConfig), TypeConverter(typeof(CategoryConverter<TradeSettingsCategory>))]
     public class TradeSettingsCategory
@@ -81,6 +70,9 @@ public class TradeSettings : IBotStateSettings, ICountSettings
 
         [Category(TradeConfig), Description("Toggle to allow or disallow batch trades."), DisplayName("Allow Batch Trades")]
         public bool AllowBatchTrades { get; set; } = true;
+
+        [Category(TradeConfig), Description("Toggle to give users the option to use the BatchNormalizer, which utilizes Showdown in place of batch commands. Refer to the Wiki for details."), DisplayName("Batch Commands to Showdown")]
+        public bool BatchNormalizer { get; set; } = true;
 
         [Category(TradeConfig), Description("Maximum pokemons of single trade. Batch mode will be closed if this configuration is less than 1"), DisplayName("Maximum Pokémon per Trade")]
         public int MaxPkmsPerTrade { get; set; } = 1;
@@ -119,126 +111,6 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
     }
 
-    [Category(nameof(AutoCorrectShowdownConfig)), TypeConverter(typeof(CategoryConverter<AutoCorrectShowdownCategory>))]
-    public class AutoCorrectShowdownCategory
-    {
-        public override string ToString() => "Auto Correct Showdown Settings";
-
-        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, each failed showdown set will go through auto correction."), DisplayName("Enable Auto Correct")]
-        public bool EnableAutoCorrect { get; set; } = true;
-
-        private bool _autoCorrectEmbedIndicator = true;
-        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, we will put an indicator on Trade Embeds showing a trade was Auto Corrected."), DisplayName("Show Trade Embed Indicator?")]
-        public bool AutoCorrectEmbedIndicator
-        {
-            get => EnableAutoCorrect && _autoCorrectEmbedIndicator;
-            set => _autoCorrectEmbedIndicator = value;
-        }
-
-        private bool _autoCorrectNickname = true;
-        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct illegal nicknames."), DisplayName("Auto Correct Nicknames?")]
-        public bool AutoCorrectNickname
-        {
-            get => EnableAutoCorrect && _autoCorrectNickname;
-            set => _autoCorrectNickname = value;
-        }
-
-        private string _fixedNickname = string.Empty;
-        [Category(nameof(AutoCorrectShowdownCategory)), Description("Set a default Nickname. If none provided, it will just be blank."), DisplayName("Rename Invalid Nicknames to...")]
-        public string FixedNickname
-        {
-            get => EnableAutoCorrect ? _fixedNickname : string.Empty;
-            set => _fixedNickname = value;
-        }
-
-        private bool _autoCorrectSpeciesAndForm = true;
-        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong species and form."), DisplayName("Auto Correct Species and Form")]
-        public bool AutoCorrectSpeciesAndForm
-        {
-            get => EnableAutoCorrect && _autoCorrectSpeciesAndForm;
-            set => _autoCorrectSpeciesAndForm = value;
-        }
-
-        private bool _autoCorrectHeldItem = true;
-        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong held item."), DisplayName("Auto Correct Held Item")]
-        public bool AutoCorrectHeldItem
-        {
-            get => EnableAutoCorrect && _autoCorrectHeldItem;
-            set => _autoCorrectHeldItem = value;
-        }
-
-        private bool _autoCorrectNature = true;
-        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong nature."), DisplayName("Auto Correct Nature")]
-        public bool AutoCorrectNature
-        {
-            get => EnableAutoCorrect && _autoCorrectNature;
-            set => _autoCorrectNature = value;
-        }
-
-        private bool _autoCorrectAbility = true;
-        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong ability."), DisplayName("Auto Correct Ability")]
-        public bool AutoCorrectAbility
-        {
-            get => EnableAutoCorrect && _autoCorrectAbility;
-            set => _autoCorrectAbility = value;
-        }
-
-        private bool _autoCorrectBall = true;
-        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong Ball Name."), DisplayName("Auto Correct Ball")]
-        public bool AutoCorrectBall
-        {
-            get => EnableAutoCorrect && _autoCorrectBall;
-            set => _autoCorrectBall = value;
-        }
-
-        private bool _autoCorrectLevel = true;
-        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong level."), DisplayName("Auto Correct Level")]
-        public bool AutoCorrectLevel
-        {
-            get => EnableAutoCorrect && _autoCorrectLevel;
-            set => _autoCorrectLevel = value;
-        }
-
-        private bool _autoCorrectGender = true;
-        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong gender."), DisplayName("Auto Correct Gender")]
-        public bool AutoCorrectGender
-        {
-            get => EnableAutoCorrect && _autoCorrectGender;
-            set => _autoCorrectGender = value;
-        }
-
-        private bool _autoCorrectMovesLearnset = true;
-        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong moves and learnset."), DisplayName("Auto Correct Moves/Learnset")]
-        public bool AutoCorrectMovesLearnset
-        {
-            get => EnableAutoCorrect && _autoCorrectMovesLearnset;
-            set => _autoCorrectMovesLearnset = value;
-        }
-
-        private bool _autoCorrectEVs = true;
-        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong EVs."), DisplayName("Auto Correct EVs")]
-        public bool AutoCorrectEVs
-        {
-            get => EnableAutoCorrect && _autoCorrectEVs;
-            set => _autoCorrectEVs = value;
-        }
-
-        private bool _autoCorrectIVs = true;
-        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong IVs."), DisplayName("Auto Correct IVs")]
-        public bool AutoCorrectIVs
-        {
-            get => EnableAutoCorrect && _autoCorrectIVs;
-            set => _autoCorrectIVs = value;
-        }
-        private bool _autoCorrectMarks = true;
-        [Category(nameof(AutoCorrectShowdownCategory)), Description("If set to True, auto correction will correct wrong Marks/Ribbons."), DisplayName("Auto Correct Marks/Ribbons")]
-        public bool AutoCorrectMarks
-        {
-            get => EnableAutoCorrect && _autoCorrectMarks;
-            set => _autoCorrectMarks = value;
-        }
-    }
-
     [Category(EmbedSettings), TypeConverter(typeof(CategoryConverter<TradeEmbedSettingsCategory>))]
     public class TradeEmbedSettingsCategory
     {
@@ -260,7 +132,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         {
             if (!_useEmbeds)
             {
-                PreferredImageSize = ImageSize.Size256x256;
+                PreferredImageSize = ImageSize.Size128x128;
                 MoveTypeEmojis = false;
                 ShowScale = false;
                 ShowTeraType = false;
@@ -273,7 +145,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
 
         [Category(EmbedSettings), Description("Preferred Species Image Size for Embeds."), DisplayName("Species Image Size")]
-        public ImageSize PreferredImageSize { get; set; } = ImageSize.Size256x256;
+        public ImageSize PreferredImageSize { get; set; } = ImageSize.Size128x128;
 
         [Category(EmbedSettings), Description("Will show Move Type Icons next to moves in trade embed (Discord only). Requires user to upload the emojis to their server."), DisplayName("Show Move Type Emojis")]
         public bool MoveTypeEmojis { get; set; } = true;
@@ -507,7 +379,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
             set => _completedDumps = value;
         }
 
-        [Category(CountStats), Description("When enabled, the counts will be emitted when a status check is requested.")]
+        [Category(CountStats), Description("When enabled, the counts will be emitted when a status check is requested."), DisplayName("Show counts on Statuscheck")]
         public bool EmitCountsOnStatusCheck { get; set; }
 
         public void AddCompletedTrade() => Interlocked.Increment(ref _completedTrades);
@@ -539,6 +411,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         }
     }
 
+    [Category(CountStats), Browsable(false)]
     public bool EmitCountsOnStatusCheck
     {
         get => CountStatsSettings.EmitCountsOnStatusCheck;

@@ -17,7 +17,7 @@ namespace SysBot.Pokemon.WinForms
         {
             ReleaseInfo? latestRelease = await FetchLatestReleaseAsync();
 
-            bool updateAvailable = latestRelease != null && latestRelease.TagName != TradeBot.Version;
+            bool updateAvailable = latestRelease != null && latestRelease.TagName != DudeBot.Version;
             bool updateRequired = latestRelease?.Prerelease == false && IsUpdateRequired(latestRelease?.Body);
             string? newVersion = latestRelease?.TagName;
 

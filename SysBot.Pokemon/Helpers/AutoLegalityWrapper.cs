@@ -131,6 +131,8 @@ public static class AutoLegalityWrapper
         if (StringsUtil.IsSpammyString(pkm.OriginalTrainerName) && !IsFixedOT(new LegalityAnalysis(pkm).EncounterOriginal, pkm))
             return false;
         
+
+
         return !FormInfo.IsFusedForm(pkm.Species, pkm.Form, pkm.Format);
     }
     public static bool IsFixedOT(IEncounterTemplate t, PKM pkm) => t switch

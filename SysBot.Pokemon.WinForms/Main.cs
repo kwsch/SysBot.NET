@@ -101,7 +101,7 @@ public sealed partial class Main : Form
 
         RTB_Logs.MaxLength = 32_767; // character length
         LoadControls();
-        Text = $"{(string.IsNullOrEmpty(Config.Hub.BotName) ? "DudeBot.NET" : Config.Hub.BotName)} {TradeBot.Version} ({Config.Mode})";
+        Text = $"{(string.IsNullOrEmpty(Config.Hub.BotName) ? "DudeBot.NET" : Config.Hub.BotName)} {DudeBot.Version} ({Config.Mode})";
         _ = Task.Run(BotMonitor);
         InitUtil.InitializeStubs(Config.Mode);
         _isFormLoading = false;
@@ -284,7 +284,7 @@ public sealed partial class Main : Form
     private void UpdateRunnerAndUI()
     {
         RunningEnvironment = GetRunner(Config);
-        Text = $"{(string.IsNullOrEmpty(Config.Hub.BotName) ? "DudeBot.NET" : Config.Hub.BotName)} {TradeBot.Version} ({Config.Mode})";
+        Text = $"{(string.IsNullOrEmpty(Config.Hub.BotName) ? "DudeBot.NET" : Config.Hub.BotName)} {DudeBot.Version} ({Config.Mode})";
     }
 
     private void B_Start_Click(object sender, EventArgs e)

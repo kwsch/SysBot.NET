@@ -20,7 +20,7 @@ namespace SysBot.Pokemon.Discord;
 public class InfoModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
 {
     private readonly PokeTradeHub<T> Hub = SysCord<T>.Runner.Hub;
-    private const string Version = TradeBot.Version;
+    private const string Version = DudeBot.Version;
     private const string dev = "https://www.chinchou.net";
     private const string detail = "I am an open-source Discord bot powered by PKHeX.Core and other open-source software, modified by the Brother Dudes.";
 

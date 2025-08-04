@@ -90,8 +90,7 @@ public class SudoModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
     [RequireSudo]
     public async Task ForgetPreviousUser([Summary("Comma Separated Online IDs")][Remainder] string content)
     {
-        var IDs = GetIDs(content);
-        foreach (var ID in IDs)
+        foreach (var ID in GetIDs(content))
         {
             PokeRoutineExecutorBase.PreviousUsers.RemoveAllNID(ID);
             PokeRoutineExecutorBase.PreviousUsersDistribution.RemoveAllNID(ID);
@@ -138,7 +137,7 @@ public class SudoModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new
             await ReplyAsync(Format.Code(msg)).ConfigureAwait(false);
         }
 
-        lines = PokeRoutineExecutorBase.PreviousUsersDistribution.Summarize().ToList();
+        lines = [.. PokeRoutineExecutorBase.PreviousUsersDistribution.Summarize()];
         if (lines.Count != 0)
         {
             found = true;

@@ -145,6 +145,7 @@ public class DiscordSettings
     public RemoteControlAccessList LoggingChannels { get; set; } = new();
 
     // Roles
+
     [Category(Roles), Description("Users with this role are allowed to enter the Trade queue.")]
     public RemoteControlAccessList RoleCanTrade { get; set; } = new() { AllowIfEmpty = true };
 

@@ -35,7 +35,7 @@ namespace SysBot.Pokemon.Discord
             try
             {
                 // Read the file and parse the JSON
-                var jsonData = File.ReadAllText(TradeBot.ConfigPath);
+                var jsonData = File.ReadAllText(DudeBot.ConfigPath);
                 var config = JObject.Parse(jsonData);
 
                 // Access the IP address from the first bot in the Bots array

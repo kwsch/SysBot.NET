@@ -19,16 +19,16 @@ public class TradeAbuseSettings
     [Category(Monitoring), Description("If not empty, the provided string will be appended to Echo alerts to notify whomever you specify when a user violates trade cooldown. For Discord, use <@userIDnumber> to mention.")]
     public string CooldownAbuseEchoMention { get; set; } = string.Empty;
 
-    [Category(Monitoring), Description("When a person appears with a different Discord/Twitch account in less than this setting's value (minutes), a notification will be sent.")]
+    [Category(Monitoring), Description("When a person appears with a different Discord account in less than this setting's value (minutes), a notification will be sent.")]
     public double TradeAbuseExpiration { get; set; } = 120;
 
-    [Category(Monitoring), Description("When a person using multiple Discord/Twitch accounts is detected, the echo message will include their Nintendo Account ID.")]
+    [Category(Monitoring), Description("When a person using multiple Discord accounts is detected, the echo message will include their Nintendo Account ID.")]
     public bool EchoNintendoOnlineIDMulti { get; set; } = true;
 
     [Category(Monitoring), Description("When a person sending to multiple in-game accounts is detected, the echo message will include their Nintendo Account ID.")]
     public bool EchoNintendoOnlineIDMultiRecipients { get; set; } = true;
 
-    [Category(Monitoring), Description("When a person using multiple Discord/Twitch accounts is detected, this action is taken.")]
+    [Category(Monitoring), Description("When a person using multiple Discord accounts is detected, this action is taken.")]
     public TradeAbuseAction TradeAbuseAction { get; set; } = TradeAbuseAction.Quit;
 
     [Category(Monitoring), Description("When a person is blocked in-game for multiple accounts, their online ID is added to BannedIDs.")]

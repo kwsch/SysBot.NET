@@ -3,7 +3,6 @@ using SysBot.Pokemon.Discord;
 using System.Threading;
 using System.Threading.Tasks;
 
-
 namespace SysBot.Pokemon.ConsoleApp;
 
 /// <summary>
@@ -12,10 +11,11 @@ namespace SysBot.Pokemon.ConsoleApp;
 public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
 {
     private readonly ProgramConfig _config;
-    public PokeBotRunnerImpl(PokeTradeHub<T> hub, BotFactory<T> fac) : base(hub, fac) { }
-    public PokeBotRunnerImpl(PokeTradeHubConfig config, BotFactory<T> fac) : base(config, fac) { }
 
-
+    public PokeBotRunnerImpl(PokeTradeHub<T> hub, BotFactory<T> fac, ProgramConfig config) : base(hub, fac)
+    {
+        _config = config;
+    }
 
     protected override void AddIntegrations()
     {
@@ -28,13 +28,7 @@ public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
         if (string.IsNullOrWhiteSpace(token))
             return;
 
-        var programConfig = new ProgramConfig
-        {
-            Discord = config
-        };
-
-        var bot = new SysCord<T>(this, programConfig);  // Pass ProgramConfig here
+        var bot = new SysCord<T>(this, _config);
         Task.Run(() => bot.MainAsync(token, CancellationToken.None), CancellationToken.None);
     }
-
 }

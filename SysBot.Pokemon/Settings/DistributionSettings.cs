@@ -13,7 +13,7 @@ public class DistributionSettings : ISynchronizationSetting
     // Distribute
 
     [Category(Distribute), Description("When enabled, idle LinkTrade bots will randomly distribute PKM files from the DistributeFolder.")]
-    public bool DistributeWhileIdle { get; set; } = true;
+    public bool DistributeWhileIdle { get; set; } = false;
 
     [Category(Distribute), Description("When enabled, the DistributionFolder will yield randomly rather than in the same sequence.")]
     public bool Shuffled { get; set; }

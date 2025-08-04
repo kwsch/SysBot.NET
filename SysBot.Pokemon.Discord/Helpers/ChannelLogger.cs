@@ -1,12 +1,14 @@
-﻿using System;
 using Discord.WebSocket;
 using SysBot.Base;
+
+using System;
 
 namespace SysBot.Pokemon.Discord;
 
 public class ChannelLogger(ulong ChannelID, ISocketMessageChannel Channel) : ILogForwarder
 {
     public ulong ChannelID { get; } = ChannelID;
+
     public string ChannelName => Channel.Name;
 
     public void Forward(string message, string identity)
@@ -21,6 +23,7 @@ public class ChannelLogger(ulong ChannelID, ISocketMessageChannel Channel) : ILo
             LogUtil.LogSafe(ex, identity);
         }
     }
+
     private static string GetMessage(ReadOnlySpan<char> msg, string identity)
         => $"> [{DateTime.Now:hh:mm:ss}] - {identity}: {msg}";
 }
