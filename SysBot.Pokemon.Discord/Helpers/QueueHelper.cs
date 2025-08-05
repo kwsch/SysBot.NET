@@ -193,8 +193,8 @@ public static class QueueHelper<T> where T : PKM, new()
             {
                 footerText += $"\n{userDetailsText}";
             }
-            footerText += $"\n{etaMessage}\n";
-            footerText += $"\nDudeBot.NET {DudeBot.Version}";
+            footerText += $"\n{etaMessage}";
+            footerText += $"\n✧ DudeBot.NET {DudeBot.Version} ✧";
 
             var embedBuilder = new EmbedBuilder()
                 .WithColor(embedColor)
@@ -367,7 +367,7 @@ public static class QueueHelper<T> where T : PKM, new()
                     embedData.IsLocalFile = File.Exists(embedData.EmbedImageUrl);
 
                     // Build footer text with batch info
-                    string footerText = $"Batch Trade {batchTradeNumber} of {totalBatchTrades}\n\nDudeBot.NET {DudeBot.Version}";
+                    string footerText = $"Batch Trade {batchTradeNumber} of {totalBatchTrades}\n";
                     if (i == 0) // Only show position and ETA on first embed
                     {
                         footerText += $" | Position: {position.Position}";
@@ -377,7 +377,7 @@ public static class QueueHelper<T> where T : PKM, new()
                             footerText += $"\n{userDetailsText}";
                         }
                         footerText += $"\nEstimated: {baseEta:F1} min(s) for batch\n";
-                        footerText += $"\nDudeBot.NET {DudeBot.Version}";
+                        footerText += $"\n✧ DudeBot.NET {DudeBot.Version} ✧";
 
                     }
 
