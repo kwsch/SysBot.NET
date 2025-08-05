@@ -280,7 +280,7 @@ public class TradeSettings : IBotStateSettings, ICountSettings
         public string HOMEReadyPKMFolder { get; set; } = string.Empty;
     }
 
-    [Category(Miscellaneous), Description("Miscellaneous Settings"), DisplayName("Miscellaneous")]
+    [Category(Miscellaneous), Description("Turns off the screen of all the connected Switches during operation"), DisplayName("Screen off")]
     public bool ScreenOff { get; set; } = false;
 
     /// <summary>
