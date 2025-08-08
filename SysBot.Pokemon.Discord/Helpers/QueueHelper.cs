@@ -483,8 +483,11 @@ public static class QueueHelper<T> where T : PKM, new()
         {
             string eggImageUrl = GetEggTypeImageUrl(pk);
             speciesImageUrl = TradeExtensions<T>.PokeImg(pk, false, true, null);
-            System.Drawing.Image combinedImage = await OverlaySpeciesOnEgg(eggImageUrl, speciesImageUrl);
-            embedImageUrl = SaveImageLocally(combinedImage);
+            System.Drawing.Image? combinedImage = await OverlaySpeciesOnEgg(eggImageUrl, speciesImageUrl);
+            if (combinedImage != null)
+                embedImageUrl = SaveImageLocally(combinedImage);
+            else
+                embedImageUrl = speciesImageUrl;
         }
         else
         {
@@ -583,7 +586,7 @@ public static class QueueHelper<T> where T : PKM, new()
 #pragma warning disable CA1416 // Validate platform compatibility
         double scaleRatio = Math.Min((double)eggImage.Width / speciesImage.Width, (double)eggImage.Height / speciesImage.Height);
         Size newSize = new((int)(speciesImage.Width * scaleRatio), (int)(speciesImage.Height * scaleRatio));
-        System.Drawing.Image resizedSpeciesImage = new Bitmap(speciesImage, newSize);
+        System.Drawing.Image? resizedSpeciesImage = new Bitmap(speciesImage, newSize);
 
         using (Graphics g = Graphics.FromImage(eggImage))
         {

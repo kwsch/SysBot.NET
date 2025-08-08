@@ -118,7 +118,7 @@ namespace SysBot.Pokemon.Discord
                                 var fileName = namer.GetName(pk); // Use FileNamer to generate the file name
                                 var entry = archive.CreateEntry($"{fileName}.{pk.Extension}");
                                 await using var entryStream = entry.Open();
-                                await entryStream.WriteAsync(pk.Data.AsMemory(0, pk.Data.Length)).ConfigureAwait(false);
+                                await entryStream.WriteAsync(pk.Data.ToArray());
 
                                 string speciesImageUrl = TradeExtensions<PK9>.PokeImg(pk, false, false);
 #pragma warning disable CA1416 // Validate platform compatibility

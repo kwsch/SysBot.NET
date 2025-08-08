@@ -118,10 +118,12 @@ public static class AutoLegalityWrapper
     private static void InitializeCoreStrings()
     {
         var lang = Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName[..2];
-        LocalizationUtil.SetLocalization(typeof(LegalityCheckStrings), lang);
+        LocalizationUtil.SetLocalization(typeof(LegalityCheckResultCode), lang);
         LocalizationUtil.SetLocalization(typeof(MessageStrings), lang);
-        RibbonStrings.ResetDictionary(GameInfo.Strings.ribbons);
-        ParseSettings.ChangeLocalizationStrings(GameInfo.Strings.movelist, GameInfo.Strings.specieslist);
+
+        // Pre-initialize BattleTemplateLocalization to prevent concurrent dictionary access issues
+        // This forces all localizations to be loaded at startup before any concurrent operations
+        _ = BattleTemplateLocalization.ForceLoadAll();
     }
     public static bool CanBeTraded(this PKM pkm)
     {

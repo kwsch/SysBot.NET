@@ -19,7 +19,7 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
     private T Data { get; set; }
     private PokeTradeTrainerInfo Info { get; }
     private int Code { get; }
-    private List<Pictocodes> LGCode { get; }
+    private List<Pictocodes>? LGCode { get; }
     private SocketUser Trader { get; }
 
     private int BatchTradeNumber { get; set; }
@@ -37,7 +37,7 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
 
     public readonly PokeTradeHub<T> Hub = SysCord<T>.Runner.Hub;
 
-    public DiscordTradeNotifier(T data, PokeTradeTrainerInfo info, int code, SocketUser trader, int batchTradeNumber, int totalBatchTrades, bool isMysteryEgg, List<Pictocodes> lgcode)
+    public DiscordTradeNotifier(T data, PokeTradeTrainerInfo info, int code, SocketUser trader, int batchTradeNumber, int totalBatchTrades, bool isMysteryEgg, List<Pictocodes>? lgcode)
     {
         Data = data;
         Info = info;
@@ -223,7 +223,7 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
 
             EmbedHelper.SendTradeInitializingEmbedAsync(Trader, speciesName, Code, IsMysteryEgg, message).ConfigureAwait(false);
         }
-        else if (Data is PB7)
+        else if (Data is PB7 && LGCode != null)
         {
             var (thefile, lgcodeembed) = CreateLGLinkCodeSpriteEmbed(LGCode);
             Trader.SendFileAsync(thefile, $"Initializing trade{receive}. Please be ready. Your code is", embed: lgcodeembed).ConfigureAwait(false);
