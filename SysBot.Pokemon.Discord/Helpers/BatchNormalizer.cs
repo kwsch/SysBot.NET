@@ -34,8 +34,6 @@ namespace SysBot.Pokemon.Discord.Helpers
             { "Mark", "Mark" },
             { "Ribbon", "Ribbon" },
             { "GVs", "GVs" },
-            { "EVs", "EVs" },
-            { "IVs", "IVs" },
             { "OT Friendship", "OriginalTrainerFriendship" },
             { "HT Friendship", "HandlingTrainerFriendship" },
         };
@@ -60,8 +58,6 @@ namespace SysBot.Pokemon.Discord.Helpers
             { "Mark", ProcessMark },
             { "Ribbon", ProcessRibbon },
             { "GVs", ProcessGVs },
-            { "EVs", ProcessEVs },
-            { "IVs", ProcessIVs }
         };
 
         //////////////////////////////////// NEW COMMAND DICTIONARIES //////////////////////////////////////
@@ -192,7 +188,7 @@ namespace SysBot.Pokemon.Discord.Helpers
         // Value is game name or game abbreviation
         private static string ProcessVersion(string val) =>
             GameKeywords.TryGetValue(val.Replace(" ", ""), out int ver)
-                ? $"~=Version={ver}"
+                ? $".Version={ver}"
                 : string.Empty;
 
         // .MetLocation= → Met Location:
@@ -247,114 +243,6 @@ namespace SysBot.Pokemon.Discord.Helpers
         // Value is a Ribbon name like "BattleChampion," without using spaces
         private static string ProcessRibbon(string val) =>
             $".Ribbon{val.Replace(" ", "")}=True";
-
-        // Creates an ".EVs=" batch command that can be written as "EVs:" that accepts "Random" or "Suggest" as special values
-        // "EVs: Random" value randomizes EVs across all stats
-        // "EVs: Suggest" generates a suggested EV spread like 252/252/4
-        private static readonly string[] EvStats = { "HP", "ATK", "DEF", "SPA", "SPD", "SPE" };
-        private static string ProcessEVs(string val)
-        {
-            if (val.Equals("Random", StringComparison.OrdinalIgnoreCase))
-            {
-                return GenerateRandomEVs();
-            }
-            else if (val.Equals("Suggest", StringComparison.OrdinalIgnoreCase))
-            {
-                return GenerateSuggestedEVs();
-            }
-            else
-            {
-                return $".EVs={val}";
-            }
-        }
-        private static string GenerateRandomEVs()
-        {
-            int maxTotal = 510;
-            int maxPerStat = 252;
-            int[] evs = new int[6];
-
-            int remaining = maxTotal;
-
-            for (int i = 0; i < 6; i++)
-            {
-                int maxForStat = Math.Min(maxPerStat, remaining);
-                evs[i] = Rng.Next(0, maxForStat + 1);
-                remaining -= evs[i];
-            }
-
-            while (remaining > 0)
-            {
-                int idx = Rng.Next(0, 6);
-                if (evs[idx] < maxPerStat)
-                {
-                    evs[idx]++;
-                    remaining--;
-                }
-            }
-
-            return FormatEVs(evs);
-        }
-        private static string GenerateSuggestedEVs()
-        {
-            int[] evs = new int[6];
-
-            var indices = Enumerable.Range(0, 6).OrderBy(_ => Rng.Next()).Take(3).ToArray();
-
-            evs[indices[0]] = 252;
-            evs[indices[1]] = 252;
-            evs[indices[2]] = 4;
-
-            return FormatEVs(evs);
-        }
-
-        // Creates an ".IVs=" batch command that can be written as "IVs:" that accepts "Random" or "1IV", "2IV", "3IV", "4IV", "5IV", "6IV"
-        // "IVs: Random" randomizes IVs across all stats
-        // "IVs: 1IV" sets one random stat to 31 IVs, the rest are random
-        // "IVs: 6IV" sets all stats to 31 IVs
-        private static readonly string[] IvStats = { "HP", "ATK", "DEF", "SPA", "SPD", "SPE" };
-        private static string ProcessIVs(string val)
-        {
-            val = val.Trim();
-
-            if (val.Equals("Random", StringComparison.OrdinalIgnoreCase))
-                return GenerateRandomIVs();
-
-            var presetMatch = Regex.Match(val, @"^(\d)IV$", RegexOptions.IgnoreCase);
-            if (presetMatch.Success)
-            {
-                int ivCount = int.Parse(presetMatch.Groups[1].Value);
-                if (ivCount >= 1 && ivCount <= 6)
-                    return GeneratePresetIVs(ivCount);
-            }
-
-            return $".IVs={val}";
-        }
-        private static string GenerateRandomIVs()
-        {
-            int maxPerStat = 31;
-            int[] ivs = new int[6];
-            for (int i = 0; i < 6; i++)
-                ivs[i] = Rng.Next(0, maxPerStat + 1);
-            return FormatIVs(ivs);
-        }
-        private static string GeneratePresetIVs(int countAt31)
-        {
-            int maxPerStat = 31;
-            int[] ivs = new int[6];
-
-            var indicesAt31 = Enumerable.Range(0, 6).OrderBy(_ => Rng.Next()).Take(countAt31).ToArray();
-
-            foreach (var idx in indicesAt31)
-                ivs[idx] = maxPerStat;
-
-            for (int i = 0; i < 6; i++)
-            {
-                if (!indicesAt31.Contains(i))
-                    ivs[i] = Rng.Next(0, maxPerStat + 1);
-            }
-
-            return FormatIVs(ivs);
-        }
 
         // .GV_[STAT]= → GVs:
         // GVs now follow the same format as EVs and IVs, like below
@@ -437,22 +325,6 @@ namespace SysBot.Pokemon.Discord.Helpers
                 content += $"\n.FormArgument={formArg}";
 
             return content;
-        }
-
-        private static string FormatEVs(int[] evs)
-        {
-            var evLines = new List<string>(6);
-            for (int i = 0; i < EvStats.Length; i++)
-                evLines.Add($".EV_{EvStats[i]}={evs[i]}");
-            return string.Join('\n', evLines);
-        }
-
-        private static string FormatIVs(int[] ivs)
-        {
-            var ivLines = new List<string>(6);
-            for (int i = 0; i < IvStats.Length; i++)
-                ivLines.Add($".IV_{IvStats[i]}={ivs[i]}");
-            return string.Join('\n', ivLines);
         }
     }
 }
