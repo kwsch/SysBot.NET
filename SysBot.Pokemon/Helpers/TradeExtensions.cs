@@ -185,8 +185,7 @@ public abstract class TradeExtensions<T> where T : PKM, new()
             _ => 60002, //PK8
         };
 
-        pk.MetDate = DateOnly.FromDateTime(DateTime.Now);
-        pk.EggMetDate = pk.MetDate;
+        pk.EggMetDate = DateOnly.FromDateTime(DateTime.Now);
         pk.HeldItem = 0;
         pk.CurrentLevel = 1;
         pk.EXP = 0;
@@ -197,6 +196,22 @@ public abstract class TradeExtensions<T> where T : PKM, new()
             PK9 => 0,        // SV hatched location (unset)
             _ => 30002,      // SwSh hatched location (unset)
         };
+
+        // Set MetDate based on MetLocation
+        // For unhatched eggs:
+        // - PK9 (SV): MetLocation 0 requires MetDate fields to be 0
+        // - PB8 (BDSP): MetLocation 65535 requires MetDate fields to be 0
+        // - PK8 (SwSh): MetLocation 30002 can have a valid MetDate
+        if (pk.MetLocation == 0 || pk.MetLocation == 65535)
+        {
+            pk.MetYear = 0;
+            pk.MetMonth = 0;
+            pk.MetDay = 0;
+        }
+        else
+        {
+            pk.MetDate = pk.EggMetDate;
+        }
 
         // Clear trainer data
         pk.CurrentHandler = 0;

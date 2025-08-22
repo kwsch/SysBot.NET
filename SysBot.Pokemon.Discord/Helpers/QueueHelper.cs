@@ -820,7 +820,7 @@ public static class QueueHelper<T> where T : PKM, new()
         foreach (Pictocodes cd in lgcode)
         {
             var showdown = new ShowdownSet(cd.ToString());
-            var sav = SaveUtil.GetBlankSAV(EntityContext.Gen7b, "pip");
+            var sav = BlankSaveFile.Get(EntityContext.Gen7b, "pip");
             PKM pk = sav.GetLegalFromSet(showdown).Created;
 #pragma warning disable CA1416 // Validate platform compatibility
             System.Drawing.Image png = pk.Sprite();

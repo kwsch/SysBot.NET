@@ -380,7 +380,7 @@ public class DiscordTradeNotifier<T> : IPokeTradeNotifier<T>
         foreach (Pictocodes cd in lgcode)
         {
             var showdown = new ShowdownSet(cd.ToString());
-            var sav = SaveUtil.GetBlankSAV(EntityContext.Gen7b, "pip");
+            var sav = BlankSaveFile.Get(EntityContext.Gen7b, "pip");
             PKM pk = sav.GetLegalFromSet(showdown).Created;
             System.Drawing.Image png = pk.Sprite();
             var destRect = new Rectangle(-40, -65, 137, 130);

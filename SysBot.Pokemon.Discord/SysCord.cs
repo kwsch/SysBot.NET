@@ -38,7 +38,7 @@ public sealed class SysCord<T> where T : PKM, new()
     private readonly HashSet<string> _validCommands = new HashSet<string>
     {
         "trade", "t", "clone", "fixOT", "fix", "f", "dittoTrade", "ditto", "dt", "itemTrade", "item", "it",
-        "egg", "Egg", "hidetrade", "ht", "batchTrade", "bt", "batchtradezip", "btz", "listevents", "le",
+        "egg", "Egg", "hidetrade", "ht", "batchTrade", "bt", "listevents", "le",
         "eventrequest", "er", "battlereadylist", "brl", "battlereadyrequest", "brr", "pokepaste", "pp",
         "PokePaste", "PP", "randomteam", "rt", "RandomTeam", "Rt", "specialrequestpokemon", "srp",
         "queueStatus", "qs", "queueClear", "qc", "ts", "tc", "deleteTradeCode", "dtc", "mysteryegg", "me"

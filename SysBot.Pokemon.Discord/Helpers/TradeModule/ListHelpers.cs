@@ -52,7 +52,7 @@ public static class ListHelpers<T> where T : PKM, new()
 
         var embed = new EmbedBuilder()
             .WithTitle($"Available {char.ToUpper(itemType[0]) + itemType[1..]} - Filter: '{filter}'")
-            .WithDescription($"Page {page} of {pageCount}")
+            .WithDescription($"Page {page} of {pageCount} | Type `{botPrefix}{commandPrefix} {page +1}` for the next page.")
             .WithColor(Color.Blue);
 
         foreach (var item in pageItems)

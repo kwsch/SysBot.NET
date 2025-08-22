@@ -206,7 +206,7 @@ namespace SysBot.Pokemon.Discord
         {
             var embed = new EmbedBuilder()
                 .WithTitle($"Available Events - {generationOrGame.ToUpperInvariant()}")
-                .WithDescription($"Page {page} of {pageCount}")
+                .WithDescription($"Page {page}/{pageCount} | Use `{botPrefix}srp {generationOrGame} page{page+1}` for the next page.")
                 .WithColor(DiscordColor.Blue);
 
             foreach (var item in allEvents.Skip((page - 1) * itemsPerPage).Take(itemsPerPage))
