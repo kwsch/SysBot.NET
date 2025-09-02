@@ -2,6 +2,7 @@ using LibUsbDotNet;
 using LibUsbDotNet.Main;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace SysBot.Base;
@@ -53,7 +54,8 @@ public abstract class SwitchUSB : IConsoleConnection
 
         lock (_sync)
         {
-            if (!usb.UsbRegistryInfo.IsAlive)
+            // UsbRegistryInfo is only supported on Windows.
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !usb.UsbRegistryInfo!.IsAlive)
                 usb.ResetDevice();
 
             if (usb.IsOpen)
@@ -86,9 +88,13 @@ public abstract class SwitchUSB : IConsoleConnection
                 if (ur.Pid != 0x3000)
                     continue;
 
-                ur.DeviceProperties.TryGetValue("Address", out var addr);
-                if (Port.ToString() != addr?.ToString())
-                    continue;
+                // Only Windows supports reading the port number from the registry.
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    ur.DeviceProperties.TryGetValue("Address", out var addr);
+                    if (Port.ToString() != addr?.ToString())
+                        continue;
+                }
 
                 return ur.Device;
             }
