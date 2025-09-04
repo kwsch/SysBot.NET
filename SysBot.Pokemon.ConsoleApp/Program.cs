@@ -51,10 +51,6 @@ public static class Program
     }
 }
 
-[JsonSerializable(typeof(ProgramConfig))]
-[JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
-public sealed partial class ProgramConfigContext : JsonSerializerContext;
-
 public static class BotContainer
 {
     private static IPokeBotRunner? Environment;

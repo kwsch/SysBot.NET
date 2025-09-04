@@ -1,4 +1,5 @@
-﻿using SysBot.Base;
+using SysBot.Base;
+using System.Text.Json.Serialization;
 
 namespace SysBot.Pokemon;
 
@@ -16,3 +17,7 @@ public enum ProgramMode
     LA = 3,
     SV = 4,
 }
+
+[JsonSerializable(typeof(ProgramConfig))]
+[JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+public sealed partial class ProgramConfigContext : JsonSerializerContext;

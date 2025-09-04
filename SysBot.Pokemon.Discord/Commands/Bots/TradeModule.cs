@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Sources;
 
 namespace SysBot.Pokemon.Discord;
 
@@ -55,11 +56,16 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
         {
             var sb = new StringBuilder(128);
             sb.AppendLine("Unable to parse Showdown Set.");
-            if (set.InvalidLines.Count != 0)
+            var invalidlines = set.InvalidLines;
+            if (invalidlines.Count != 0)
             {
+                var localization = BattleTemplateParseErrorLocalization.Get();
                 sb.AppendLine("Invalid lines detected:\n```");
-                foreach (var line in set.InvalidLines)
-                    sb.AppendLine(line);
+                foreach (var line in invalidlines)
+                {
+                    var error = line.Humanize(localization);
+                    sb.AppendLine(error);
+                }
                 sb.AppendLine("```");
             }
             if (set.Species is 0)
