@@ -44,6 +44,9 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     [Category(TradeConfig), Description("When enabled, disallows requesting Pokémon if they have a HOME Tracker.")]
     public bool DisallowTracked { get; set; } = true;
 
+    [Category(TradeConfig), Description("When enabled, the internet connection step will be skipped during normal bot loop operation. If already connected, the bot will disconnect from online. Applies only to Scarlet and Violet, and only when running in USB mode.")]
+    public bool PerformLocalTradeSV { get; set; } = false;
+
     /// <summary>
     /// Gets a random trade code based on the range settings.
     /// </summary>

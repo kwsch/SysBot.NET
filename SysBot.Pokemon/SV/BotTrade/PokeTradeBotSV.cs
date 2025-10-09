@@ -598,15 +598,25 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         }
         await Task.Delay(2_000 + Hub.Config.Timings.ExtraTimeLoadPortal, token).ConfigureAwait(false);
 
+        var protocol = Config.Connection.Protocol;
+        var performLocalTrade = TradeSettings.PerformLocalTradeSV && protocol is SwitchProtocol.USB;
+
+        // Disconnect from online to perform local trade if configured to allow so.
+        if (performLocalTrade && !await DisconnectFromOnline(token).ConfigureAwait(false))
+        {
+            Log("Failed to disconnected from online to perform local trade.");
+            return false; // Failed due to some error.
+        }
+
         // Connect online if not already.
-        if (!await ConnectToOnline(Hub.Config, token).ConfigureAwait(false))
+        if (!performLocalTrade && !await ConnectToOnline(Hub.Config, token).ConfigureAwait(false))
         {
             Log("Failed to connect to online.");
             return false; // Failed, either due to connection or softban.
         }
 
         // Handle the news popping up.
-        if (await SwitchConnection.IsProgramRunning(LibAppletWeID, token).ConfigureAwait(false))
+        if (!performLocalTrade && await SwitchConnection.IsProgramRunning(LibAppletWeID, token).ConfigureAwait(false))
         {
             Log("News detected, will close once it's loaded!");
             await Task.Delay(5_000, token).ConfigureAwait(false);
@@ -617,6 +627,27 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         // Move down to Link Trade.
         await Click(DDOWN, 0_300, token).ConfigureAwait(false);
         await Click(DDOWN, 0_300, token).ConfigureAwait(false);
+        return true;
+    }
+
+    // Disconnects from online if connected.
+    private async Task<bool> DisconnectFromOnline(CancellationToken token)
+    {
+        if (!await IsConnectedOnline(ConnectedOffset, token).ConfigureAwait(false))
+            return true;
+
+        await Click(L, 1_500, token).ConfigureAwait(false);
+        await Click(A, 4_000, token).ConfigureAwait(false);
+
+        var wait = 0;
+        while (await IsConnectedOnline(ConnectedOffset, token).ConfigureAwait(false))
+        {
+            await Task.Delay(0_500, token).ConfigureAwait(false);
+            if (++wait > 30)
+                return false;
+        }
+
+        await Click(A, 1_000, token).ConfigureAwait(false);
         return true;
     }
 
