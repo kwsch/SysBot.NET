@@ -3,7 +3,6 @@ using SysBot.Base;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace SysBot.Pokemon;
 
@@ -71,8 +70,6 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
             var pkm = EntityFormat.GetFromBytes(data, prefer);
             if (pkm is null)
                 continue;
-            if (pkm is not T)
-                pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _);
             if (pkm is not T dest)
                 continue;
 
@@ -96,7 +93,7 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
                 continue;
             }
 
-            if (DisallowRandomRecipientTrade(dest, la.EncounterMatch))
+            if (typeof(T) == typeof(PK8) && DisallowRandomRecipientTrade(dest, la.EncounterMatch))
             {
                 LogUtil.LogInfo("Provided file was loaded but can't be Surprise Traded: " + dest.FileName, nameof(PokemonPool<T>));
                 surpriseBlocked++;
@@ -121,7 +118,7 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
             loadedAny = true;
         }
 
-        if (surpriseBlocked == Count)
+        if (typeof(T) == typeof(PK8) && surpriseBlocked == Count)
             LogUtil.LogInfo("Surprise trading will fail; failed to load any compatible files.", nameof(PokemonPool<T>));
 
         return loadedAny;

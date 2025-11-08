@@ -1,13 +1,27 @@
 using System;
-using System.IO;
 using System.Windows.Forms;
+
+using PKHeX.Core;
+using SysBot.Pokemon.Z3;
 
 namespace SysBot.Pokemon.WinForms;
 
 internal static class Program
 {
-    public static readonly string WorkingDirectory = Environment.CurrentDirectory = Path.GetDirectoryName(Environment.ProcessPath)!;
-    public static string ConfigPath { get; private set; } = Path.Combine(WorkingDirectory, "config.json");
+
+    public static ProgramConfig Config;
+
+    static Program()
+    {
+        var cmd = Environment.GetCommandLineArgs();
+        var use = Array.Find(cmd, z => z.EndsWith(".json"));
+        var cfg = Config = ConfigLoader.LoadConfig(use);
+        if (cfg.DarkMode)
+#pragma warning disable WFO5001
+            Application.SetColorMode(SystemColorMode.Dark);
+#pragma warning restore WFO5001
+        PokeTradeBotSWSH.SeedChecker = new Z3SeedSearchHandler<PK8>();
+    }
 
     /// <summary>
     ///  The main entry point for the application.
@@ -18,10 +32,6 @@ internal static class Program
 #if NETCOREAPP
         Application.SetHighDpiMode(HighDpiMode.SystemAware);
 #endif
-        var cmd = Environment.GetCommandLineArgs();
-        var cfg = Array.Find(cmd, z => z.EndsWith(".json"));
-        if (cfg != null)
-            ConfigPath = cmd[0];
 
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);

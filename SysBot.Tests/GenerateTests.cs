@@ -59,7 +59,7 @@ public class GenerateTests
             var template = s == null ? null : AutoLegalityWrapper.GetTemplate(s);
             var pk = template == null ? null : sav.GetLegal(template, out _);
             pk.Should().NotBeNull();
-            pk!.AbilityNumber.Should().Be(abilNumber);
+            pk.AbilityNumber.Should().Be(abilNumber);
         }
     }
 

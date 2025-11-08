@@ -42,7 +42,7 @@ public class Z3SeedSearchHandler<T> : ISeedSearchHandler<T> where T : PKM, new()
         var enc = la.Info.EncounterMatch;
         if (enc is not ISeedCorrelation64<PKM> x)
             return false;
-        if (!x.TryGetSeed(pk, out var seed))
+        if (x.TryGetSeed(pk, out var seed) != SeedCorrelationResult.Success)
             return false;
 
         var flawless = enc is IFlawlessIVCount f ? f.FlawlessIVCount : 0;

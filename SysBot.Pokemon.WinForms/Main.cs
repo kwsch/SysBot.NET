@@ -1,11 +1,8 @@
 using PKHeX.Core;
 using SysBot.Base;
-using SysBot.Pokemon.Z3;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -15,32 +12,19 @@ public sealed partial class Main : Form
 {
     private readonly List<PokeBotState> Bots = [];
     private readonly IPokeBotRunner RunningEnvironment;
-    private readonly ProgramConfig Config;
+    private readonly ProgramConfig Config = Program.Config;
 
     public Main()
     {
         InitializeComponent();
 
-        PokeTradeBotSWSH.SeedChecker = new Z3SeedSearchHandler<PK8>();
-        if (File.Exists(Program.ConfigPath))
+        RunningEnvironment = GetRunner(Config);
         {
-            var lines = File.ReadAllText(Program.ConfigPath);
-            Config = JsonSerializer.Deserialize(lines, ProgramConfigContext.Default.ProgramConfig) ?? new ProgramConfig();
-            LogConfig.MaxArchiveFiles = Config.Hub.MaxArchiveFiles;
-            LogConfig.LoggingEnabled = Config.Hub.LoggingEnabled;
-
-            RunningEnvironment = GetRunner(Config);
             foreach (var bot in Config.Bots)
             {
                 bot.Initialize();
                 AddBot(bot);
             }
-        }
-        else
-        {
-            Config = new ProgramConfig();
-            RunningEnvironment = GetRunner(Config);
-            Config.Hub.Folder.CreateDefaults(Program.WorkingDirectory);
         }
 
         RTB_Logs.MaxLength = 32_767; // character length
@@ -49,14 +33,21 @@ public sealed partial class Main : Form
         Task.Run(BotMonitor);
 
         InitUtil.InitializeStubs(Config.Mode);
+
+        if (Config.DarkMode)
+        {
+            foreach (TabPage tab in TC_Main.TabPages)
+                tab.UseVisualStyleBackColor = false;
+        }
     }
 
     private static IPokeBotRunner GetRunner(ProgramConfig cfg) => cfg.Mode switch
     {
         ProgramMode.SWSH => new PokeBotRunnerImpl<PK8>(cfg.Hub, new BotFactory8SWSH()),
         ProgramMode.BDSP => new PokeBotRunnerImpl<PB8>(cfg.Hub, new BotFactory8BS()),
-        ProgramMode.LA => new PokeBotRunnerImpl<PA8>(cfg.Hub, new BotFactory8LA()),
-        ProgramMode.SV => new PokeBotRunnerImpl<PK9>(cfg.Hub, new BotFactory9SV()),
+        ProgramMode.LA   => new PokeBotRunnerImpl<PA8>(cfg.Hub, new BotFactory8LA()),
+        ProgramMode.SV   => new PokeBotRunnerImpl<PK9>(cfg.Hub, new BotFactory9SV()),
+        ProgramMode.LZA  => new PokeBotRunnerImpl<PA9>(cfg.Hub, new BotFactory9LZA()),
         _ => throw new IndexOutOfRangeException("Unsupported mode."),
     };
 
@@ -130,8 +121,7 @@ public sealed partial class Main : Form
     private void SaveCurrentConfig()
     {
         var cfg = GetCurrentConfiguration();
-        var lines = JsonSerializer.Serialize(cfg, ProgramConfigContext.Default.ProgramConfig);
-        File.WriteAllText(Program.ConfigPath, lines);
+        ConfigLoader.Save(cfg);
     }
 
     private void B_Start_Click(object sender, EventArgs e)

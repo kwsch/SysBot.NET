@@ -356,6 +356,12 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
             return update;
         }
 
+        if (hub.Config.Trade.DisallowTradeEvolve && TradeEvolutions.WillTradeEvolve(offered.Species, offered.Form, offered.HeldItem, toSend.Species))
+        {
+            Log("Trade cancelled because trainer offered a Pokémon that would evolve upon trade.");
+            return PokeTradeResult.TradeEvolveNotAllowed;
+        }
+
         var tradeResult = await ConfirmAndStartTrading(poke, token).ConfigureAwait(false);
         if (tradeResult != PokeTradeResult.Success)
         {
@@ -369,7 +375,7 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
             return PokeTradeResult.RoutineCancel;
         }
 
-        // Trade was Successful!
+        // Trade was successful!
         var received = await ReadBoxPokemon(0, 0, token).ConfigureAwait(false);
         // Pokémon in b1s1 is same as the one they were supposed to receive (was never sent).
         if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend) && received.Checksum == toSend.Checksum)

@@ -1,4 +1,4 @@
-﻿namespace SysBot.Pokemon;
+namespace SysBot.Pokemon;
 
 public enum PokeTradeResult
 {
@@ -12,6 +12,7 @@ public enum PokeTradeResult
     TrainerRequestBad,
     IllegalTrade,
     SuspiciousActivity,
+    TradeEvolveNotAllowed,
 
     // Recovery -- General Bot Failures
     // Anything below here should be retried once if possible.

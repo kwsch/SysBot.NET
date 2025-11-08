@@ -181,7 +181,7 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
     private async Task TradeAsyncAttach(int code, RequestSignificance sig, SocketUser usr)
     {
         var attachment = Context.Message.Attachments.FirstOrDefault();
-        if (attachment == default)
+        if (attachment == null)
         {
             await ReplyAsync("No attachment provided!").ConfigureAwait(false);
             return;

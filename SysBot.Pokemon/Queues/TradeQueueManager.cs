@@ -41,7 +41,7 @@ public class TradeQueueManager<T> where T : PKM, new()
 
     public bool TryDequeueLedy(out PokeTradeDetail<T> detail, bool force = false)
     {
-        detail = default!;
+        detail = null!;
         var cfg = Hub.Config.Distribution;
         if (!cfg.DistributeWhileIdle && !force)
             return false;
@@ -108,8 +108,8 @@ public class TradeQueueManager<T> where T : PKM, new()
 
         if (preferredQueue == null)
         {
-            detail = default!;
-            priority = default;
+            detail = null!;
+            priority = 0;
             return false;
         }
 

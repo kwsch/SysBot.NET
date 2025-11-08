@@ -6,27 +6,27 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;
-using static SysBot.Pokemon.PokeDataOffsetsLA;
+using static SysBot.Pokemon.PokeDataOffsetsLZA;
 
 namespace SysBot.Pokemon;
 
-public abstract class PokeRoutineExecutor8LA(PokeBotState Config) : PokeRoutineExecutor<PA8>(Config)
+public abstract class PokeRoutineExecutor9LZA(PokeBotState Config) : PokeRoutineExecutor<PA9>(Config)
 {
-    protected PokeDataOffsetsLA Offsets { get; } = new();
+    protected PokeDataOffsetsLZA Offsets { get; } = new();
 
-    public override Task<PA8> ReadPokemon(ulong offset, CancellationToken token) => ReadPokemon(offset, BoxFormatSlotSize, token);
+    public override Task<PA9> ReadPokemon(ulong offset, CancellationToken token) => ReadPokemon(offset, BoxFormatSlotSize, token);
 
-    public override async Task<PA8> ReadPokemon(ulong offset, int size, CancellationToken token)
+    public override async Task<PA9> ReadPokemon(ulong offset, int size, CancellationToken token)
     {
         var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, size, token).ConfigureAwait(false);
-        return new PA8(data);
+        return new PA9(data);
     }
 
-    public override async Task<PA8> ReadPokemonPointer(IEnumerable<long> jumps, int size, CancellationToken token)
+    public override async Task<PA9> ReadPokemonPointer(IEnumerable<long> jumps, int size, CancellationToken token)
     {
         var (valid, offset) = await ValidatePointerAll(jumps, token).ConfigureAwait(false);
         if (!valid)
-            return new PA8();
+            return new PA9();
         return await ReadPokemon(offset, token).ConfigureAwait(false);
     }
 
@@ -36,14 +36,14 @@ public abstract class PokeRoutineExecutor8LA(PokeBotState Config) : PokeRoutineE
         return !result.SequenceEqual(original);
     }
 
-    public override Task<PA8> ReadBoxPokemon(int box, int slot, CancellationToken token)
+    public override Task<PA9> ReadBoxPokemon(int box, int slot, CancellationToken token)
     {
         // Shouldn't be reading anything but box1slot1 here. Slots are not consecutive.
         var jumps = Offsets.BoxStartPokemonPointer.ToArray();
         return ReadPokemonPointer(jumps, BoxFormatSlotSize, token);
     }
 
-    public Task SetBoxPokemonAbsolute(ulong offset, PA8 pkm, CancellationToken token, ITrainerInfo? sav = null)
+    public Task SetBoxPokemonAbsolute(ulong offset, PA9 pkm, CancellationToken token, ITrainerInfo? sav = null)
     {
         if (sav != null)
         {
@@ -53,7 +53,7 @@ public abstract class PokeRoutineExecutor8LA(PokeBotState Config) : PokeRoutineE
 
         pkm.Heal();
         pkm.RefreshChecksum();
-        return SwitchConnection.WriteBytesAbsoluteAsync(pkm.EncryptedBoxData, offset, token);
+        return SwitchConnection.WriteBytesAbsoluteAsync(pkm.EncryptedPartyData, offset, token);
     }
 
     public Task SetCurrentBox(byte box, CancellationToken token)
@@ -67,20 +67,20 @@ public abstract class PokeRoutineExecutor8LA(PokeBotState Config) : PokeRoutineE
         return data[0];
     }
 
-    public async Task<SAV8LA> IdentifyTrainer(CancellationToken token)
+    public async Task<SAV9ZA> IdentifyTrainer(CancellationToken token)
     {
         // Check if botbase is on the correct version or later.
         await VerifyBotbaseVersion(token).ConfigureAwait(false);
 
         // Check title so we can warn if mode is incorrect.
         string title = await SwitchConnection.GetTitleID(token).ConfigureAwait(false);
-        if (title != LegendsArceusID)
+        if (title != LegendsZAID)
             throw new Exception($"{title} is not a valid Pokémon Legends: Arceus title. Is your mode correct?");
 
         // Verify the game version.
         var game_version = await SwitchConnection.GetGameInfo("version", token).ConfigureAwait(false);
-        if (!game_version.SequenceEqual(LAGameVersion))
-            throw new Exception($"Game version is not supported. Expected version {LAGameVersion}, and current game version is {game_version}.");
+        if (!game_version.SequenceEqual(LZAGameVersion))
+            throw new Exception($"Game version is not supported. Expected version {LZAGameVersion}, and current game version is {game_version}.");
 
         var sav = await GetFakeTrainerSAV(token).ConfigureAwait(false);
         InitSaveData(sav);
@@ -97,9 +97,9 @@ public abstract class PokeRoutineExecutor8LA(PokeBotState Config) : PokeRoutineE
         return sav;
     }
 
-    public async Task<SAV8LA> GetFakeTrainerSAV(CancellationToken token)
+    public async Task<SAV9ZA> GetFakeTrainerSAV(CancellationToken token)
     {
-        var sav = new SAV8LA();
+        var sav = new SAV9ZA();
         var info = sav.MyStatus;
         var read = await SwitchConnection.PointerPeek(info.Data.Length, Offsets.MyStatusPointer, token).ConfigureAwait(false);
         read.CopyTo(info.Data);
@@ -143,20 +143,6 @@ public abstract class PokeRoutineExecutor8LA(PokeBotState Config) : PokeRoutineE
         await StartGame(config, token).ConfigureAwait(false);
     }
 
-    public Task UnSoftBan(CancellationToken token)
-    {
-        Log("Soft ban detected, unbanning.");
-        // Write the value to 0.
-        var data = BitConverter.GetBytes(0);
-        return SwitchConnection.PointerPoke(data, Offsets.SoftbanPointer, token);
-    }
-
-    public async Task<bool> CheckIfSoftBanned(ulong offset, CancellationToken token)
-    {
-        var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 4, token).ConfigureAwait(false);
-        return BitConverter.ToUInt32(data, 0) != 0;
-    }
-
     public async Task CloseGame(PokeTradeHubConfig config, CancellationToken token)
     {
         var timing = config.Timings;
@@ -194,7 +180,7 @@ public abstract class PokeRoutineExecutor8LA(PokeBotState Config) : PokeRoutineE
             await Click(A, 1_000, token).ConfigureAwait(false);
 
         var timer = 60_000;
-        while (!await IsOnOverworldTitle(token).ConfigureAwait(false))
+        while (!await IsOnOverworld(token).ConfigureAwait(false))
         {
             await Task.Delay(1_000, token).ConfigureAwait(false);
             timer -= 1_000;
@@ -203,7 +189,7 @@ public abstract class PokeRoutineExecutor8LA(PokeBotState Config) : PokeRoutineE
             if (timer <= 0 && !timing.AvoidSystemUpdate)
             {
                 Log("Still not in the game, initiating rescue protocol!");
-                while (!await IsOnOverworldTitle(token).ConfigureAwait(false))
+                while (!await IsOnOverworld(token).ConfigureAwait(false))
                     await Click(A, 6_000, token).ConfigureAwait(false);
                 break;
             }
@@ -213,30 +199,70 @@ public abstract class PokeRoutineExecutor8LA(PokeBotState Config) : PokeRoutineE
         Log("Back in the overworld!");
     }
 
-    public async Task<ulong> GetTradePartnerNID(ulong offset, CancellationToken token)
+    public async Task<ulong> GetTradePartnerNID(CancellationToken token)
     {
-        var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 8, token).ConfigureAwait(false);
+        var data = await SwitchConnection.PointerPeek(8, Offsets.TradePartnerBackupNIDPointer, token).ConfigureAwait(false);
         return BitConverter.ToUInt64(data, 0);
     }
 
-    public async Task<bool> IsOnOverworld(ulong offset, CancellationToken token)
+    public async Task<bool> IsOnOverworld(CancellationToken token)
     {
-        var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 1, token).ConfigureAwait(false);
+        var data = await SwitchConnection.ReadBytesMainAsync(OverworldOffset, 1, token).ConfigureAwait(false);
         return data[0] == 1;
-    }
-
-    // Only used to check if we made it off the title screen; the pointer isn't viable until a few seconds after clicking A.
-    private async Task<bool> IsOnOverworldTitle(CancellationToken token)
-    {
-        var (valid, offset) = await ValidatePointerAll(Offsets.OverworldPointer, token).ConfigureAwait(false);
-        if (!valid)
-            return false;
-        return await IsOnOverworld(offset, token).ConfigureAwait(false);
     }
 
     public async Task<TextSpeedOption> GetTextSpeed(CancellationToken token)
     {
         var data = await SwitchConnection.PointerPeek(1, Offsets.TextSpeedPointer, token).ConfigureAwait(false);
-        return (TextSpeedOption)data[0];
+        return (TextSpeedOption)((data[0] & 7) >> 1);
+    }
+
+    public async Task<bool> IsConnected(CancellationToken token)
+    {
+        var data = await SwitchConnection.ReadBytesMainAsync(ConnectedOffset, 1, token).ConfigureAwait(false);
+        return data[0] == 1;
+    }
+
+    public async Task<byte> GetStoredLinkTradeCodeLength(CancellationToken token)
+    {
+        var data = await SwitchConnection.PointerPeek(1, Offsets.LinkTradeCodeLengthPointer, token).ConfigureAwait(false);
+        return data[0];
+    }
+
+    public async Task<int> GetStoredLinkTradeCode(CancellationToken token)
+    {
+        var data = await SwitchConnection.PointerPeek(16, Offsets.LinkTradeCodePointer, token).ConfigureAwait(false);
+        var raw = StringConverter8.GetString(data);
+
+        // Trim nulls and whitespace
+        var trimmed = raw.Trim();
+        if (trimmed.Length == 0)
+            return 0;
+
+        if (int.TryParse(trimmed, out int value))
+            return value;
+
+        return -1;
+    }
+
+    public async Task<bool> IsOnMenu(MenuState state, CancellationToken token)
+    {
+        var data = await SwitchConnection.ReadBytesMainAsync(MenuOffset, 1, token).ConfigureAwait(false);
+        return (MenuState)data[0] == state;
+    }
+
+    public async Task<MenuState> GetMenuState(CancellationToken token)
+    {
+        var data = await SwitchConnection.ReadBytesMainAsync(MenuOffset, 1, token).ConfigureAwait(false);
+        return (MenuState)data[0];
+    }
+
+    public enum MenuState : byte
+    {
+        Overworld = 0,
+        XMenu = 1,
+        LinkPlay = 2,
+        LinkTrade = 3,
+        InBox = 4,
     }
 }

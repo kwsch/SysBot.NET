@@ -148,7 +148,7 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
             if (AbuseSettings.BlockDetectedBannedUser && bot is PokeRoutineExecutor8SWSH)
                 await BlockUser(token).ConfigureAwait(false);
 
-            var msg = $"{user.TrainerName}{useridmsg} is a banned user, and was encountered in-game using OT: {TrainerName}.";
+            var msg = $"{user.TrainerName}{useridmsg} is a banned user and was encountered in-game using OT: {TrainerName}.";
             if (!string.IsNullOrWhiteSpace(entry.Comment))
                 msg += $"\nUser was banned for: {entry.Comment}";
             if (!string.IsNullOrWhiteSpace(AbuseSettings.BannedIDMatchEchoMention))
@@ -169,7 +169,7 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
             if (cd != 0 && TimeSpan.FromMinutes(cd) > delta)
             {
                 var wait = TimeSpan.FromMinutes(cd) - delta;
-                poke.Notifier.SendNotification(bot, poke, $"You are still on trade cooldown, and cannot trade for another {wait.TotalMinutes:F1} minute(s).");
+                poke.Notifier.SendNotification(bot, poke, $"You are still on trade cooldown and cannot trade for another {wait.TotalMinutes:F1} minute(s).");
                 var msg = $"Found {user.TrainerName}{useridmsg} ignoring the {cd} minute trade cooldown. Last encountered {delta.TotalMinutes:F1} minutes ago.";
                 if (AbuseSettings.EchoNintendoOnlineIDCooldown)
                     msg += $"\nID: {TrainerNID}";

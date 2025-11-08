@@ -29,8 +29,11 @@ public static class QueueHelper<T> where T : PKM, new()
 
             // Notify in channel
             await context.Channel.SendMessageAsync(msg).ConfigureAwait(false);
-            // Notify in PM to mirror what is said in the channel.
-            await trader.SendMessageAsync($"{msg}\nYour trade code will be **{code:0000 0000}**.").ConfigureAwait(false);
+            // Notify in PM to mirror what was said in the channel.
+            // Only tell them a trade code if it was successful.
+            if (result)
+                msg += $"\nYour trade code will be **{code:0000 0000}**.";
+            await trader.SendMessageAsync($"{msg}").ConfigureAwait(false);
 
             // Clean Up
             if (result)

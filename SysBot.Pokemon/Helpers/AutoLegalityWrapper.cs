@@ -137,7 +137,9 @@ public static class AutoLegalityWrapper
             if (StringsUtil.IsSpammyString(ot) && !IsFixedOT(new LegalityAnalysis(pk).EncounterOriginal, pk))
                 return false;
         }
-        return !FormInfo.IsFusedForm(pk.Species, pk.Form, pk.Format);
+        if (TradeRestrictions.IsUntradableHeld(pk.Context, pk.HeldItem))
+            return false;
+        return !TradeRestrictions.IsUntradable(pk.Species, pk.Form, pk is IFormArgument f ? f.FormArgument : 0, pk.Format);
     }
 
     public static bool IsFixedOT(IEncounterTemplate t, PKM pkm) => t switch
@@ -145,12 +147,13 @@ public static class AutoLegalityWrapper
         IFixedTrainer { IsFixedTrainer: true } => true,
         MysteryGift g => !g.IsEgg && g switch
         {
+            WA9 wa9 => wa9.GetHasOT(pkm.Language),
             WC9 wc9 => wc9.GetHasOT(pkm.Language),
             WA8 wa8 => wa8.GetHasOT(pkm.Language),
             WB8 wb8 => wb8.GetHasOT(pkm.Language),
             WC8 wc8 => wc8.GetHasOT(pkm.Language),
             WB7 wb7 => wb7.GetHasOT(pkm.Language),
-            { Generation: >= 5 } gift => gift.OriginalTrainerName.Length > 0,
+            { Generation: >= 5 } => g.OriginalTrainerName.Length > 0,
             _ => true,
         },
         _ => false,
@@ -166,6 +169,8 @@ public static class AutoLegalityWrapper
             return TrainerSettings.GetSavedTrainerData(GameVersion.PLA);
         if (typeof(T) == typeof(PK9))
             return TrainerSettings.GetSavedTrainerData(GameVersion.SV);
+        if (typeof(T) == typeof(PA9))
+            return TrainerSettings.GetSavedTrainerData(GameVersion.ZA);
 
         throw new ArgumentException("Type does not have a recognized trainer fetch.", typeof(T).Name);
     }

@@ -49,10 +49,10 @@ public abstract class PokeRoutineExecutor9SV(PokeBotState Config) : PokeRoutineE
         {
             // Update PKM to the current save's handler data
             pkm.UpdateHandler(sav);
-            pkm.RefreshChecksum();
         }
 
-        pkm.ResetPartyStats();
+        pkm.Heal();
+        pkm.RefreshChecksum();
         return SwitchConnection.WriteBytesAbsoluteAsync(pkm.EncryptedBoxData, offset, token);
     }
 

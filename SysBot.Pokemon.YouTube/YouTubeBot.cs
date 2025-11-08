@@ -1,4 +1,4 @@
-﻿using Google.Apis.YouTube.v3.Data;
+using Google.Apis.YouTube.v3.Data;
 using PKHeX.Core;
 using StreamingClient.Base.Util;
 using SysBot.Base;
@@ -23,7 +23,7 @@ public class YouTubeBot<T> where T : PKM, new()
         Hub = hub;
         Settings = settings;
         Logger.LogOccurred += Logger_LogOccurred;
-        client = default!;
+        client = null!;
 
         Task.Run(async () =>
         {

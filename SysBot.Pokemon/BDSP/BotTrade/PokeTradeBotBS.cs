@@ -332,6 +332,12 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         if (update != PokeTradeResult.Success)
             return update;
 
+        if (Hub.Config.Trade.DisallowTradeEvolve && TradeEvolutions.WillTradeEvolve(offered.Species, offered.Form, offered.HeldItem, toSend.Species))
+        {
+            Log("Trade cancelled because trainer offered a Pokémon that would evolve upon trade.");
+            return PokeTradeResult.TradeEvolveNotAllowed;
+        }
+
         var tradeResult = await ConfirmAndStartTrading(poke, token).ConfigureAwait(false);
         if (tradeResult != PokeTradeResult.Success)
             return tradeResult;
@@ -339,7 +345,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         if (token.IsCancellationRequested)
             return PokeTradeResult.RoutineCancel;
 
-        // Trade was Successful!
+        // Trade was successful!
         var received = await ReadPokemon(BoxStartOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
         // Pokémon in b1s1 is same as the one they were supposed to receive (was never sent).
         if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend) && received.Checksum == toSend.Checksum)

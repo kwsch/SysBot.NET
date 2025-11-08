@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
 using System.Collections.Concurrent;
 
@@ -16,7 +16,8 @@ public class PokeTradeHub<T> where T : PKM, new()
         var pool = new PokemonPool<T>(config);
         Ledy = new LedyDistributor<T>(pool);
         BotSync = new BotSynchronizer(config.Distribution);
-        BotSync.BarrierReleasingActions.Add(() => LogUtil.LogInfo($"{BotSync.Barrier.ParticipantCount} bots released.", "Barrier"));
+        var plural = BotSync.Barrier.ParticipantCount > 1 ? "s" : "";
+        BotSync.BarrierReleasingActions.Add(() => LogUtil.LogInfo($"{BotSync.Barrier.ParticipantCount} bot{plural} released.", "Barrier"));
 
         Queues = new TradeQueueManager<T>(this);
     }

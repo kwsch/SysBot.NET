@@ -187,7 +187,9 @@ public partial class BotController : UserControl
         return bot;
     }
 
-    private void BotController_MouseEnter(object? sender, EventArgs e) => BackColor = Color.LightSkyBlue;
+#pragma warning disable WFO5001
+    private void BotController_MouseEnter(object? sender, EventArgs e) => BackColor = Application.IsDarkModeEnabled ? Color.MidnightBlue : Color.LightSkyBlue;
+#pragma warning restore WFO5001
     private void BotController_MouseLeave(object? sender, EventArgs e) => BackColor = Color.Transparent;
 
     public void ReadState()

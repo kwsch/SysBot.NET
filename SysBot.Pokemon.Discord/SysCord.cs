@@ -15,14 +15,14 @@ namespace SysBot.Pokemon.Discord;
 
 public static class SysCordSettings
 {
-    public static DiscordManager Manager { get; internal set; } = default!;
+    public static DiscordManager Manager { get; internal set; } = null!;
     public static DiscordSettings Settings => Manager.Config;
-    public static PokeTradeHubConfig HubConfig { get; internal set; } = default!;
+    public static PokeTradeHubConfig HubConfig { get; internal set; } = null!;
 }
 
 public sealed class SysCord<T> where T : PKM, new()
 {
-    public static PokeBotRunner<T> Runner { get; private set; } = default!;
+    public static PokeBotRunner<T> Runner { get; private set; } = null!;
 
     private readonly DiscordSocketClient _client;
     private readonly DiscordManager Manager;

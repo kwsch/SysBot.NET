@@ -44,6 +44,9 @@ public class TradeSettings : IBotStateSettings, ICountSettings
     [Category(TradeConfig), Description("When enabled, disallows requesting Pokémon if they have a HOME Tracker.")]
     public bool DisallowTracked { get; set; } = true;
 
+    [Category(TradeConfig), Description("When enabled, the bot will automatically cancel a trade if offered a Pokémon that will evolve.")]
+    public bool DisallowTradeEvolve { get; set; } = true;
+
     /// <summary>
     /// Gets a random trade code based on the range settings.
     /// </summary>

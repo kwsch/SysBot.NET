@@ -7,12 +7,12 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;
-using static SysBot.Pokemon.PokeDataOffsetsLA;
+using static SysBot.Pokemon.PokeDataOffsetsLZA;
 
 namespace SysBot.Pokemon;
 
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
-public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRoutineExecutor8LA(Config), ICountBot
+public class PokeTradeBotLZA(PokeTradeHub<PA9> Hub, PokeBotState Config) : PokeRoutineExecutor9LZA(Config), ICountBot
 {
     private readonly TradeSettings TradeSettings = Hub.Config.Trade;
     private readonly TradeAbuseSettings AbuseSettings = Hub.Config.TradeAbuse;
@@ -37,12 +37,17 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 
     // Cached offsets that stay the same per session.
     private ulong BoxStartOffset;
-    private ulong SoftBanOffset;
-    private ulong OverworldOffset;
+
+    // Cached offsets that stay the same after connecting online.
     private ulong TradePartnerNIDOffset;
+    private ulong TradePartnerTIDOffset;
+    private ulong TradePartnerOTOffset;
 
     // Cached offsets that stay the same per trade.
     private ulong TradePartnerStatusOffset;
+
+    // Stores whether we returned all the way to the overworld, which repositions the cursor.
+    private bool StartFromOverworld = true;
 
     public override async Task MainLoop(CancellationToken token)
     {
@@ -54,8 +59,12 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
             RecentTrainerCache.SetRecentTrainer(sav);
             await InitializeSessionOffsets(token).ConfigureAwait(false);
+            // It's possible to start off already connected.
+            if (await IsConnected(token).ConfigureAwait(false))
+                await InitializeOnlineOffsets(token).ConfigureAwait(false);
+            StartFromOverworld = true;
 
-            Log($"Starting main {nameof(PokeTradeBotLA)} loop.");
+            Log($"Starting main {nameof(PokeTradeBotLZA)} loop.");
             await InnerLoop(sav, token).ConfigureAwait(false);
         }
         catch (Exception e)
@@ -63,7 +72,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
             Log(e.Message);
         }
 
-        Log($"Ending {nameof(PokeTradeBotLA)} loop.");
+        Log($"Ending {nameof(PokeTradeBotLZA)} loop.");
         await HardStop().ConfigureAwait(false);
     }
 
@@ -73,7 +82,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         return CleanExit(CancellationToken.None);
     }
 
-    private async Task InnerLoop(SAV8LA sav, CancellationToken token)
+    private async Task InnerLoop(SAV9ZA sav, CancellationToken token)
     {
         while (!token.IsCancellationRequested)
         {
@@ -115,7 +124,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         }
     }
 
-    private async Task DoTrades(SAV8LA sav, CancellationToken token)
+    private async Task DoTrades(SAV9ZA sav, CancellationToken token)
     {
         var type = Config.CurrentRoutineType;
         int waitCounter = 0;
@@ -155,7 +164,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         return Task.Delay(1_000, token);
     }
 
-    protected virtual (PokeTradeDetail<PA8>? detail, uint priority) GetTradeData(PokeRoutineType type)
+    protected virtual (PokeTradeDetail<PA9>? detail, uint priority) GetTradeData(PokeRoutineType type)
     {
         if (Hub.Queues.TryDequeue(type, out var detail, out var priority))
             return (detail, priority);
@@ -164,7 +173,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         return (null, PokeTradePriorities.TierFree);
     }
 
-    private async Task PerformTrade(SAV8LA sav, PokeTradeDetail<PA8> detail, PokeRoutineType type, uint priority, CancellationToken token)
+    private async Task PerformTrade(SAV9ZA sav, PokeTradeDetail<PA9> detail, PokeRoutineType type, uint priority, CancellationToken token)
     {
         PokeTradeResult result;
         try
@@ -189,7 +198,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         HandleAbortedTrade(detail, type, priority, result);
     }
 
-    private void HandleAbortedTrade(PokeTradeDetail<PA8> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
+    private void HandleAbortedTrade(PokeTradeDetail<PA9> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
     {
         detail.IsProcessing = false;
         if (result.ShouldAttemptRetry() && detail.Type != PokeTradeType.Random && !detail.IsRetry)
@@ -205,36 +214,61 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         }
     }
 
-    private async Task<PokeTradeResult> PerformLinkCodeTrade(SAV8LA sav, PokeTradeDetail<PA8> poke, CancellationToken token)
+    private async Task<PokeTradeResult> PerformLinkCodeTrade(SAV9ZA sav, PokeTradeDetail<PA9> poke, CancellationToken token)
     {
         // Update Barrier Settings
         UpdateBarrier(poke.IsSynchronized);
         poke.TradeInitialize(this);
         Hub.Config.Stream.EndEnterCode(this);
 
-        if (await CheckIfSoftBanned(SoftBanOffset, token).ConfigureAwait(false))
-            await UnSoftBan(token).ConfigureAwait(false);
+        // If we're expected to be on the overworld and we aren't, recover there.
+        if (StartFromOverworld && !await IsOnOverworld(token).ConfigureAwait(false))
+            await ResetToOverworld(token).ConfigureAwait(false);
 
-        if (!await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
+        // If we're expected to start on Link Play menu and we aren't there, reset to overworld.
+        if (!StartFromOverworld && !await IsOnMenu(MenuState.LinkPlay, token).ConfigureAwait(false))
         {
-            await ExitTrade(true, token).ConfigureAwait(false);
-            return PokeTradeResult.RecoverStart;
+            await ResetToOverworld(token).ConfigureAwait(false);
+            StartFromOverworld = true;
         }
 
         var toSend = poke.TradeData;
         if (toSend.Species != 0)
             await SetBoxPokemonAbsolute(BoxStartOffset, toSend, token, sav).ConfigureAwait(false);
 
-        // Speak to the NPC to start a trade.
-        Log("Speaking to Simona to start a trade.");
-        await Click(A, 1_000, token).ConfigureAwait(false);
-        await Click(A, 0_600, token).ConfigureAwait(false);
-        await Click(A, 1_500, token).ConfigureAwait(false);
+        // If we're starting from the overworld, open the menu.
+        if (StartFromOverworld)
+        {
+            Log("Entering Link Play menu.");
+            await Click(X, 0_800, token).ConfigureAwait(false);
+            await Click(DUP, 0_300, token).ConfigureAwait(false);
+            await Click(A, 0_800, token).ConfigureAwait(false);
+        }
 
         Log("Selecting Link Trade.");
-        await Click(DRIGHT, 0_500, token).ConfigureAwait(false);
-        await Click(A, 1_500, token).ConfigureAwait(false);
-        await Click(A, 2_000, token).ConfigureAwait(false);
+        await Click(DLEFT, 0_400, token).ConfigureAwait(false);
+        await Click(A, 0_800, token).ConfigureAwait(false);
+        await Click(DRIGHT, 0_400, token).ConfigureAwait(false);
+
+        // If we're not connected, the first click will connect and save the game, which will take a few seconds.
+        if (!await IsConnected(token).ConfigureAwait(false))
+        {
+            Log("Connecting online.");
+            await Click(A, 0_300, token).ConfigureAwait(false);
+            while (!await IsConnected(token).ConfigureAwait(false))
+                await (Click(A, 0_200, token)).ConfigureAwait(false);
+            await (Task.Delay(1_000, token)).ConfigureAwait(false);
+            Log("Successfully connected!");
+            await InitializeOnlineOffsets(token).ConfigureAwait(false);
+        }
+        else
+        {
+            // If already connected, an extra click is needed to open the keypad.
+            await Click(A, 0_500, token).ConfigureAwait(false);
+        }
+
+        // Only need one more click to open the keypad.
+        await Click(A, 0_800, token).ConfigureAwait(false);
 
         // Loading code entry.
         if (poke.Type != PokeTradeType.Random)
@@ -242,8 +276,9 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         await Task.Delay(Hub.Config.Timings.ExtraTimeOpenCodeEntry, token).ConfigureAwait(false);
 
         var code = poke.Code;
-        Log($"Entering Link Trade code: {code:0000 0000}...");
-        await EnterLinkCode(code, Hub.Config, token).ConfigureAwait(false);
+
+        // LZA has more complex logic for entering the link code.
+        await EnterLinkCodeLZA(code, token).ConfigureAwait(false);
 
         // Wait for Barrier to trigger all bots simultaneously.
         WaitAtBarrierIfApplicable(token);
@@ -256,12 +291,19 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 
         if (token.IsCancellationRequested)
         {
-            await ExitTrade(false, token).ConfigureAwait(false);
+            await ResetToOverworld(token).ConfigureAwait(false);
             return PokeTradeResult.RoutineCancel;
         }
         if (!partnerFound)
         {
-            await ExitTrade(false, token).ConfigureAwait(false);
+            // Make sure we cancel the trade search first if we waited less than 55 seconds.
+            // Actual timeout seems to be just over 60 seconds, but it's better not to accidentally click into keypad again.
+            if (Hub.Config.Trade.TradeWaitTime < 55)
+            {
+                await Click(B, 0_500, token).ConfigureAwait(false);
+                await Click(A, 0_300, token).ConfigureAwait(false);
+            }
+            await ResetToLinkPlay( token).ConfigureAwait(false);
             return PokeTradeResult.NoTrainerFound;
         }
 
@@ -271,14 +313,13 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         await Task.Delay(1_000 + Hub.Config.Timings.ExtraTimeOpenBox, token).ConfigureAwait(false);
 
         var tradePartner = await GetTradePartnerInfo(token).ConfigureAwait(false);
-        var trainerNID = await GetTradePartnerNID(TradePartnerNIDOffset, token).ConfigureAwait(false);
-        RecordUtil<PokeTradeBotLA>.Record($"Initiating\t{trainerNID:X16}\t{tradePartner.TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
-        Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7} (ID: {trainerNID})");
+        RecordUtil<PokeTradeBotLZA>.Record($"Initiating\t{tradePartner.NID:X16}\t{tradePartner.TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
+        Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7} (ID: {tradePartner.NID})");
 
-        var partnerCheck = await CheckPartnerReputation(this, poke, trainerNID, tradePartner.TrainerName, AbuseSettings, token);
+        var partnerCheck = await CheckPartnerReputation(this, poke, tradePartner.NID, tradePartner.TrainerName, AbuseSettings, token);
         if (partnerCheck != PokeTradeResult.Success)
         {
-            await ExitTrade(false, token).ConfigureAwait(false);
+            await ResetToLinkPlay(token).ConfigureAwait(false);
             return partnerCheck;
         }
 
@@ -287,7 +328,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         if (poke.Type == PokeTradeType.Dump)
         {
             var result = await ProcessDumpTradeAsync(poke, token).ConfigureAwait(false);
-            await ExitTrade(false, token).ConfigureAwait(false);
+            await ResetToLinkPlay(token).ConfigureAwait(false);
             return result;
         }
 
@@ -295,7 +336,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         var offering = await ReadUntilChanged(TradePartnerStatusOffset, [0x3], 25_000, 1_000, true, true, token).ConfigureAwait(false);
         if (!offering)
         {
-            await ExitTrade(false, token).ConfigureAwait(false);
+            await ResetToLinkPlay(token).ConfigureAwait(false);
             return PokeTradeResult.TrainerTooSlow;
         }
 
@@ -307,22 +348,24 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         if (offered == null || offered.Species == 0 || !offered.ChecksumValid)
         {
             Log("Trade ended because trainer offer was rescinded too quickly.");
-            await ExitTrade(false, token).ConfigureAwait(false);
+            await ResetToLinkPlay(token).ConfigureAwait(false);
             return PokeTradeResult.TrainerOfferCanceledQuick;
         }
+        offered.Heal();
+        offered.RefreshChecksum();
 
         var trainer = new PartnerDataHolder(0, tradePartner.TrainerName, tradePartner.TID7);
         (toSend, PokeTradeResult update) = await GetEntityToSend(sav, poke, offered, toSend, trainer, token).ConfigureAwait(false);
         if (update != PokeTradeResult.Success)
         {
-            await ExitTrade(false, token).ConfigureAwait(false);
+            await ResetToLinkPlay(token).ConfigureAwait(false);
             return update;
         }
 
         if (Hub.Config.Trade.DisallowTradeEvolve && TradeEvolutions.WillTradeEvolve(offered.Species, offered.Form, offered.HeldItem, toSend.Species))
         {
             Log("Trade cancelled because trainer offered a Pokémon that would evolve upon trade.");
-            await ExitTrade(false, token).ConfigureAwait(false);
+            await ResetToLinkPlay(token).ConfigureAwait(false);
             return PokeTradeResult.TradeEvolveNotAllowed;
         }
 
@@ -332,13 +375,13 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         {
             if (tradeResult == PokeTradeResult.TrainerLeft)
                 Log("Trade canceled because trainer left the trade.");
-            await ExitTrade(false, token).ConfigureAwait(false);
+            await ResetToLinkPlay(token).ConfigureAwait(false);
             return tradeResult;
         }
 
         if (token.IsCancellationRequested)
         {
-            await ExitTrade(false, token).ConfigureAwait(false);
+            await ResetToOverworld(token).ConfigureAwait(false);
             return PokeTradeResult.RoutineCancel;
         }
 
@@ -348,7 +391,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend) && received.Checksum == toSend.Checksum)
         {
             Log("User did not complete the trade.");
-            await ExitTrade(false, token).ConfigureAwait(false);
+            await ResetToLinkPlay(token).ConfigureAwait(false);
             return PokeTradeResult.TrainerTooSlow;
         }
 
@@ -360,13 +403,13 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         UpdateCountsAndExport(poke, received, toSend);
 
         // Log for Trade Abuse tracking.
-        LogSuccessfulTrades(poke, trainerNID, tradePartner.TrainerName);
+        LogSuccessfulTrades(poke, tradePartner.NID, tradePartner.TrainerName);
 
-        await ExitTrade(false, token).ConfigureAwait(false);
+        await ResetToLinkPlay(token).ConfigureAwait(false);
         return PokeTradeResult.Success;
     }
 
-    private void UpdateCountsAndExport(PokeTradeDetail<PA8> poke, PA8 received, PA8 toSend)
+    private void UpdateCountsAndExport(PokeTradeDetail<PA9> poke, PA9 received, PA9 toSend)
     {
         var counts = TradeSettings;
         if (poke.Type == PokeTradeType.Random)
@@ -385,7 +428,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         }
     }
 
-    private async Task<PokeTradeResult> ConfirmAndStartTrading(PokeTradeDetail<PA8> detail, CancellationToken token)
+    private async Task<PokeTradeResult> ConfirmAndStartTrading(PokeTradeDetail<PA9> detail, CancellationToken token)
     {
         // We'll keep watching B1S1 for a change to indicate a trade started -> should try quitting at that point.
         var oldEC = await SwitchConnection.ReadBytesAbsoluteAsync(BoxStartOffset, 8, token).ConfigureAwait(false);
@@ -393,7 +436,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         await Click(A, 3_000, token).ConfigureAwait(false);
         for (int i = 0; i < Hub.Config.Trade.MaxTradeConfirmTime; i++)
         {
-            if (await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
+            if (!await IsOnMenu(MenuState.InBox, token).ConfigureAwait(false))
                 return PokeTradeResult.TrainerLeft;
             if (await IsUserBeingShifty(detail, token).ConfigureAwait(false))
                 return PokeTradeResult.SuspiciousActivity;
@@ -407,7 +450,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
                 return PokeTradeResult.Success;
             }
         }
-        if (await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
+        if (!await IsOnMenu(MenuState.InBox, token).ConfigureAwait(false))
             return PokeTradeResult.TrainerLeft;
 
         // If we don't detect a B1S1 change, the trade didn't go through in that time.
@@ -421,13 +464,17 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         await Task.Delay(2_000, token).ConfigureAwait(false);
         while (ctr > 0)
         {
-            await Task.Delay(1_000, token).ConfigureAwait(false);
-            var (valid, offset) = await ValidatePointerAll(Offsets.TradePartnerStatusPointer, token).ConfigureAwait(false);
-            ctr -= 1_000;
-            if (!valid)
+            if (!await IsOnMenu(MenuState.InBox, token).ConfigureAwait(false))
+            {
+                await Task.Delay(0_100, token).ConfigureAwait(false);
+                ctr -= 0_100;
                 continue;
-            var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 4, token).ConfigureAwait(false);
-            if (BitConverter.ToInt32(data, 0) != 2)
+            }
+            await Task.Delay(0_500, token).ConfigureAwait(false);
+
+            // If we made it to here, then we're in the box. Set the offset for their status.
+            var (valid, offset) = await ValidatePointerAll(Offsets.TradePartnerStatusPointer, token).ConfigureAwait(false);
+            if (!valid)
                 continue;
             TradePartnerStatusOffset = offset;
             return true;
@@ -435,71 +482,171 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         return false;
     }
 
-    private async Task ExitTrade(bool unexpected, CancellationToken token)
+    // Generally used for recovery if we can't make it to Link Play for some reason.
+    private async Task ResetToOverworld(CancellationToken token)
     {
-        if (unexpected)
-            Log("Unexpected behavior, recovering position.");
+        if (await IsOnOverworld(token).ConfigureAwait(false))
+            return;
 
-        int ctr = 120_000;
-        while (!await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
+        Log("Resetting to the overworld...");
+        // If we're in the Box or searching for a Link Trade, we need to use the BAB approach, otherwise we can just mash B.
+        var ctr = 120_000;
+        while (await GetMenuState(token).ConfigureAwait(false) >= MenuState.LinkTrade)
         {
             if (ctr < 0)
             {
-                await RestartGameLA(token).ConfigureAwait(false);
+                // Failed to exist somehow.
+                await RestartGameLZA(token).ConfigureAwait(false);
                 return;
             }
 
             await Click(B, 1_000, token).ConfigureAwait(false);
-            if (await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
-                return;
+            if (await GetMenuState(token).ConfigureAwait(false) < MenuState.LinkTrade)
+                break;
 
-            var (valid, _) = await ValidatePointerAll(Offsets.TradePartnerStatusPointer, token).ConfigureAwait(false);
-            await Click(valid ? A : B, 1_000, token).ConfigureAwait(false);
-            if (await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
-                return;
+            var box = await IsOnMenu(MenuState.InBox, token).ConfigureAwait(false);
+            await Click(box ? A : B, 1_000, token).ConfigureAwait(false);
+            if (await GetMenuState(token).ConfigureAwait(false) < MenuState.LinkTrade)
+                break;
 
             await Click(B, 1_000, token).ConfigureAwait(false);
-            if (await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
-                return;
+            if (await GetMenuState(token).ConfigureAwait(false) < MenuState.LinkTrade)
+                break;
+            ctr -= 3_000;
+        }
 
+        // From here, we should be able to press B.
+        while (!await IsOnOverworld(token).ConfigureAwait(false))
+            await Click(B, 0_200, token).ConfigureAwait(false);
+
+        StartFromOverworld = true;
+    }
+
+    // We'll be doing this most of the time. Going to the overworld is a little slower.
+    private async Task ResetToLinkPlay(CancellationToken token)
+    {
+        var current = await GetMenuState(token).ConfigureAwait(false);
+        if (current == MenuState.LinkPlay)
+            return;
+
+        // Already on an earlier menu than Link Trade. Just go to overworld and start over next trade.
+        if (current < MenuState.LinkPlay)
+        {
+            await ResetToOverworld(token).ConfigureAwait(false);
+            StartFromOverworld = true;
+            return;
+        }
+
+        Log("Resetting to the Link Play menu...");
+        // If we're in the Box or searching for a Link Trade, we need to use the BAB approach, otherwise we can just mash B.
+        var ctr = 120_000;
+        while (await GetMenuState(token).ConfigureAwait(false) >= MenuState.LinkPlay)
+        {
+            if (ctr < 0)
+            {
+                // Failed to exist somehow.
+                await RestartGameLZA(token).ConfigureAwait(false);
+                StartFromOverworld = true;
+                return;
+            }
+
+            await Click(B, 1_000, token).ConfigureAwait(false);
+            if (await GetMenuState(token).ConfigureAwait(false) == MenuState.LinkPlay)
+            {
+                StartFromOverworld = false;
+                return;
+            }
+
+            var box = await IsOnMenu(MenuState.InBox, token).ConfigureAwait(false);
+            await Click(box ? A : B, 1_000, token).ConfigureAwait(false);
+            if (await GetMenuState(token).ConfigureAwait(false) == MenuState.LinkPlay)
+            {
+                StartFromOverworld = false;
+                return;
+            }
+
+            await Click(B, 1_000, token).ConfigureAwait(false);
+            if (await GetMenuState(token).ConfigureAwait(false) == MenuState.LinkPlay)
+            {
+                StartFromOverworld = false;
+                return;
+            }
             ctr -= 3_000;
         }
     }
 
-    // These don't change per session, and we access them frequently, so set these each time we start.
+    // LZA saves the previous Link Code after the first trade.
+    // If the pointer isn't valid, we haven't traded yet.
+    // Otherwise, we should be able to see if it's the same and how long it is.
+    private async Task EnterLinkCodeLZA(int code, CancellationToken token)
+    {
+        var (valid, _) = await ValidatePointerAll(Offsets.LinkTradeCodePointer, token).ConfigureAwait(false);
+        if (!valid)
+        {
+            // If it's not valid, then we can freely enter our code in because no trades have been done yet.
+            Log($"Entering Link Trade code: {code:0000 0000}...");
+            await EnterLinkCode(code, Hub.Config, token).ConfigureAwait(false);
+        }
+        else
+        {
+            var prev_code = await GetStoredLinkTradeCode(token).ConfigureAwait(false);
+            if (prev_code != code) // Only clear if the new code is different.
+            {
+                var code_length = await GetStoredLinkTradeCodeLength(token).ConfigureAwait(false);
+                if (code_length > 0)
+                    await PressAndHold(B, (code_length * 0_100) + 0_200, 0_100, token).ConfigureAwait(false);
+
+                Log($"Entering Link Trade code: {code:0000 0000}...");
+                await EnterLinkCode(code, Hub.Config, token).ConfigureAwait(false);
+            }
+            else
+            {
+                Log($"Using previous Link Trade code: {code:0000 0000}.");
+            }
+        }
+    }
+
+    // These don't change per game session, and we access them frequently, so set these each time we start.
     private async Task InitializeSessionOffsets(CancellationToken token)
     {
         Log("Caching session offsets...");
         BoxStartOffset = await SwitchConnection.PointerAll(Offsets.BoxStartPokemonPointer, token).ConfigureAwait(false);
-        SoftBanOffset = await SwitchConnection.PointerAll(Offsets.SoftbanPointer, token).ConfigureAwait(false);
-        OverworldOffset = await SwitchConnection.PointerAll(Offsets.OverworldPointer, token).ConfigureAwait(false);
-        TradePartnerNIDOffset = await SwitchConnection.PointerAll(Offsets.LinkTradePartnerNIDPointer, token).ConfigureAwait(false);
+    }
+
+    // These don't change per online session, so set them whenever we connect.
+    private async Task InitializeOnlineOffsets(CancellationToken token)
+    {
+        Log("Caching online offsets...");
+        var baseOffset = await SwitchConnection.PointerAll(Offsets.LinkTradePartnerDataPointer, token).ConfigureAwait(false);
+        TradePartnerNIDOffset = baseOffset + TradePartnerNIDShift;
+        TradePartnerTIDOffset = baseOffset + TradePartnerTIDShift;
+        TradePartnerOTOffset = baseOffset + TradePartnerOTShift;
     }
 
     // todo: future
-    protected virtual async Task<bool> IsUserBeingShifty(PokeTradeDetail<PA8> detail, CancellationToken token)
+    protected virtual async Task<bool> IsUserBeingShifty(PokeTradeDetail<PA9> detail, CancellationToken token)
     {
         await Task.CompletedTask.ConfigureAwait(false);
         return false;
     }
 
-    private async Task RestartGameLA(CancellationToken token)
+    private async Task RestartGameLZA(CancellationToken token)
     {
-        await ReOpenGame(Hub.Config, token).ConfigureAwait(false);
-        await InitializeSessionOffsets(token).ConfigureAwait(false);
+        //await ReOpenGame(Hub.Config, token).ConfigureAwait(false);
+        //await InitializeSessionOffsets(token).ConfigureAwait(false);
     }
 
-    private async Task<PokeTradeResult> ProcessDumpTradeAsync(PokeTradeDetail<PA8> detail, CancellationToken token)
+    private async Task<PokeTradeResult> ProcessDumpTradeAsync(PokeTradeDetail<PA9> detail, CancellationToken token)
     {
         int ctr = 0;
         var time = TimeSpan.FromSeconds(Hub.Config.Trade.MaxDumpTradeTime);
         var start = DateTime.Now;
 
-        var pkprev = new PA8();
+        var pkprev = new PA9();
         var bctr = 0;
         while (ctr < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.Now - start < time)
         {
-            if (await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
+            if (!await IsOnMenu(MenuState.InBox, token).ConfigureAwait(false))
                 break;
             if (bctr++ % 3 == 0)
                 await Click(B, 0_100, token).ConfigureAwait(false);
@@ -508,6 +655,8 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
             var pk = await ReadUntilPresentPointer(Offsets.LinkTradePartnerPokemonPointer, 3_000, 0_050, BoxFormatSlotSize, token).ConfigureAwait(false);
             if (pk == null || pk.Species < 1 || !pk.ChecksumValid || SearchUtil.HashByDetails(pk) == SearchUtil.HashByDetails(pkprev))
                 continue;
+            pk.Heal();
+            pk.RefreshChecksum();
 
             // Save the new Pokémon for comparison next round.
             pkprev = pk;
@@ -543,18 +692,40 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
 
         TradeSettings.AddCompletedDumps();
         detail.Notifier.SendNotification(this, detail, $"Dumped {ctr} Pokémon.");
-        detail.Notifier.TradeFinished(this, detail, detail.TradeData); // blank PA8
+        detail.Notifier.TradeFinished(this, detail, detail.TradeData); // blank PA9
         return PokeTradeResult.Success;
     }
 
-    private async Task<TradePartnerLA> GetTradePartnerInfo(CancellationToken token)
+    private async Task<TradePartnerLZA> GetTradePartnerInfo(CancellationToken token)
     {
-        var id = await SwitchConnection.PointerPeek(4, Offsets.LinkTradePartnerTIDPointer, token).ConfigureAwait(false);
-        var name = await SwitchConnection.PointerPeek(TradePartnerLA.MaxByteLengthStringObject, Offsets.LinkTradePartnerNamePointer, token).ConfigureAwait(false);
-        return new TradePartnerLA(id, name);
+        // Grab a chunk of bytes starting from the NID. Most likely this will also include the OT and TID.
+        // Check if data is loaded at the last byte of this chunk. If it's not loaded, we'll have to try and find OT and TID at the fallback location.
+        var chunk = await SwitchConnection.ReadBytesAbsoluteAsync(TradePartnerNIDOffset, 0x69, token).ConfigureAwait(false);
+
+        // NID should be the first 8 bytes, converted to a ulong.
+        var id = chunk.AsSpan(0, 8).ToArray();
+        var nid = BitConverter.ToUInt64(id);
+        if (nid == 0) // They probably left too quickly, so try the backup pointer.
+            nid = await GetTradePartnerNID(token).ConfigureAwait(false);
+
+        // Now check if the last byte is populated.
+        if (chunk[0x68] != 0)
+        {
+            // Data is loaded here, so we can read TID and OT from here.
+            var tid = chunk.AsSpan(0x44, 4).ToArray();
+            var name = chunk.AsSpan(0x4C, TradePartnerLZA.MaxByteLengthStringObject).ToArray();
+            return new TradePartnerLZA(nid, tid, name);
+        }
+        // Data is not loaded at the expected place, so we have to read TID and OT from the fallback location.
+        {
+            chunk = await SwitchConnection.ReadBytesAbsoluteAsync(TradePartnerTIDOffset + FallBackTradePartnerDataShift, 34, token).ConfigureAwait(false);
+            var tid = chunk.AsSpan(0, 4).ToArray();
+            var name = chunk.AsSpan(0x8, TradePartnerLZA.MaxByteLengthStringObject).ToArray();
+            return new TradePartnerLZA(nid, tid, name);
+        }
     }
 
-    protected virtual async Task<(PA8 toSend, PokeTradeResult check)> GetEntityToSend(SAV8LA sav, PokeTradeDetail<PA8> poke, PA8 offered, PA8 toSend, PartnerDataHolder partnerID, CancellationToken token)
+    protected virtual async Task<(PA9 toSend, PokeTradeResult check)> GetEntityToSend(SAV9ZA sav, PokeTradeDetail<PA9> poke, PA9 offered, PA9 toSend, PartnerDataHolder partnerID, CancellationToken token)
     {
         return poke.Type switch
         {
@@ -564,7 +735,7 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         };
     }
 
-    private async Task<(PA8 toSend, PokeTradeResult check)> HandleClone(SAV8LA sav, PokeTradeDetail<PA8> poke, PA8 offered, CancellationToken token)
+    private async Task<(PA9 toSend, PokeTradeResult check)> HandleClone(SAV9ZA sav, PokeTradeDetail<PA9> poke, PA9 offered, CancellationToken token)
     {
         if (Hub.Config.Discord.ReturnPKMs)
             poke.SendNotification(this, offered, "Here's what you showed me!");
@@ -622,19 +793,19 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
         if (!hovering)
         {
             Log("Trade partner did not change their initial offer.");
-            await ExitTrade(false, token).ConfigureAwait(false);
+            await ResetToLinkPlay(token).ConfigureAwait(false);
             return false;
         }
         var offering = await ReadUntilChanged(TradePartnerStatusOffset, [0x3], 25_000, 1_000, true, true, token).ConfigureAwait(false);
         if (!offering)
         {
-            await ExitTrade(false, token).ConfigureAwait(false);
+            await ResetToLinkPlay(token).ConfigureAwait(false);
             return false;
         }
         return true;
     }
 
-    private async Task<(PA8 toSend, PokeTradeResult check)> HandleRandomLedy(SAV8LA sav, PokeTradeDetail<PA8> poke, PA8 offered, PA8 toSend, PartnerDataHolder partner, CancellationToken token)
+    private async Task<(PA9 toSend, PokeTradeResult check)> HandleRandomLedy(SAV9ZA sav, PokeTradeDetail<PA9> poke, PA9 offered, PA9 toSend, PartnerDataHolder partner, CancellationToken token)
     {
         // Allow the trade partner to do a Ledy swap.
         var config = Hub.Config.Distribution;

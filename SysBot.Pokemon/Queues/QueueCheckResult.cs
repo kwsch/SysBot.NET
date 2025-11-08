@@ -8,7 +8,7 @@ namespace SysBot.Pokemon;
 /// <typeparam name="T"></typeparam>
 public sealed record QueueCheckResult<T>(
     bool InQueue = false,
-    TradeEntry<T>? Detail = default,
+    TradeEntry<T>? Detail = null,
     int Position = -1,
     int QueueCount = -1)
     where T : PKM, new()
