@@ -39,6 +39,9 @@ public sealed partial class Main : Form
             foreach (TabPage tab in TC_Main.TabPages)
                 tab.UseVisualStyleBackColor = false;
         }
+
+        if (Config is not { Width: 0, Height: 0 })
+            Size = new(Config.Width, Config.Height);
     }
 
     private static IPokeBotRunner GetRunner(ProgramConfig cfg) => cfg.Mode switch
@@ -121,6 +124,8 @@ public sealed partial class Main : Form
     private void SaveCurrentConfig()
     {
         var cfg = GetCurrentConfiguration();
+        cfg.Width = Width;
+        cfg.Height = Height;
         ConfigLoader.Save(cfg);
     }
 
