@@ -12,6 +12,7 @@ public abstract class PokeRoutineExecutorBase(IConsoleBotManaged<IConsoleConnect
 
     public LanguageID GameLang { get; private set; }
     public GameVersion Version { get; private set; }
+    public EntityContext Context { get; private set; }
     public string InGameName { get; private set; } = "SysBot.NET";
 
     public static readonly TrackedUserLog PreviousUsers = new();
@@ -31,11 +32,30 @@ public abstract class PokeRoutineExecutorBase(IConsoleBotManaged<IConsoleConnect
         GameLang = (LanguageID)sav.Language;
         Version = sav.Version;
         InGameName = sav.OT;
+        Context = sav.Context;
         Connection.Label = $"{InGameName}-{sav.DisplayTID:000000}";
         Log($"{Connection.Name} identified as {Connection.Label}, using {GameLang}.");
     }
 
-    protected bool IsValidTrainerData() => GameLang is > 0 and <= LanguageID.ChineseT && InGameName.Length > 0 && Version > 0;
+    protected bool IsValidTrainerData()
+    {
+        if (InGameName.Length == 0)
+            return false;
+        if (GameLang is 0 or LanguageID.UNUSED_6)
+            return false;
+
+        if (!Version.IsValidSavedVersion())
+            return false;
+
+        if (Version.GetContext() != Context)
+            return false;
+
+        return GameLang <= (Context switch
+        {
+            EntityContext.Gen9a => LanguageID.SpanishL,
+            _ => LanguageID.ChineseT,
+        });
+    }
 
     public override void SoftStop() => Config.Pause();
 

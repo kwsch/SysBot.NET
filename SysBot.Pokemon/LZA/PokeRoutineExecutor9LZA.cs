@@ -75,7 +75,7 @@ public abstract class PokeRoutineExecutor9LZA(PokeBotState Config) : PokeRoutine
         // Check title so we can warn if mode is incorrect.
         string title = await SwitchConnection.GetTitleID(token).ConfigureAwait(false);
         if (title != LegendsZAID)
-            throw new Exception($"{title} is not a valid Pokémon Legends: Arceus title. Is your mode correct?");
+            throw new Exception($"{title} is not a valid Pokémon Legends: Z-A title. Is your mode correct?");
 
         // Verify the game version.
         var game_version = await SwitchConnection.GetGameInfo("version", token).ConfigureAwait(false);
