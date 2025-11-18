@@ -632,8 +632,8 @@ public class PokeTradeBotLZA(PokeTradeHub<PA9> Hub, PokeBotState Config) : PokeR
 
     private async Task RestartGameLZA(CancellationToken token)
     {
-        //await ReOpenGame(Hub.Config, token).ConfigureAwait(false);
-        //await InitializeSessionOffsets(token).ConfigureAwait(false);
+        await ReOpenGame(Hub.Config, token).ConfigureAwait(false);
+        await InitializeSessionOffsets(token).ConfigureAwait(false);
     }
 
     private async Task<PokeTradeResult> ProcessDumpTradeAsync(PokeTradeDetail<PA9> detail, CancellationToken token)

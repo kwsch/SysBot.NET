@@ -110,10 +110,10 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
         Log("Trainer data is not valid.");
 
         bool found = false;
-        var msg = "";
+        var msg = "Found ";
         if (await SwitchConnection.IsProgramRunning(ovlloaderID, token).ConfigureAwait(false))
         {
-            msg += "Found Tesla Menu";
+            msg += "Tesla Menu";
             found = true;
         }
 
@@ -124,6 +124,7 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
             msg += "dmnt (cheat codes?)";
             found = true;
         }
+
         if (found)
         {
             msg += ".";
