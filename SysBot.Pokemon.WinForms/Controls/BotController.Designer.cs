@@ -1,4 +1,4 @@
-﻿namespace SysBot.Pokemon.WinForms
+namespace SysBot.Pokemon.WinForms
 {
     partial class BotController
     {
@@ -28,66 +28,69 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.L_Description = new System.Windows.Forms.Label();
-            this.L_Left = new System.Windows.Forms.Label();
-            this.PB_Lamp = new System.Windows.Forms.PictureBox();
-            this.RCMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            ((System.ComponentModel.ISupportInitialize)(this.PB_Lamp)).BeginInit();
-            this.SuspendLayout();
+            components = new System.ComponentModel.Container();
+            L_Description = new System.Windows.Forms.Label();
+            L_Left = new System.Windows.Forms.Label();
+            PB_Lamp = new System.Windows.Forms.PictureBox();
+            RCMenu = new System.Windows.Forms.ContextMenuStrip(components);
+            ((System.ComponentModel.ISupportInitialize)PB_Lamp).BeginInit();
+            SuspendLayout();
             // 
             // L_Description
             // 
-            this.L_Description.AutoSize = true;
-            this.L_Description.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.L_Description.Location = new System.Drawing.Point(150, 9);
-            this.L_Description.Name = "L_Description";
-            this.L_Description.Size = new System.Drawing.Size(49, 14);
-            this.L_Description.TabIndex = 2;
-            this.L_Description.Text = "Status";
+            L_Description.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            L_Description.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            L_Description.Location = new System.Drawing.Point(173, 0);
+            L_Description.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            L_Description.Name = "L_Description";
+            L_Description.Size = new System.Drawing.Size(305, 42);
+            L_Description.TabIndex = 2;
+            L_Description.Text = "Status";
+            L_Description.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // L_Left
             // 
-            this.L_Left.AutoSize = true;
-            this.L_Left.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.L_Left.Location = new System.Drawing.Point(31, 2);
-            this.L_Left.Name = "L_Left";
-            this.L_Left.Size = new System.Drawing.Size(112, 28);
-            this.L_Left.TabIndex = 3;
-            this.L_Left.Text = "192.168.123.123\r\nEncounterBot";
+            L_Left.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            L_Left.Location = new System.Drawing.Point(36, 0);
+            L_Left.Margin = new System.Windows.Forms.Padding(0);
+            L_Left.Name = "L_Left";
+            L_Left.Size = new System.Drawing.Size(128, 42);
+            L_Left.TabIndex = 3;
+            L_Left.Text = "192.168.123.123\r\nEncounterBot";
+            L_Left.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // pictureBox1
+            // PB_Lamp
             // 
-            this.PB_Lamp.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.PB_Lamp.Location = new System.Drawing.Point(3, 3);
-            this.PB_Lamp.Name = "PB_Lamp";
-            this.PB_Lamp.Size = new System.Drawing.Size(26, 26);
-            this.PB_Lamp.TabIndex = 4;
-            this.PB_Lamp.TabStop = false;
+            PB_Lamp.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            PB_Lamp.Location = new System.Drawing.Point(4, 4);
+            PB_Lamp.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            PB_Lamp.Name = "PB_Lamp";
+            PB_Lamp.Size = new System.Drawing.Size(30, 33);
+            PB_Lamp.TabIndex = 4;
+            PB_Lamp.TabStop = false;
             // 
-            // contextMenuStrip1
+            // RCMenu
             // 
-            this.RCMenu.Name = "RCMenu";
-            this.RCMenu.ShowImageMargin = false;
-            this.RCMenu.ShowItemToolTips = false;
-            this.RCMenu.Size = new System.Drawing.Size(36, 4);
+            RCMenu.Name = "RCMenu";
+            RCMenu.ShowImageMargin = false;
+            RCMenu.ShowItemToolTips = false;
+            RCMenu.Size = new System.Drawing.Size(36, 4);
             // 
             // BotController
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ContextMenuStrip = this.RCMenu;
-            this.Controls.Add(this.PB_Lamp);
-            this.Controls.Add(this.L_Left);
-            this.Controls.Add(this.L_Description);
-            this.Margin = new System.Windows.Forms.Padding(0);
-            this.Name = "BotController";
-            this.Size = new System.Drawing.Size(410, 32);
-            this.MouseEnter += new System.EventHandler(this.BotController_MouseEnter);
-            this.MouseLeave += new System.EventHandler(this.BotController_MouseLeave);
-            ((System.ComponentModel.ISupportInitialize)(this.PB_Lamp)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ContextMenuStrip = RCMenu;
+            Controls.Add(PB_Lamp);
+            Controls.Add(L_Left);
+            Controls.Add(L_Description);
+            Margin = new System.Windows.Forms.Padding(0);
+            Name = "BotController";
+            Size = new System.Drawing.Size(478, 42);
+            MouseEnter += BotController_MouseEnter;
+            MouseLeave += BotController_MouseLeave;
+            ((System.ComponentModel.ISupportInitialize)PB_Lamp).EndInit();
+            ResumeLayout(false);
 
         }
 
