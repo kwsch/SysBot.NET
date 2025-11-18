@@ -87,7 +87,7 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
     public async Task VerifyBotbaseVersion(CancellationToken token)
     {
         var data = await SwitchConnection.GetBotbaseVersion(token).ConfigureAwait(false);
-        var version = decimal.TryParse(data, CultureInfo.InvariantCulture, out var v) ? v : 0;
+        var version = System.Version.TryParse(data, out var v) ? v : null;
         if (version < BotbaseVersion)
         {
             var protocol = Config.Connection.Protocol;
