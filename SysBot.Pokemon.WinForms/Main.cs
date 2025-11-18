@@ -2,6 +2,7 @@ using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -41,7 +42,19 @@ public sealed partial class Main : Form
         }
 
         if (Config is not { Width: 0, Height: 0 })
-            Size = new(Config.Width, Config.Height);
+        {
+            Width = Config.Width;
+            Height = Config.Height;
+        }
+
+        B_New.Height = CB_Protocol.Height;
+        FLP_BotCreator.Height = B_New.Height + B_New.Margin.Vertical;
+    }
+
+    protected override void ScaleControl(SizeF factor, BoundsSpecified specified)
+    {
+        base.ScaleControl(factor, specified);
+        TC_Main.ItemSize = new((int)(TC_Main.ItemSize.Width * factor.Width), (int)(TC_Main.ItemSize.Height * factor.Height));
     }
 
     private static IPokeBotRunner GetRunner(ProgramConfig cfg) => cfg.Mode switch
@@ -75,7 +88,6 @@ public sealed partial class Main : Form
 
     private void LoadControls()
     {
-        MinimumSize = Size;
         PG_Hub.SelectedObject = RunningEnvironment.Config;
 
         var routines = Enum.GetValues<PokeRoutineType>().Where(z => RunningEnvironment.SupportsRoutine(z));
@@ -224,7 +236,7 @@ public sealed partial class Main : Form
 
     private void AddBotControl(PokeBotState cfg)
     {
-        var row = new BotController { Width = FLP_Bots.Width };
+        var row = new BotController { Width = FLP_Bots.Width, Anchor = AnchorStyles.Left | AnchorStyles.Right };
         row.Initialize(RunningEnvironment, cfg);
         FLP_Bots.Controls.Add(row);
         FLP_Bots.SetFlowBreak(row, true);
