@@ -358,7 +358,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         // Wait for user input...
         var offered = await ReadUntilPresent(TradePartnerOfferedOffset, 25_000, 1_000, BoxFormatSlotSize, token).ConfigureAwait(false);
         var oldEC = await SwitchConnection.ReadBytesAbsoluteAsync(TradePartnerOfferedOffset, 8, token).ConfigureAwait(false);
-        if (offered == null || offered.Species < 1 || !offered.ChecksumValid)
+        if (offered == null || offered.Species == 0 || !offered.ChecksumValid)
         {
             Log("Trade ended because a valid Pokémon was not offered.");
             await ExitTradeToPortal(false, token).ConfigureAwait(false);
