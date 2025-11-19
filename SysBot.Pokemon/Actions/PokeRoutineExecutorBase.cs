@@ -57,6 +57,15 @@ public abstract class PokeRoutineExecutorBase(IConsoleBotManaged<IConsoleConnect
         });
     }
 
+    public string GetSpeciesName(ushort species)
+    {
+        var strings = GameInfo.GetStrings("en");
+        var speciesName = strings.Species;
+        if (species == 0 || species >= speciesName.Count)
+            return "Unknown";
+        return strings.Species[species];
+    }
+
     public override void SoftStop() => Config.Pause();
 
     public Task Click(SwitchButton b, int delayMin, int delayMax, CancellationToken token) =>

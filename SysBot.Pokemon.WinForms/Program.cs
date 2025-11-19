@@ -9,7 +9,7 @@ namespace SysBot.Pokemon.WinForms;
 internal static class Program
 {
 
-    public static ProgramConfig Config;
+    public static readonly ProgramConfig Config;
 
     static Program()
     {
