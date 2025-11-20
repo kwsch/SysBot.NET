@@ -41,7 +41,6 @@ public class PokeTradeBotLZA(PokeTradeHub<PA9> Hub, PokeBotState Config) : PokeR
     // Cached offsets that stay the same after connecting online.
     private ulong TradePartnerNIDOffset;
     private ulong TradePartnerTIDOffset;
-    private ulong TradePartnerOTOffset;
 
     // Cached offsets that stay the same per trade.
     private ulong TradePartnerStatusOffset;
@@ -630,7 +629,6 @@ public class PokeTradeBotLZA(PokeTradeHub<PA9> Hub, PokeBotState Config) : PokeR
         var baseOffset = await SwitchConnection.PointerAll(Offsets.LinkTradePartnerDataPointer, token).ConfigureAwait(false);
         TradePartnerNIDOffset = baseOffset + TradePartnerNIDShift;
         TradePartnerTIDOffset = baseOffset + TradePartnerTIDShift;
-        TradePartnerOTOffset = baseOffset + TradePartnerOTShift;
     }
 
     // todo: future

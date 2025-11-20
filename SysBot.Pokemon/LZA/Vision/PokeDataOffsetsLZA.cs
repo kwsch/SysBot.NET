@@ -27,7 +27,6 @@ public class PokeDataOffsetsLZA
 
     public const uint TradePartnerNIDShift           = 0x30;
     public const uint TradePartnerTIDShift           = 0x74;
-    public const uint TradePartnerOTShift            = 0x7C;
     public const uint FallBackTradePartnerDataShift  = 0x598; // The data can often be found here if the main pointer fails.
 
 
