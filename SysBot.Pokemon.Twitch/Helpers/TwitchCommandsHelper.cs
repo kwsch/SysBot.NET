@@ -39,7 +39,9 @@ public static class TwitchCommandsHelper<T> where T : PKM, new()
             var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
             PKM pkm = sav.GetLegal(template, out var result);
 
-            if (!pkm.CanBeTraded())
+            var la = new LegalityAnalysis(pkm);
+            var enc = la.EncounterOriginal;
+            if (!pkm.CanBeTraded(enc))
             {
                 msg = $"Skipping trade, @{username}: Provided Pokémon content is blocked from trading!";
                 return false;
@@ -47,8 +49,7 @@ public static class TwitchCommandsHelper<T> where T : PKM, new()
 
             if (pkm is T pk)
             {
-                var valid = new LegalityAnalysis(pkm).Valid;
-                if (valid)
+                if (la.Valid)
                 {
                     var tq = new TwitchQueue<T>(pk, new PokeTradeTrainerInfo(display, mUserId), username, sub);
                     TwitchBot<T>.QueuePool.RemoveAll(z => z.UserName == username); // remove old requests if any

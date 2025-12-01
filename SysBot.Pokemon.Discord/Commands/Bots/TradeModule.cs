@@ -212,14 +212,6 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
 
     private async Task AddTradeToQueueAsync(int code, string trainerName, T pk, RequestSignificance sig, SocketUser usr)
     {
-        if (!pk.CanBeTraded())
-        {
-            // Disallow anything that cannot be traded from the game (e.g. Fusions).
-            await ReplyAsync("Provided Pokémon content is blocked from trading!").ConfigureAwait(false);
-            return;
-        }
-
-        var cfg = Info.Hub.Config.Trade;
         var la = new LegalityAnalysis(pk);
         if (!la.Valid)
         {
@@ -227,7 +219,16 @@ public class TradeModule<T> : ModuleBase<SocketCommandContext> where T : PKM, ne
             await ReplyAsync($"{typeof(T).Name} attachment is not legal, and cannot be traded!").ConfigureAwait(false);
             return;
         }
-        if (cfg.DisallowNonNatives && (la.EncounterOriginal.Context != pk.Context || pk.GO))
+
+        var enc = la.EncounterOriginal;
+        if (!pk.CanBeTraded(enc))
+        {
+            // Disallow anything that cannot be traded from the game (e.g. Fusions).
+            await ReplyAsync("Provided Pokémon content is blocked from trading!").ConfigureAwait(false);
+            return;
+        }
+        var cfg = Info.Hub.Config.Trade;
+        if (cfg.DisallowNonNatives && (enc.Context != pk.Context || pk.GO))
         {
             // Allow the owner to prevent trading entities that require a HOME Tracker even if the file has one already.
             await ReplyAsync($"{typeof(T).Name} attachment is not native, and cannot be traded!").ConfigureAwait(false);

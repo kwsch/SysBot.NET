@@ -79,12 +79,6 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
                 continue;
             }
 
-            if (!dest.CanBeTraded())
-            {
-                LogUtil.LogInfo("SKIPPED: Provided file cannot be traded: " + dest.FileName, nameof(PokemonPool<T>));
-                continue;
-            }
-
             var la = new LegalityAnalysis(dest);
             if (!la.Valid)
             {
@@ -92,10 +86,15 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
                 LogUtil.LogInfo($"SKIPPED: Provided file is not legal: {dest.FileName} -- {reason}", nameof(PokemonPool<T>));
                 continue;
             }
-
-            if (typeof(T) == typeof(PK8) && DisallowRandomRecipientTrade(dest, la.EncounterMatch))
+            if (!dest.CanBeTraded(la.EncounterOriginal))
             {
-                LogUtil.LogInfo("Provided file was loaded but can't be Surprise Traded: " + dest.FileName, nameof(PokemonPool<T>));
+                LogUtil.LogInfo($"SKIPPED: Provided file cannot be traded: {dest.FileName}", nameof(PokemonPool<T>));
+                continue;
+            }
+
+            if (typeof(T) == typeof(PK8) && DisallowRandomRecipientTrade(dest))
+            {
+                LogUtil.LogInfo($"Provided file was loaded but can't be Surprise Traded: {dest.FileName}", nameof(PokemonPool<T>));
                 surpriseBlocked++;
             }
 
@@ -124,40 +123,12 @@ public class PokemonPool<T>(BaseConfig Settings) : List<T>
         return loadedAny;
     }
 
-    private static bool DisallowRandomRecipientTrade(T pk, IEncounterTemplate enc)
-    {
-        // Anti-spam
-        if (pk.IsNicknamed)
-        {
-            Span<char> nick = stackalloc char[pk.TrashCharCountNickname];
-            int len = pk.LoadString(pk.NicknameTrash, nick);
-            if (len > 6 && enc is not IFixedNickname { IsFixedNickname: true })
-                return true;
-            nick = nick[..len];
-            if (StringsUtil.IsSpammyString(nick))
-                return true;
-        }
-        {
-            Span<char> ot = stackalloc char[pk.TrashCharCountTrainer];
-            int len = pk.LoadString(pk.OriginalTrainerTrash, ot);
-            ot = ot[..len];
-            if (StringsUtil.IsSpammyString(ot) && !AutoLegalityWrapper.IsFixedOT(enc, pk))
-                return true;
-        }
-
-        return DisallowRandomRecipientTrade(pk);
-    }
-
     public static bool DisallowRandomRecipientTrade(T pk)
     {
         // Surprise Trade currently bans Mythicals and Legendaries, not Sub-Legendaries.
         if (SpeciesCategory.IsLegendary(pk.Species))
             return true;
         if (SpeciesCategory.IsMythical(pk.Species))
-            return true;
-
-        // Can't surprise trade fused stuff.
-        if (FormInfo.IsFusedForm(pk.Species, pk.Form, pk.Format))
             return true;
 
         return false;

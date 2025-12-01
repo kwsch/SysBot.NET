@@ -198,7 +198,9 @@ public class ConcurrentPriorityQueue<TKey, TValue> : IProducerConsumerCollection
     /// <summary>
     /// Gets an object that can be used to synchronize access to the collection.
     /// </summary>
+#pragma warning disable CS9216 // A value of type 'System.Threading.Lock' converted to a different type will use likely unintended monitor-based locking in 'lock' statement
     object ICollection.SyncRoot => _syncLock;
+#pragma warning restore CS9216 // A value of type 'System.Threading.Lock' converted to a different type will use likely unintended monitor-based locking in 'lock' statement
 
     /// <summary>Implements a queue that prioritizes smaller values.</summary>
     protected sealed class MinQueue
