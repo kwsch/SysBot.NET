@@ -205,6 +205,13 @@ public partial class BotController : UserControl
             ReloadStatus(bot);
         }
     }
+
+    public void AddClickHandler(Action action)
+    {
+        Click += (_, _) => action();
+        foreach (Control control in Controls)
+            control.Click += (_, _) => action();
+    }
 }
 
 public enum BotControlCommand
