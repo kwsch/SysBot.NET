@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="PKHeX.Core" Version="25.12.15" />
+    <PackageReference Include="PKHeX.Core" Version="25.12.21" />
     <PackageReference Include="TwitchLib.Client" Version="3.3.1" />
   </ItemGroup>
 
