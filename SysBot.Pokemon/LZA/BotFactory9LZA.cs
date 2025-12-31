@@ -13,7 +13,7 @@ public sealed class BotFactory9LZA : BotFactory<PA9>
             or PokeRoutineType.Dump
             => new PokeTradeBotLZA(Hub, cfg),
 
-        PokeRoutineType.RemoteControl => new RemoteControlBotLA(cfg),
+        PokeRoutineType.RemoteControl => new RemoteControlBotLZA(cfg),
 
         _ => throw new ArgumentException(nameof(cfg.NextRoutineType)),
     };
