@@ -1,6 +1,5 @@
 using System;
 using System.Windows.Forms;
-
 using PKHeX.Core;
 using SysBot.Pokemon.Z3;
 
@@ -8,7 +7,6 @@ namespace SysBot.Pokemon.WinForms;
 
 internal static class Program
 {
-
     public static readonly ProgramConfig Config;
 
     static Program()
@@ -16,10 +14,10 @@ internal static class Program
         var cmd = Environment.GetCommandLineArgs();
         var use = Array.Find(cmd, z => z.EndsWith(".json"));
         var cfg = Config = ConfigLoader.LoadConfig(use);
+        Application.SetCompatibleTextRenderingDefault(false);
         if (cfg.DarkMode)
-#pragma warning disable WFO5001
             Application.SetColorMode(SystemColorMode.Dark);
-#pragma warning restore WFO5001
+
         PokeTradeBotSWSH.SeedChecker = new Z3SeedSearchHandler<PK8>();
     }
 
@@ -34,7 +32,6 @@ internal static class Program
 #endif
 
         Application.EnableVisualStyles();
-        Application.SetCompatibleTextRenderingDefault(false);
         Application.Run(new Main());
     }
 }
