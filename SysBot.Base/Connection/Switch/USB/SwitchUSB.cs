@@ -46,9 +46,7 @@ public abstract class SwitchUSB : IConsoleConnection
 
     public void Connect()
     {
-        SwDevice = TryFindUSB();
-        if (SwDevice == null)
-            throw new Exception("USB device not found.");
+        SwDevice = TryFindUSB() ?? throw new Exception("USB device not found.");
         if (SwDevice is not IUsbDevice usb)
             throw new Exception("Device is using a WinUSB driver. Use libusbK and create a filter.");
 
@@ -155,30 +153,42 @@ public abstract class SwitchUSB : IConsoleConnection
 
         lock (_sync)
         {
-            if (reader == null)
-                throw new Exception("USB device not found or not connected.");
-
-            // Let usb-botbase tell us the response size.
-            byte[] sizeOfReturn = new byte[4];
-            reader.Read(sizeOfReturn, 5000, out _);
-
-            int size = BitConverter.ToInt32(sizeOfReturn, 0);
-            byte[] buffer = new byte[size];
-
-            // Loop until we have read everything.
-            int transfSize = 0;
-            while (transfSize < size)
+            try
             {
-                Thread.Sleep(1);
-                var ec = reader.Read(buffer, transfSize, Math.Min(reader.ReadBufferSize, size - transfSize), 5000, out int lenVal);
-                if (ec != ErrorCode.None)
-                {
-                    Disconnect();
+                if (reader == null)
+                    throw new Exception("USB device not found or not connected.");
+
+                // Let usb-botbase tell us the response size.
+                byte[] sizeOfReturn = new byte[4];
+                var ec = reader.Read(sizeOfReturn, 5000, out int ret);
+                if (ec != ErrorCode.None && ret == 0)
                     throw new Exception(UsbDevice.LastErrorString);
+
+                int size = BitConverter.ToInt32(sizeOfReturn, 0);
+                byte[] buffer = new byte[size];
+
+                // Loop until we have read everything.
+                int transfSize = 0;
+                while (transfSize < size)
+                {
+                    Thread.Sleep(1);
+                    ec = reader.Read(buffer, transfSize, Math.Min(reader.ReadBufferSize, size - transfSize), 5000, out int lenVal);
+                    if (ec != ErrorCode.None)
+                        throw new Exception(UsbDevice.LastErrorString);
+
+                    transfSize += lenVal;
                 }
-                transfSize += lenVal;
+                return buffer;
             }
-            return buffer;
+            catch (Exception ex)
+            {
+                // Win32Error is returned when the device aborts a transfer, which happens when, for example, readMem() is called with an invalid address.
+                // As such, we ignore it to avoid log spam but still return a zero-buffer to avoid crashing the caller, and to maintain connection.
+                var lastError = UsbDevice.LastErrorNumber;
+                if (lastError is not (int)ErrorCode.Win32Error)
+                    Log($"{nameof(ReadBulkUSB)} failed: {ex.Message}");
+                return [0];
+            }
         }
     }
 
@@ -202,34 +212,60 @@ public abstract class SwitchUSB : IConsoleConnection
 
     private int ReadInternal(byte[] buffer)
     {
-        byte[] sizeOfReturn = new byte[4];
-        if (reader == null)
-            throw new Exception("USB device not found or not connected.");
+        try
+        {
+            byte[] sizeOfReturn = new byte[4];
+            if (reader == null)
+                throw new Exception("USB device not found or not connected.");
 
-        reader.Read(sizeOfReturn, 5000, out _);
-        reader.Read(buffer, 5000, out var lenVal);
-        return lenVal;
+            var ec = reader.Read(sizeOfReturn, 5000, out int ret);
+            if (ec != ErrorCode.None && ret == 0)
+                throw new Exception(UsbDevice.LastErrorString);
+
+            ec = reader.Read(buffer, 5000, out var lenVal);
+            if (ec != ErrorCode.None)
+                throw new Exception(UsbDevice.LastErrorString);
+
+            return lenVal;
+        }
+        catch (Exception ex)
+        {
+            // Win32Error is returned when the device aborts a transfer, which happens when, for example, readMem() is called with an invalid address.
+            // As such, we ignore it to avoid log spam, log other exceptions, and return 0 to maintain connection.
+            var lastError = UsbDevice.LastErrorNumber;
+            if (lastError is not (int)ErrorCode.Win32Error)
+                Log($"{nameof(ReadInternal)} failed: {ex.Message}");
+            return 0;
+        }
     }
 
     private int SendInternal(byte[] buffer)
     {
-        if (writer == null)
-            throw new Exception("USB device not found or not connected.");
+        try
+        {
+            if (writer == null)
+                throw new Exception("USB device not found or not connected.");
 
-        uint pack = (uint)buffer.Length + 2;
-        var ec = writer.Write(BitConverter.GetBytes(pack), 2000, out _);
-        if (ec != ErrorCode.None)
-        {
-            Disconnect();
-            throw new Exception(UsbDevice.LastErrorString);
+            uint pack = (uint)buffer.Length + 2;
+            var ec = writer.Write(BitConverter.GetBytes(pack), 2000, out int ret);
+            if (ec != ErrorCode.None && ret == 0)
+                throw new Exception(UsbDevice.LastErrorString);
+
+            ec = writer.Write(buffer, 2000, out var l);
+            if (ec != ErrorCode.None)
+                throw new Exception(UsbDevice.LastErrorString);
+
+            return l;
         }
-        ec = writer.Write(buffer, 2000, out var l);
-        if (ec != ErrorCode.None)
+        catch (Exception ex)
         {
-            Disconnect();
-            throw new Exception(UsbDevice.LastErrorString);
+            // Win32Error is returned when the device aborts a transfer, which happens when, for example, readMem() is called with an invalid address.
+            // As such, we ignore it to avoid log spam, log other exceptions, and return 0 to maintain connection.
+            var lastError = UsbDevice.LastErrorNumber;
+            if (lastError is not (int)ErrorCode.Win32Error)
+                Log($"{nameof(SendInternal)} failed: {ex.Message}");
+            return 0;
         }
-        return l;
     }
 
     private void WriteLarge(ICommandBuilder b, ReadOnlySpan<byte> data, ulong offset)

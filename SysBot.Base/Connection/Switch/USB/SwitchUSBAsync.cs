@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,60 +38,90 @@ public sealed class SwitchUSBAsync(int Port) : SwitchUSB(Port), ISwitchConnectio
 
     public Task<ulong> GetMainNsoBaseAsync(CancellationToken token)
     {
-        return Task.Run(() =>
+        return Task.Run<ulong>(() =>
         {
             Send(SwitchCommand.GetMainNsoBase(false));
             byte[] baseBytes = ReadBulkUSB();
+            if (baseBytes.Length < sizeof(ulong))
+            {
+                Log($"{nameof(GetMainNsoBaseAsync)}: Invalid response length");
+                return 0;
+            }
             return BitConverter.ToUInt64(baseBytes, 0);
         }, token);
     }
 
     public Task<ulong> GetHeapBaseAsync(CancellationToken token)
     {
-        return Task.Run(() =>
+        return Task.Run<ulong>(() =>
         {
             Send(SwitchCommand.GetHeapBase(false));
             byte[] baseBytes = ReadBulkUSB();
+            if (baseBytes.Length < sizeof(ulong))
+            {
+                Log($"{nameof(GetHeapBaseAsync)}: Invalid response length");
+                return 0;
+            }
             return BitConverter.ToUInt64(baseBytes, 0);
         }, token);
     }
 
     public Task<string> GetTitleID(CancellationToken token)
     {
-        return Task.Run(() =>
+        return Task.Run<string>(() =>
         {
             Send(SwitchCommand.GetTitleID(false));
             byte[] baseBytes = ReadBulkUSB();
+            if (baseBytes.Length == 0)
+            {
+                Log($"{nameof(GetTitleID)}: Invalid response");
+                return string.Empty;
+            }
             return BitConverter.ToUInt64(baseBytes, 0).ToString("X16").Trim();
         }, token);
     }
 
     public Task<string> GetBotbaseVersion(CancellationToken token)
     {
-        return Task.Run(() =>
+        return Task.Run<string>(() =>
         {
             Send(SwitchCommand.GetBotbaseVersion(false));
             byte[] baseBytes = ReadBulkUSB();
+            if (baseBytes.Length == 0)
+            {
+                Log($"{nameof(GetBotbaseVersion)}: Invalid response");
+                return string.Empty;
+            }
             return Encoding.UTF8.GetString(baseBytes).Trim('\0');
         }, token);
     }
 
     public Task<string> GetGameInfo(string info, CancellationToken token)
     {
-        return Task.Run(() =>
+        return Task.Run<string>(() =>
         {
             Send(SwitchCommand.GetGameInfo(info, false));
             byte[] baseBytes = ReadBulkUSB();
+            if (baseBytes.Length == 0)
+            {
+                Log($"{nameof(GetGameInfo)}: Invalid response");
+                return string.Empty;
+            }
             return Encoding.UTF8.GetString(baseBytes).Trim('\0');
         }, token);
     }
 
     public Task<bool> IsProgramRunning(ulong pid, CancellationToken token)
     {
-        return Task.Run(() =>
+        return Task.Run<bool>(() =>
         {
             Send(SwitchCommand.IsProgramRunning(pid, false));
             byte[] baseBytes = ReadBulkUSB();
+            if (baseBytes.Length == 0)
+            {
+                Log($"{nameof(IsProgramRunning)}: Invalid response");
+                return false;
+            }
             return baseBytes.Length == 1 && BitConverter.ToBoolean(baseBytes, 0);
         }, token);
     }
@@ -125,31 +156,59 @@ public sealed class SwitchUSBAsync(int Port) : SwitchUSB(Port), ISwitchConnectio
 
     public Task<ulong> PointerAll(IEnumerable<long> jumps, CancellationToken token)
     {
-        return Task.Run(() =>
+        return Task.Run<ulong>(() =>
         {
             Send(SwitchCommand.PointerAll(jumps, false));
             byte[] baseBytes = ReadBulkUSB();
+            if (baseBytes.Length < sizeof(ulong))
+            {
+                Log($"{nameof(PointerAll)}: Invalid response length {baseBytes?.Length ?? 0}");
+                return 0;
+            }
             return BitConverter.ToUInt64(baseBytes, 0);
         }, token);
     }
 
     public Task<ulong> PointerRelative(IEnumerable<long> jumps, CancellationToken token)
     {
-        return Task.Run(() =>
+        return Task.Run<ulong>(() =>
         {
             Send(SwitchCommand.PointerRelative(jumps, false));
             byte[] baseBytes = ReadBulkUSB();
+            if (baseBytes.Length < sizeof(ulong))
+            {
+                Log($"{nameof(PointerRelative)}: Invalid response length {baseBytes?.Length ?? 0}");
+                return 0;
+            }
             return BitConverter.ToUInt64(baseBytes, 0);
         }, token);
     }
 
-    public Task<(bool Success, T Value)> TryReadMain<T>(ulong offset, CancellationToken token) where T : unmanaged
+    private async Task<(bool, T)> TryReadInternal<T>(Func<ulong, int, CancellationToken, Task<byte[]>> readMethod, ulong offset, CancellationToken token) where T : unmanaged
     {
-        throw new NotImplementedException();
+        try
+        {
+            int size = Marshal.SizeOf<T>();
+            var data = await readMethod(offset, size, token).ConfigureAwait(false);
+            if (data.Length < size)
+                return (false, default);
+
+            if (!BitConverter.IsLittleEndian)
+                Array.Reverse(data, 0, size);
+
+            T value = MemoryMarshal.Read<T>(data);
+            return (true, value);
+        }
+        catch (Exception ex)
+        {
+            Log($"{nameof(TryReadInternal)}<{typeof(T).Name}> failed: {ex.Message}");
+            return (false, default);
+        }
     }
 
+    public Task<(bool Success, T Value)> TryReadMain<T>(ulong offset, CancellationToken token) where T : unmanaged
+        => TryReadInternal<T>(ReadBytesMainAsync, offset, token);
+
     public Task<(bool Success, T Value)> TryReadAbsolute<T>(ulong offset, CancellationToken token) where T : unmanaged
-    {
-        throw new NotImplementedException();
-    }
+        => TryReadInternal<T>(ReadBytesAbsoluteAsync, offset, token);
 }
