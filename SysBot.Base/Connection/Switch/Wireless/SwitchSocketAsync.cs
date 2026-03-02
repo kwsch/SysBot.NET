@@ -83,7 +83,7 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
             try
             {
                 var mem = buffer.AsMemory()[..size];
-                await Connection.ReceiveAsync(mem, token);
+                await Connection.ReceiveAsync(mem, token).ConfigureAwait(false);
                 return DecodeResult(mem, length);
             }
             finally
@@ -307,7 +307,7 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
         {
             await SendAsync(command, token).ConfigureAwait(false);
             var buffer = new byte[length];
-            await Connection.ReceiveAsync(buffer, token);
+            await Connection.ReceiveAsync(buffer, token).ConfigureAwait(false);
             return buffer;
         }
         catch (Exception ex)
