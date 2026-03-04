@@ -15,7 +15,7 @@ public class BatchEditingModule : ModuleBase<SocketCommandContext>
     [Summary("Tries to get info about the requested property.")]
     public async Task GetBatchInfo(string propertyName)
     {
-        if (BatchEditing.TryGetPropertyType(propertyName, out var result))
+        if (EntityBatchEditor.Instance.TryGetPropertyType(propertyName, out var result))
             await ReplyAsync($"{propertyName}: {result}").ConfigureAwait(false);
         else
             await ReplyAsync($"Unable to find info for {propertyName}.").ConfigureAwait(false);
@@ -45,7 +45,7 @@ public class BatchEditingModule : ModuleBase<SocketCommandContext>
         var set = new StringInstructionSet(split);
         foreach (var s in set.Filters.Concat(set.Instructions))
         {
-            if (!BatchEditing.TryGetPropertyType(s.PropertyName, out _))
+            if (!EntityBatchEditor.Instance.TryGetPropertyType(s.PropertyName, out _))
                 invalid.Add(s);
         }
 

@@ -81,11 +81,13 @@ public static class AutoLegalityWrapper
 
         // Seed the Trainer Database with enough fake save files so that we return a generation sensitive format when needed.
         var fallback = GetDefaultTrainer(cfg);
-        for (byte generation = 1; generation <= Latest.Generation; generation++)
+        for (var context = EntityContext.Gen1; context < EntityContext.MaxInvalid; context++)
         {
-            var versions = GameUtil.GetVersionsInGeneration(generation, Latest.Version);
+            if (context == EntityContext.SplitInvalid)
+                continue;
+            var versions = GameUtil.GetVersionsInGeneration(context, Latest.Version);
             foreach (var version in versions)
-                RegisterIfNoneExist(fallback, generation, version);
+                RegisterIfNoneExist(fallback, context.Generation, version);
         }
     }
 
@@ -115,7 +117,7 @@ public static class AutoLegalityWrapper
             OT = fallback.OT,
             Generation = generation,
         };
-        var exist = TrainerSettings.GetSavedTrainerData(generation, version, fallback);
+        var exist = TrainerSettings.GetSavedTrainerData((EntityContext)generation, version, fallback);
         if (exist is SimpleTrainerInfo) // not anything from files; this assumes ALM returns SimpleTrainerInfo for non-user-provided fake templates.
             TrainerSettings.Register(fallback);
     }
@@ -176,7 +178,7 @@ public static class AutoLegalityWrapper
         throw new ArgumentException("Type does not have a recognized trainer fetch.", typeof(T).Name);
     }
 
-    public static ITrainerInfo GetTrainerInfo(byte gen) => TrainerSettings.GetSavedTrainerData(gen);
+    public static ITrainerInfo GetTrainerInfo(byte gen) => TrainerSettings.GetSavedTrainerData((EntityContext)gen);
 
     public static PKM GetLegal(this ITrainerInfo sav, IBattleTemplate set, out string res)
     {
