@@ -7,7 +7,7 @@ namespace SysBot.Pokemon;
 /// </summary>
 public class PokeDataOffsetsLZA
 {
-    public const string LZAGameVersion = "2.0.1";
+    public const string LZAGameVersion = "2.0.2";
     public const string LegendsZAID = "0100F43008C44000";
 
     public IReadOnlyList<long> BoxStartPokemonPointer           { get; } = [0x610A710, 0xB0, 0x978, 0x0];
