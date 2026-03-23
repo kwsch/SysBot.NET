@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.Linq;
@@ -100,10 +100,10 @@ public class TwitchTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new()
         switch (dest)
         {
             case TwitchMessageDestination.Channel:
-                Client.SendMessage(Channel, message);
+                _ = Client.SendMessageAsync(Channel, message, false);
                 break;
             case TwitchMessageDestination.Whisper:
-                Client.SendWhisper(Username, message);
+                _ = Client.SendMessageAsync(Channel, $"/w {Username} {message}", false);
                 break;
         }
     }

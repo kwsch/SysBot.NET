@@ -1,4 +1,4 @@
-﻿using NLog;
+using NLog;
 using NLog.Config;
 using NLog.Targets;
 using System.IO;
@@ -16,10 +16,9 @@ public static class RecordUtil<T>
         var record = new FileTarget("record")
         {
             FileName = Path.Combine(dir, $"{name}.txt"),
-            ConcurrentWrites = true,
 
             ArchiveEvery = FileArchivePeriod.None,
-            ArchiveNumbering = ArchiveNumberingMode.Sequence,
+            ArchiveSuffixFormat = "{1:000}",
             ArchiveFileName = Path.Combine(dir, $"{name}.{{#}}.txt"),
             ArchiveAboveSize = 104857600, // 100MB (never)
             MaxArchiveFiles = 14,

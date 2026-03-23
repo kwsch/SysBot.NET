@@ -24,12 +24,10 @@ public static class LogUtil
         var logfile = new FileTarget("logfile")
         {
             FileName = Path.Combine(WorkingDirectory, "logs", "SysBotLog.txt"),
-            ConcurrentWrites = true,
 
             ArchiveEvery = FileArchivePeriod.Day,
-            ArchiveNumbering = ArchiveNumberingMode.Date,
+            ArchiveSuffixFormat = "{1:yyyy-MM-dd}",
             ArchiveFileName = Path.Combine(WorkingDirectory, "logs", "SysBotLog.{#}.txt"),
-            ArchiveDateFormat = "yyyy-MM-dd",
             ArchiveAboveSize = 104857600, // 100MB (never)
             MaxArchiveFiles = LogConfig.MaxArchiveFiles,
             Encoding = Encoding.Unicode,
