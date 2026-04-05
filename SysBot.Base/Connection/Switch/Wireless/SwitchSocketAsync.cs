@@ -124,8 +124,8 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
     public Task<byte[]> ReadBytesAbsoluteMultiAsync(IReadOnlyDictionary<ulong, int> offsetSizes, CancellationToken token) => ReadMulti(Absolute, offsetSizes, token);
 
     public Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token) => Write(Heap, data, offset, token);
-    public Task WriteBytesMainAsync(byte[] data, ulong offset, CancellationToken token) => Write(Main, data, offset, token);
-    public Task WriteBytesAbsoluteAsync(byte[] data, ulong offset, CancellationToken token) => Write(Absolute, data, offset, token);
+    public Task WriteBytesMainAsync(Span<byte> data, ulong offset, CancellationToken token) => Write(Main, data.ToArray(), offset, token);
+    public Task WriteBytesAbsoluteAsync(Span<byte> data, ulong offset, CancellationToken token) => Write(Absolute, data.ToArray(), offset, token);
 
     public async Task<ulong> GetMainNsoBaseAsync(CancellationToken token)
     {

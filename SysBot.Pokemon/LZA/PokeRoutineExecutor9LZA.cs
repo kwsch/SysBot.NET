@@ -53,7 +53,9 @@ public abstract class PokeRoutineExecutor9LZA(PokeBotState Config) : PokeRoutine
 
         pkm.Heal();
         pkm.RefreshChecksum();
-        return SwitchConnection.WriteBytesAbsoluteAsync(pkm.EncryptedPartyData, offset, token);
+        Span<byte> data = stackalloc byte[pkm.SIZE_PARTY];
+        pkm.WriteEncryptedDataParty(data);
+        return SwitchConnection.WriteBytesAbsoluteAsync(data, offset, token);
     }
 
     public Task SetCurrentBox(byte box, CancellationToken token)

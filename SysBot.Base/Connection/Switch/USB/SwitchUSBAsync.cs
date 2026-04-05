@@ -33,8 +33,18 @@ public sealed class SwitchUSBAsync(int Port) : SwitchUSB(Port), ISwitchConnectio
     public Task<byte[]> ReadBytesAbsoluteMultiAsync(IReadOnlyDictionary<ulong, int> offsetSizes, CancellationToken token) => Task.Run(() => ReadMulti(Absolute, offsetSizes), token);
 
     public Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token) => Task.Run(() => Write(Heap, data, offset), token);
-    public Task WriteBytesMainAsync(byte[] data, ulong offset, CancellationToken token) => Task.Run(() => Write(Main, data, offset), token);
-    public Task WriteBytesAbsoluteAsync(byte[] data, ulong offset, CancellationToken token) => Task.Run(() => Write(Absolute, data, offset), token);
+
+    public Task WriteBytesMainAsync(Span<byte> data, ulong offset, CancellationToken token)
+    {
+        var arr = data.ToArray();
+        return Task.Run(() => Write(Main, arr, offset), token);
+    }
+
+    public Task WriteBytesAbsoluteAsync(Span<byte> data, ulong offset, CancellationToken token)
+    {
+        var arr = data.ToArray();
+        return Task.Run(() => Write(Absolute, arr, offset), token);
+    }
 
     public Task<ulong> GetMainNsoBaseAsync(CancellationToken token)
     {

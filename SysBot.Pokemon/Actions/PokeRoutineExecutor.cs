@@ -59,7 +59,9 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
         var dir = Path.Combine(folder, subfolder);
         Directory.CreateDirectory(dir);
         var fn = Path.Combine(dir, PathUtil.CleanFileName(pk.FileName));
-        File.WriteAllBytes(fn, pk.DecryptedPartyData);
+        Span<byte> data = stackalloc byte[pk.SIZE_PARTY];
+        pk.WriteDecryptedDataParty(data);
+        File.WriteAllBytes(fn, data);
         LogUtil.LogInfo($"Saved file: {fn}", "Dump");
     }
 
