@@ -8,7 +8,7 @@ namespace SysBot.Pokemon;
 public abstract class PokeRoutineExecutorBase(IConsoleBotManaged<IConsoleConnection, IConsoleConnectionAsync> Config)
     : SwitchRoutineExecutor<PokeBotState>(Config)
 {
-    public static readonly System.Version BotbaseVersion = new(2, 4);
+    public static readonly System.Version BotbaseVersion = new(2, 5);
 
     public LanguageID GameLang { get; private set; }
     public GameVersion Version { get; private set; }

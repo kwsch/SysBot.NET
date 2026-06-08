@@ -189,6 +189,9 @@ public abstract class PokeRoutineExecutor9SV(PokeBotState Config) : PokeRoutineE
         for (int i = 0; i < 8; i++)
             await Click(A, 1_000, token).ConfigureAwait(false);
 
+        // Wait an extra 10 seconds for the game to load.
+        await Task.Delay(10_000, token).ConfigureAwait(false);
+
         var timer = 60_000;
         while (!await IsOnOverworldTitle(token).ConfigureAwait(false))
         {
