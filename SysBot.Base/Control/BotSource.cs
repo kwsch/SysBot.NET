@@ -22,10 +22,6 @@ public class BotSource<T>(RoutineExecutor<T> Bot)
         IsStopping = true;
         Source.Cancel();
         Source = new CancellationTokenSource();
-
-        Task.Run(async () => await Bot.HardStop()
-            .ContinueWith(ReportFailure, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously)
-            .ContinueWith(_ => IsPaused = IsRunning = IsStopping = false));
     }
 
     public void Pause()
@@ -48,7 +44,7 @@ public class BotSource<T>(RoutineExecutor<T> Bot)
         Bot.Resume();
         Task.Run(async () => await Bot.RunAsync(Source.Token)
             .ContinueWith(ReportFailure, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously)
-            .ContinueWith(_ => IsRunning = false));
+            .ContinueWith(_ => IsPaused = IsRunning = IsStopping = false));
     }
 
     public void Restart()
