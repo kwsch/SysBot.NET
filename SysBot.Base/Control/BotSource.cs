@@ -41,13 +41,11 @@ public class BotSource<T>(RoutineExecutor<T> Bot)
 
     public void Start()
     {
-        if (IsPaused)
-            Stop(); // can't soft-resume; just re-launch
-
         if (IsRunning || IsStopping)
             return;
 
         IsRunning = true;
+        Bot.Resume();
         Task.Run(async () => await Bot.RunAsync(Source.Token)
             .ContinueWith(ReportFailure, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously)
             .ContinueWith(_ => IsRunning = false));
@@ -97,6 +95,13 @@ public class BotSource<T>(RoutineExecutor<T> Bot)
 
     public void Resume()
     {
+        if (IsPaused)
+        {
+            Bot.Resume();
+            IsPaused = false;
+            return;
+        }
+
         Start();
     }
 }
