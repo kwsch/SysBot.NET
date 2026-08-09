@@ -13,11 +13,11 @@ public class QueueModule<T> : SlashModuleBase where T : PKM, new()
 
     [SlashCommand("status", "Checks the user's position in the queue.")]
     public Task GetTradePositionAsync()
-        => RespondAsync(Context.User.Mention + " - " + Info.GetPositionString(Context.User.Id));
+        => RespondAsync($"{Context.User.Mention} - {Info.GetPositionString(Context.User.Id)}", ephemeral: true);
 
     [SlashCommand("clear", "Clears yourself from the trade queues.")]
     public Task ClearTradeAsync()
-        => RespondAsync(GetClearTradeMessage(Info.ClearTrade(Context.User.Id)));
+        => RespondAsync(GetClearTradeMessage(Info.ClearTrade(Context.User.Id)), ephemeral: true);
 
     /*
      *

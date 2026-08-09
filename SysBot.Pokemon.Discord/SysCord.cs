@@ -110,13 +110,13 @@ public sealed class SysCord<T> where T : PKM, new()
             .ToList();
 
         var assembly = Assembly.GetExecutingAssembly();
-        await LoadSlashCommandsFromAssembly(assembly, blacklist).ConfigureAwait(false);
+        await LoadModulesFromAssembly(assembly, blacklist).ConfigureAwait(false);
 
         _client.Ready += LoadCommandsAndChannels;
         _client.InteractionCreated += HandleInteractionAsync;
     }
 
-    private async Task LoadSlashCommandsFromAssembly(Assembly assembly, List<string> blacklist)
+    private async Task LoadModulesFromAssembly(Assembly assembly, IReadOnlyList<string> blacklist)
     {
         var moduleTypes = assembly.DefinedTypes
             .Where(z => z is { IsAbstract: false, IsGenericTypeDefinition: false } && typeof(InteractionModuleBase<SocketInteractionContext>).IsAssignableFrom(z.AsType()))
@@ -129,16 +129,21 @@ public sealed class SysCord<T> where T : PKM, new()
 
         foreach (var module in types)
         {
-            if (!IsBlacklisted(module, blacklist))
-                await _interactions.AddModuleAsync(module, _services).ConfigureAwait(false);
+            var name = GetModuleName(module.Name);
+            if (IsBlacklisted(name, blacklist))
+                continue;
+
+            var registered = await _interactions.AddModuleAsync(module, _services).ConfigureAwait(false);
+            LogUtil.LogInfo(
+                $"Loaded module {name}: " +
+                $"slash={registered?.SlashCommands.Count ?? -1}, " +
+                $"modal={registered?.ModalCommands.Count ?? -1}, " +
+                $"component={registered?.ComponentCommands.Count ?? -1}");
         }
     }
 
-    private static bool IsBlacklisted(Type module, List<string> blacklist)
-    {
-        var name = GetModuleName(module.Name);
-        return blacklist.Any(z => z.Equals(name, StringComparison.OrdinalIgnoreCase));
-    }
+    private static bool IsBlacklisted(string name, IReadOnlyList<string> blacklist)
+        => blacklist.Any(z => z.Equals(name, StringComparison.OrdinalIgnoreCase));
 
     private static string GetModuleName(string name)
     {
@@ -152,35 +157,44 @@ public sealed class SysCord<T> where T : PKM, new()
 
     private async Task HandleInteractionAsync(SocketInteraction interaction)
     {
-        // Only application commands are relevant here. Keeping this check means
-        // future component/modal interactions can be handled independently.
-        if (interaction is not SocketSlashCommand command)
-            return;
-
-        var context = new SocketInteractionContext(_client, command);
+        var context = new SocketInteractionContext(_client, interaction);
 
         if (!_manager.CanUseCommandUser(context.User.Id))
         {
-            await RespondErrorAsync(command, "You are not permitted to use this command.", ephemeral: true).ConfigureAwait(false);
+            await RespondErrorAsync(interaction, "You are not permitted to use this command.", ephemeral: true).ConfigureAwait(false);
             return;
         }
 
-        if ((context.Interaction.ChannelId is not {  } channel) || (!_manager.CanUseCommandChannel(channel) && context.User.Id != _manager.Owner))
+        if ((context.Interaction.ChannelId is not { } channel) || (!_manager.CanUseCommandChannel(channel) && context.User.Id != _manager.Owner))
         {
             // Visibly reply if settings require (so that others can see).
             var ephemeral = !Hub.Config.Discord.ReplyCannotUseCommandInChannel;
-            await RespondErrorAsync(command, "You can't use that command here.", ephemeral: ephemeral).ConfigureAwait(false);
+            await RespondErrorAsync(interaction, "You can't use that here.", ephemeral: ephemeral).ConfigureAwait(false);
             return;
         }
 
-        var commandName = command.Data.Name;
-        var location = context.Interaction.IsDMInteraction ? "Direct Messages" : context.Guild?.Name ?? "Unknown Guild";
-        var status = $"Executing command from {location}#{context.Interaction.Channel?.Name ?? $"Unknown Channel: {channel}"}:@{context.User.Username}. Command: {commandName}";
-        await Log(GetLog(LogSeverity.Info, status)).ConfigureAwait(false);
+        await LogInteractionStart(context, channel).ConfigureAwait(false);
 
         var result = await _interactions.ExecuteCommandAsync(context, _services).ConfigureAwait(false);
-        if (!result.IsSuccess && !command.HasResponded)
-            await RespondErrorAsync(command, result.ErrorReason).ConfigureAwait(false);
+        if (!result.IsSuccess && !interaction.HasResponded)
+            await RespondErrorAsync(interaction, result.ErrorReason).ConfigureAwait(false);
+    }
+
+    private static async Task LogInteractionStart(SocketInteractionContext context, ulong channelId)
+    {
+        var interaction = context.Interaction;
+        var (type, identity) = interaction switch
+        {
+            SocketSlashCommand cmd => ("slash command", $"Command: {cmd.CommandName}"),
+            SocketModal modal => ("modal", $"Modal: {modal.Id}"),
+            SocketMessageComponent c => ("component", $"Component: {c.Id}"),
+            _ => (interaction.Type.ToString(), "Unknown"),
+        };
+        var channel = interaction.Channel?.Name ?? $"Unknown Channel: {channelId}";
+        var location = interaction.IsDMInteraction ? "Direct Messages" : context.Guild?.Name ?? "Unknown Guild";
+        var status = $"Executing {type} from {location}:{channel}:@{context.User.Username}. {identity}";
+
+        await Log(GetLog(LogSeverity.Info, status)).ConfigureAwait(false);
     }
 
     private static Task RespondErrorAsync(SocketInteraction interaction, string message, bool ephemeral = true) => interaction.HasResponded
@@ -248,38 +262,37 @@ public sealed class SysCord<T> where T : PKM, new()
 
     private async Task LoadCommandsAndChannels()
     {
+        var cfg = Hub.Config.Discord;
         if (!CommandsRegistered)
-            await RegisterSlashCommands().ConfigureAwait(false);
+            await RegisterSlashCommands(cfg).ConfigureAwait(false);
 
         if (MessageChannelsLoaded)
             return;
 
         // Restore Echoes
-        EchoModule.RestoreChannels(_client, Hub.Config.Discord);
+        EchoModule.RestoreChannels(_client, cfg);
 
         // Restore Logging
-        LogModule.RestoreLogging(_client, Hub.Config.Discord);
-        TradeStartModule<T>.RestoreTradeStarting(_client);
+        LogModule.RestoreLogging(_client, cfg);
+        TradeStartModule<T>.RestoreTradeStarting(_client, cfg);
 
         // Don't let it load more than once in case of Discord hiccups.
         const string status = "Logging and Echo channels loaded!";
         await Log(GetLog(LogSeverity.Info, status)).ConfigureAwait(false);
         MessageChannelsLoaded = true;
 
-        var game = Hub.Config.Discord.BotGameStatus;
+        var game = cfg.BotGameStatus;
         if (!string.IsNullOrWhiteSpace(game))
             await _client.SetGameAsync(game).ConfigureAwait(false);
     }
 
-    private async Task RegisterSlashCommands()
+    private async Task RegisterSlashCommands(DiscordSettings cfg)
     {
-        var cfg = SysCordSettings.HubConfig.Discord;
         var hash = ComputeSlashCommandHash();
         if (hash == cfg.SlashCommandHash)
         {
             LogUtil.LogInfo("Skipped registering commands -- no signature changes.");
-            var count = _interactions.SlashCommands.Count;
-            SysCordSettings.SetCommandsRegistered(count);
+            UpdateRegisteredCounts();
             return;
         }
 
@@ -290,16 +303,22 @@ public sealed class SysCord<T> where T : PKM, new()
             await _interactions.RegisterCommandsGloballyAsync(deleteMissing: true).ConfigureAwait(false);
             CommandsRegistered = true;
 
-            var count = _interactions.SlashCommands.Count;
-            SysCordSettings.SetCommandsRegistered(count);
+            UpdateRegisteredCounts();
             cfg.SlashCommandHash = hash;
 
-            var message = $"Registered {count} slash commands. Hash: {hash}";
+            var message = $"Submitted registered interactions. Hash: {hash}";
             LogUtil.LogInfo(message);
         }
         catch (Exception ex)
         {
             LogUtil.LogSafe(ex);
         }
+    }
+
+    private void UpdateRegisteredCounts()
+    {
+        var commands = _interactions.SlashCommands.Count;
+        var modals = _interactions.ModalCommands.Count;
+        SysCordSettings.SetCommandsRegistered(commands, modals);
     }
 }

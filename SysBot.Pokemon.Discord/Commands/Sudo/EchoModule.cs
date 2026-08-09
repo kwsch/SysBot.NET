@@ -18,13 +18,20 @@ public class EchoModule : SudoModuleBase
 
     public static void RestoreChannels(DiscordSocketClient discord, DiscordSettings cfg)
     {
-        foreach (var ch in cfg.EchoChannels)
+        int count = 0;
+        foreach (var channelAccess in cfg.EchoChannels)
         {
-            if (discord.GetChannel(ch.ID) is ISocketMessageChannel channel)
-                AddEchoChannel(channel, ch.ID);
+            if (discord.GetChannel(channelAccess.ID) is not ISocketMessageChannel channel)
+            {
+                LogUtil.LogInfo($"Failed to add echoes to {channelAccess.Name}.");
+                continue;
+            }
+
+            AddEchoChannel(channel, channelAccess.ID);
+            count++;
         }
 
-        EchoUtil.Echo("Added echo notification to Discord channel(s) on Bot startup.");
+        EchoUtil.Echo($"Added echo notification to {count} Discord channel(s) on Bot startup.");
     }
 
     [SlashCommand("here", "Makes the bot echo special messages to this channel.")]

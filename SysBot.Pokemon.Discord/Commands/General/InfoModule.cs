@@ -42,7 +42,8 @@ $"""
 - {Format.Bold("Buildtime")}: {GetVersionInfo("SysBot.Base", false)}
 - {Format.Bold("Core Version")}: {GetVersionInfo("PKHeX.Core")}
 - {Format.Bold("AutoLegality Version")}: {GetVersionInfo("PKHeX.Core.AutoMod")}
-- {Format.Bold("Command Count")}: {SysCordSettings.CommandsRegistered} @ {SysCordSettings.CommandsRegisteredTime:yyyy.MM.dd-hh:mm:ss} UTC
+- {Format.Bold("Command Count")}: {SysCordSettings.RegisteredCommands} @ {SysCordSettings.RegisteredTime:yyyy.MM.dd-hh:mm:ss} UTC
+- {Format.Bold("Modal Count")}: {SysCordSettings.RegisteredModals}
 """
             );
         builder.AddField("Stats",

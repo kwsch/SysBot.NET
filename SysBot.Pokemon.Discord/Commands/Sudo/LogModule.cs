@@ -13,13 +13,20 @@ public class LogModule : SudoModuleBase
     private static readonly Dictionary<ulong, ChannelLogger> Channels=[];
     public static void RestoreLogging(DiscordSocketClient discord, DiscordSettings settings)
     {
-        foreach (var controlAccess in settings.LoggingChannels)
+        int count = 0;
+        foreach (var channelAccess in settings.LoggingChannels)
         {
-            if (discord.GetChannel(controlAccess.ID) is ISocketMessageChannel c)
-                AddLogChannel(c, controlAccess.ID);
+            if (discord.GetChannel(channelAccess.ID) is not ISocketMessageChannel channel)
+            {
+                LogUtil.LogInfo($"Failed to add logging to {channelAccess.Name}.");
+                continue;
+            }
+
+            AddLogChannel(channel, channelAccess.ID);
+            count++;
         }
 
-        LogUtil.LogInfo("Added logging to Discord channel(s) on Bot startup.");
+        LogUtil.LogInfo($"Added logging to {count} Discord channel(s) on Bot startup.");
     }
 
     [SlashCommand("here", "Makes the bot log to this channel.")]

@@ -14,11 +14,10 @@ namespace SysBot.Pokemon.Discord;
 public class TradeModule<T> : SlashModuleBase where T : PKM, new()
 {
     private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
+    private const string TradeModalId = "trade-set";
 
     [SlashCommand("set", "Trade a Showdown Set.")]
-    public async Task TradeAsync(
-        [Summary(nameof(showdown), "Provide the Showdown Set to be traded to your game.")] string showdown,
-        [Summary(nameof(code), "Optional; leave blank for a random code")] int? code = null)
+    public async Task TradeSetAsync()
     {
         if (!CheckQueueAccess(PokeRoutineType.LinkTrade, out var error))
         {
@@ -26,10 +25,58 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
             return;
         }
 
-        // Generating from a set might take longer than 3 seconds for some hosts with slower computers.
-        await DeferAsync(ephemeral: true).ConfigureAwait(false);
+        await RespondWithModalAsync<TradeSetModal>(TradeModalId).ConfigureAwait(false);
+    }
 
-        var tradeCode = code ?? Info.GetRandomTradeCode();
+    public class TradeSetModal : IModal
+    {
+        public string Title => "Trade Showdown Set";
+
+        [InputLabel("Showdown Set")]
+        [ModalTextInput("showdown", TextInputStyle.Paragraph, placeholder: "Paste your Showdown set here...")]
+        public string Showdown { get; set; } = string.Empty;
+
+        [RequiredInput(false)]
+        [InputLabel("Trade Code (optional)")]
+        [ModalTextInput("code", TextInputStyle.Short, placeholder: "Leave blank for a random code", maxLength: 8)]
+        public string? Code { get; set; }
+    }
+
+    [ModalInteraction(TradeModalId)]
+    public async Task TradeSetModalAsync(TradeSetModal modal)
+    {
+        // Re-check if the queue closed in the time between opening the modal and entering the info.
+        if (!CheckQueueAccess(PokeRoutineType.LinkTrade, out var error))
+        {
+            await RespondAsync(error, ephemeral: true).ConfigureAwait(false);
+            return;
+        }
+
+        // Sanity check their inputs.
+        var code = modal.Code;
+        var showdown = modal.Showdown;
+
+        if (!string.IsNullOrWhiteSpace(code))
+        {
+            if (!int.TryParse(code, out var parsed))
+            {
+                await RespondAsync("The trade code must be a valid integer.", ephemeral: true).ConfigureAwait(false);
+                return;
+            }
+            // Check if it is within the valid range for trade codes (0-99999999)
+            if (parsed is < 0 or > 99999999)
+            {
+                await RespondAsync("The trade code must be between 0 and 99999999.", ephemeral: true).ConfigureAwait(false);
+                return;
+            }
+        }
+
+        // Convert, then join the queue.
+        await DeferAsync(ephemeral: true).ConfigureAwait(false);
+        var tradeCode = string.IsNullOrWhiteSpace(code)
+            ? Info.GetRandomTradeCode()
+            : int.Parse(code); // already validated above, so safe to parse
+
         await TradeShowdownAsync(tradeCode, showdown, Context).ConfigureAwait(false);
     }
 

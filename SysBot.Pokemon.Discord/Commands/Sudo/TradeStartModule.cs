@@ -24,15 +24,22 @@ public class TradeStartModule<T> : SudoModuleBase where T : PKM, new()
         SysCord<T>.Runner.Hub.Queues.Forwarders.Remove(e.Messager);
     }
 
-    public static void RestoreTradeStarting(DiscordSocketClient discord)
+    public static void RestoreTradeStarting(DiscordSocketClient discord, DiscordSettings settings)
     {
-        foreach (var channelAccess in SysCordSettings.Settings.TradeStartingChannels)
+        int count = 0;
+        foreach (var channelAccess in settings.TradeStartingChannels)
         {
-            if (discord.GetChannel(channelAccess.ID) is ISocketMessageChannel channel)
-                AddLogChannel(channel, channelAccess.ID);
+            if (discord.GetChannel(channelAccess.ID) is not ISocketMessageChannel channel)
+            {
+                LogUtil.LogInfo($"Failed to add logging to {channelAccess.Name}.");
+                continue;
+            }
+
+            AddLogChannel(channel, channelAccess.ID);
+            count++;
         }
 
-        LogUtil.LogInfo("Added Trade Start Notification to Discord channel(s) on Bot startup.");
+        LogUtil.LogInfo($"Added Trade Start Notification to {count} Discord channel(s) on Bot startup.");
     }
 
     [SlashCommand("here", "Makes the bot log trade starts to this channel.")]

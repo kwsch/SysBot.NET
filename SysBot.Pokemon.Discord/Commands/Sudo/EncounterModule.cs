@@ -9,7 +9,8 @@ namespace SysBot.Pokemon.Discord;
 public class EncounterModule<T> : SudoModuleBase where T : PKM, new()
 {
     [SlashCommand("toss", "Makes waiting bots continue operation.")]
-    public async Task TossAsync(string name = "")
+    public async Task TossAsync(
+        [Summary(nameof(name), "Bot label to match. Leave blank to toss for all.")] string name = "")
     {
         if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
             return;
