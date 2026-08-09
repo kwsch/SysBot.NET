@@ -17,9 +17,9 @@ public class BatchEditingModule : SlashModuleBase
         [Summary(nameof(propertyName), "The name of the property to get info about.")] string propertyName)
     {
         if (EntityBatchEditor.Instance.TryGetPropertyType(propertyName, out var result))
-            await RespondAsync($"{propertyName}: {result}").ConfigureAwait(false);
+            await RespondAsync($"{propertyName}: {result}", ephemeral: true).ConfigureAwait(false);
         else
-            await RespondAsync($"Unable to find info for {propertyName}.").ConfigureAwait(false);
+            await RespondAsync($"Unable to find info for {propertyName}.", ephemeral: true).ConfigureAwait(false);
     }
 
     [SlashCommand("validate", "Validates batch editor instructions.")]

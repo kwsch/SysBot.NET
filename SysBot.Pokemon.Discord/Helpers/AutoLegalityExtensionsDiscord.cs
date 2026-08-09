@@ -48,28 +48,27 @@ public static class AutoLegalityExtensionsDiscord
             catch (Exception ex)
             {
                 LogUtil.LogSafe(ex);
-                var lines = string.Join('\n', set.GetSetLines());
-                var formatted = Format.Code(lines, "yml");
+                var formatted = ReusableActions.FormatSetCode(set);
                 var message = $"Oops! An unexpected problem happened with this Showdown Set:\n{formatted}";
                 // No need for everyone to see their goofy set.
                 await context.Interaction.FollowupAsync(message, ephemeral: true).ConfigureAwait(false);
             }
         }
 
-        public Task ReplyWithLegalizedSetAsync(string content, byte generation)
+        public async Task ReplyWithLegalizedSetAsync(string content, GameVersion version)
         {
             content = ReusableActions.StripCodeBlock(content);
             var set = new ShowdownSet(content);
-            var sav = AutoLegalityWrapper.GetTrainerInfo(generation);
-            return context.ReplyWithLegalizedSetAsync(sav, set);
+            var tr = AutoLegalityWrapper.GetTrainerInfo(version);
+            await context.ReplyWithLegalizedSetAsync(tr, set).ConfigureAwait(false);
         }
 
         public async Task ReplyWithLegalizedSetAsync<T>(string content) where T : PKM, new()
         {
             content = ReusableActions.StripCodeBlock(content);
             var set = new ShowdownSet(content);
-            var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
-            await context.ReplyWithLegalizedSetAsync(sav, set).ConfigureAwait(false);
+            var tr = AutoLegalityWrapper.GetTrainerInfo<T>();
+            await context.ReplyWithLegalizedSetAsync(tr, set).ConfigureAwait(false);
         }
 
         public async Task ReplyWithLegalizedSetAsync(IAttachment attachment)

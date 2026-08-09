@@ -13,7 +13,6 @@ public class EchoModule : SudoModuleBase
 {
     // ReSharper disable NotAccessedPositionalProperty.Local
     private record EchoChannel(ulong ChannelId, string ChannelName, Action<string> Action);
-    // ReSharper enable NotAccessedPositionalProperty.Local
 
     private static readonly Dictionary<ulong, EchoChannel> Channels = [];
 

@@ -48,7 +48,7 @@ public static class ReusableActions
 
     extension(PKM pk)
     {
-        private FileAttachment ToFileAttachment()
+        public FileAttachment ToFileAttachment()
         {
             Span<byte> data = stackalloc byte[pk.SIZE_PARTY];
             pk.WriteDecryptedDataParty(data);
@@ -68,7 +68,21 @@ public static class ReusableActions
         var settings = new BattleTemplateExportSettings(config, language);
         var showdown = ShowdownParsing.GetShowdownText(pk, settings);
 
-        return Format.Code(showdown);
+        return FormatSetCode(showdown);
+    }
+
+    // yml looks nicest of all code-languages in Discord code blocks, so we use that instead of plain text.
+    private const string CodeLanguage = "yml";
+    private const LanguageID Language = LanguageID.English;
+
+    public static string FormatSetCode(string set) => Format.Code(set, CodeLanguage);
+    public static string FormatSetCode(IEnumerable<string> lines) => FormatSetCode(string.Join('\n', lines));
+    public static string FormatSetCode(ShowdownSet set, LanguageID language = Language)
+    {
+        var config = BattleTemplateConfig.Showdown;
+        var settings = new BattleTemplateExportSettings(config, language);
+        var lines = set.GetSetLines(settings);
+        return FormatSetCode(lines);
     }
 
     /// <summary>

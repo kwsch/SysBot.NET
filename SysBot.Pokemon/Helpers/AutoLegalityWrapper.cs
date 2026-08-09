@@ -178,7 +178,8 @@ public static class AutoLegalityWrapper
         throw new ArgumentException("Type does not have a recognized trainer fetch.", typeof(T).Name);
     }
 
-    public static ITrainerInfo GetTrainerInfo(byte gen) => TrainerSettings.GetSavedTrainerData((EntityContext)gen);
+    public static ITrainerInfo GetTrainerInfo(GameVersion version) => TrainerSettings.GetSavedTrainerData(version);
+    public static ITrainerInfo GetTrainerInfo(EntityContext context) => TrainerSettings.GetSavedTrainerData(context);
 
     public static PKM GetLegal(this ITrainerInfo sav, IBattleTemplate set, out string res)
     {

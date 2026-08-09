@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
@@ -8,16 +9,16 @@ using SysBot.Base;
 
 namespace SysBot.Pokemon.Discord;
 
+[Group("trade", "Commands for starting a trade session with the bot.")]
 [RequireContext(ContextType.Guild)]
 public class TradeModule<T> : SlashModuleBase where T : PKM, new()
 {
     private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
 
-    [SlashCommand("trade", "Trade a Pokémon file or a Showdown Set.")]
+    [SlashCommand("set", "Trade a Showdown Set.")]
     public async Task TradeAsync(
-        [Summary(nameof(code), "Optional; leave blank for a random code")] int? code = null,
-        [Summary(nameof(set), "Provide if you want to convert text.")] string? set = null,
-        [Summary(nameof(file), "Provide if you want to trade a file.")] IAttachment? file = null)
+        [Summary(nameof(showdown), "Provide the Showdown Set to be traded to your game.")] string showdown,
+        [Summary(nameof(code), "Optional; leave blank for a random code")] int? code = null)
     {
         if (!CheckQueueAccess(PokeRoutineType.LinkTrade, out var error))
         {
@@ -25,30 +26,29 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
             return;
         }
 
-        if (set is not null && file is not null)
-        {
-            await RespondAsync("Provide either a Showdown Set or a Pokémon file, not both.", ephemeral: true).ConfigureAwait(false);
-            return;
-        }
-
-        if (set is null && file is null)
-        {
-            await RespondAsync("Provide a Showdown Set or attach a Pokémon file.", ephemeral: true).ConfigureAwait(false);
-            return;
-        }
-
         // Generating from a set might take longer than 3 seconds for some hosts with slower computers.
         await DeferAsync(ephemeral: true).ConfigureAwait(false);
 
         var tradeCode = code ?? Info.GetRandomTradeCode();
+        await TradeShowdownAsync(tradeCode, showdown, Context).ConfigureAwait(false);
+    }
 
-        if (file is not null)
+    [SlashCommand("file", "Trade a Pokémon file.")]
+    public async Task TradeFileAsync(
+        [Summary(nameof(file), "Attach a file to be traded to your game.")] IAttachment file,
+        [Summary(nameof(code), "Optional; leave blank for a random code")] int? code = null)
+    {
+        if (!CheckQueueAccess(PokeRoutineType.LinkTrade, out var error))
         {
-            await TradeAttachmentAsync(tradeCode, file, Context).ConfigureAwait(false);
+            await RespondAsync(error, ephemeral: true).ConfigureAwait(false);
             return;
         }
 
-        await TradeShowdownAsync(tradeCode, set!, Context).ConfigureAwait(false);
+        // Match the set->file trade command, which can take longer than 3 seconds for some hosts with slower computers.
+        await DeferAsync(ephemeral: true).ConfigureAwait(false);
+
+        var tradeCode = code ?? Info.GetRandomTradeCode();
+        await TradeAttachmentAsync(tradeCode, file, Context).ConfigureAwait(false);
     }
 
     /*
@@ -57,7 +57,7 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
      *
      */
 
-    [SlashCommand("trade-list", "Prints the users in the trade queues.")]
+    [SlashCommand("list", "Prints the users in the trade queues.")]
     [RequireUserPermission(ChannelPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     public async Task GetTradeListAsync()
@@ -79,7 +79,7 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
         await RespondAsync("These are the users who are currently waiting:", ephemeral: true, embed: embed.Build()).ConfigureAwait(false);
     }
 
-    [SlashCommand("ban-trade", "Ban an Online ID from trading.")]
+    [SlashCommand("ban", "Ban an Online ID from trading.")]
     [RequireUserPermission(ChannelPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     public async Task BanTradeAsync(
@@ -110,13 +110,8 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
             if (invalidlines.Count != 0)
             {
                 var localization = BattleTemplateParseErrorLocalization.Get();
-                sb.AppendLine("Invalid lines detected:\n```yml");
-                foreach (var line in invalidlines)
-                {
-                    var error = line.Humanize(localization);
-                    sb.AppendLine(error);
-                }
-                sb.AppendLine("```");
+                sb.AppendLine("Invalid lines detected:");
+                AddInvalidLines(invalidlines, localization, sb);
             }
             if (set.Species is 0)
                 sb.AppendLine("Species could not be identified. Check your spelling.");
@@ -156,10 +151,23 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
             LogUtil.LogSafe(ex);
             var msg = $"""
                        Oops! An unexpected problem happened with this Showdown Set:
-                       {Format.Code(string.Join('\n', set.GetSetLines()),"yml")}
+                       {ReusableActions.FormatSetCode(set)}
                        """;
             await FollowupAsync(msg).ConfigureAwait(false);
         }
+    }
+
+    private static void AddInvalidLines(IReadOnlyList<BattleTemplateParseError> invalidlines, BattleTemplateParseErrorLocalization localization, StringBuilder sb)
+    {
+        // Build a string of the invalid lines with their human-readable error messages
+        // Then format it into a readable code block for Discord
+        var inner = new StringBuilder();
+        foreach (var line in invalidlines)
+        {
+            var error = line.Humanize(localization);
+            inner.AppendLine(error);
+        }
+        sb.Append(ReusableActions.FormatSetCode(inner.ToString()));
     }
 
     private async Task TradeAttachmentAsync(int code, IAttachment attachment, SocketInteractionContext user)

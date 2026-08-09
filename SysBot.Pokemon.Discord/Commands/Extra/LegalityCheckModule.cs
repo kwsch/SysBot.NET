@@ -5,7 +5,6 @@ using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord;
 
-[Group("legality", "Legality check commands.")]
 [RequireContext(ContextType.Guild)]
 public class LegalityCheckModule : SlashModuleBase
 {

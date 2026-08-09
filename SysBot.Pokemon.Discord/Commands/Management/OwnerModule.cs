@@ -9,13 +9,13 @@ namespace SysBot.Pokemon.Discord;
 [Group("owner", "Commands usable by the bot owner.")]
 [DefaultMemberPermissions(GuildPermission.Administrator)] // hide these commands from the majority of users; bot Owners must have admin on server to manage.
 [RequireOwner]
-public class OwnerModule : SlashModuleBase
+public class OwnerModule : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("add-sudo", "Adds a user to global sudo.")]
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
     public async Task AddSudo(IUser user)
     {
-        SysCordSettings.Settings.GlobalSudoList.AddIfNew(GetReference(user));
+        SysCordSettings.Settings.GlobalSudoList.AddIfNew(GetReference(user.Id, user.GlobalName));
         await RespondAsync("Done.").ConfigureAwait(false);
     }
 
@@ -32,7 +32,7 @@ public class OwnerModule : SlashModuleBase
     public async Task AddChannel()
     {
         var c = Context.Interaction.Channel;
-        SysCordSettings.Settings.ChannelWhitelist.AddIfNew(GetReference(c));
+        SysCordSettings.Settings.ChannelWhitelist.AddIfNew(GetReference(c.Id, c.Name));
         await RespondAsync("Done.").ConfigureAwait(false);
     }
 
@@ -85,4 +85,11 @@ public class OwnerModule : SlashModuleBase
         await RespondAsync("Shutting down... goodbye! **Bot services are going offline.**").ConfigureAwait(false);
         Environment.Exit(0);
     }
+
+    private RemoteControlAccess GetReference(ulong id, string name) => new()
+    {
+        ID = id,
+        Name = name,
+        Comment = $"Added by {Context.User.Username} on {DateTime.Now:yyyy.MM.dd-hh:mm:ss}",
+    };
 }
