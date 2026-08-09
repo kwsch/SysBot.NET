@@ -12,7 +12,7 @@ public class LegalizerModule<T> : SlashModuleBase where T : PKM, new()
     public async Task LegalizeAsync(
         [Summary(nameof(file), "The file to legalize.")] IAttachment file)
     {
-        await DeferAsync().ConfigureAwait(false);
+        await DeferAsync(ephemeral: true).ConfigureAwait(false);
         await Context.ReplyWithLegalizedSetAsync(file).ConfigureAwait(false);
     }
 
@@ -21,7 +21,7 @@ public class LegalizerModule<T> : SlashModuleBase where T : PKM, new()
         [Summary(nameof(content), "The Showdown set to convert.")] string content,
         [Summary(nameof(generation), "Optional")] byte? generation = null)
     {
-        await DeferAsync().ConfigureAwait(false);
+        await DeferAsync(ephemeral: true).ConfigureAwait(false);
         if (generation is not { } gen) // assume current format if no generation is specified
             await Context.ReplyWithLegalizedSetAsync<T>(content).ConfigureAwait(false);
         else

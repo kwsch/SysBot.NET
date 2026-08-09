@@ -15,7 +15,7 @@ public static class AutoLegalityExtensionsDiscord
         {
             if (set.Species == 0)
             {
-                await context.Interaction.RespondAsync("Oops! I wasn't able to interpret your message! If you intended to convert something, please double check what you're pasting!").ConfigureAwait(false);
+                await context.Interaction.FollowupAsync("Oops! I wasn't able to interpret your message! If you intended to convert something, please double check what you're pasting!").ConfigureAwait(false);
                 return;
             }
 
@@ -37,7 +37,7 @@ public static class AutoLegalityExtensionsDiscord
                     if (result == "Failed")
                         issue += $"\n{AutoLegalityWrapper.GetLegalizationHint(template, sav, pk)}";
 
-                    await context.Interaction.RespondAsync(issue).ConfigureAwait(false);
+                    await context.Interaction.FollowupAsync(issue).ConfigureAwait(false);
                     return;
                 }
 
@@ -52,7 +52,7 @@ public static class AutoLegalityExtensionsDiscord
                 var formatted = Format.Code(lines, "yml");
                 var message = $"Oops! An unexpected problem happened with this Showdown Set:\n{formatted}";
                 // No need for everyone to see their goofy set.
-                await context.Interaction.RespondAsync(message, ephemeral: true).ConfigureAwait(false);
+                await context.Interaction.FollowupAsync(message, ephemeral: true).ConfigureAwait(false);
             }
         }
 
@@ -77,7 +77,7 @@ public static class AutoLegalityExtensionsDiscord
             var download = await attachment.DownloadEntityAsync().ConfigureAwait(false);
             if (!download.Success)
             {
-                await context.Interaction.RespondAsync(download.ErrorMessage, ephemeral: true).ConfigureAwait(false);
+                await context.Interaction.FollowupAsync(download.ErrorMessage, ephemeral: true).ConfigureAwait(false);
                 return;
             }
 
@@ -85,14 +85,14 @@ public static class AutoLegalityExtensionsDiscord
             var fileName = download.SanitizedFileName;
             if (new LegalityAnalysis(pk).Valid)
             {
-                await context.Interaction.RespondAsync($"{fileName}: Already legal.", ephemeral: true).ConfigureAwait(false);
+                await context.Interaction.FollowupAsync($"{fileName}: Already legal.", ephemeral: true).ConfigureAwait(false);
                 return;
             }
 
             var legal = pk.LegalizePokemon();
             if (!new LegalityAnalysis(legal).Valid)
             {
-                await context.Interaction.RespondAsync($"{fileName}: Unable to legalize.").ConfigureAwait(false);
+                await context.Interaction.FollowupAsync($"{fileName}: Unable to legalize.").ConfigureAwait(false);
                 return;
             }
 
