@@ -50,7 +50,8 @@ public class SeedCheckModule<T> : SlashModuleBase where T : PKM, new()
      */
 
     [SlashCommand("seed-list", "Prints the users in the Seed Check queue.")]
-    [RequireUserPermission(ChannelPermission.BypassSlowmode)] // basic gate to hide the commands from untrusted users, but not a full sudo check
+    [RequireUserPermission(ChannelPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
+    [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     public async Task GetSeedListAsync()
     {
         if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))

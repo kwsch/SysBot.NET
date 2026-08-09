@@ -31,7 +31,8 @@ public class DumpModule<T> : SlashModuleBase where T : PKM, new()
      */
 
     [SlashCommand("dump-list", "Prints the users in the Dump queue.")]
-    [RequireUserPermission(ChannelPermission.BypassSlowmode)] // basic gate to hide the commands from untrusted users, but not a full sudo check
+    [RequireUserPermission(ChannelPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
+    [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     public async Task GetListAsync()
     {
         if (!await RequireAsync(CheckSudo(out var error), error).ConfigureAwait(false))

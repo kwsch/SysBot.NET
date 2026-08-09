@@ -58,7 +58,8 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
      */
 
     [SlashCommand("trade-list", "Prints the users in the trade queues.")]
-    [RequireUserPermission(ChannelPermission.BypassSlowmode)] // basic gate to hide the commands from untrusted users, but not a full sudo check
+    [RequireUserPermission(ChannelPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
+    [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     public async Task GetTradeListAsync()
     {
         if (!CheckSudo(out var error))
@@ -79,7 +80,8 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
     }
 
     [SlashCommand("ban-trade", "Ban an Online ID from trading.")]
-    [RequireUserPermission(ChannelPermission.BypassSlowmode)] // basic gate to hide the commands from untrusted users, but not a full sudo check
+    [RequireUserPermission(ChannelPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
+    [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     public async Task BanTradeAsync(
         [Summary(nameof(nnid), "The in-game/online ID of the user to ban from trading.")] ulong nnid,
         [Summary(nameof(reason), "The reason for banning the user.")] string reason)

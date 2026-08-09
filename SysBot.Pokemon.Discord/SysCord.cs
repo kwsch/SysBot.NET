@@ -161,22 +161,15 @@ public sealed class SysCord<T> where T : PKM, new()
 
         if (!_manager.CanUseCommandUser(context.User.Id))
         {
-            await RespondErrorAsync(command, "You are not permitted to use this command.").ConfigureAwait(false);
+            await RespondErrorAsync(command, "You are not permitted to use this command.", ephemeral: true).ConfigureAwait(false);
             return;
         }
 
-        if ((context.Interaction.ChannelId is not { } channel) || (!_manager.CanUseCommandChannel(channel) && context.User.Id != _manager.Owner))
+        if ((context.Interaction.ChannelId is not {  } channel) || (!_manager.CanUseCommandChannel(channel) && context.User.Id != _manager.Owner))
         {
-            if (Hub.Config.Discord.ReplyCannotUseCommandInChannel)
-            {
-                // Visibly reply (so that others can see).
-                await RespondErrorAsync(command, "You can't use that command here.", ephemeral: false).ConfigureAwait(false);
-                return;
-            }
-
-            // Clean up the modal.
-            await command.DeferAsync(ephemeral: true).ConfigureAwait(false);
-            await command.DeleteOriginalResponseAsync().ConfigureAwait(false);
+            // Visibly reply if settings require (so that others can see).
+            var ephemeral = !Hub.Config.Discord.ReplyCannotUseCommandInChannel;
+            await RespondErrorAsync(command, "You can't use that command here.", ephemeral: ephemeral).ConfigureAwait(false);
             return;
         }
 

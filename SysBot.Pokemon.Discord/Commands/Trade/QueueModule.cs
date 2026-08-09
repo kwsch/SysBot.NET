@@ -26,7 +26,8 @@ public class QueueModule<T> : SlashModuleBase where T : PKM, new()
      */
 
     [SlashCommand("clear-user", "Clears a user from the trade queues.")]
-    [RequireUserPermission(ChannelPermission.BypassSlowmode)] // basic gate to hide the commands from untrusted users, but not a full sudo check
+    [RequireUserPermission(ChannelPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
+    [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     public async Task ClearTradeUserAsync(
         [Summary(nameof(user), "The user to clear from the trade queues.")] IUser user)
     {
