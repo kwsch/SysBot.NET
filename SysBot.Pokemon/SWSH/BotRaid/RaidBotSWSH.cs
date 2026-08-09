@@ -1,8 +1,9 @@
-using PKHeX.Core;
-using SysBot.Base;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using PKHeX.Core;
+using SysBot.Base;
+using static System.Buffers.Binary.BinaryPrimitives;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Pokemon.PokeDataOffsetsSWSH;
 
@@ -114,7 +115,7 @@ public class RaidBotSWSH(PokeBotState Config, PokeTradeHub<PK8> Hub) : PokeRouti
         if (raidBossSpecies == -1)
         {
             var data = await Connection.ReadBytesAsync(RaidBossOffset, 2, token).ConfigureAwait(false);
-            raidBossSpecies = BitConverter.ToUInt16(data, 0);
+            raidBossSpecies = ReadUInt16LittleEndian(data);
         }
         Log($"Initializing raid for {(Species)raidBossSpecies}.");
 
@@ -201,7 +202,7 @@ public class RaidBotSWSH(PokeBotState Config, PokeTradeHub<PK8> Hub) : PokeRouti
         if (Settings.EchoPartyReady)
         {
             data = await Connection.ReadBytesAsync(ofs, 2, token).ConfigureAwait(false);
-            var dexno = BitConverter.ToUInt16(data, 0);
+            var dexno = ReadUInt16LittleEndian(data);
 
             data = await Connection.ReadBytesAsync(ofs + RaidAltFormInc, 1, token).ConfigureAwait(false);
             var altformstr = data[0] == 0 ? "" : "-" + data[0];

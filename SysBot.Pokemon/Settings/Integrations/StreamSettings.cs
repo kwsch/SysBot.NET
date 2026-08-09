@@ -1,9 +1,10 @@
-﻿using PKHeX.Core;
-using SysBot.Base;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using PKHeX.Core;
+using SysBot.Base;
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
 namespace SysBot.Pokemon;
@@ -272,7 +273,7 @@ public class StreamSettings
     private void GenerateBotConnection<T>(PokeRoutineExecutorBase b, PokeTradeDetail<T> detail) where T : PKM, new()
     {
         var file = b.Connection.Name;
-        var name = string.Format(TrainerTradeStart, detail.ID, detail.Trainer.TrainerName, (Species)detail.TradeData.Species);
+        var name = string.Format(TrainerTradeStart, detail.Id, detail.Trainer.TrainerName, (Species)detail.TradeData.Species);
         File.WriteAllText($"{file}.txt", name);
     }
 
@@ -288,21 +289,21 @@ public class StreamSettings
 
     private void GenerateOnDeck<T>(PokeTradeHub<T> hub) where T : PKM, new()
     {
-        var ondeck = hub.Queues.Info.GetUserList(OnDeckFormat);
+        IEnumerable<string> ondeck = hub.Queues.Info.GetUserList(OnDeckFormat);
         ondeck = ondeck.Skip(OnDeckSkip).Take(OnDeckTake); // filter down
         File.WriteAllText("ondeck.txt", string.Join(OnDeckSeparator, ondeck));
     }
 
     private void GenerateOnDeck2<T>(PokeTradeHub<T> hub) where T : PKM, new()
     {
-        var ondeck = hub.Queues.Info.GetUserList(OnDeckFormat2);
+        IEnumerable<string> ondeck = hub.Queues.Info.GetUserList(OnDeckFormat2);
         ondeck = ondeck.Skip(OnDeckSkip2).Take(OnDeckTake2); // filter down
         File.WriteAllText("ondeck2.txt", string.Join(OnDeckSeparator2, ondeck));
     }
 
     private void GenerateUserList<T>(PokeTradeHub<T> hub) where T : PKM, new()
     {
-        var users = hub.Queues.Info.GetUserList(UserListFormat);
+        IEnumerable<string> users = hub.Queues.Info.GetUserList(UserListFormat);
         users = users.Skip(UserListSkip);
         if (UserListTake > 0)
             users = users.Take(UserListTake); // filter down

@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,8 +9,8 @@ namespace SysBot.Base;
 /// </summary>
 public interface IConsoleConnectionAsync : IConsoleConnection
 {
-    ValueTask<int> SendAsync(byte[] buffer, CancellationToken token);
+    ValueTask<int> SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken token = default);
 
-    Task<byte[]> ReadBytesAsync(uint offset, int length, CancellationToken token);
-    Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token);
+    Task<byte[]> ReadBytesAsync(uint offset, int length, CancellationToken token = default);
+    Task WriteBytesAsync(ReadOnlyMemory<byte> data, uint offset, CancellationToken token = default);
 }

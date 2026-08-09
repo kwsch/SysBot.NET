@@ -1,10 +1,11 @@
-using PKHeX.Core;
-using SysBot.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using PKHeX.Core;
+using SysBot.Base;
+using static System.Buffers.Binary.BinaryPrimitives;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Pokemon.BasePokeDataOffsetsBS;
 
@@ -30,10 +31,10 @@ public abstract class PokeRoutineExecutor8BS(PokeBotState Config) : PokeRoutineE
         return await ReadPokemon(offset, token).ConfigureAwait(false);
     }
 
-    public async Task<bool> ReadIsChanged(uint offset, byte[] original, CancellationToken token)
+    public async Task<bool> ReadIsChanged(uint offset, ReadOnlyMemory<byte> original, CancellationToken token)
     {
         var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
-        return !result.SequenceEqual(original);
+        return !result.AsSpan().SequenceEqual(original.Span);
     }
 
     public override Task<PB8> ReadBoxPokemon(int box, int slot, CancellationToken token)
@@ -55,7 +56,7 @@ public abstract class PokeRoutineExecutor8BS(PokeBotState Config) : PokeRoutineE
         pkm.RefreshChecksum();
         Span<byte> data = stackalloc byte[pkm.SIZE_PARTY];
         pkm.WriteEncryptedDataParty(data);
-        return SwitchConnection.WriteBytesAbsoluteAsync(data, offset, token);
+        return SwitchConnection.WriteBytesAbsoluteAsync(data.ToArray(), offset, token);
     }
 
     public async Task<SAV8BS> IdentifyTrainer(CancellationToken token)
@@ -159,14 +160,15 @@ public abstract class PokeRoutineExecutor8BS(PokeBotState Config) : PokeRoutineE
     {
         Log("Soft ban detected, unbanning.");
         // Write the float value to 0.
-        var data = BitConverter.GetBytes(0);
+        var data = new byte[4];
+        WriteSingleLittleEndian(data, 0);
         return SwitchConnection.PointerPoke(data, Offsets.UnionWorkPenaltyPointer, token);
     }
 
     public async Task<bool> CheckIfSoftBanned(ulong offset, CancellationToken token)
     {
         var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 4, token).ConfigureAwait(false);
-        return BitConverter.ToUInt32(data, 0) != 0;
+        return ReadSingleLittleEndian(data) != 0;
     }
 
     public async Task CloseGame(PokeTradeHubConfig config, CancellationToken token)
@@ -241,10 +243,10 @@ public abstract class PokeRoutineExecutor8BS(PokeBotState Config) : PokeRoutineE
     public async Task<bool> IsPartnerParamLoaded(CancellationToken token)
     {
         var byt = await SwitchConnection.PointerPeek(8, Offsets.LinkTradePartnerParamPointer, token).ConfigureAwait(false);
-        return BitConverter.ToUInt64(byt, 0) != 0;
+        return ReadUInt64LittleEndian(byt) != 0;
     }
 
-    public async Task<ulong> GetTradePartnerNID(CancellationToken token) => BitConverter.ToUInt64(await SwitchConnection.PointerPeek(sizeof(ulong), Offsets.LinkTradePartnerNIDPointer, token).ConfigureAwait(false), 0);
+    public async Task<ulong> GetTradePartnerNID(CancellationToken token) => ReadUInt64LittleEndian(await SwitchConnection.PointerPeek(sizeof(ulong), Offsets.LinkTradePartnerNIDPointer, token).ConfigureAwait(false));
 
     public async Task<TextSpeedOption> GetTextSpeed(CancellationToken token)
     {

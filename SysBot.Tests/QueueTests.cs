@@ -1,10 +1,10 @@
-﻿using FluentAssertions;
-using PKHeX.Core;
-using SysBot.Pokemon;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
+using PKHeX.Core;
+using SysBot.Pokemon;
 using Xunit;
 
 namespace SysBot.Tests;
@@ -108,7 +108,15 @@ public class QueueTests
 
     private static TradeEntry<T> GetTestTrade<T>(int tag, bool favor) where T : PKM, new()
     {
-        var d3 = new PokeTradeDetail<T>(new T { Species = (ushort)tag }, new PokeTradeTrainerInfo($"{(favor ? "*" : "")}Test {tag}"), new PokeTradeLogNotifier<T>(), PokeTradeType.Specific, tag, favor);
+        var d3 = new PokeTradeDetail<T>
+        {
+            IsFavored = favor,
+            Code = 0,
+            TradeData = new T { Species = (ushort)tag },
+            Trainer = new PokeTradeTrainerInfo($"{(favor ? "*" : "")}Test {tag}"),
+            Notifier = new PokeTradeLogNotifier<T>(),
+            Type = PokeTradeType.Specific,
+        };
         return new TradeEntry<T>(d3, (ulong)tag, PokeRoutineType.LinkTrade, $"Test Trade {tag}");
     }
 

@@ -1,90 +1,80 @@
-using Discord;
-using Discord.WebSocket;
-using PKHeX.Core;
-using SysBot.Base;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord;
 
 public static class ReusableActions
 {
-    public static async Task SendPKMAsync(this IMessageChannel channel, PKM pkm, string msg = "")
+    extension(IMessageChannel channel)
     {
-        var tmp = Path.Combine(Path.GetTempPath(), PathUtil.CleanFileName(pkm.FileName));
-        Span<byte> data = stackalloc byte[pkm.SIZE_PARTY];
-        pkm.WriteDecryptedDataParty(data);
-        await File.WriteAllBytesAsync(tmp, data.ToArray());
-        await channel.SendFileAsync(tmp, msg).ConfigureAwait(false);
-        File.Delete(tmp);
+        public async Task SendFileAsync(PKM pkm, string message = "", Embed? embed = null)
+        {
+            var attach = pkm.ToFileAttachment();
+            await channel.SendFileAsync(attach, message, embed: embed).ConfigureAwait(false);
+        }
     }
 
-    public static async Task SendPKMAsync(this IUser user, PKM pkm, string msg = "")
+    extension(SocketInteractionContext context)
     {
-        var tmp = Path.Combine(Path.GetTempPath(), PathUtil.CleanFileName(pkm.FileName));
-        Span<byte> data = stackalloc byte[pkm.SIZE_PARTY];
-        pkm.WriteDecryptedDataParty(data);
-        await File.WriteAllBytesAsync(tmp, data.ToArray());
-        await user.SendFileAsync(tmp, msg).ConfigureAwait(false);
-        File.Delete(tmp);
+        public async Task SendFileAsync(PKM pk, string message = "", Embed? embed = null)
+            => await context.SendFileAsync([pk], message, embed).ConfigureAwait(false);
+        public async Task SendFileAsync(IEnumerable<PKM> list, string message = "", Embed? embed = null)
+        {
+            var attach = list.Select(ToFileAttachment);
+            var interaction = context.Interaction;
+            var task = interaction.HasResponded
+                ? interaction.FollowupWithFilesAsync(attach, message, embed: embed)
+                : interaction.RespondWithFilesAsync(attach, message, embed: embed);
+            await task.ConfigureAwait(false);
+        }
+
+        public async Task SendFilePrivatelyAsync(PKM pk, string message = "", Embed? embed = null)
+            => await context.SendFilePrivatelyAsync([pk], message, embed).ConfigureAwait(false);
+
+        public async Task SendFilePrivatelyAsync(IEnumerable<PKM> list, string message = "", Embed? embed = null)
+        {
+            var user = context.Interaction.User;
+            var attach = list.Select(ToFileAttachment);
+            await user.SendFilesAsync(attach, message, embed: embed).ConfigureAwait(false);
+        }
+
     }
 
-    public static async Task RepostPKMAsShowdownAsync(this ISocketMessageChannel channel, IAttachment att)
+    extension(PKM pk)
     {
-        if (!EntityDetection.IsSizePlausible(att.Size))
-            return;
-        var result = await NetUtil.DownloadPKMAsync(att).ConfigureAwait(false);
-        if (!result.Success)
-            return;
+        private FileAttachment ToFileAttachment()
+        {
+            Span<byte> data = stackalloc byte[pk.SIZE_PARTY];
+            pk.WriteDecryptedDataParty(data);
+            var result = data.ToArray();
 
-        var pkm = result.Data!;
-        await channel.SendPKMAsShowdownSetAsync(pkm).ConfigureAwait(false);
+            // No need to save it to the host disk, can just send it directly from memory.
+            var stream = new MemoryStream(result);
+            var fileName = PathUtil.CleanFileName(pk.FileName);
+            return new FileAttachment(stream, fileName);
+        }
     }
 
-    public static RequestSignificance GetFavor(this IUser user)
+    public static string GetFormattedShowdownText(PKM pk, LanguageID language = LanguageID.English)
     {
-        var mgr = SysCordSettings.Manager;
-        if (user.Id == mgr.Owner)
-            return RequestSignificance.Owner;
-        if (mgr.CanUseSudo(user.Id))
-            return RequestSignificance.Favored;
-        if (user is SocketGuildUser g)
-            return mgr.GetSignificance(g.Roles.Select(z => z.Name));
-        return RequestSignificance.None;
-    }
+        var config = BattleTemplateConfig.Showdown;
 
-    public static async Task EchoAndReply(this ISocketMessageChannel channel, string msg)
-    {
-        // Announce it in the channel the command was entered only if it's not already an echo channel.
-        EchoUtil.Echo(msg);
-        if (!EchoModule.IsEchoChannel(channel))
-            await channel.SendMessageAsync(msg).ConfigureAwait(false);
-    }
+        var settings = new BattleTemplateExportSettings(config, language);
+        var showdown = ShowdownParsing.GetShowdownText(pk, settings);
 
-    public static async Task SendPKMAsShowdownSetAsync(this ISocketMessageChannel channel, PKM pkm)
-    {
-        var txt = GetFormattedShowdownText(pkm);
-        await channel.SendMessageAsync(txt).ConfigureAwait(false);
-    }
-
-    public static string GetFormattedShowdownText(PKM pkm)
-    {
-        var showdown = ShowdownParsing.GetShowdownText(pkm);
         return Format.Code(showdown);
     }
 
-    private static readonly string[] separator = [ ",", ", ", " " ];
-
-    public static IReadOnlyList<string> GetListFromString(string str)
-    {
-        // Extract comma separated list
-        return str.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-    }
-
-    public static string StripCodeBlock(string str) => str
+    /// <summary>
+    /// Removes the Discord code formatting.
+    /// </summary>
+    public static string StripCodeBlock(string message) => message
         .Replace("`\n", "")
         .Replace("\n`", "")
         .Replace("`", "")

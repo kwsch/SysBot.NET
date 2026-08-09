@@ -1,10 +1,11 @@
-using PKHeX.Core;
-using SysBot.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using PKHeX.Core;
+using SysBot.Base;
+using static System.Buffers.Binary.BinaryPrimitives;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Pokemon.PokeDataOffsetsSWSH;
 
@@ -64,7 +65,7 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
 
     public Task SetCurrentBox(byte box, CancellationToken token)
     {
-        return Connection.WriteBytesAsync([box], CurrentBoxOffset, token);
+        return Connection.WriteBytesAsync(new[] {box}, CurrentBoxOffset, token);
     }
 
     public async Task<byte> GetCurrentBox(CancellationToken token)
@@ -73,10 +74,10 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
         return data[0];
     }
 
-    public async Task<bool> ReadIsChanged(uint offset, byte[] original, CancellationToken token)
+    public async Task<bool> ReadIsChanged(uint offset, ReadOnlyMemory<byte> original, CancellationToken token)
     {
         var result = await Connection.ReadBytesAsync(offset, original.Length, token).ConfigureAwait(false);
-        return !result.SequenceEqual(original);
+        return !result.AsSpan().SequenceEqual(original.Span);
     }
 
     public async Task<SAV8SWSH> IdentifyTrainer(CancellationToken token)
@@ -211,7 +212,7 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
         // how long we are soft banned and once the soft ban is lifted
         // the game sets the value back to 0 (1970/01/01 12:00 AM (UTC))
         Log("Soft ban detected, unbanning.");
-        var data = BitConverter.GetBytes(0);
+        var data = new byte[4];
         return Connection.WriteBytesAsync(data, SoftBanUnixTimespanOffset, token);
     }
 
@@ -279,13 +280,13 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
     public async Task<bool> IsCorrectScreen(uint expectedScreen, CancellationToken token)
     {
         var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
-        return BitConverter.ToUInt32(data, 0) == expectedScreen;
+        return ReadUInt32LittleEndian(data) == expectedScreen;
     }
 
     public async Task<uint> GetCurrentScreen(CancellationToken token)
     {
         var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
-        return BitConverter.ToUInt32(data, 0);
+        return ReadUInt32LittleEndian(data);
     }
 
     public async Task<bool> IsInBattle(CancellationToken token)
@@ -297,7 +298,7 @@ public abstract class PokeRoutineExecutor8SWSH(PokeBotState Config) : PokeRoutin
     public async Task<bool> IsInBox(CancellationToken token)
     {
         var data = await Connection.ReadBytesAsync(CurrentScreenOffset, 4, token).ConfigureAwait(false);
-        var dataint = BitConverter.ToUInt32(data, 0);
+        var dataint = ReadUInt32LittleEndian(data);
         return dataint is CurrentScreen_Box1 or CurrentScreen_Box2;
     }
 

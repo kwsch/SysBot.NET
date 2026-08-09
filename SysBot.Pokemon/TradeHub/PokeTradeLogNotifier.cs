@@ -1,29 +1,33 @@
-using PKHeX.Core;
-using SysBot.Base;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
+using PKHeX.Core;
+using SysBot.Base;
 
 namespace SysBot.Pokemon;
 
 public class PokeTradeLogNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new()
 {
-    public void TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
+    public Task TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
     {
         LogUtil.LogInfo($"Starting trade loop for {info.Trainer.TrainerName}, sending {routine.GetSpeciesName(info.TradeData.Species)}", routine.Connection.Label);
+        return Task.CompletedTask;
     }
 
-    public void TradeSearching(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
+    public Task TradeSearching(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
     {
         LogUtil.LogInfo($"Searching for trade with {info.Trainer.TrainerName}, sending {routine.GetSpeciesName(info.TradeData.Species)}", routine.Connection.Label);
+        return Task.CompletedTask;
     }
 
-    public void TradeCanceled(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeResult msg)
+    public Task TradeCanceled(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeResult msg)
     {
         LogUtil.LogInfo($"Canceling trade with {info.Trainer.TrainerName}, because {msg}.", routine.Connection.Label);
         OnFinish?.Invoke(routine);
+        return Task.CompletedTask;
     }
 
-    public void TradeFinished(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result)
+    public Task TradeFinished(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result)
     {
         // Print the nickname for Ledy trades so we can see what was requested.
         var ledyname = string.Empty;
@@ -32,25 +36,29 @@ public class PokeTradeLogNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
 
         LogUtil.LogInfo($"Finished trading {info.Trainer.TrainerName} {routine.GetSpeciesName(info.TradeData.Species)} for {routine.GetSpeciesName(result.Species)}{ledyname}", routine.Connection.Label);
         OnFinish?.Invoke(routine);
+        return Task.CompletedTask;
     }
 
-    public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, string message)
+    public Task SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, string message)
     {
         LogUtil.LogInfo(message, routine.Connection.Label);
+        return Task.CompletedTask;
     }
 
-    public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeSummary message)
+    public Task SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeSummary trade)
     {
-        var msg = message.Summary;
-        if (message.Details.Count > 0)
-            msg += ", " + string.Join(", ", message.Details.Select(z => $"{z.Heading}: {z.Detail}"));
+        var msg = trade.Summary;
+        if (trade.Details.Count > 0)
+            msg += ", " + string.Join(", ", trade.Details.Select(z => $"{z.Heading}: {z.Detail}"));
         LogUtil.LogInfo(msg, routine.Connection.Label);
+        return Task.CompletedTask;
     }
 
-    public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result, string message)
+    public Task SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result, string message)
     {
         LogUtil.LogInfo($"Notifying {info.Trainer.TrainerName} about their {routine.GetSpeciesName(result.Species)}", routine.Connection.Label);
         LogUtil.LogInfo(message, routine.Connection.Label);
+        return Task.CompletedTask;
     }
 
     public Action<PokeRoutineExecutor<T>>? OnFinish { get; set; }

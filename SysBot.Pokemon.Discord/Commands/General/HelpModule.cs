@@ -1,116 +1,56 @@
-﻿using Discord;
-using Discord.Commands;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
 
 namespace SysBot.Pokemon.Discord;
 
-public class HelpModule(CommandService Service) : ModuleBase<SocketCommandContext>
+[RequireContext(ContextType.Guild)]
+public class HelpModule(InteractionService service) : SlashModuleBase
 {
-    [Command("help")]
-    [Summary("Lists available commands.")]
-    public async Task HelpAsync()
+    [SlashCommand("help", "Lists available slash commands.")]
+    public async Task HelpAsync(string? command = null)
     {
-        var builder = new EmbedBuilder
+        var builder = new EmbedBuilder { Color = Color.Blue };
+        if (string.IsNullOrWhiteSpace(command))
         {
-            Color = new Color(114, 137, 218),
-            Description = "These are the commands you can use:",
-        };
-
-        var mgr = SysCordSettings.Manager;
-        var app = await Context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
-        var owner = app.Owner.Id;
-        var uid = Context.User.Id;
-
-        foreach (var module in Service.Modules)
-        {
-            string? description = null;
-            HashSet<string> mentioned = [];
-            foreach (var cmd in module.Commands)
+            builder.Description = "These are the commands you can use:";
+            foreach (var group in service.SlashCommands.GroupBy(x => x.Module.Name))
             {
-                var name = cmd.Name;
-                if (mentioned.Contains(name))
-                    continue;
-                if (cmd.Attributes.Any(z => z is RequireOwnerAttribute) && owner != uid)
-                    continue;
-                if (cmd.Attributes.Any(z => z is RequireSudoAttribute) && !mgr.CanUseSudo(uid))
-                    continue;
-
-                mentioned.Add(name);
-                var result = await cmd.CheckPreconditionsAsync(Context).ConfigureAwait(false);
-                if (result.IsSuccess)
-                    description += $"{cmd.Aliases[0]}\n";
+                var names = group.Select(x => x.Name).Distinct().Order();
+                var value = string.Join('\n', names);
+                if (!string.IsNullOrWhiteSpace(value))
+                    builder.AddField(group.Key.Replace("Module", string.Empty).Replace("`1", string.Empty), value);
             }
-            if (string.IsNullOrWhiteSpace(description))
-                continue;
-
-            var moduleName = module.Name;
-            var gen = moduleName.IndexOf('`');
-            if (gen != -1)
-                moduleName = moduleName[..gen];
-
-            builder.AddField(x =>
+        }
+        else
+        {
+            var matches = service.SlashCommands.Where(x =>
+                x.Name.Equals(command, StringComparison.OrdinalIgnoreCase) ||
+                x.Name.Contains(command, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (matches.Count == 0)
             {
-                x.Name = moduleName;
-                x.Value = description;
-                x.IsInline = false;
-            });
-        }
+                await RespondAsync($"Sorry, I couldn't find a command like **{command}**.", ephemeral: true).ConfigureAwait(false);
+                return;
+            }
 
-        await ReplyAsync("Help has arrived!", false, builder.Build()).ConfigureAwait(false);
-    }
-
-    [Command("help")]
-    [Summary("Lists information about a specific command.")]
-    public async Task HelpAsync([Summary("The command you want help for")] string command)
-    {
-        var result = Service.Search(Context, command);
-
-        if (!result.IsSuccess)
-        {
-            await ReplyAsync($"Sorry, I couldn't find a command like **{command}**.").ConfigureAwait(false);
-            return;
-        }
-
-        var builder = new EmbedBuilder
-        {
-            Color = new Color(114, 137, 218),
-            Description = $"Here are some commands like **{command}**:",
-        };
-
-        foreach (var match in result.Commands)
-        {
-            var cmd = match.Command;
-
-            builder.AddField(x =>
+            // Use a different description.
+            builder.Description = $"Here are some commands like **{command}**:";
+            foreach (var cmd in matches)
             {
-                x.Name = string.Join(", ", cmd.Aliases);
-                x.Value = GetCommandSummary(cmd);
-                x.IsInline = false;
-            });
+                var parameters = GetParameters(cmd.Parameters);
+                builder.AddField(cmd.Name, $"Summary: {cmd.Description}\nParameters:\n{parameters}");
+            }
         }
-
-        await ReplyAsync("Help has arrived!", false, builder.Build()).ConfigureAwait(false);
+        await RespondAsync("Help has arrived!", ephemeral: true, embed: builder.Build()).ConfigureAwait(false);
     }
 
-    private static string GetCommandSummary(CommandInfo cmd)
+    private static string GetParameters(IReadOnlyList<SlashCommandParameterInfo> para)
     {
-        return $"Summary: {cmd.Summary}\nParameters: {GetParameterSummary(cmd.Parameters)}";
-    }
-
-    private static string GetParameterSummary(IReadOnlyList<ParameterInfo> p)
-    {
-        if (p.Count == 0)
+        if (para.Count == 0)
             return "None";
-        return $"{p.Count}\n- " + string.Join("\n- ", p.Select(GetParameterSummary));
-    }
-
-    private static string GetParameterSummary(ParameterInfo z)
-    {
-        var result = z.Name;
-        if (!string.IsNullOrWhiteSpace(z.Summary))
-            result += $" ({z.Summary})";
-        return result;
+        return string.Join('\n', para.Select(p => $"- {p.Name} ({p.Description})"));
     }
 }

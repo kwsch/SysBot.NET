@@ -28,5 +28,8 @@ public enum PokeTradeResult
 
 public static class PokeTradeResultExtensions
 {
-    public static bool ShouldAttemptRetry(this PokeTradeResult t) => t >= PokeTradeResult.RoutineCancel;
+    extension(PokeTradeResult result)
+    {
+        public bool ShouldAttemptRetry() => result >= PokeTradeResult.RoutineCancel;
+    }
 }

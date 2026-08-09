@@ -1,3 +1,3 @@
 namespace SysBot.Pokemon;
 
-public record PokeTradeTrainerInfo(string TrainerName, ulong ID = 0);
+public sealed record PokeTradeTrainerInfo(string TrainerName, ulong ID = 0);

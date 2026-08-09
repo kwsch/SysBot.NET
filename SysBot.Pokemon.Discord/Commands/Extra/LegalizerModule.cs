@@ -1,33 +1,30 @@
-using Discord.Commands;
-using PKHeX.Core;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord;
 
-public class LegalizerModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
+[RequireContext(ContextType.Guild)]
+public class LegalizerModule<T> : SlashModuleBase where T : PKM, new()
 {
-    [Command("legalize"), Alias("alm")]
-    [Summary("Tries to legalize the attached pkm data.")]
-    public async Task LegalizeAsync()
+    [SlashCommand("legalize", "Tries to legalize an attached PKM file.")]
+    public async Task LegalizeAsync(
+        [Summary(nameof(file), "The file to legalize.")] IAttachment file)
     {
-        var attachments = Context.Message.Attachments;
-        foreach (var att in attachments)
-            await Context.Channel.ReplyWithLegalizedSetAsync(att).ConfigureAwait(false);
+        await DeferAsync().ConfigureAwait(false);
+        await Context.ReplyWithLegalizedSetAsync(file).ConfigureAwait(false);
     }
 
-    [Command("convert"), Alias("showdown")]
-    [Summary("Tries to convert the Showdown Set to pkm data.")]
-    [Priority(1)]
-    public Task ConvertShowdown([Summary("Generation/Format")] byte gen, [Remainder][Summary("Showdown Set")] string content)
+    [SlashCommand("convert", "Converts a Showdown Set to PKM data.")]
+    public async Task ConvertShowdownAsync(
+        [Summary(nameof(content), "The Showdown set to convert.")] string content,
+        [Summary(nameof(generation), "Optional")] byte? generation = null)
     {
-        return Context.Channel.ReplyWithLegalizedSetAsync(content, gen);
-    }
-
-    [Command("convert"), Alias("showdown")]
-    [Summary("Tries to convert the Showdown Set to pkm data.")]
-    [Priority(0)]
-    public Task ConvertShowdown([Remainder][Summary("Showdown Set")] string content)
-    {
-        return Context.Channel.ReplyWithLegalizedSetAsync<T>(content);
+        await DeferAsync().ConfigureAwait(false);
+        if (generation is not { } gen) // assume current format if no generation is specified
+            await Context.ReplyWithLegalizedSetAsync<T>(content).ConfigureAwait(false);
+        else
+            await Context.ReplyWithLegalizedSetAsync(content, gen).ConfigureAwait(false);
     }
 }

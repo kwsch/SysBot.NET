@@ -1,9 +1,9 @@
-using SysBot.Base;
 using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using SysBot.Base;
 
 namespace SysBot.Pokemon.WinForms;
 
@@ -146,7 +146,7 @@ public partial class BotController : UserControl
     {
         if (Runner?.Config.SkipConsoleBotCreation != false)
         {
-            LogUtil.LogError("No bots were created because SkipConsoleBotCreation is on!", "Hub");
+            LogUtil.LogError("No bots were created because SkipConsoleBotCreation is on!");
             return;
         }
         var bot = GetBot();
@@ -187,9 +187,7 @@ public partial class BotController : UserControl
         return bot;
     }
 
-#pragma warning disable WFO5001
     private void BotController_MouseEnter(object? sender, EventArgs e) => BackColor = Application.IsDarkModeEnabled ? Color.MidnightBlue : Color.LightSkyBlue;
-#pragma warning restore WFO5001
     private void BotController_MouseLeave(object? sender, EventArgs e) => BackColor = Color.Transparent;
 
     public void ReadState()
@@ -226,14 +224,14 @@ public enum BotControlCommand
 
 public static class BotControlCommandExtensions
 {
-    public static bool IsUsable(this BotControlCommand cmd, bool running, bool paused)
+    extension(BotControlCommand command)
     {
-        return cmd switch
+        public bool IsUsable(bool isRunning, bool isPaused) => command switch
         {
-            BotControlCommand.Start => !running,
-            BotControlCommand.Stop => running,
-            BotControlCommand.Idle => running && !paused,
-            BotControlCommand.Resume => paused,
+            BotControlCommand.Start => !isRunning,
+            BotControlCommand.Stop => isRunning,
+            BotControlCommand.Idle => isRunning && !isPaused,
+            BotControlCommand.Resume => isPaused,
             BotControlCommand.Restart => true,
             _ => false,
         };

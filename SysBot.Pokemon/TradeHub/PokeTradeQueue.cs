@@ -1,6 +1,6 @@
-﻿using PKHeX.Core;
 using System;
 using System.Linq;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon;
 
@@ -40,6 +40,6 @@ public class PokeTradeQueue<TPoke>(PokeTradeType Type)
     public string Summary()
     {
         var list = Queue.Select((x, i) => x.Value.Summary(i + 1));
-        return string.Join("\n", list);
+        return string.Join('\n', list);
     }
 }

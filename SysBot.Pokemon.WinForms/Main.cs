@@ -1,11 +1,11 @@
-using PKHeX.Core;
-using SysBot.Base;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using PKHeX.Core;
+using SysBot.Base;
 
 namespace SysBot.Pokemon.WinForms;
 
@@ -33,7 +33,8 @@ public sealed partial class Main : Form
         Text = $"{Text} ({Config.Mode})";
         Task.Run(BotMonitor);
 
-        InitUtil.InitializeStubs(Config.Mode);
+        var trainer = Config.Hub.Legality;
+        InitUtil.InitializeStubs(Config.Mode, trainer.GenerateOT, trainer.GenerateLanguage);
 
         if (Config.DarkMode)
         {
@@ -145,7 +146,7 @@ public sealed partial class Main : Form
     {
         SaveCurrentConfig();
 
-        LogUtil.LogInfo("Starting all bots...", "Form");
+        LogUtil.LogInfo("Starting all bots...");
         RunningEnvironment.InitializeStart();
         SendAll(BotControlCommand.Start);
         Tab_Logs.Select();

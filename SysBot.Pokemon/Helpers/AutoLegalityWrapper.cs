@@ -1,9 +1,9 @@
-using PKHeX.Core;
-using PKHeX.Core.AutoMod;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using PKHeX.Core;
+using PKHeX.Core.AutoMod;
 
 namespace SysBot.Pokemon;
 
@@ -55,7 +55,7 @@ public static class AutoLegalityWrapper
         // We need all the encounter types present, so add the missing ones at the end.
         var missing = EncounterPriority.Except(cfg.PrioritizeEncounters);
         cfg.PrioritizeEncounters.AddRange(missing);
-        cfg.PrioritizeEncounters = cfg.PrioritizeEncounters.Distinct().ToList(); // Don't allow duplicates.
+        cfg.PrioritizeEncounters = [.. cfg.PrioritizeEncounters.Distinct()]; // Don't allow duplicates.
         EncounterMovesetGenerator.PriorityList = cfg.PrioritizeEncounters;
     }
 

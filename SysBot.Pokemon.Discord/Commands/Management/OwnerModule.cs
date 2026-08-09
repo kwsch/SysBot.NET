@@ -1,128 +1,88 @@
-using Discord;
-using Discord.Commands;
-using PKHeX.Core;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
 
 namespace SysBot.Pokemon.Discord;
 
-public class OwnerModule<T> : SudoModule<T> where T : PKM, new()
+[Group("owner", "Commands usable by the bot owner.")]
+[DefaultMemberPermissions(GuildPermission.Administrator)] // hide these commands from the majority of users; bot Owners must have admin on server to manage.
+[RequireOwner]
+public class OwnerModule : SlashModuleBase
 {
-    [Command("addSudo")]
-    [Summary("Adds mentioned user to global sudo")]
-    [RequireOwner]
-    // ReSharper disable once UnusedParameter.Global
-    public async Task SudoUsers([Remainder] string _)
+    [SlashCommand("add-sudo", "Adds a user to global sudo.")]
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+    public async Task AddSudo(IUser user)
     {
-        var users = Context.Message.MentionedUsers;
-        var objects = users.Select(GetReference);
-        SysCordSettings.Settings.GlobalSudoList.AddIfNew(objects);
-        await ReplyAsync("Done.").ConfigureAwait(false);
+        SysCordSettings.Settings.GlobalSudoList.AddIfNew(GetReference(user));
+        await RespondAsync("Done.").ConfigureAwait(false);
     }
 
-    [Command("removeSudo")]
-    [Summary("Removes mentioned user from global sudo")]
-    [RequireOwner]
-    // ReSharper disable once UnusedParameter.Global
-    public async Task RemoveSudoUsers([Remainder] string _)
+    [SlashCommand("remove-sudo", "Removes a user from global sudo.")]
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+    public async Task RemoveSudo(IUser user)
     {
-        var users = Context.Message.MentionedUsers;
-        var objects = users.Select(GetReference);
-        SysCordSettings.Settings.GlobalSudoList.RemoveAll(z => objects.Any(o => o.ID == z.ID));
-        await ReplyAsync("Done.").ConfigureAwait(false);
+        SysCordSettings.Settings.GlobalSudoList.RemoveAll(z => z.ID == user.Id);
+        await RespondAsync("Done.").ConfigureAwait(false);
     }
 
-    [Command("addChannel")]
-    [Summary("Adds a channel to the list of channels that are accepting commands.")]
-    [RequireOwner]
-    // ReSharper disable once UnusedParameter.Global
+    [SlashCommand("add-channel", "Adds this channel to the command whitelist.")]
+    [CommandContextType(InteractionContextType.Guild)]
     public async Task AddChannel()
     {
-        var obj = GetReference(Context.Message.Channel);
-        SysCordSettings.Settings.ChannelWhitelist.AddIfNew([obj]);
-        await ReplyAsync("Done.").ConfigureAwait(false);
+        var c = Context.Interaction.Channel;
+        SysCordSettings.Settings.ChannelWhitelist.AddIfNew(GetReference(c));
+        await RespondAsync("Done.").ConfigureAwait(false);
     }
 
-    [Command("removeChannel")]
-    [Summary("Removes a channel from the list of channels that are accepting commands.")]
-    [RequireOwner]
-    // ReSharper disable once UnusedParameter.Global
+    [SlashCommand("remove-channel", "Removes this channel from the command whitelist.")]
+    [CommandContextType(InteractionContextType.Guild)]
     public async Task RemoveChannel()
     {
-        var obj = GetReference(Context.Message.Channel);
-        SysCordSettings.Settings.ChannelWhitelist.RemoveAll(z => z.ID == obj.ID);
-        await ReplyAsync("Done.").ConfigureAwait(false);
+        SysCordSettings.Settings.ChannelWhitelist.RemoveAll(z => z.ID == Context.Interaction.Channel.Id);
+        await RespondAsync("Done.").ConfigureAwait(false);
     }
 
-    [Command("leave")]
-    [Alias("bye")]
-    [Summary("Leaves the current server.")]
-    [RequireOwner]
-    // ReSharper disable once UnusedParameter.Global
+    [SlashCommand("leave", "Leaves the current server.")]
+    [CommandContextType(InteractionContextType.Guild)]
     public async Task Leave()
     {
-        await ReplyAsync("Goodbye.").ConfigureAwait(false);
-        await Context.Guild.LeaveAsync().ConfigureAwait(false);
+        await RespondAsync("Goodbye.").ConfigureAwait(false);
+        if (Context.Guild is not null) await Context.Guild.LeaveAsync().ConfigureAwait(false);
     }
 
-    [Command("leaveguild")]
-    [Alias("lg")]
-    [Summary("Leaves guild based on supplied ID.")]
-    [RequireOwner]
-    // ReSharper disable once UnusedParameter.Global
-    public async Task LeaveGuild(string userInput)
+    [SlashCommand("leave-guild", "Leaves a guild by ID.")]
+    public async Task LeaveGuild(string guildId)
     {
-        if (!ulong.TryParse(userInput, out ulong id))
+        if (!ulong.TryParse(guildId, out var id))
         {
-            await ReplyAsync("Please provide a valid Guild ID.").ConfigureAwait(false);
+            await RespondAsync("Please provide a valid Guild ID.").ConfigureAwait(false);
             return;
         }
 
         var guild = Context.Client.Guilds.FirstOrDefault(x => x.Id == id);
         if (guild is null)
         {
-            await ReplyAsync($"Provided input ({userInput}) is not a valid guild ID or the bot is not in the specified guild.").ConfigureAwait(false);
+            await RespondAsync($"Provided input ({guildId}) is not a valid guild ID or the bot is not in the specified guild.").ConfigureAwait(false);
             return;
         }
 
-        await ReplyAsync($"Leaving {guild}.").ConfigureAwait(false);
+        await RespondAsync($"Leaving {guild}.").ConfigureAwait(false);
         await guild.LeaveAsync().ConfigureAwait(false);
     }
 
-    [Command("leaveall")]
-    [Summary("Leaves all servers the bot is currently in.")]
-    [RequireOwner]
-    // ReSharper disable once UnusedParameter.Global
+    [SlashCommand("leave-all", "Leaves all servers the bot is currently in.")]
     public async Task LeaveAll()
     {
-        await ReplyAsync("Leaving all servers.").ConfigureAwait(false);
-        foreach (var guild in Context.Client.Guilds)
-            await guild.LeaveAsync().ConfigureAwait(false);
+        await RespondAsync("Leaving all servers.").ConfigureAwait(false);
+        foreach (var guild in Context.Client.Guilds) await guild.LeaveAsync().ConfigureAwait(false);
     }
 
-    [Command("sudoku")]
-    [Alias("kill", "shutdown")]
-    [Summary("Causes the entire process to end itself!")]
-    [RequireOwner]
-    // ReSharper disable once UnusedParameter.Global
+    [SlashCommand("shutdown", "Causes the entire process to end itself.")]
     public async Task ExitProgram()
     {
-        await Context.Channel.EchoAndReply("Shutting down... goodbye! **Bot services are going offline.**").ConfigureAwait(false);
+        await RespondAsync("Shutting down... goodbye! **Bot services are going offline.**").ConfigureAwait(false);
         Environment.Exit(0);
     }
-
-    private RemoteControlAccess GetReference(IUser channel) => new()
-    {
-        ID = channel.Id,
-        Name = channel.Username,
-        Comment = $"Added by {Context.User.Username} on {DateTime.Now:yyyy.MM.dd-hh:mm:ss}",
-    };
-
-    private RemoteControlAccess GetReference(IChannel channel) => new()
-    {
-        ID = channel.Id,
-        Name = channel.Name,
-        Comment = $"Added by {Context.User.Username} on {DateTime.Now:yyyy.MM.dd-hh:mm:ss}",
-    };
 }

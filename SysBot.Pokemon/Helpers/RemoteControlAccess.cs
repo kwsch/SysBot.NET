@@ -19,7 +19,7 @@ public class RemoteControlAccess
 public class RemoteControlAccessList
 {
     /// <summary>
-    /// Don't mutate this list; use <see cref="AddIfNew"/> and <see cref="RemoveAll"/>.
+    /// Don't mutate this list; use <see cref="AddIfNew(ReadOnlySpan{RemoteControlAccess})"/> and <see cref="RemoveAll"/>.
     /// This is public for serialization purposes.
     /// </summary>
     public List<RemoteControlAccess> List { get; set; } = [];
@@ -44,6 +44,19 @@ public class RemoteControlAccessList
 
     public int RemoveAll(Predicate<RemoteControlAccess> item) => List.RemoveAll(item);
     public void Clear() => List.Clear();
+
+    /// <summary>
+    /// Adds new items if not already present by <see cref="RemoteControlAccess.ID"/>.
+    /// </summary>
+    /// <param name="list">List of items to add</param>
+    public void AddIfNew(params ReadOnlySpan<RemoteControlAccess> list)
+    {
+        foreach (var item in list)
+        {
+            if (!Contains(item.ID))
+                List.Add(item);
+        }
+    }
 
     /// <summary>
     /// Adds new items if not already present by <see cref="RemoteControlAccess.ID"/>.

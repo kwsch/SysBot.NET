@@ -1,4 +1,4 @@
-﻿namespace SysBot.Pokemon;
+namespace SysBot.Pokemon;
 
 /// <summary>
 /// Indicates the significance of request data.
@@ -20,3 +20,13 @@ public enum RequestSignificance
     /// </summary>
     Owner,
 }
+
+public static class RequestSignificanceExtensions
+{
+    extension(RequestSignificance sig)
+    {
+        public bool IsFavored => sig is RequestSignificance.Owner or RequestSignificance.Favored;
+        public bool IsOwner => sig is RequestSignificance.Owner;
+    }
+}
+

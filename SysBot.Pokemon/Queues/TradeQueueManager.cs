@@ -1,6 +1,6 @@
-using PKHeX.Core;
 using System;
 using System.Collections.Generic;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon;
 
@@ -52,7 +52,14 @@ public class TradeQueueManager<T> where T : PKM, new()
         var random = Hub.Ledy.Pool.GetRandomPoke();
         var code = cfg.RandomCode ? Hub.Config.Trade.GetRandomTradeCode() : cfg.TradeCode;
         var trainer = new PokeTradeTrainerInfo("Random Distribution");
-        detail = new PokeTradeDetail<T>(random, trainer, PokeTradeHub<T>.LogNotifier, PokeTradeType.Random, code);
+        detail = new PokeTradeDetail<T>
+        {
+            Type = PokeTradeType.Random,
+            Code = code,
+            TradeData = random,
+            Trainer = trainer,
+            Notifier = PokeTradeHub<T>.LogNotifier,
+        };
         return true;
     }
 

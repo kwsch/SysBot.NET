@@ -1,8 +1,8 @@
-using PKHeX.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon;
 
@@ -207,7 +207,7 @@ public class StopConditionSettings
     }
 
     public static void ReadUnwantedMarks(StopConditionSettings settings, out IReadOnlyList<string> marks) =>
-        marks = settings.UnwantedMarks.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+        marks = [.. settings.UnwantedMarks.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim())];
 
     public virtual bool IsUnwantedMark(string mark, IReadOnlyList<string> marklist) => marklist.Contains(mark);
 

@@ -10,30 +10,30 @@ namespace SysBot.Base;
 /// </summary>
 public interface ISwitchConnectionAsync : IConsoleConnectionAsync
 {
-    Task<ulong> GetMainNsoBaseAsync(CancellationToken token);
-    Task<ulong> GetHeapBaseAsync(CancellationToken token);
-    Task<string> GetTitleID(CancellationToken token);
-    Task<string> GetBotbaseVersion(CancellationToken token);
-    Task<string> GetGameInfo(string info, CancellationToken token);
-    Task<bool> IsProgramRunning(ulong pid, CancellationToken token);
+    Task<ulong> GetMainNsoBaseAsync(CancellationToken token = default);
+    Task<ulong> GetHeapBaseAsync(CancellationToken token = default);
+    Task<string> GetTitleID(CancellationToken token = default);
+    Task<string> GetBotbaseVersion(CancellationToken token = default);
+    Task<string> GetGameInfo(string info, CancellationToken token = default);
+    Task<bool> IsProgramRunning(ulong pid, CancellationToken token = default);
 
-    Task<byte[]> ReadBytesMainAsync(ulong offset, int length, CancellationToken token);
-    Task<byte[]> ReadBytesAbsoluteAsync(ulong offset, int length, CancellationToken token);
+    Task<byte[]> ReadBytesMainAsync(ulong offset, int length, CancellationToken token = default);
+    Task<byte[]> ReadBytesAbsoluteAsync(ulong offset, int length, CancellationToken token = default);
 
-    Task<byte[]> ReadBytesMultiAsync(IReadOnlyDictionary<ulong, int> offsetSize, CancellationToken token);
-    Task<byte[]> ReadBytesAbsoluteMultiAsync(IReadOnlyDictionary<ulong, int> offsetSize, CancellationToken token);
-    Task<byte[]> ReadBytesMainMultiAsync(IReadOnlyDictionary<ulong, int> offsetSize, CancellationToken token);
+    Task<byte[]> ReadBytesMultiAsync(IReadOnlyDictionary<ulong, int> offsetSize, CancellationToken token = default);
+    Task<byte[]> ReadBytesAbsoluteMultiAsync(IReadOnlyDictionary<ulong, int> offsetSize, CancellationToken token = default);
+    Task<byte[]> ReadBytesMainMultiAsync(IReadOnlyDictionary<ulong, int> offsetSize, CancellationToken token = default);
 
-    Task WriteBytesMainAsync(Span<byte> data, ulong offset, CancellationToken token);
-    Task WriteBytesAbsoluteAsync(Span<byte> data, ulong offset, CancellationToken token);
+    Task WriteBytesMainAsync(ReadOnlyMemory<byte> data, ulong offset, CancellationToken token = default);
+    Task WriteBytesAbsoluteAsync(ReadOnlyMemory<byte> data, ulong offset, CancellationToken token = default);
 
-    Task<byte[]> ReadRaw(byte[] command, int length, CancellationToken token);
-    Task SendRaw(byte[] command, CancellationToken token);
+    Task<byte[]> ReadRaw(ReadOnlyMemory<byte> command, int length, CancellationToken token = default);
+    Task SendRaw(ReadOnlyMemory<byte> command, CancellationToken token = default);
 
-    Task<byte[]> PointerPeek(int size, IEnumerable<long> jumps, CancellationToken token);
-    Task PointerPoke(byte[] data, IEnumerable<long> jumps, CancellationToken token);
-    Task<ulong> PointerAll(IEnumerable<long> jumps, CancellationToken token);
-    Task<ulong> PointerRelative(IEnumerable<long> jumps, CancellationToken token);
-    Task<(bool Success, T Value)> TryReadMain<T>(ulong offset, CancellationToken token) where T : unmanaged;
-    Task<(bool Success, T Value)> TryReadAbsolute<T>(ulong offset, CancellationToken token) where T : unmanaged;
+    Task<byte[]> PointerPeek(int size, IEnumerable<long> jumps, CancellationToken token = default);
+    Task PointerPoke(ReadOnlyMemory<byte> data, IEnumerable<long> jumps, CancellationToken token = default);
+    Task<ulong> PointerAll(IEnumerable<long> jumps, CancellationToken token = default);
+    Task<ulong> PointerRelative(IEnumerable<long> jumps, CancellationToken token = default);
+    Task<(bool Success, T Value)> TryReadMain<T>(ulong offset, CancellationToken token = default) where T : unmanaged;
+    Task<(bool Success, T Value)> TryReadAbsolute<T>(ulong offset, CancellationToken token = default) where T : unmanaged;
 }

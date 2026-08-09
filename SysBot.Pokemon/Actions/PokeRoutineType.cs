@@ -48,5 +48,8 @@ public enum PokeRoutineType
 
 public static class PokeRoutineTypeExtensions
 {
-    public static bool IsTradeBot(this PokeRoutineType type) => type is >= PokeRoutineType.FlexTrade and <= PokeRoutineType.Dump;
+    extension(PokeRoutineType type)
+    {
+        public bool IsTradeBot() => type is (>= PokeRoutineType.FlexTrade and <= PokeRoutineType.Dump);
+    }
 }

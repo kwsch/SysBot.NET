@@ -1,96 +1,106 @@
-using Discord;
-using Discord.WebSocket;
-using PKHeX.Core;
-using SysBot.Base;
 using System;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
+using PKHeX.Core;
+using SysBot.Base;
 
 namespace SysBot.Pokemon.Discord;
 
 public static class AutoLegalityExtensionsDiscord
 {
-    public static async Task ReplyWithLegalizedSetAsync(this ISocketMessageChannel channel, ITrainerInfo sav, ShowdownSet set)
+    extension(SocketInteractionContext context)
     {
-        if (set.Species == 0)
+        public async Task ReplyWithLegalizedSetAsync(ITrainerInfo sav, ShowdownSet set)
         {
-            await channel.SendMessageAsync("Oops! I wasn't able to interpret your message! If you intended to convert something, please double check what you're pasting!").ConfigureAwait(false);
-            return;
-        }
-
-        try
-        {
-            var template = AutoLegalityWrapper.GetTemplate(set);
-            var pkm = sav.GetLegal(template, out var result);
-            var la = new LegalityAnalysis(pkm);
-            var spec = GameInfo.Strings.Species[template.Species];
-            if (!la.Valid)
+            if (set.Species == 0)
             {
-                var reason = result switch
-                {
-                    "Timeout" => $"That {spec} set took too long to generate.",
-                    "VersionMismatch" => "Request refused: PKHeX and Auto-Legality Mod version mismatch.",
-                    _ => $"I wasn't able to create a {spec} from that set.",
-                };
-                var imsg = $"Oops! {reason}";
-                if (result == "Failed")
-                    imsg += $"\n{AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm)}";
-                await channel.SendMessageAsync(imsg).ConfigureAwait(false);
+                await context.Interaction.RespondAsync("Oops! I wasn't able to interpret your message! If you intended to convert something, please double check what you're pasting!").ConfigureAwait(false);
                 return;
             }
 
-            var msg = $"Here's your ({result}) legalized PKM for {spec} ({la.EncounterOriginal.Name})!";
-            await channel.SendPKMAsync(pkm, msg + $"\n{ReusableActions.GetFormattedShowdownText(pkm)}").ConfigureAwait(false);
+            try
+            {
+                var template = AutoLegalityWrapper.GetTemplate(set);
+                var pk = sav.GetLegal(template, out var result);
+                var la = new LegalityAnalysis(pk);
+                var species = GameInfo.Strings.Species[template.Species];
+                if (!la.Valid)
+                {
+                    var reason = result switch
+                    {
+                        "Timeout" => $"That {species} set took too long to generate.",
+                        "VersionMismatch" => "Request refused: PKHeX and Auto-Legality Mod version mismatch.",
+                        _ => $"I wasn't able to create a {species} from that set.",
+                    };
+                    var issue = $"Oops! {reason}";
+                    if (result == "Failed")
+                        issue += $"\n{AutoLegalityWrapper.GetLegalizationHint(template, sav, pk)}";
+
+                    await context.Interaction.RespondAsync(issue).ConfigureAwait(false);
+                    return;
+                }
+
+                var message = $"Here's your ({result}) legalized PKM for {species} ({la.EncounterOriginal.Name})!";
+                var formatted = ReusableActions.GetFormattedShowdownText(pk);
+                await context.SendFileAsync(pk, $"{message}\n{formatted}").ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                LogUtil.LogSafe(ex);
+                var lines = string.Join('\n', set.GetSetLines());
+                var formatted = Format.Code(lines, "yml");
+                var message = $"Oops! An unexpected problem happened with this Showdown Set:\n{formatted}";
+                // No need for everyone to see their goofy set.
+                await context.Interaction.RespondAsync(message, ephemeral: true).ConfigureAwait(false);
+            }
         }
-        catch (Exception ex)
+
+        public Task ReplyWithLegalizedSetAsync(string content, byte generation)
         {
-            LogUtil.LogSafe(ex, nameof(AutoLegalityExtensionsDiscord));
-            var msg = $"Oops! An unexpected problem happened with this Showdown Set:\n```{string.Join("\n", set.GetSetLines())}```";
-            await channel.SendMessageAsync(msg).ConfigureAwait(false);
+            content = ReusableActions.StripCodeBlock(content);
+            var set = new ShowdownSet(content);
+            var sav = AutoLegalityWrapper.GetTrainerInfo(generation);
+            return context.ReplyWithLegalizedSetAsync(sav, set);
         }
-    }
 
-    public static Task ReplyWithLegalizedSetAsync(this ISocketMessageChannel channel, string content, byte gen)
-    {
-        content = ReusableActions.StripCodeBlock(content);
-        var set = new ShowdownSet(content);
-        var sav = AutoLegalityWrapper.GetTrainerInfo(gen);
-        return channel.ReplyWithLegalizedSetAsync(sav, set);
-    }
-
-    public static Task ReplyWithLegalizedSetAsync<T>(this ISocketMessageChannel channel, string content) where T : PKM, new()
-    {
-        content = ReusableActions.StripCodeBlock(content);
-        var set = new ShowdownSet(content);
-        var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
-        return channel.ReplyWithLegalizedSetAsync(sav, set);
-    }
-
-    public static async Task ReplyWithLegalizedSetAsync(this ISocketMessageChannel channel, IAttachment att)
-    {
-        var download = await NetUtil.DownloadPKMAsync(att).ConfigureAwait(false);
-        if (!download.Success)
+        public async Task ReplyWithLegalizedSetAsync<T>(string content) where T : PKM, new()
         {
-            await channel.SendMessageAsync(download.ErrorMessage).ConfigureAwait(false);
-            return;
+            content = ReusableActions.StripCodeBlock(content);
+            var set = new ShowdownSet(content);
+            var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
+            await context.ReplyWithLegalizedSetAsync(sav, set).ConfigureAwait(false);
         }
 
-        var pkm = download.Data!;
-        if (new LegalityAnalysis(pkm).Valid)
+        public async Task ReplyWithLegalizedSetAsync(IAttachment attachment)
         {
-            await channel.SendMessageAsync($"{download.SanitizedFileName}: Already legal.").ConfigureAwait(false);
-            return;
+            var download = await attachment.DownloadEntityAsync().ConfigureAwait(false);
+            if (!download.Success)
+            {
+                await context.Interaction.RespondAsync(download.ErrorMessage, ephemeral: true).ConfigureAwait(false);
+                return;
+            }
+
+            var pk = download.Data!;
+            var fileName = download.SanitizedFileName;
+            if (new LegalityAnalysis(pk).Valid)
+            {
+                await context.Interaction.RespondAsync($"{fileName}: Already legal.", ephemeral: true).ConfigureAwait(false);
+                return;
+            }
+
+            var legal = pk.LegalizePokemon();
+            if (!new LegalityAnalysis(legal).Valid)
+            {
+                await context.Interaction.RespondAsync($"{fileName}: Unable to legalize.").ConfigureAwait(false);
+                return;
+            }
+
+            legal.RefreshChecksum();
+
+            var paste = ReusableActions.GetFormattedShowdownText(legal);
+            var message = $"Here's your legalized PKM for {fileName}!\n{paste}";
+            await context.SendFileAsync(legal, message).ConfigureAwait(false);
         }
-
-        var legal = pkm.LegalizePokemon();
-        if (!new LegalityAnalysis(legal).Valid)
-        {
-            await channel.SendMessageAsync($"{download.SanitizedFileName}: Unable to legalize.").ConfigureAwait(false);
-            return;
-        }
-
-        legal.RefreshChecksum();
-
-        var msg = $"Here's your legalized PKM for {download.SanitizedFileName}!\n{ReusableActions.GetFormattedShowdownText(legal)}";
-        await channel.SendPKMAsync(legal, msg).ConfigureAwait(false);
     }
 }

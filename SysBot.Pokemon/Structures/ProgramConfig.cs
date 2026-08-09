@@ -1,5 +1,5 @@
-using SysBot.Base;
 using System.Text.Json.Serialization;
+using SysBot.Base;
 
 namespace SysBot.Pokemon;
 

@@ -54,7 +54,7 @@ public class GenerateTests
         var sav = AutoLegalityWrapper.GetTrainerInfo<PK8>();
         for (int i = 0; i < 10; i++)
         {
-            var twitch = set.Replace("\r\n", " ").Replace("\n", " ");
+            var twitch = set.Replace("\r\n", " ").Replace('\n', ' ');
             var s = ShowdownUtil.ConvertToShowdown(twitch);
             var template = s == null ? null : AutoLegalityWrapper.GetTemplate(s);
             var pk = template == null ? null : sav.GetLegal(template, out _);

@@ -1,88 +1,102 @@
-﻿using Discord;
-using Discord.WebSocket;
-using PKHeX.Core;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord;
 
-public class DiscordTradeNotifier<T>(T Data, PokeTradeTrainerInfo Info, int Code, SocketUser Trader)
+public sealed record DiscordTradeNotifier<T>(T Data, PokeTradeTrainerInfo Info, int Code, SocketInteractionContext Trader)
     : IPokeTradeNotifier<T>
     where T : PKM, new()
 {
     private T Data { get; } = Data;
     private PokeTradeTrainerInfo Info { get; } = Info;
     private int Code { get; } = Code;
-    private SocketUser Trader { get; } = Trader;
+    private SocketInteractionContext Trader { get; } = Trader;
     public Action<PokeRoutineExecutor<T>>? OnFinish { private get; set; }
     public readonly PokeTradeHub<T> Hub = SysCord<T>.Runner.Hub;
 
-    public void TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
+    public async Task TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
     {
         var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";
-        Trader.SendMessageAsync($"Initializing trade{receive}. Please be ready. Your code is **{Code:0000 0000}**.").ConfigureAwait(false);
+        var message = $"Initializing trade{receive}. Please be ready. Your code is **{Code:0000 0000}**.";
+
+        await SendNotification(message).ConfigureAwait(false);
     }
 
-    public void TradeSearching(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
+    public async Task TradeSearching(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
     {
         var name = Info.TrainerName;
         var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", {name}";
-        Trader.SendMessageAsync($"I'm waiting for you{trainer}! Your code is **{Code:0000 0000}**. My IGN is **{routine.InGameName}**.").ConfigureAwait(false);
+        var message = $"I'm waiting for you{trainer}! Your code is **{Code:0000 0000}**. My IGN is **{routine.InGameName}**.";
+
+        await SendNotification(message).ConfigureAwait(false);
     }
 
-    public void TradeCanceled(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeResult msg)
+    public async Task TradeCanceled(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeResult msg)
     {
         OnFinish?.Invoke(routine);
-        Trader.SendMessageAsync($"Trade canceled: {msg}").ConfigureAwait(false);
+        var message = $"Trade canceled: {msg}";
+
+        await SendNotification(message).ConfigureAwait(false);
     }
 
-    public void TradeFinished(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result)
+    public async Task TradeFinished(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result)
     {
         OnFinish?.Invoke(routine);
         var tradedToUser = Data.Species;
         var message = tradedToUser != 0 ? $"Trade finished. Enjoy your {(Species)tradedToUser}!" : "Trade finished!";
-        Trader.SendMessageAsync(message).ConfigureAwait(false);
+
+        await SendNotification(message).ConfigureAwait(false);
         if (result.Species != 0 && Hub.Config.Discord.ReturnPKMs)
-            Trader.SendPKMAsync(result, "Here's what you traded me!").ConfigureAwait(false);
+            await Trader.SendFilePrivatelyAsync(result, "Here's what you traded me!").ConfigureAwait(false);
     }
 
-    public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, string message)
+    public async Task SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, string message)
+        => await SendNotification(message).ConfigureAwait(false);
+    private async Task SendNotification(string message, Embed? embed = null)
     {
-        Trader.SendMessageAsync(message).ConfigureAwait(false);
+        // Discord makes all interaction modals stale after 15 minutes.
+        // Depending on how long we take to start and complete the trade (queued users), this might be called >= 15 minutes after command issued.
+        // So, we do the standard behavior: direct message the user.
+        await Trader.Interaction.User.SendMessageAsync(message, embed: embed).ConfigureAwait(false);
     }
 
-    public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeSummary message)
+    public async Task SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeSummary trade)
     {
-        if (message.ExtraInfo is SeedSearchResult r)
+        if (trade.ExtraInfo is SeedSearchResult r)
         {
-            SendNotificationZ3(r);
+            await SendNotificationZ3(r).ConfigureAwait(false);
             return;
         }
 
-        var msg = message.Summary;
-        if (message.Details.Count > 0)
-            msg += ", " + string.Join(", ", message.Details.Select(z => $"{z.Heading}: {z.Detail}"));
-        Trader.SendMessageAsync(msg).ConfigureAwait(false);
+        var message = trade.Summary;
+        if (trade.Details.Count > 0)
+            message += ", " + string.Join(", ", trade.Details.Select(z => $"{z.Heading}: {z.Detail}"));
+
+        await SendNotification(message).ConfigureAwait(false);
     }
 
-    public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result, string message)
+    public async Task SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result, string message)
     {
         if (result.Species != 0 && (Hub.Config.Discord.ReturnPKMs || info.Type == PokeTradeType.Dump))
-            Trader.SendPKMAsync(result, message).ConfigureAwait(false);
+            await Trader.SendFilePrivatelyAsync(result, message).ConfigureAwait(false);
     }
 
-    private void SendNotificationZ3(SeedSearchResult r)
+    private async Task SendNotificationZ3(SeedSearchResult searchResult)
     {
-        var lines = r.ToString();
-
+        var message = $"Here are the details for `{searchResult.Seed:X16}`:";
         var embed = new EmbedBuilder { Color = Color.LighterGrey };
         embed.AddField(x =>
         {
-            x.Name = $"Seed: {r.Seed:X16}";
-            x.Value = lines;
+            x.Name = $"Seed: {searchResult.Seed:X16}";
+            x.Value = searchResult.ToString();
             x.IsInline = false;
         });
-        var msg = $"Here are the details for `{r.Seed:X16}`:";
-        Trader.SendMessageAsync(msg, embed: embed.Build()).ConfigureAwait(false);
+
+        // Seed check might be more than 15 minutes stale. Just DM them, not like the public needs to see their seeds.
+        await SendNotification(message, embed: embed.Build()).ConfigureAwait(false);
     }
 }

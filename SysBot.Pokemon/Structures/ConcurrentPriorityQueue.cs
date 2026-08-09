@@ -91,7 +91,11 @@ public class ConcurrentPriorityQueue<TKey, TValue> : IProducerConsumerCollection
     /// <summary>Gets the number of elements contained in the queue.</summary>
     public int Count
     {
-        get { lock (_syncLock) return Queue.Count; }
+        get
+        {
+            lock (_syncLock)
+                return Queue.Count;
+        }
     }
 
     /// <summary>Copies the elements of the collection to an array, starting at a particular array index.</summary>
@@ -104,7 +108,8 @@ public class ConcurrentPriorityQueue<TKey, TValue> : IProducerConsumerCollection
     /// <remarks>The elements will not be copied to the array in any guaranteed order.</remarks>
     public void CopyTo(KeyValuePair<TKey, TValue>[] array, int index)
     {
-        lock (_syncLock) Queue.Items.CopyTo(array, index);
+        lock (_syncLock)
+            Queue.Items.CopyTo(array, index);
     }
 
     /// <summary>Copies the elements stored in the queue to a new array.</summary>

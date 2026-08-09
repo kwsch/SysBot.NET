@@ -1,11 +1,10 @@
-using PKHeX.Core;
-using PKHeX.Core.Searching;
-using SysBot.Base;
 using System;
-using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using PKHeX.Core;
+using PKHeX.Core.Searching;
+using SysBot.Base;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Pokemon.BasePokeDataOffsetsBS;
 
@@ -182,7 +181,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         {
             Log(socket.Message);
             result = PokeTradeResult.ExceptionConnection;
-            HandleAbortedTrade(detail, type, priority, result);
+            await HandleAbortedTrade(detail, type, priority, result).ConfigureAwait(false);
             throw; // let this interrupt the trade loop. re-entering the trade loop will recheck the connection.
         }
         catch (Exception e)
@@ -191,22 +190,22 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
             result = PokeTradeResult.ExceptionInternal;
         }
 
-        HandleAbortedTrade(detail, type, priority, result);
+        await HandleAbortedTrade(detail, type, priority, result).ConfigureAwait(false);
     }
 
-    private void HandleAbortedTrade(PokeTradeDetail<PB8> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
+    private async Task HandleAbortedTrade(PokeTradeDetail<PB8> detail, PokeRoutineType type, uint priority, PokeTradeResult result)
     {
         detail.IsProcessing = false;
         if (result.ShouldAttemptRetry() && detail.Type != PokeTradeType.Random && !detail.IsRetry)
         {
             detail.IsRetry = true;
             Hub.Queues.Enqueue(type, detail, Math.Min(priority, PokeTradePriorities.Tier2));
-            detail.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
+            await detail.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.").ConfigureAwait(false);
         }
         else
         {
-            detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
-            detail.TradeCanceled(this, result);
+            await detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.").ConfigureAwait(false);
+            await detail.TradeCanceled(this, result).ConfigureAwait(false);
         }
     }
 
@@ -214,7 +213,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
     {
         // Update Barrier Settings
         UpdateBarrier(poke.IsSynchronized);
-        poke.TradeInitialize(this);
+        await poke.TradeInitialize(this).ConfigureAwait(false);
         Hub.Config.Stream.EndEnterCode(this);
 
         var distroRemainInRoom = poke.Type == PokeTradeType.Random && Hub.Config.Distribution.RemainInUnionRoomBDSP;
@@ -242,7 +241,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         }
 
         await RequestUnionRoomTrade(token).ConfigureAwait(false);
-        poke.TradeSearching(this);
+        await poke.TradeSearching(this).ConfigureAwait(false);
         var waitPartner = Hub.Config.Trade.TradeWaitTime;
 
         // Keep pressing A until we detect someone talking to us.
@@ -279,10 +278,10 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
 
         var tradePartner = await GetTradePartnerInfo(token).ConfigureAwait(false);
         var trainerNID = GetFakeNID(tradePartner.TrainerName, tradePartner.TrainerID);
-        RecordUtil<PokeTradeBotBS>.Record($"Initiating\t{trainerNID:X16}\t{tradePartner.TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
+        RecordUtil<PokeTradeBotBS>.Record($"Initiating\t{trainerNID:X16}\t{tradePartner.TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.Id}\t{toSend.EncryptionConstant:X8}");
         Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7} (ID: {trainerNID}");
 
-        var partnerCheck = await CheckPartnerReputation(this, poke, trainerNID, tradePartner.TrainerName, AbuseSettings, token);
+        var partnerCheck = await CheckPartnerReputation(this, poke, trainerNID, tradePartner.TrainerName, AbuseSettings, token).ConfigureAwait(false);
         if (partnerCheck != PokeTradeResult.Success)
         {
             // Try to get out of the box.
@@ -308,7 +307,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
                 await Click(A, 0_500, token).ConfigureAwait(false);
         }
 
-        poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. Waiting for a Pokémon...");
+        await poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. Waiting for a Pokémon...").ConfigureAwait(false);
 
         // Requires at least one trade for this pointer to make sense, so cache it here.
         LinkTradePokemonOffset = await SwitchConnection.PointerAll(Offsets.LinkTradePartnerPokemonPointer, token).ConfigureAwait(false);
@@ -356,7 +355,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
 
         // As long as we got rid of our inject in b1s1, assume the trade went through.
         Log("User completed the trade.");
-        poke.TradeFinished(this, received);
+        await poke.TradeFinished(this, received).ConfigureAwait(false);
 
         // Only log if we completed the trade.
         UpdateCountsAndExport(poke, received, toSend);
@@ -675,7 +674,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
             // Extra information for shiny eggs, because of people dumping to skip hatching.
             var eggstring = pk.IsEgg ? "Egg " : string.Empty;
             msg += pk.IsShiny ? $"\n**This Pokémon {eggstring}is shiny!**" : string.Empty;
-            detail.SendNotification(this, pk, msg);
+            await detail.SendNotification(this, pk, msg).ConfigureAwait(false);
         }
 
         Log($"Ended Dump loop after processing {ctr} Pokémon.");
@@ -683,8 +682,8 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
             return PokeTradeResult.TrainerTooSlow;
 
         TradeSettings.AddCompletedDumps();
-        detail.Notifier.SendNotification(this, detail, $"Dumped {ctr} Pokémon.");
-        detail.Notifier.TradeFinished(this, detail, detail.TradeData); // blank pk8
+        await detail.Notifier.SendNotification(this, detail, $"Dumped {ctr} Pokémon.").ConfigureAwait(false);
+        await detail.Notifier.TradeFinished(this, detail, detail.TradeData).ConfigureAwait(false); // blank pk8
         return PokeTradeResult.Success;
     }
 
@@ -722,7 +721,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
             toSend = trade.Receive;
             poke.TradeData = toSend;
 
-            poke.SendNotification(this, "Injecting the requested Pokémon.");
+            await poke.SendNotification(this, "Injecting the requested Pokémon.").ConfigureAwait(false);
             await Click(A, 0_800, token).ConfigureAwait(false);
             await SetBoxPokemonAbsolute(BoxStartOffset, toSend, token, sav).ConfigureAwait(false);
             await Task.Delay(2_500, token).ConfigureAwait(false);
@@ -730,7 +729,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         else if (config.LedyQuitIfNoMatch)
         {
             var nickname = offered.IsNicknamed ? $" (Nickname: \"{offered.Nickname}\")" : string.Empty;
-            poke.SendNotification(this, $"No match found for the offered {GetSpeciesName(offered.Species)}{nickname}.");
+            await poke.SendNotification(this, $"No match found for the offered {GetSpeciesName(offered.Species)}{nickname}.").ConfigureAwait(false);
             return (toSend, PokeTradeResult.TrainerRequestBad);
         }
 

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace SysBot.Pokemon;
 
@@ -16,9 +16,6 @@ public class DiscordSettings
     [Category(Startup), Description("Bot login token.")]
     public string Token { get; set; } = string.Empty;
 
-    [Category(Startup), Description("Bot command prefix.")]
-    public string CommandPrefix { get; set; } = "$";
-
     [Category(Startup), Description("List of modules that will not be loaded when the bot is started (comma separated).")]
     public string ModuleBlacklist { get; set; } = string.Empty;
 
@@ -30,6 +27,12 @@ public class DiscordSettings
 
     [Category(Startup), Description("Indicates the Discord presence status color only considering bots that are Trade-type.")]
     public bool BotColorStatusTradeOnly { get; set; } = true;
+
+    [Category(Startup), Description("Unique hash identity of the slash command set most recently registered to Discord. Clear this string to force a refresh on next startup.")]
+    public string SlashCommandHash { get; set; } = "";
+
+    [Category(Startup), Description("Main Discord server the bot lives in, where commands will be reloaded more quickly to if you need to update them.")]
+    public ulong SlashMainGuild { get; set; }
 
     [Category(Operation), Description("Custom message the bot will reply with when a user says hello to it. Use string formatting to mention the user in the reply.")]
     public string HelloResponse { get; set; } = "Hi {0}!";

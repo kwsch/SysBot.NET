@@ -1,10 +1,10 @@
-﻿using PKHeX.Core;
+using System.Threading;
+using System.Threading.Tasks;
+using PKHeX.Core;
 using SysBot.Pokemon.Discord;
 using SysBot.Pokemon.Twitch;
 using SysBot.Pokemon.WinForms;
 using SysBot.Pokemon.YouTube;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SysBot.Pokemon;
 

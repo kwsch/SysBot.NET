@@ -1,19 +1,20 @@
-using Discord;
-using PKHeX.Core;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Discord;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord;
 
 public static class NetUtil
 {
+    private static readonly HttpClient Client = new();
+
     public static async Task<byte[]> DownloadFromUrlAsync(string url)
     {
-        using var client = new HttpClient();
-        return await client.GetByteArrayAsync(url).ConfigureAwait(false);
+        return await Client.GetByteArrayAsync(url).ConfigureAwait(false);
     }
 
-    public static async Task<Download<PKM>> DownloadPKMAsync(IAttachment att)
+    public static async Task<Download<PKM>> DownloadEntityAsync(this IAttachment att)
     {
         var result = new Download<PKM> { SanitizedFileName = Format.Sanitize(att.Filename) };
         if (!EntityDetection.IsSizePlausible(att.Size))
@@ -26,6 +27,8 @@ public static class NetUtil
 
         // Download the resource and load the bytes into a buffer.
         var buffer = await DownloadFromUrlAsync(url).ConfigureAwait(false);
+
+        // Ensure it actually converts into a file we can use.
         var prefer = EntityFileExtension.GetContextFromExtension(result.SanitizedFileName);
         var pkm = EntityFormat.GetFromBytes(buffer, prefer);
         if (pkm == null)

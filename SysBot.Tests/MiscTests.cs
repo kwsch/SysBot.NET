@@ -1,8 +1,8 @@
-﻿using FluentAssertions;
-using SysBot.Base;
-using SysBot.Pokemon;
 using System.Collections.Generic;
 using System.Linq;
+using FluentAssertions;
+using SysBot.Base;
+using SysBot.Pokemon;
 using Xunit;
 using static SysBot.Base.SwitchButton;
 

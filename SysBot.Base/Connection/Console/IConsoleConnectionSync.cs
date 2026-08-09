@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
  namespace SysBot.Base;
 
@@ -7,7 +7,7 @@
 /// </summary>
 public interface IConsoleConnectionSync : IConsoleConnection
 {
-    int Send(byte[] buffer);
+    int Send(ReadOnlySpan<byte> buffer);
 
     byte[] ReadBytes(uint offset, int length);
     void WriteBytes(ReadOnlySpan<byte> data, uint offset);
