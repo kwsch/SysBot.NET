@@ -120,7 +120,7 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
                 sb.AppendLine("Species could not be identified. Check your spelling.");
 
             var msg = sb.ToString();
-            await RespondAsync(msg, ephemeral: true).ConfigureAwait(false);
+            await FollowupAsync(msg, ephemeral: true).ConfigureAwait(false);
             return;
         }
 
@@ -142,7 +142,7 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
                 var imsg = $"Oops! {reason}";
                 if (result == "Failed")
                     imsg += $"\n{AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm)}";
-                await RespondAsync(imsg, ephemeral: true).ConfigureAwait(false);
+                await FollowupAsync(imsg).ConfigureAwait(false);
                 return;
             }
 
@@ -156,7 +156,7 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
                        Oops! An unexpected problem happened with this Showdown Set:
                        {Format.Code(string.Join('\n', set.GetSetLines()),"yml")}
                        """;
-            await RespondAsync(msg, ephemeral: true).ConfigureAwait(false);
+            await FollowupAsync(msg).ConfigureAwait(false);
         }
     }
 
@@ -166,7 +166,7 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
         var pk = GetRequest(att);
         if (pk == null)
         {
-            await RespondAsync("Attachment provided is not compatible with this module!", ephemeral: true).ConfigureAwait(false);
+            await FollowupAsync("Attachment provided is not compatible with this module!").ConfigureAwait(false);
             return;
         }
 
@@ -190,26 +190,26 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
         var la = new LegalityAnalysis(pk);
         if (!la.Valid)
         {
-            await RespondAsync($"{typeof(T).Name} attachment is not legal, and cannot be traded!").ConfigureAwait(false);
+            await FollowupAsync($"{typeof(T).Name} attachment is not legal, and cannot be traded!").ConfigureAwait(false);
             return;
         }
 
         var enc = la.EncounterOriginal;
         if (!pk.CanBeTraded(enc))
         {
-            await RespondAsync("Provided Pokémon content is blocked from trading!").ConfigureAwait(false);
+            await FollowupAsync("Provided Pokémon content is blocked from trading!").ConfigureAwait(false);
             return;
         }
         var cfg = Info.Hub.Config.Trade;
         if (cfg.DisallowNonNatives && (enc.Context != pk.Context || pk.GO))
         {
-            await RespondAsync($"{typeof(T).Name} attachment is not native, and cannot be traded!").ConfigureAwait(false);
+            await FollowupAsync($"{typeof(T).Name} attachment is not native, and cannot be traded!").ConfigureAwait(false);
             return;
         }
 
         if (cfg.DisallowTracked && pk is IHomeTrack { HasTracker: true })
         {
-            await RespondAsync($"{typeof(T).Name} attachment is tracked by HOME, and cannot be traded!").ConfigureAwait(false);
+            await FollowupAsync($"{typeof(T).Name} attachment is tracked by HOME, and cannot be traded!").ConfigureAwait(false);
             return;
         }
 

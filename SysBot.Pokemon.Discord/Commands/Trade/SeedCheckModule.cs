@@ -18,6 +18,8 @@ public class SeedCheckModule<T> : SlashModuleBase where T : PKM, new()
         if (!await RequireAsync(CheckQueueAccess(PokeRoutineType.SeedCheck, out var e), e).ConfigureAwait(false))
             return;
 
+        await DeferAsync(ephemeral: true).ConfigureAwait(false);
+
         var sig = GetSignificance(Context.User);
         code ??= Info.GetRandomTradeCode();
         await QueueHelper<T>.AddToQueueAsync(Context, (int)code, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed, Context).ConfigureAwait(false);
@@ -27,6 +29,8 @@ public class SeedCheckModule<T> : SlashModuleBase where T : PKM, new()
     public async Task FindFrameAsync(
         [Summary(nameof(seed), "The seed to find the next shiny frame from.")] string seed)
     {
+        await DeferAsync(ephemeral: true).ConfigureAwait(false);
+
         var s = seed.ToLowerInvariant().AsSpan();
         if (s.StartsWith("0x"))
             s = s[2..];
@@ -35,8 +39,8 @@ public class SeedCheckModule<T> : SlashModuleBase where T : PKM, new()
         var hub = SysCord<T>.Runner.Hub;
         var r = new SeedSearchResult(Z3SearchResult.Success, value, -1, hub.Config.SeedCheckSWSH.ResultDisplayMode);
         var embed = new EmbedBuilder { Color = Color.LighterGrey };
-        embed.AddField($"Seed: {value:X16}", r.ToString());
-        await RespondAsync($"Here are the details for `{r.Seed:X16}`:", embed: embed.Build()).ConfigureAwait(false);
+        embed.AddField($"Seed: 0x{value:X16}", r.ToString());
+        await FollowupAsync($"Here are the details for `{r.Seed:X16}`:", embed: embed.Build()).ConfigureAwait(false);
     }
 
     /*

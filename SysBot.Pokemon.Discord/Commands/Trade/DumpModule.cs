@@ -17,6 +17,8 @@ public class DumpModule<T> : SlashModuleBase where T : PKM, new()
         if (!await RequireAsync(CheckQueueAccess(PokeRoutineType.Dump, out var error), error).ConfigureAwait(false))
             return;
 
+        await DeferAsync(ephemeral: true).ConfigureAwait(false);
+
         var sig = GetSignificance(Context.User);
         code ??= Info.GetRandomTradeCode();
         await QueueHelper<T>.AddToQueueAsync(Context, (int)code, sig, new T(), PokeRoutineType.Dump, PokeTradeType.Dump, Context).ConfigureAwait(false);

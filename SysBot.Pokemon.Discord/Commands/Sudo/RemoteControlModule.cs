@@ -148,9 +148,11 @@ public class RemoteControlModule<T> : SudoModuleBase where T : PKM, new()
             await RespondAsync($"{b.Connection.Name} has performed: {s} and will hold the position until changed.").ConfigureAwait(false);
             return;
         }
+
+        await DeferAsync().ConfigureAwait(false);
         await Task.Delay(value).ConfigureAwait(false);
         await b.Connection.SendAsync(SwitchCommand.ResetStick(s, crlf)).ConfigureAwait(false);
-        await RespondAsync($"{b.Connection.Name} has performed: {s} and reset the stick position.").ConfigureAwait(false);
+        await FollowupAsync($"{b.Connection.Name} has performed: {s} and reset the stick position.").ConfigureAwait(false);
     }
 
     private static BotSource<PokeBotState>? GetBot(string ip)

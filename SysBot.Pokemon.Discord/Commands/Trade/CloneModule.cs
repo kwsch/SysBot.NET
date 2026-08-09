@@ -17,6 +17,8 @@ public class CloneModule<T> : SlashModuleBase where T : PKM, new()
         if (!await RequireAsync(CheckQueueAccess(PokeRoutineType.Clone, out var e), e).ConfigureAwait(false))
             return;
 
+        await DeferAsync(ephemeral: true).ConfigureAwait(false);
+
         var sig = GetSignificance(Context.User);
         code ??= Info.GetRandomTradeCode();
         await QueueHelper<T>.AddToQueueAsync(Context, (int)code, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone, Context).ConfigureAwait(false);
