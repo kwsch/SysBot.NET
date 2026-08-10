@@ -114,15 +114,8 @@ public static class QueueHelper<T> where T : PKM, new()
                     var permissions = self.GetPermissions(guildChannel);
                     if (!permissions.SendMessages)
                     {
-                        message = "You must grant me \"Send Messages\" permissions!";
-                        Base.LogUtil.LogError(message);
-                        return;
-                    }
-                    if (!permissions.ManageMessages)
-                    {
                         var app = await context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
-                        message = $"<@{app.Owner.Id}> You must grant me \"Manage Messages\" permissions!";
-                        await context.Interaction.RespondAsync(message, ephemeral: true).ConfigureAwait(false);
+                        message = $"{app.Owner.Mention} You must grant me \"Send Messages\" permissions!";
                         Base.LogUtil.LogError(message);
                         return;
                     }
