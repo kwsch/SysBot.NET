@@ -28,7 +28,9 @@ public static class QueueHelper<T> where T : PKM, new()
             }
 
             // Message the user in their DMs. If this fails, the event handler will abort and let them know to enable DMs.
+            var channelRef = $"<#{context.Channel.Id}>";
             var secret = $"""
+                          {channelRef}
                           {message}
                           I'll message you here when your trade is starting.
                           """;
