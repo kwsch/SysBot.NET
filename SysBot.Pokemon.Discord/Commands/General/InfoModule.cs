@@ -39,10 +39,10 @@ $"""
 - {Format.Bold("Library")}: Discord.Net ({DiscordConfig.Version})
 - {Format.Bold("Uptime")}: {GetUptime()}
 - {Format.Bold("Runtime")}: {RuntimeInformation.FrameworkDescription} {RuntimeInformation.ProcessArchitecture} ({RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture})
-- {Format.Bold("Buildtime")}: {GetVersionInfo("SysBot.Base", false)}
+- {Format.Bold("Buildtime")}: {GetVersionInfo("SysBot.Pokemon.Discord", false)}
 - {Format.Bold("Core Version")}: {GetVersionInfo("PKHeX.Core")}
 - {Format.Bold("AutoLegality Version")}: {GetVersionInfo("PKHeX.Core.AutoMod")}
-- {Format.Bold("Command Count")}: {SysCordSettings.RegisteredCommands} @ {SysCordSettings.RegisteredTime:yyyy.MM.dd-hh:mm:ss} UTC
+- {Format.Bold("Command Count")}: {SysCordSettings.RegisteredCommands} @ {TimestampTag.FromDateTime(SysCordSettings.RegisteredTime, TimestampTagStyles.ShortDateTime)}
 - {Format.Bold("Modal Count")}: {SysCordSettings.RegisteredModals}
 """
             );
@@ -78,7 +78,7 @@ $"""
         var version = split[0];
         var revision = split[1];
         if (DateTime.TryParseExact(revision, "yyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var buildTime))
-            return (inclVersion ? $"{version} " : "") + $"{buildTime:yyyy.MM.dd-hh:mm:ss}";
+            return (inclVersion ? $"{version} " : "") + $"{TimestampTag.FromDateTime(buildTime, TimestampTagStyles.ShortDateTime)}";
         return !inclVersion ? unknownVersion : version;
     }
 }
