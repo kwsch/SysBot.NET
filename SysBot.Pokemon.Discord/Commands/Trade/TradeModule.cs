@@ -17,16 +17,9 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
     private const string TradeModalId = "trade-set";
 
     [SlashCommand("set", "Trade a Showdown Set.")]
+    [RequireQueueRole(PokeRoutineType.LinkTrade)]
     public async Task TradeSetAsync()
-    {
-        if (!CheckQueueAccess(PokeRoutineType.LinkTrade, out var error))
-        {
-            await RespondAsync(error, ephemeral: true).ConfigureAwait(false);
-            return;
-        }
-
-        await RespondWithModalAsync<TradeSetModal>(TradeModalId).ConfigureAwait(false);
-    }
+        => await RespondWithModalAsync<TradeSetModal>(TradeModalId).ConfigureAwait(false);
 
     public class TradeSetModal : IModal
     {
@@ -42,13 +35,13 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
         public string? Code { get; set; }
     }
 
-    [ModalInteraction(TradeModalId, true)]
+    [ModalInteraction(TradeModalId, ignoreGroupNames: true)]
     public async Task TradeSetModalAsync(TradeSetModal modal)
     {
         // Re-check if the queue closed in the time between opening the modal and entering the info.
-        if (!CheckQueueAccess(PokeRoutineType.LinkTrade, out var error))
+        if (!SysCordSettings.HubConfig.Queues.CanQueue)
         {
-            await RespondAsync(error, ephemeral: true).ConfigureAwait(false);
+            await RespondAsync("The trade queue has closed.", ephemeral: true).ConfigureAwait(false);
             return;
         }
 
@@ -81,13 +74,15 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
     }
 
     [SlashCommand("file", "Trade a Pokémon file.")]
+    [RequireQueueRole(PokeRoutineType.LinkTrade)]
     public async Task TradeFileAsync(
         [Summary(nameof(file), "Attach a file to be traded to your game.")] IAttachment file,
         [Summary(nameof(code), "Optional; leave blank for a random code")] int? code = null)
     {
-        if (!CheckQueueAccess(PokeRoutineType.LinkTrade, out var error))
+        // Re-check if the queue closed in the time between opening the modal and entering the info.
+        if (!SysCordSettings.HubConfig.Queues.CanQueue)
         {
-            await RespondAsync(error, ephemeral: true).ConfigureAwait(false);
+            await RespondAsync("The trade queue has closed.", ephemeral: true).ConfigureAwait(false);
             return;
         }
 
@@ -105,16 +100,10 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
      */
 
     [SlashCommand("list", "Prints the users in the trade queues.")]
-    [RequireUserPermission(ChannelPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
+    [RequireSudo]
     public async Task GetTradeListAsync()
     {
-        if (!CheckSudo(out var error))
-        {
-            await RespondAsync(error, ephemeral: true).ConfigureAwait(false);
-            return;
-        }
-
         var embed = new EmbedBuilder();
         embed.AddField(x =>
         {
@@ -127,18 +116,12 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
     }
 
     [SlashCommand("ban", "Ban an Online ID from trading.")]
-    [RequireUserPermission(ChannelPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
+    [RequireSudo]
     public async Task BanTradeAsync(
         [Summary(nameof(nnid), "The in-game/online ID of the user to ban from trading.")] ulong nnid,
         [Summary(nameof(reason), "The reason for banning the user.")] string reason)
     {
-        if (!CheckSudo(out var error))
-        {
-            await RespondAsync(error, ephemeral: true).ConfigureAwait(false);
-            return;
-        }
-
         await DeferAsync().ConfigureAwait(false);
         SysCordSettings.HubConfig.TradeAbuse.BannedIDs.AddIfNew(GetReference(nnid, reason));
         await FollowupAsync($"Done. Online ID {nnid} has been banned for reason: {reason}").ConfigureAwait(false);

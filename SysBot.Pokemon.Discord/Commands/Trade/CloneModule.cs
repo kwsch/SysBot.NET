@@ -11,12 +11,10 @@ public class CloneModule<T> : SlashModuleBase where T : PKM, new()
     private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
 
     [SlashCommand("clone", "Clones the Pokémon you show via Link Trade.")]
+    [RequireQueueRole(PokeRoutineType.Clone)]
     public Task CloneAsync(int? code = null) => JoinAsync(code);
     private async Task JoinAsync(int? code)
     {
-        if (!await RequireAsync(CheckQueueAccess(PokeRoutineType.Clone, out var e), e).ConfigureAwait(false))
-            return;
-
         await DeferAsync(ephemeral: true).ConfigureAwait(false);
 
         var sig = GetSignificance(Context.User);
@@ -31,13 +29,10 @@ public class CloneModule<T> : SlashModuleBase where T : PKM, new()
      */
 
     [SlashCommand("clone-list", "Prints the users in the Clone queue.")]
-    [RequireUserPermission(ChannelPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
+    [RequireSudo]
     public async Task GetListAsync()
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         var embed = new EmbedBuilder();
         embed.AddField("Pending Trades", Info.GetTradeList(PokeRoutineType.Clone));
         await RespondAsync("These are the users who are currently waiting:", embed: embed.Build()).ConfigureAwait(false);

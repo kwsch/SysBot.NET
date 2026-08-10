@@ -56,6 +56,7 @@ public sealed class SysCord<T> where T : PKM, new()
         _client.Log += Log;
         _interactions.Log += Log;
         _services = ConfigureServices();
+        SysCordSettings.ServiceProvider = _services;
     }
 
     private ServiceProvider ConfigureServices()
@@ -129,7 +130,7 @@ public sealed class SysCord<T> where T : PKM, new()
 
         foreach (var module in types)
         {
-            var name = GetModuleName(module.Name);
+            var name = ReusableActions.GetModuleName(module.Name);
             if (IsBlacklisted(name, blacklist))
                 continue;
 
@@ -144,16 +145,6 @@ public sealed class SysCord<T> where T : PKM, new()
 
     private static bool IsBlacklisted(string name, IReadOnlyList<string> blacklist)
         => blacklist.Any(z => z.Equals(name, StringComparison.OrdinalIgnoreCase));
-
-    private static string GetModuleName(string name)
-    {
-        name = name.Replace("Module", "");
-        // Trim off any generic type parameters (e.g., `1, `2) from the name for comparison purposes.
-        var gen = name.IndexOf('`');
-        if (gen != -1)
-            name = name[..gen];
-        return name;
-    }
 
     private async Task HandleInteractionAsync(SocketInteraction interaction)
     {
@@ -291,7 +282,7 @@ public sealed class SysCord<T> where T : PKM, new()
         var hash = ComputeSlashCommandHash();
         if (hash == cfg.SlashCommandHash)
         {
-            LogUtil.LogInfo("Skipped registering commands -- no signature changes.");
+            LogUtil.LogInfo("Skipped registering interactions; no signature changes detected.");
             UpdateRegisteredCounts();
             return;
         }
@@ -306,7 +297,7 @@ public sealed class SysCord<T> where T : PKM, new()
             UpdateRegisteredCounts();
             cfg.SlashCommandHash = hash;
 
-            var message = $"Submitted registered interactions. Hash: {hash}";
+            var message = $"Registered interactions. Hash: {hash[..6]}";
             LogUtil.LogInfo(message);
         }
         catch (Exception ex)

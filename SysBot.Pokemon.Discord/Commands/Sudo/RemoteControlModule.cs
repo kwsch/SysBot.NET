@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Interactions;
 using PKHeX.Core;
 using SysBot.Base;
@@ -7,23 +8,15 @@ using SysBot.Base;
 namespace SysBot.Pokemon.Discord;
 
 [Group("control", "Commands related to controlling the console itself.")]
-public class RemoteControlModule<T> : SudoModuleBase where T : PKM, new()
+[DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
+[RequireRoleAccess(PokeRoutineType.RemoteControl)]
+[RequireContext(ContextType.Guild)]
+public class RemoteControlModule<T> : SlashModuleBase where T : PKM, new()
 {
-    // Roughly requires Sudo permissions, but checks a separate role for remote control commands.
-
-    private async Task<bool> CheckPermission()
-    {
-        var check = CheckRoleAccess(PokeRoutineType.RemoteControl, out var e);
-        return await RequireAsync(check, e).ConfigureAwait(false);
-    }
-
     [SlashCommand("click", "Clicks the specified button.")]
     public async Task ClickAsync(
         [Summary(nameof(button), "The button to press.")] SwitchButton button)
     {
-        if (!await CheckPermission().ConfigureAwait(false))
-            return;
-
         var bot = SysCord<T>.Runner.Bots.Find(z => IsRemoteControlBot(z.Bot));
         if (bot == null)
         {
@@ -39,9 +32,6 @@ public class RemoteControlModule<T> : SudoModuleBase where T : PKM, new()
         [Summary(nameof(ip), "Which bot to perform the command on.")] string ip,
         [Summary(nameof(button), "The button to press.")] SwitchButton button)
     {
-        if (await CheckPermission().ConfigureAwait(false))
-            return;
-
         var bot = SysCord<T>.Runner.GetBot(ip);
         if (bot == null)
         {
@@ -59,9 +49,6 @@ public class RemoteControlModule<T> : SudoModuleBase where T : PKM, new()
         [Summary(nameof(y), "The Y position of the stick angle.")] short y = 0,
         [Summary(nameof(ms), "The duration to hold the stick in the position. Leave blank for infinite duration until changed")] ushort? ms = 1000)
     {
-        if (await CheckPermission().ConfigureAwait(false))
-            return;
-
         var bot = SysCord<T>.Runner.Bots.Find(z => IsRemoteControlBot(z.Bot));
         if (bot == null)
         {
@@ -80,9 +67,6 @@ public class RemoteControlModule<T> : SudoModuleBase where T : PKM, new()
         [Summary(nameof(y), "The Y position of the stick angle.")] short y = 0,
         [Summary(nameof(ms), "The duration to hold the stick in the position. Leave blank for infinite duration until changed.")] ushort? ms = 1000)
     {
-        if (await CheckPermission().ConfigureAwait(false))
-            return;
-
         var bot = SysCord<T>.Runner.GetBot(ip);
         if (bot == null)
         {
@@ -101,9 +85,6 @@ public class RemoteControlModule<T> : SudoModuleBase where T : PKM, new()
 
     private async Task SetScreenGuarded(bool on, string ip)
     {
-        if (await CheckPermission().ConfigureAwait(false))
-            return;
-
         var bot = GetBot(ip);
         if (bot == null)
         {

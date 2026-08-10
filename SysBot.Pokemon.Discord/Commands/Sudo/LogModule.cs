@@ -32,9 +32,6 @@ public class LogModule : SudoModuleBase
     [SlashCommand("here", "Makes the bot log to this channel.")]
     public async Task AddLogAsync()
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         if (Context.Interaction.Channel is not { } channel)
         {
             await RespondAsync("This command must be used in a message channel.", ephemeral: true).ConfigureAwait(false);
@@ -63,18 +60,12 @@ public class LogModule : SudoModuleBase
     [SlashCommand("info", "Dumps the logging settings.")]
     public async Task DumpLogInfoAsync()
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         await RespondAsync(string.Join('\n', Channels.Select(c => $"{c.Key} - {c.Value}"))).ConfigureAwait(false);
     }
 
     [SlashCommand("clear", "Clears logging from this channel.")]
     public async Task ClearLogsAsync()
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         var channelId = Context.Interaction.Channel.Id;
         if (!Channels.TryGetValue(channelId, out var log))
         {
@@ -90,9 +81,6 @@ public class LogModule : SudoModuleBase
     [SlashCommand("clear-all", "Clears all logging settings.")]
     public async Task ClearLogsAllAsync()
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         foreach (var l in Channels.Values)
             LogUtil.Forwarders.Remove(l);
 

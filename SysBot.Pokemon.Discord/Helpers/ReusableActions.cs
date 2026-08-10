@@ -11,6 +11,17 @@ namespace SysBot.Pokemon.Discord;
 
 public static class ReusableActions
 {
+    public static string GetModuleName(string name)
+    {
+        name = name.Replace("Module", "");
+        // Trim off any generic type parameters (e.g., `1, `2) from the name for comparison purposes.
+        var gen = name.IndexOf('`');
+        if (gen != -1)
+            name = name[..gen];
+        return name;
+    }
+
+
     extension(IMessageChannel channel)
     {
         public async Task SendFileAsync(PKM pkm, string message = "", Embed? embed = null)

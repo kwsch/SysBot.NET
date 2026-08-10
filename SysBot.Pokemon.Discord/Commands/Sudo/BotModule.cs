@@ -13,9 +13,6 @@ public class BotModule<T> : SudoModuleBase where T : PKM, new()
     [SlashCommand("status", "Gets the status of the bots.")]
     public async Task GetStatusAsync()
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         var sb = new StringBuilder();
         foreach (var bot in SysCord<T>.Runner.Bots)
         {
@@ -29,9 +26,6 @@ public class BotModule<T> : SudoModuleBase where T : PKM, new()
     [SlashCommand("start", "Starts a bot by IP address/port.")]
     public async Task StartBotAsync(string ip)
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         var bot = SysCord<T>.Runner.GetBot(ip);
         if (bot == null)
         {
@@ -46,9 +40,6 @@ public class BotModule<T> : SudoModuleBase where T : PKM, new()
     [SlashCommand("stop", "Stops a bot by IP address/port.")]
     public async Task StopBotAsync(string ip)
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         var bot = SysCord<T>.Runner.GetBot(ip);
         if (bot == null)
         {
@@ -63,9 +54,6 @@ public class BotModule<T> : SudoModuleBase where T : PKM, new()
     [SlashCommand("idle", "Commands a bot to Idle by IP address/port.")]
     public async Task IdleBotAsync(string ip)
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         var bot = SysCord<T>.Runner.GetBot(ip);
         if (bot == null)
         {
@@ -80,9 +68,6 @@ public class BotModule<T> : SudoModuleBase where T : PKM, new()
     [SlashCommand("change", "Changes the routine of a bot.")]
     public async Task ChangeTaskAsync(string ip, PokeRoutineType task)
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         var bot = SysCord<T>.Runner.GetBot(ip);
         if (bot == null)
         {
@@ -97,9 +82,6 @@ public class BotModule<T> : SudoModuleBase where T : PKM, new()
     [SlashCommand("restart", "Restarts bots by comma-separated IP addresses.")]
     public async Task RestartBotAsync(string ipAddressesCommaSeparated)
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         var messages = new List<string>();
         foreach (var ip in ipAddressesCommaSeparated.Split(','))
         {

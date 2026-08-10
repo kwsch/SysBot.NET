@@ -1,7 +1,7 @@
-using Discord.WebSocket;
-using SysBot.Base;
 using System;
 using System.Runtime.CompilerServices;
+using Discord.WebSocket;
+using SysBot.Base;
 
 namespace SysBot.Pokemon.Discord;
 

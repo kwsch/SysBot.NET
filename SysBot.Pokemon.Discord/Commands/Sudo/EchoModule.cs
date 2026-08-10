@@ -37,9 +37,6 @@ public class EchoModule : SudoModuleBase
     [SlashCommand("here", "Makes the bot echo special messages to this channel.")]
     public async Task AddEchoAsync()
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         if (Context.Interaction.Channel is not { } channel)
         {
             await RespondAsync("This command must be used in a message channel.", ephemeral: true).ConfigureAwait(false);
@@ -72,18 +69,12 @@ public class EchoModule : SudoModuleBase
     [SlashCommand("info", "Dumps the Echo settings.")]
     public async Task DumpEchoInfoAsync()
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         await RespondAsync(string.Join('\n', Channels.Select(c => $"{c.Key} - {c.Value}"))).ConfigureAwait(false);
     }
 
     [SlashCommand("clear", "Clears Echo settings from this channel.")]
     public async Task ClearEchosAsync()
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         var channelId = Context.Interaction.Channel.Id;
         if (!Channels.TryGetValue(channelId, out var echo))
         {
@@ -100,9 +91,6 @@ public class EchoModule : SudoModuleBase
     [SlashCommand("clear-all", "Clears all Echo channel settings.")]
     public async Task ClearEchosAllAsync()
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         foreach (var l in Channels.Values)
             EchoUtil.Forwarders.Remove(l.Action);
 

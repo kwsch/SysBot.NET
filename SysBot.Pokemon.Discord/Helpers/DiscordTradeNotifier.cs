@@ -21,7 +21,8 @@ public sealed record DiscordTradeNotifier<T>(T Data, PokeTradeTrainerInfo Info, 
     public async Task TradeInitialize(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
     {
         var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";
-        var message = $"Initializing trade{receive}. Please be ready. Your code is **{Code:0000 0000}**.";
+        var code = Format.Bold($"{Code:0000 0000}");
+        var message = $"Initializing trade{receive}. Please be ready. Your code is {code}.";
 
         await SendNotification(message).ConfigureAwait(false);
     }
@@ -30,7 +31,9 @@ public sealed record DiscordTradeNotifier<T>(T Data, PokeTradeTrainerInfo Info, 
     {
         var name = Info.TrainerName;
         var trainer = string.IsNullOrEmpty(name) ? string.Empty : $", {name}";
-        var message = $"I'm waiting for you{trainer}! Your code is **{Code:0000 0000}**. My IGN is **{routine.InGameName}**.";
+        var code = Format.Bold($"{Code:0000 0000}");
+        var myName = Format.Bold(routine.InGameName);
+        var message = $"I'm waiting for you{trainer}! Your code is {code}. My IGN is {myName}.";
 
         await SendNotification(message).ConfigureAwait(false);
     }

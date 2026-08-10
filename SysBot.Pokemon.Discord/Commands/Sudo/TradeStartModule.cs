@@ -45,9 +45,6 @@ public class TradeStartModule<T> : SudoModuleBase where T : PKM, new()
     [SlashCommand("here", "Makes the bot log trade starts to this channel.")]
     public async Task AddLogAsync()
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         if (Context.Interaction.Channel is not { } channel)
         {
             await RespondAsync("This command must be used in a message channel.", ephemeral: true).ConfigureAwait(false);
@@ -83,18 +80,12 @@ public class TradeStartModule<T> : SudoModuleBase where T : PKM, new()
     [SlashCommand("info", "Dumps the Start Notification settings.")]
     public async Task DumpLogInfoAsync()
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         await RespondAsync(string.Join('\n', Channels.Select(c => $"{c.Key} - {c.Value}"))).ConfigureAwait(false);
     }
 
     [SlashCommand("clear", "Clears Start Notification settings from this channel.")]
     public async Task ClearLogsAsync()
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         var id = Context.Interaction.Channel.Id;
         if (Channels.TryGetValue(id, out var entry))
             Remove(entry);
@@ -105,9 +96,6 @@ public class TradeStartModule<T> : SudoModuleBase where T : PKM, new()
     [SlashCommand("clear-all", "Clears all Start Notification settings.")]
     public async Task ClearLogsAllAsync()
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         foreach (var entry in Channels.Values)
             SysCord<T>.Runner.Hub.Queues.Forwarders.Remove(entry.Messager);
 

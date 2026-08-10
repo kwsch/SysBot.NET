@@ -8,7 +8,7 @@ namespace SysBot.Pokemon.Discord;
 
 [Group("owner", "Commands usable by the bot owner.")]
 [DefaultMemberPermissions(GuildPermission.Administrator)] // hide these commands from the majority of users; bot Owners must have admin on server to manage.
-[RequireOwner]
+[RequireTeamOrOwner]
 public class OwnerModule : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("add-sudo", "Adds a user to global sudo.")]
@@ -82,7 +82,8 @@ public class OwnerModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("shutdown", "Causes the entire process to end itself.")]
     public async Task ExitProgram()
     {
-        await RespondAsync("Shutting down... goodbye! **Bot services are going offline.**").ConfigureAwait(false);
+        var emphasis = Format.Bold("Bot services are going offline.");
+        await RespondAsync($"Shutting down... goodbye! {emphasis}").ConfigureAwait(false);
         Environment.Exit(0);
     }
 

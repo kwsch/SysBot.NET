@@ -11,12 +11,10 @@ public class DumpModule<T> : SlashModuleBase where T : PKM, new()
     private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
 
     [SlashCommand("dump", "Dumps the Pokémon you show via Link Trade.")]
+    [RequireQueueRole(PokeRoutineType.Dump)]
     public async Task DumpAsync(
         [Summary(nameof(code), "Optional; leave blank for a random code")] int? code = null)
     {
-        if (!await RequireAsync(CheckQueueAccess(PokeRoutineType.Dump, out var error), error).ConfigureAwait(false))
-            return;
-
         await DeferAsync(ephemeral: true).ConfigureAwait(false);
 
         var sig = GetSignificance(Context.User);
@@ -31,13 +29,10 @@ public class DumpModule<T> : SlashModuleBase where T : PKM, new()
      */
 
     [SlashCommand("dump-list", "Prints the users in the Dump queue.")]
-    [RequireUserPermission(ChannelPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
+    [RequireSudo]
     public async Task GetListAsync()
     {
-        if (!await RequireAsync(CheckSudo(out var error), error).ConfigureAwait(false))
-            return;
-
         string msg = Info.GetTradeList(PokeRoutineType.Dump);
         var embed = new EmbedBuilder();
         embed.AddField(x =>

@@ -12,12 +12,10 @@ public class SeedCheckModule<T> : SlashModuleBase where T : PKM, new()
     private static TradeQueueInfo<T> Info=>SysCord<T>.Runner.Hub.Queues.Info;
 
     [SlashCommand("seed-check", "Checks the seed for a Pokémon.")]
+    [RequireQueueRole(PokeRoutineType.SeedCheck)]
     public async Task SeedCheckAsync(
         [Summary(nameof(code), "Optional; leave blank for a random code")] int? code = null)
     {
-        if (!await RequireAsync(CheckQueueAccess(PokeRoutineType.SeedCheck, out var e), e).ConfigureAwait(false))
-            return;
-
         await DeferAsync(ephemeral: true).ConfigureAwait(false);
 
         var sig = GetSignificance(Context.User);
@@ -50,13 +48,10 @@ public class SeedCheckModule<T> : SlashModuleBase where T : PKM, new()
      */
 
     [SlashCommand("seed-list", "Prints the users in the Seed Check queue.")]
-    [RequireUserPermission(ChannelPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
+    [RequireSudo]
     public async Task GetSeedListAsync()
     {
-        if (!await RequireAsync(CheckSudo(out var e), e).ConfigureAwait(false))
-            return;
-
         var embed = new EmbedBuilder();
         embed.AddField("Pending Trades", Info.GetTradeList(PokeRoutineType.SeedCheck));
         await RespondAsync("These are the users who are currently waiting:", embed: embed.Build()).ConfigureAwait(false);
