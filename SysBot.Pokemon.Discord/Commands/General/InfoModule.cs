@@ -37,7 +37,7 @@ $"""
 - [Source Code]({Repo})
 - {Format.Bold("Owner")}: {app.Owner} ({app.Owner.Id})
 - {Format.Bold("Library")}: Discord.Net ({DiscordConfig.Version})
-- {Format.Bold("Uptime")}: {GetUptime()}
+- {Format.Bold("Started")}: {GetStartTimeRelative()}
 - {Format.Bold("Runtime")}: {RuntimeInformation.FrameworkDescription} {RuntimeInformation.ProcessArchitecture} ({RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture})
 - {Format.Bold("Buildtime")}: {GetVersionInfo("SysBot.Pokemon.Discord", false)}
 - {Format.Bold("Core Version")}: {GetVersionInfo("PKHeX.Core")}
@@ -56,7 +56,7 @@ $"""
         await RespondAsync("Here's a bit about me!", embed: builder.Build()).ConfigureAwait(false);
     }
 
-    private static string GetUptime() => (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"d\-hh\:mm\:ss");
+    private static string GetStartTimeRelative() => TimestampTag.FromDateTime(Process.GetCurrentProcess().StartTime.ToUniversalTime(), TimestampTagStyles.Relative).ToString();
     private static string GetHeapSize() => Math.Round(GC.GetTotalMemory(true) / (1024.0 * 1024.0), 2).ToString(CultureInfo.CurrentCulture);
 
     private static string GetVersionInfo(string assemblyName, bool inclVersion = true)
@@ -77,6 +77,7 @@ $"""
 
         var version = split[0];
         var revision = split[1];
+        revision = revision.Split('.')[^1]; // sometimes builds have extra metadata prepended, followed by .timestamp -- just keep the ending.
         if (DateTime.TryParseExact(revision, "yyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var buildTime))
             return (inclVersion ? $"{version} " : "") + $"{TimestampTag.FromDateTime(buildTime, TimestampTagStyles.ShortDateTime)}";
         return !inclVersion ? unknownVersion : version;
