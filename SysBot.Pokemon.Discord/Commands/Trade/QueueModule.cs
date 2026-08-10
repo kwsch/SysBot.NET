@@ -36,6 +36,7 @@ public class QueueModule<T> : SlashModuleBase where T : PKM, new()
     }
 
     [SlashCommand("clear-all", "Clears all users from the trade queues.")]
+    [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     [RequireSudo]
     public async Task ClearAllTradesAsync()
     {
@@ -44,6 +45,7 @@ public class QueueModule<T> : SlashModuleBase where T : PKM, new()
     }
 
     [SlashCommand("toggle", "Toggles on/off the ability to join the trade queue.")]
+    [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     [RequireSudo]
     public async Task ToggleQueueTradeAsync()
     {
@@ -56,6 +58,7 @@ public class QueueModule<T> : SlashModuleBase where T : PKM, new()
     }
 
     [SlashCommand("mode", "Changes how queueing is controlled.")]
+    [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     [RequireSudo]
     public async Task ChangeQueueModeAsync(
         [Summary(nameof(mode), "The mode to set for queueing.")] QueueOpening mode)
@@ -65,6 +68,7 @@ public class QueueModule<T> : SlashModuleBase where T : PKM, new()
     }
 
     [SlashCommand("list", "Sends the list of users in the queue by direct message.")]
+    [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
     [RequireSudo]
     public async Task ListUserQueue()
     {
