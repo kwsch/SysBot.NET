@@ -12,6 +12,7 @@ public class DumpModule<T> : SlashModuleBase where T : PKM, new()
 
     [SlashCommand("dump", "Dumps the Pokémon you show via Link Trade.")]
     [RequireQueueRole(PokeRoutineType.Dump)]
+    [RequireOpenDms]
     public async Task DumpAsync(
         [Summary(nameof(code), "Optional; leave blank for a random code")] int? code = null)
     {

@@ -13,6 +13,7 @@ public class SeedCheckModule<T> : SlashModuleBase where T : PKM, new()
 
     [SlashCommand("seed-check", "Checks the seed for a Pokémon.")]
     [RequireQueueRole(PokeRoutineType.SeedCheck)]
+    [RequireOpenDms]
     public async Task SeedCheckAsync(
         [Summary(nameof(code), "Optional; leave blank for a random code")] int? code = null)
     {

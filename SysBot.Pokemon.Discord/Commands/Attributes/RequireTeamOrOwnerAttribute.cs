@@ -2,14 +2,14 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
+using Discord.Interactions;
 
 namespace SysBot.Pokemon.Discord;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public sealed class RequireTeamOrOwnerAttribute : PreconditionAttribute
 {
-    public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+    public override async Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo command, IServiceProvider services)
     {
         if (await IsTeamOrOwner(context).ConfigureAwait(false))
             PreconditionResult.FromSuccess();
@@ -17,7 +17,7 @@ public sealed class RequireTeamOrOwnerAttribute : PreconditionAttribute
         return PreconditionResult.FromError("You are not permitted to run this command.");
     }
 
-    public static async Task<bool> IsTeamOrOwner(ICommandContext context)
+    public static async Task<bool> IsTeamOrOwner(IInteractionContext context)
     {
         // Get application info from the client
         var appInfo = await context.Client.GetApplicationInfoAsync().ConfigureAwait(false);

@@ -75,7 +75,7 @@ public class HelpModule(InteractionService service) : SlashModuleBase
     }
 
     private static async IAsyncEnumerable<SlashCommandInfo> GetAvailableCommands(IEnumerable<SlashCommandInfo> possible,
-        SocketInteractionContext context, IServiceProvider provider)
+        IInteractionContext context, IServiceProvider provider)
     {
         foreach (var cmd in possible)
         {

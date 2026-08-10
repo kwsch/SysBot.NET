@@ -2,19 +2,18 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Interactions;
 using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord;
 
-public sealed record DiscordTradeNotifier<T>(T Data, PokeTradeTrainerInfo Info, int Code, SocketInteractionContext Trader)
+public sealed record DiscordTradeNotifier<T>(T Data, PokeTradeTrainerInfo Info, int Code, IInteractionContext Trader)
     : IPokeTradeNotifier<T>
     where T : PKM, new()
 {
     private T Data { get; } = Data;
     private PokeTradeTrainerInfo Info { get; } = Info;
     private int Code { get; } = Code;
-    private SocketInteractionContext Trader { get; } = Trader;
+    private IInteractionContext Trader { get; } = Trader;
     public Action<PokeRoutineExecutor<T>>? OnFinish { private get; set; }
     public readonly PokeTradeHub<T> Hub = SysCord<T>.Runner.Hub;
 

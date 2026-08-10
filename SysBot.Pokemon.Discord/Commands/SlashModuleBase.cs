@@ -15,7 +15,7 @@ public abstract class SlashModuleBase : InteractionModuleBase<SocketInteractionC
 {
     private static DiscordManager Manager => SysCordSettings.Manager;
 
-    protected RequestSignificance GetSignificance(SocketUser user)
+    protected RequestSignificance GetSignificance(IUser user)
     {
         // Check user ID.
         var userId = user.Id;

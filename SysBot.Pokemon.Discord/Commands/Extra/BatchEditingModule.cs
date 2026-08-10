@@ -71,8 +71,7 @@ public class BatchEditingModule : SlashModuleBase
             return;
         }
 
-        await Context.SendFilePrivatelyAsync(pk, "Modified result attached:").ConfigureAwait(false);
-        await FollowupAsync("Result sent via direct message.").ConfigureAwait(false);
+        await Context.SendFileAsync(pk, "Modified result attached:").ConfigureAwait(false);
     }
 
     private static bool IsValidInstructionSet(ReadOnlySpan<char> split, out List<StringInstruction> invalid)

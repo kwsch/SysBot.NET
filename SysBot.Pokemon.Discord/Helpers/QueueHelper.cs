@@ -10,7 +10,7 @@ public static class QueueHelper<T> where T : PKM, new()
 {
     private const uint MaxTradeCode = 9999_9999;
 
-    public static async Task AddToQueueAsync(SocketInteractionContext context, int code, RequestSignificance sig, T trade, PokeRoutineType routine, PokeTradeType type, SocketInteractionContext trader)
+    public static async Task AddToQueueAsync(SocketInteractionContext context, int code, RequestSignificance sig, T trade, PokeRoutineType routine, PokeTradeType type, IInteractionContext trader)
     {
         if ((uint)code > MaxTradeCode)
         {
@@ -54,7 +54,7 @@ public static class QueueHelper<T> where T : PKM, new()
         }
     }
 
-    private static bool AddToTradeQueue(SocketInteractionContext trader, T pk, int code, RequestSignificance sig, PokeRoutineType routine, PokeTradeType type, out string message)
+    private static bool AddToTradeQueue(IInteractionContext trader, T pk, int code, RequestSignificance sig, PokeRoutineType routine, PokeTradeType type, out string message)
     {
         var channel = trader.Channel;
         var user = trader.User;
@@ -126,6 +126,7 @@ public static class QueueHelper<T> where T : PKM, new()
                     }
                 }
                 break;
+            case DiscordErrorCode.CannotSendMessagesToThisUserDueToHavingNoMutualGuilds:
             case DiscordErrorCode.CannotSendMessageToUser:
                 message = "You must enable private messages in order to be queued!";
                 break;
@@ -140,14 +141,7 @@ public static class QueueHelper<T> where T : PKM, new()
             return;
 
         var interaction = context.Interaction;
-        if (interaction.HasResponded)
-        {
-            var channel = await interaction.GetChannelAsync().ConfigureAwait(false);
-            await channel.SendMessageAsync(message).ConfigureAwait(false);
-        }
-        else
-        {
-            await interaction.FollowupAsync(message, ephemeral: true).ConfigureAwait(false);
-        }
+        // Can still respond to their command.
+        await interaction.FollowupAsync(message, ephemeral: true).ConfigureAwait(false);
     }
 }

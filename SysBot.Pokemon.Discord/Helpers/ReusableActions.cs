@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Interactions;
 using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord;
@@ -31,7 +30,7 @@ public static class ReusableActions
         }
     }
 
-    extension(SocketInteractionContext context)
+    extension(IInteractionContext context)
     {
         public async Task SendFileAsync(PKM pk, string message = "", Embed? embed = null)
             => await context.SendFileAsync([pk], message, embed).ConfigureAwait(false);

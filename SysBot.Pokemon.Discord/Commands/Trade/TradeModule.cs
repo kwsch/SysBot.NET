@@ -11,6 +11,7 @@ namespace SysBot.Pokemon.Discord;
 
 [Group("trade", "Commands for starting a trade session with the bot.")]
 [RequireContext(ContextType.Guild)]
+[RequireOpenDms]
 public class TradeModule<T> : SlashModuleBase where T : PKM, new()
 {
     private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
@@ -127,7 +128,7 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
         await FollowupAsync($"Done. Online ID {nnid} has been banned for reason: {reason}").ConfigureAwait(false);
     }
 
-    private async Task TradeShowdownAsync(int code, string content, SocketInteractionContext user)
+    private async Task TradeShowdownAsync(int code, string content, IInteractionContext user)
     {
         content = ReusableActions.StripCodeBlock(content);
         var set = new ShowdownSet(content);
@@ -200,7 +201,7 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
         sb.Append(ReusableActions.FormatSetCode(inner.ToString()));
     }
 
-    private async Task TradeAttachmentAsync(int code, IAttachment attachment, SocketInteractionContext user)
+    private async Task TradeAttachmentAsync(int code, IAttachment attachment, IInteractionContext user)
     {
         var att = await attachment.DownloadEntityAsync().ConfigureAwait(false);
         var pk = GetRequest(att);
@@ -225,7 +226,7 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
         };
     }
 
-    private async Task AddTradeToQueueAsync(int code, T pk, SocketInteractionContext context)
+    private async Task AddTradeToQueueAsync(int code, T pk, IInteractionContext context)
     {
         var la = new LegalityAnalysis(pk);
         if (!la.Valid)

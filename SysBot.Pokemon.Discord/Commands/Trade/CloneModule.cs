@@ -12,6 +12,7 @@ public class CloneModule<T> : SlashModuleBase where T : PKM, new()
 
     [SlashCommand("clone", "Clones the Pokémon you show via Link Trade.")]
     [RequireQueueRole(PokeRoutineType.Clone)]
+    [RequireOpenDms]
     public Task CloneAsync(int? code = null) => JoinAsync(code);
     private async Task JoinAsync(int? code)
     {
