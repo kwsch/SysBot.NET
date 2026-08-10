@@ -42,7 +42,7 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
         public string? Code { get; set; }
     }
 
-    [ModalInteraction(TradeModalId)]
+    [ModalInteraction(TradeModalId, true)]
     public async Task TradeSetModalAsync(TradeSetModal modal)
     {
         // Re-check if the queue closed in the time between opening the modal and entering the info.
