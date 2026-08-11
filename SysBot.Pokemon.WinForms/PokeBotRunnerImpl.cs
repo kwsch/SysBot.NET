@@ -1,12 +1,12 @@
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using PKHeX.Core;
 using SysBot.Pokemon.Discord;
 using SysBot.Pokemon.Twitch;
-using SysBot.Pokemon.WinForms;
 using SysBot.Pokemon.YouTube;
 
-namespace SysBot.Pokemon;
+namespace SysBot.Pokemon.WinForms;
 
 /// <summary>
 /// Bot Environment implementation with Integrations added.
@@ -18,6 +18,7 @@ public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
 
     private TwitchBot<T>? Twitch;
     private YouTubeBot<T>? YouTube;
+    public required Form Owner { get; init; }
 
     protected override void AddIntegrations()
     {
@@ -52,7 +53,7 @@ public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
         if (YouTube != null)
             return; // already created
 
-        WinFormsUtil.Alert("Please Login with your Browser");
+        Owner.Alert("Please log in with your web browser.");
         if (string.IsNullOrWhiteSpace(config.ChannelID))
             return;
         if (string.IsNullOrWhiteSpace(config.ClientID))

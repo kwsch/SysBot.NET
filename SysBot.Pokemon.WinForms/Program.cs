@@ -15,8 +15,14 @@ internal static class Program
         var use = Array.Find(cmd, z => z.EndsWith(".json"));
         var cfg = Config = ConfigLoader.LoadConfig(use);
         Application.SetCompatibleTextRenderingDefault(false);
-        if (cfg.DarkMode)
-            Application.SetColorMode(SystemColorMode.Dark);
+
+        var mode = cfg.DarkMode switch
+        {
+            true => SystemColorMode.Dark,
+            false => SystemColorMode.Classic,
+            _ => SystemColorMode.System,
+        };
+        Application.SetColorMode(mode);
 
         PokeTradeBotSWSH.SeedChecker = new Z3SeedSearchHandler<PK8>();
     }

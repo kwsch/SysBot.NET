@@ -36,10 +36,10 @@ public sealed partial class Main : Form
         var trainer = Config.Hub.Legality;
         InitUtil.InitializeStubs(Config.Mode, trainer.GenerateOT, trainer.GenerateLanguage);
 
-        if (Config.DarkMode)
+        if (Application.IsDarkModeEnabled)
         {
-            foreach (TabPage tab in TC_Main.TabPages)
-                tab.UseVisualStyleBackColor = false;
+            foreach (var control in this.GetChildrenOfType<Control>())
+                WinFormsUtil.ReformatDark(control);
         }
 
         if (Config is not { Width: 0, Height: 0 })
@@ -58,13 +58,13 @@ public sealed partial class Main : Form
         TC_Main.ItemSize = new((int)(TC_Main.ItemSize.Width * factor.Width), (int)(TC_Main.ItemSize.Height * factor.Height));
     }
 
-    private static IPokeBotRunner GetRunner(ProgramConfig cfg) => cfg.Mode switch
+    private IPokeBotRunner GetRunner(ProgramConfig cfg) => cfg.Mode switch
     {
-        ProgramMode.SWSH => new PokeBotRunnerImpl<PK8>(cfg.Hub, new BotFactory8SWSH()),
-        ProgramMode.BDSP => new PokeBotRunnerImpl<PB8>(cfg.Hub, new BotFactory8BS()),
-        ProgramMode.LA   => new PokeBotRunnerImpl<PA8>(cfg.Hub, new BotFactory8LA()),
-        ProgramMode.SV   => new PokeBotRunnerImpl<PK9>(cfg.Hub, new BotFactory9SV()),
-        ProgramMode.LZA  => new PokeBotRunnerImpl<PA9>(cfg.Hub, new BotFactory9LZA()),
+        ProgramMode.SWSH => new PokeBotRunnerImpl<PK8>(cfg.Hub, new BotFactory8SWSH()) { Owner = this },
+        ProgramMode.BDSP => new PokeBotRunnerImpl<PB8>(cfg.Hub, new BotFactory8BS()) { Owner = this },
+        ProgramMode.LA   => new PokeBotRunnerImpl<PA8>(cfg.Hub, new BotFactory8LA()) { Owner = this },
+        ProgramMode.SV   => new PokeBotRunnerImpl<PK9>(cfg.Hub, new BotFactory9SV()) { Owner = this },
+        ProgramMode.LZA  => new PokeBotRunnerImpl<PA9>(cfg.Hub, new BotFactory9LZA()) { Owner = this },
         _ => throw new IndexOutOfRangeException("Unsupported mode."),
     };
 
@@ -152,7 +152,7 @@ public sealed partial class Main : Form
         Tab_Logs.Select();
 
         if (Bots.Count == 0)
-            WinFormsUtil.Alert("No bots configured, but all supporting services have been started.");
+            this.Alert("No bots configured, but all supporting services have been started.");
     }
 
     private void SendAll(BotControlCommand cmd)
@@ -168,7 +168,7 @@ public sealed partial class Main : Form
         var env = RunningEnvironment;
         if (!env.IsRunning && (ModifierKeys & Keys.Alt) == 0)
         {
-            WinFormsUtil.Alert("Nothing is currently running.");
+            this.Alert("Nothing is currently running.");
             return;
         }
 
@@ -178,12 +178,12 @@ public sealed partial class Main : Form
         {
             if (env.IsRunning)
             {
-                WinFormsUtil.Alert("Commanding all bots to Idle.", "Press Stop (without a modifier key) to hard-stop and unlock control, or press Stop with the modifier key again to resume.");
+                this.Alert("Commanding all bots to Idle.", "Press Stop (without a modifier key) to hard-stop and unlock control, or press Stop with the modifier key again to resume.");
                 cmd = BotControlCommand.Idle;
             }
             else
             {
-                WinFormsUtil.Alert("Commanding all bots to resume their original task.", "Press Stop (without a modifier key) to hard-stop and unlock control.");
+                this.Alert("Commanding all bots to resume their original task.", "Press Stop (without a modifier key) to hard-stop and unlock control.");
                 cmd = BotControlCommand.Resume;
             }
         }
@@ -195,7 +195,7 @@ public sealed partial class Main : Form
         var cfg = CreateNewBotConfig();
         if (!AddBot(cfg))
         {
-            WinFormsUtil.Alert("Unable to add bot; ensure details are valid and not duplicate with an already existing bot.");
+            this.Alert("Unable to add bot; ensure details are valid and not duplicate with an already existing bot.");
             return;
         }
         System.Media.SystemSounds.Asterisk.Play();
@@ -226,7 +226,7 @@ public sealed partial class Main : Form
         }
         catch (ArgumentException ex)
         {
-            WinFormsUtil.Error(ex.Message);
+            this.Error(ex.Message);
             return false;
         }
 

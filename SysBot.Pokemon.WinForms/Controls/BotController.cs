@@ -160,7 +160,7 @@ public partial class BotController : UserControl
             case BotControlCommand.Resume: bot.Resume(); break;
             case BotControlCommand.Restart:
             {
-                var prompt = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Are you sure you want to restart the connection?");
+                var prompt = this.Prompt(MessageBoxButtons.YesNo, "Are you sure you want to restart the connection?");
                 if (prompt != DialogResult.Yes)
                     return;
 
@@ -169,7 +169,7 @@ public partial class BotController : UserControl
                 break;
             }
             default:
-                WinFormsUtil.Alert($"{cmd} is not a command that can be sent to the Bot.");
+                this.Alert($"{cmd} is not a command that can be sent to the Bot.");
                 return;
         }
         if (echo)
