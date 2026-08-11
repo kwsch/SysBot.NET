@@ -1,7 +1,9 @@
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using PKHeX.Core;
+using PKHeX.Drawing.PokeSprite;
 using SysBot.Pokemon.Discord;
 using SysBot.Pokemon.Twitch;
 using SysBot.Pokemon.YouTube;
@@ -71,5 +73,20 @@ public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
             return;
         var bot = new SysCord<T>(this);
         Task.Run(() => bot.MainAsync(apiToken, CancellationToken.None));
+
+        // Set up sprite generating; allows fetching a stream to attach without referencing the sprite dll.
+        AddSpriteGenerating();
+    }
+
+    private static void AddSpriteGenerating()
+    {
+        SpriteName.AllowShinySprite = true;
+        ReusableActions.GetSprite = pk =>
+        {
+            var img = pk.Sprite();
+            var ms = new MemoryStream();
+            img.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+            return ms;
+        };
     }
 }

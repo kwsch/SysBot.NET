@@ -10,6 +10,8 @@ namespace SysBot.Pokemon.Discord;
 
 public static class ReusableActions
 {
+    public static Func<PKM, MemoryStream>? GetSprite { get; set; }
+
     public static string GetModuleName(string name)
     {
         name = name.Replace("Module", "");
@@ -95,6 +97,12 @@ public static class ReusableActions
         return FormatSetCode(lines);
     }
 
+    public static string FormatSetCode<T>(T trade, LanguageID language = Language) where T : PKM, new()
+    {
+        var set = new ShowdownSet(trade);
+        return FormatSetCode(set, language);
+    }
+
     /// <summary>
     /// Removes the Discord code formatting.
     /// </summary>
@@ -103,4 +111,33 @@ public static class ReusableActions
         .Replace("\n`", "")
         .Replace("`", "")
         .Trim();
+}
+
+public static class PersonalColorExtensions
+{
+    private static readonly Dictionary<PersonalColor, Color> Map = new()
+    {
+        [PersonalColor.Red] = new Color(0xE5, 0x3D, 0x3D),
+        [PersonalColor.Blue] = new Color(0x3D, 0x7D, 0xE5),
+        [PersonalColor.Yellow] = new Color(0xE5, 0xD3, 0x3D),
+        [PersonalColor.Green] = new Color(0x4C, 0xAF, 0x50),
+        [PersonalColor.Black] = new Color(0x2C, 0x2C, 0x2C),
+        [PersonalColor.Brown] = new Color(0x8D, 0x5B, 0x3D),
+        [PersonalColor.Purple] = new Color(0x9B, 0x59, 0xB6),
+        [PersonalColor.Gray] = new Color(0x95, 0xA5, 0xA6),
+        [PersonalColor.White] = new Color(0xEC, 0xF0, 0xF1),
+        [PersonalColor.Pink] = new Color(0xE9, 0x1E, 0x8C),
+    };
+
+    extension(PKM pk)
+    {
+        public Color ToDiscordColor() =>
+            Map.TryGetValue((PersonalColor)pk.PersonalInfo.Color, out var c) ? c : Color.Default;
+    }
+
+    extension(PersonalColor color)
+    {
+        public Color ToDiscordColor() =>
+            Map.TryGetValue(color, out var c) ? c : Color.Default;
+    }
 }

@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord;
 

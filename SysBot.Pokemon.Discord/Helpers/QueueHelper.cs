@@ -18,12 +18,14 @@ public static class QueueHelper<T> where T : PKM, new()
             return;
         }
 
+        QueueJoinResult? check = null;
         try
         {
-            var result = AddToTradeQueue(trader, trade, code, sig, routine, type, out var message);
+            check = AddToTradeQueue(trader, trade, code, sig, routine, type);
+            var result = check.Result;
             if (!result)
             {
-                await context.Interaction.FollowupAsync(message).ConfigureAwait(false);
+                await context.Interaction.FollowupAsync(check.Message).ConfigureAwait(false);
                 return;
             }
 
@@ -31,32 +33,70 @@ public static class QueueHelper<T> where T : PKM, new()
             var channelRef = $"<#{context.Channel.Id}>";
             var secret = $"""
                           {channelRef}
-                          {message}
+                          {check.Message}
                           I'll message you here when your trade is starting.
                           """;
-            var builder = new EmbedBuilder { Color = Color.Blue };
+            var builder = new EmbedBuilder { Color = ((PersonalColor)trade.PersonalInfo.Color).ToDiscordColor() };
             builder.AddField(x =>
             {
                 x.Name = "Trade Code:";
                 x.Value = Format.Bold($"{code:0000 0000}");
             });
-            var msg = await trader.Interaction.User.SendMessageAsync(secret, embed: builder.Build()).ConfigureAwait(false);
+
+            if (trade.Species != 0)
+            {
+                builder.AddField(x =>
+                {
+                    x.Name = "Receiving:";
+                    x.Value = ReusableActions.FormatSetCode(trade);
+                });
+            }
+
+            Task<IUserMessage> toMessage;
+            var sprite = ReusableActions.GetSprite?.Invoke(trade);
+            if (sprite is not null)
+            {
+                const string fileName = "sprite.png";
+                var thumb = new FileAttachment(sprite, fileName);
+                builder.WithThumbnailUrl($"attachment://{fileName}");
+                toMessage = trader.Interaction.User.SendFileAsync(thumb, text: secret, embed: builder.Build());
+            }
+            else
+            {
+                toMessage = trader.Interaction.User.SendMessageAsync(text: secret, embed: builder.Build());
+            }
+
+            var msg = await toMessage.ConfigureAwait(false);
+            if (sprite != null)
+                await sprite.DisposeAsync().ConfigureAwait(false);
 
             // Keep a public log of them joining the queue.
-            await context.Interaction.Channel.SendMessageAsync($"{trader.User.Mention} - {message}").ConfigureAwait(false);
+            await context.Interaction.Channel.SendMessageAsync($"{trader.User.Mention} - {check.Message}").ConfigureAwait(false);
 
-            // Update the ephermal command message to backlink to the DM we just sent the user.
-            await context.Interaction.FollowupAsync($"Please check your direct messages: {msg.GetJumpUrl()}").ConfigureAwait(false);
+            // Update the ephemeral command message to backlink to the DM we just sent the user.
+            await context.Interaction.FollowupAsync($"Success! Please check your direct messages: {msg.GetJumpUrl()}").ConfigureAwait(false);
 
             // All further communication is in Direct Messages to the user (no further input needed).
         }
         catch (HttpException ex)
         {
             await HandleDiscordExceptionAsync(context, ex).ConfigureAwait(false);
+            // They might have been added to the queue with DMs off; dequeue them.
+
+            if (check?.Result is true)
+            {
+                var detail = check.Join;
+                var hub = SysCord<T>.Runner.Hub;
+                var info = hub.Queues.Info;
+                info.Remove(detail);
+                // Already followed up in the above event handling.
+            }
         }
     }
 
-    private static bool AddToTradeQueue(IInteractionContext trader, T pk, int code, RequestSignificance sig, PokeRoutineType routine, PokeTradeType type, out string message)
+    private sealed record QueueJoinResult(bool Result, TradeEntry<T> Join, string Message);
+
+    private static QueueJoinResult AddToTradeQueue(IInteractionContext trader, T pk, int code, RequestSignificance sig, PokeRoutineType routine, PokeTradeType type)
     {
         var channel = trader.Channel;
         var user = trader.User;
@@ -79,10 +119,7 @@ public static class QueueHelper<T> where T : PKM, new()
         var info = hub.Queues.Info;
         var added = info.AddToTradeQueue(trade, userId, sig == RequestSignificance.Owner);
         if (added == QueueResultAdd.AlreadyInQueue)
-        {
-            message = "Sorry, you are already in the queue.";
-            return false;
-        }
+            return new(false, trade, "Sorry, you are already in the queue.");
 
         var position = info.CheckPosition(userId, routine);
         var ticketId = TradeStartModule<T>.IsStartChannel(channel.Id) ? $", unique ID: {detail.Id}" : "";
@@ -90,14 +127,14 @@ public static class QueueHelper<T> where T : PKM, new()
             ? $" Receiving: {GameInfo.GetStrings("en").Species[pk.Species]}."
             : "";
 
-        message = $"Added to the {routine} queue{ticketId}. Current Position: {position.Position}.{pokeName}";
+        var message = $"Added to the {routine} queue{ticketId}. Current Position: {position.Position}.{pokeName}";
         var botct = info.Hub.Bots.Count;
         if (position.Position > botct)
         {
             var eta = info.Hub.Config.Queues.EstimateDelay(position.Position, botct);
             message += $" Estimated: {eta:F1} minutes.";
         }
-        return true;
+        return new(true, trade, message);
     }
 
     private static async Task HandleDiscordExceptionAsync(SocketInteractionContext context, HttpException ex)
