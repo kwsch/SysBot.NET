@@ -36,8 +36,15 @@ public class CloneModule<T> : SlashModuleBase where T : PKM, new()
     [RequireSudo]
     public async Task GetListAsync()
     {
-        var embed = new EmbedBuilder();
-        embed.AddField("Pending Trades", Info.GetTradeList(PokeRoutineType.Clone));
+        string msg = Info.GetTradeList(PokeRoutineType.Clone);
+        var embed = new EmbedBuilder { Color = Color.LightGrey };
+        embed.AddField(x =>
+        {
+            x.Name = "Pending Trades";
+            x.Value = msg;
+            x.IsInline = false;
+        });
+
         await RespondAsync("These are the users who are currently waiting:", embed: embed.Build()).ConfigureAwait(false);
     }
 

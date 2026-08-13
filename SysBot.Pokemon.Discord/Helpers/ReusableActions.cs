@@ -101,7 +101,7 @@ public static class ReusableActions
         return FormatSetCode(lines);
     }
 
-    public static string FormatSetCode<T>(T trade, LanguageID language = Language) where T : PKM, new()
+    public static string FormatSetCode<T>(T trade, LanguageID language = Language) where T : PKM
     {
         var localization = BattleTemplateLocalization.GetLocalization(Language);
         var set = new ShowdownSet(trade, localization);

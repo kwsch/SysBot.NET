@@ -34,7 +34,8 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
     public async Task TradeSetModalAsync(TradeSetModal modal)
     {
         // Re-check if the queue closed in the time between opening the modal and entering the info.
-        if (await CheckQueue().ConfigureAwait(false)) return;
+        if (!await CheckQueue().ConfigureAwait(false))
+            return;
 
         // Sanity check their inputs.
         var code = modal.Code;
@@ -107,7 +108,7 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
     [RequireSudo]
     public async Task GetTradeListAsync()
     {
-        var embed = new EmbedBuilder();
+        var embed = new EmbedBuilder { Color = Color.LightGrey };
         embed.AddField(x =>
         {
             x.Name = "Pending Trades";
@@ -230,7 +231,6 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
             return true;
         await RespondAsync("The trade queue has closed.", ephemeral: true).ConfigureAwait(false);
         return false;
-
     }
 
     private async Task TradeAttachmentAsync(int code, IAttachment attachment, IInteractionContext user)

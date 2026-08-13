@@ -18,10 +18,7 @@ public class HubModule<T> : SlashModuleBase where T : PKM, new()
         var me = SysCord<T>.Runner;
         var hub = me.Hub;
 
-        var builder = new EmbedBuilder
-        {
-            Color = Color.Gold,
-        };
+        var builder = new EmbedBuilder { Color = Color.Gold };
         var all = me.Bots.ConvertAll(z => z.Bot);
         builder.AddField(x =>
         {

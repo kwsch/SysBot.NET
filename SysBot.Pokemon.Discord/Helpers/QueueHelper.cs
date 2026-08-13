@@ -1,3 +1,4 @@
+using System.IO;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Net;
@@ -7,12 +8,12 @@ namespace SysBot.Pokemon.Discord;
 
 public static class QueueHelper<T> where T : PKM, new()
 {
-    public static async Task AddToQueueAsync(IInteractionContext context, int code, T trade, PokeRoutineType routine, PokeTradeType type)
+    public static async Task AddToQueueAsync(IInteractionContext context, int code, T pk, PokeRoutineType routine, PokeTradeType type)
     {
         QueueJoinResult? check = null;
         try
         {
-            check = AddToTradeQueue(context, trade, code, routine, type);
+            check = AddToTradeQueue(context, pk, code, routine, type);
             var result = check.Result;
             if (!result)
             {
@@ -21,44 +22,8 @@ public static class QueueHelper<T> where T : PKM, new()
             }
 
             // Message the user in their DMs. If this fails, the event handler will abort and let them know to enable DMs.
-            var channelRef = $"<#{context.Channel.Id}>";
-            var secret = $"""
-                          {channelRef}
-                          {check.Message}
-                          I'll message you here when your trade is starting.
-                          """;
-            var builder = new EmbedBuilder { Color = ((PersonalColor)trade.PersonalInfo.Color).ToDiscordColor() };
-            builder.AddField(x =>
-            {
-                x.Name = "Trade Code:";
-                x.Value = Format.Bold($"{code:0000 0000}");
-            });
-
-            if (trade.Species != 0)
-            {
-                builder.AddField(x =>
-                {
-                    x.Name = "Receiving:";
-                    x.Value = ReusableActions.FormatSetCode(trade);
-                });
-            }
-
-            Task<IUserMessage> toMessage;
-            var user = context.Interaction.User;
-            var sprite = ReusableActions.GetSprite?.Invoke(trade);
-            if (sprite is not null)
-            {
-                const string fileName = "sprite.png";
-                var thumb = new FileAttachment(sprite, fileName);
-                builder.WithThumbnailUrl($"attachment://{fileName}");
-                toMessage = user.SendFileAsync(thumb, text: secret, embed: builder.Build());
-            }
-            else
-            {
-                toMessage = user.SendMessageAsync(text: secret, embed: builder.Build());
-            }
-
-            var msg = await toMessage.ConfigureAwait(false);
+            var task = GetPrivateMessageTradeJoin(context, pk, check, out var sprite);
+            var message = await task.ConfigureAwait(false);
             if (sprite != null)
                 await sprite.DisposeAsync().ConfigureAwait(false);
 
@@ -66,10 +31,10 @@ public static class QueueHelper<T> where T : PKM, new()
             await context.Channel.SendMessageAsync($"{context.User.Mention} - {check.Message}").ConfigureAwait(false);
 
             // Update the ephemeral command message to backlink to the DM we just sent the user.
-            await context.Interaction.FollowupAsync($"Success! Please check your direct messages: {msg.GetJumpUrl()}").ConfigureAwait(false);
+            await context.Interaction.FollowupAsync($"Success! Please check your direct messages: {message.GetJumpUrl()}").ConfigureAwait(false);
 
             // All further communication is in Direct Messages to the user (no further input needed).
-            check.Join.Trade.IsReady = true; // If we failed, we'd remove (see below). Mark it as ready to trade.
+            check.Join.Trade.IsReady = true; // If we failed, we'd instead remove via the exception handling below.
         }
         catch (HttpException ex)
         {
@@ -80,14 +45,51 @@ public static class QueueHelper<T> where T : PKM, new()
                 var hub = SysCord<T>.Runner.Hub;
                 var info = hub.Queues.Info;
                 info.Remove(detail);
-                // Already followed up in the above event handling.
             }
 
             await HandleDiscordExceptionAsync(context, ex).ConfigureAwait(false);
         }
     }
 
-    private sealed record QueueJoinResult(bool Result, TradeEntry<T> Join, string Message);
+    private static Task<IUserMessage> GetPrivateMessageTradeJoin(IInteractionContext context, T pk, QueueJoinResult check,
+        out MemoryStream? sprite)
+    {
+        // Prepend the embed with a message letting the user know about the trade.
+        var channelRef = $"<#{context.Channel.Id}>";
+        var secret = $"""
+                      {channelRef}
+                      {check.Message}
+                      I'll message you here when your trade is starting.
+                      """;
+        return GetPrivateMessageTradeJoin(context, pk, check, secret, out sprite);
+    }
+
+    private static Task<IUserMessage> GetPrivateMessageTradeJoin(IInteractionContext context, T pk, QueueJoinResult check, string message,
+        out MemoryStream? sprite)
+    {
+        var builder = new EntityEmbedBuilder(pk);
+        builder
+            .AddReceiving()
+            .AddTradeCode(check.Join.Trade.Code)
+            .AddQueuePosition(check.Position);
+
+        var user = context.Interaction.User;
+        if (builder.TryAddSpriteThumbnail(out sprite, out var thumb))
+            return user.SendFileAsync(thumb.Value, text: message, embed: builder.Build());
+
+        // No sprite, just return a regular message.
+        return user.SendMessageAsync(text: message, embed: builder.Build());
+    }
+
+    /// <summary>
+    /// Represents the result of attempting to join a trade queue, including whether the join was successful, the trade entry, and an associated message.
+    /// </summary>
+    /// <param name="Result">Indicates whether the join was successful.</param>
+    /// <param name="Join">The trade entry associated with the join attempt.</param>
+    /// <param name="Message">A message providing additional information about the join attempt.</param>
+    /// <param name="Position">The position within the queue that the user joined at.</param>
+    /// <param name="Estimate">Estimated time (in minutes) that the user will need to wait before a bot picks up their request.</param>
+    private sealed record QueueJoinResult(bool Result, TradeEntry<T> Join, string Message, int Position = 0, float Estimate = 0);
 
     private static QueueJoinResult AddToTradeQueue(IInteractionContext trader, T pk, int code, PokeRoutineType routine, PokeTradeType type)
     {
@@ -123,13 +125,14 @@ public static class QueueHelper<T> where T : PKM, new()
 
         var message = $"Added to the {routine} queue{ticketId}. Current Position: {position.Position}.{pokeName}";
         var botct = info.Hub.Bots.Count;
+        float estimate = 0;
         if (position.Position > botct)
         {
-            var eta = info.Hub.Config.Queues.EstimateDelay(position.Position, botct);
-            message += $" Estimated: {eta:F1} minutes.";
+            estimate = info.Hub.Config.Queues.EstimateDelay(position.Position, botct);
+            message += $" Estimated: {estimate:F1} minutes.";
         }
         // Don't mark as ready yet; notifying the user may fail (DMs disabled). If so, we'll remove from the queue and not mark as ready.
-        return new(true, trade, message);
+        return new(true, trade, message, position.Position, estimate);
     }
 
     private static async Task HandleDiscordExceptionAsync(IInteractionContext context, HttpException ex)

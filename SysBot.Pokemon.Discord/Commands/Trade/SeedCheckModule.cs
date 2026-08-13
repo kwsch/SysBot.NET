@@ -39,7 +39,7 @@ public class SeedCheckModule<T> : SlashModuleBase where T : PKM, new()
 
         var hub = SysCord<T>.Runner.Hub;
         var r = new SeedSearchResult(Z3SearchResult.Success, value, -1, hub.Config.SeedCheckSWSH.ResultDisplayMode);
-        var embed = new EmbedBuilder { Color = Color.LighterGrey };
+        var embed = new EmbedBuilder { Color = Color.LightGrey };
         embed.AddField($"Seed: 0x{value:X16}", r.ToString());
         await FollowupAsync($"Here are the details for `{r.Seed:X16}`:", embed: embed.Build()).ConfigureAwait(false);
     }
@@ -55,8 +55,15 @@ public class SeedCheckModule<T> : SlashModuleBase where T : PKM, new()
     [RequireSudo]
     public async Task GetSeedListAsync()
     {
-        var embed = new EmbedBuilder();
-        embed.AddField("Pending Trades", Info.GetTradeList(PokeRoutineType.SeedCheck));
+        string msg = Info.GetTradeList(PokeRoutineType.SeedCheck);
+        var embed = new EmbedBuilder { Color = Color.LightGrey };
+        embed.AddField(x =>
+        {
+            x.Name = "Pending Trades";
+            x.Value = msg;
+            x.IsInline = false;
+        });
+
         await RespondAsync("These are the users who are currently waiting:", embed: embed.Build()).ConfigureAwait(false);
     }
 

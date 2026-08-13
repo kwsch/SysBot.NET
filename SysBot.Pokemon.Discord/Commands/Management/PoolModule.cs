@@ -26,7 +26,7 @@ public class PoolModule<T> : SlashModuleBase where T : PKM, new()
             => $"{i + 1:00}: {z.Key} = {(Species)z.Value.RequestInfo.Species}");
 
         var msg = string.Join('\n', entries);
-        var embed = new EmbedBuilder();
+        var embed = new EmbedBuilder { Color = Color.Gold };
         embed.AddField($"Count: {count}", msg);
         await RespondAsync("Pool Details", ephemeral: true, embed: embed.Build()).ConfigureAwait(false);
     }

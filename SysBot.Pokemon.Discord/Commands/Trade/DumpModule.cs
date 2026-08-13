@@ -37,7 +37,7 @@ public class DumpModule<T> : SlashModuleBase where T : PKM, new()
     public async Task GetListAsync()
     {
         string msg = Info.GetTradeList(PokeRoutineType.Dump);
-        var embed = new EmbedBuilder();
+        var embed = new EmbedBuilder { Color = Color.LightGrey };
         embed.AddField(x =>
         {
             x.Name = "Pending Trades";
