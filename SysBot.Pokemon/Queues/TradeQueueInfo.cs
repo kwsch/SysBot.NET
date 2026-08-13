@@ -15,6 +15,13 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
     where T : PKM, new()
 {
     private readonly Lock _sync = new();
+
+    /// <summary>
+    /// Currently queued users, including those currently being handled via trade bots (actively trading).
+    /// </summary>
+    /// <remarks>
+    /// We need to keep track of users currently being traded. They can re-join AFTER their trade completes.
+    /// </remarks>
     private readonly List<TradeEntry<T>> _queue = [];
     public readonly PokeTradeHub<T> Hub = Hub;
 
@@ -103,7 +110,7 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
         return ClearTrade(details);
     }
 
-    private QueueResultRemove ClearTrade(ICollection<TradeEntry<T>> details)
+    private QueueResultRemove ClearTrade(IReadOnlyCollection<TradeEntry<T>> details)
     {
         if (details.Count == 0)
             return QueueResultRemove.NotInQueue;
@@ -158,12 +165,10 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
     private static string FormatUser(string format, TradeEntry<T> z)
         => string.Format(format, z.Trade.Id, z.Trade.Code, z.Trade.Type, z.Username, (Species)z.Trade.TradeData.Species);
 
-    public IList<TradeEntry<T>> GetIsUserQueued(Func<TradeEntry<T>, bool> match)
+    public IReadOnlyList<TradeEntry<T>> GetIsUserQueued(Func<TradeEntry<T>, bool> match)
     {
         lock (_sync)
-        {
             return [.. _queue.Where(match)];
-        }
     }
 
     public bool Remove(TradeEntry<T> detail)
@@ -175,22 +180,35 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
         }
     }
 
-    public QueueResultAdd AddToTradeQueue(TradeEntry<T> trade, ulong userId, bool sudo = false)
+    public QueueResultAdd IsAbleToJoinQueue(TradeEntry<T> trade, ulong userId, bool sudo = false)
     {
         lock (_sync)
         {
             if (_queue.Any(z => z.UserID == userId) && !sudo)
                 return QueueResultAdd.AlreadyInQueue;
+            return QueueResultAdd.CanAdd;
+        }
+    }
 
+    public QueueResultAdd AddToTradeQueue(TradeEntry<T> trade, ulong userId, bool sudo = false)
+    {
+        lock (_sync)
+        {
+            // Check again. The check above should immediately precede an Add operation, but ya never know.
+            if (_queue.Any(z => z.UserID == userId) && !sudo)
+                return QueueResultAdd.AlreadyInQueue;
+
+            // Update the trade data based on settings.
             if (Hub.Config.Legality.ResetHOMETracker && trade.Trade.TradeData is IHomeTrack t)
                 t.Tracker = 0;
 
+            // Enqueue with the proper priority.
             var priority = sudo ? PokeTradePriorities.Tier1 : PokeTradePriorities.TierFree;
             var queue = Hub.Queues.GetQueue(trade.Type);
-
             queue.Enqueue(trade.Trade, priority);
             _queue.Add(trade);
 
+            // Once the trade is finished, remove the user from the list of currently queued users.
             trade.Trade.Notifier.OnFinish = _ => Remove(trade);
             return QueueResultAdd.Added;
         }

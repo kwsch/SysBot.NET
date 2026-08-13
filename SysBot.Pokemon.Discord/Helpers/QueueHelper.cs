@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Discord;
-using Discord.Interactions;
 using Discord.Net;
 using PKHeX.Core;
 
@@ -8,20 +7,12 @@ namespace SysBot.Pokemon.Discord;
 
 public static class QueueHelper<T> where T : PKM, new()
 {
-    private const uint MaxTradeCode = 9999_9999;
-
-    public static async Task AddToQueueAsync(SocketInteractionContext context, int code, RequestSignificance sig, T trade, PokeRoutineType routine, PokeTradeType type, IInteractionContext trader)
+    public static async Task AddToQueueAsync(IInteractionContext context, int code, T trade, PokeRoutineType routine, PokeTradeType type)
     {
-        if ((uint)code > MaxTradeCode)
-        {
-            await context.Interaction.FollowupAsync("Trade code should be 00000000-99999999!").ConfigureAwait(false);
-            return;
-        }
-
         QueueJoinResult? check = null;
         try
         {
-            check = AddToTradeQueue(trader, trade, code, sig, routine, type);
+            check = AddToTradeQueue(context, trade, code, routine, type);
             var result = check.Result;
             if (!result)
             {
@@ -53,17 +44,18 @@ public static class QueueHelper<T> where T : PKM, new()
             }
 
             Task<IUserMessage> toMessage;
+            var user = context.Interaction.User;
             var sprite = ReusableActions.GetSprite?.Invoke(trade);
             if (sprite is not null)
             {
                 const string fileName = "sprite.png";
                 var thumb = new FileAttachment(sprite, fileName);
                 builder.WithThumbnailUrl($"attachment://{fileName}");
-                toMessage = trader.Interaction.User.SendFileAsync(thumb, text: secret, embed: builder.Build());
+                toMessage = user.SendFileAsync(thumb, text: secret, embed: builder.Build());
             }
             else
             {
-                toMessage = trader.Interaction.User.SendMessageAsync(text: secret, embed: builder.Build());
+                toMessage = user.SendMessageAsync(text: secret, embed: builder.Build());
             }
 
             var msg = await toMessage.ConfigureAwait(false);
@@ -71,18 +63,17 @@ public static class QueueHelper<T> where T : PKM, new()
                 await sprite.DisposeAsync().ConfigureAwait(false);
 
             // Keep a public log of them joining the queue.
-            await context.Interaction.Channel.SendMessageAsync($"{trader.User.Mention} - {check.Message}").ConfigureAwait(false);
+            await context.Channel.SendMessageAsync($"{context.User.Mention} - {check.Message}").ConfigureAwait(false);
 
             // Update the ephemeral command message to backlink to the DM we just sent the user.
             await context.Interaction.FollowupAsync($"Success! Please check your direct messages: {msg.GetJumpUrl()}").ConfigureAwait(false);
 
             // All further communication is in Direct Messages to the user (no further input needed).
+            check.Join.Trade.IsReady = true; // If we failed, we'd remove (see below). Mark it as ready to trade.
         }
         catch (HttpException ex)
         {
-            await HandleDiscordExceptionAsync(context, ex).ConfigureAwait(false);
-            // They might have been added to the queue with DMs off; dequeue them.
-
+            // They might have been added to the queue with DMs off; dequeue them immediately if so.
             if (check?.Result is true)
             {
                 var detail = check.Join;
@@ -91,12 +82,14 @@ public static class QueueHelper<T> where T : PKM, new()
                 info.Remove(detail);
                 // Already followed up in the above event handling.
             }
+
+            await HandleDiscordExceptionAsync(context, ex).ConfigureAwait(false);
         }
     }
 
     private sealed record QueueJoinResult(bool Result, TradeEntry<T> Join, string Message);
 
-    private static QueueJoinResult AddToTradeQueue(IInteractionContext trader, T pk, int code, RequestSignificance sig, PokeRoutineType routine, PokeTradeType type)
+    private static QueueJoinResult AddToTradeQueue(IInteractionContext trader, T pk, int code, PokeRoutineType routine, PokeTradeType type)
     {
         var channel = trader.Channel;
         var user = trader.User;
@@ -104,6 +97,7 @@ public static class QueueHelper<T> where T : PKM, new()
         var name = user.Username;
         var trainer = new PokeTradeTrainerInfo(name, userId);
         var notifier = new DiscordTradeNotifier<T>(pk, trainer, code, trader);
+        var sig = trader.GetSignificance();
         var detail = new PokeTradeDetail<T>
         {
             Type = type,
@@ -134,16 +128,17 @@ public static class QueueHelper<T> where T : PKM, new()
             var eta = info.Hub.Config.Queues.EstimateDelay(position.Position, botct);
             message += $" Estimated: {eta:F1} minutes.";
         }
+        // Don't mark as ready yet; notifying the user may fail (DMs disabled). If so, we'll remove from the queue and not mark as ready.
         return new(true, trade, message);
     }
 
-    private static async Task HandleDiscordExceptionAsync(SocketInteractionContext context, HttpException ex)
+    private static async Task HandleDiscordExceptionAsync(IInteractionContext context, HttpException ex)
     {
         string message = string.Empty;
         switch (ex.DiscordCode)
         {
             case DiscordErrorCode.InsufficientPermissions or DiscordErrorCode.MissingPermissions:
-                var channel = context.Interaction.Channel;
+                var channel = context.Channel;
                 IGuild? guild = context.Guild;
                 if (guild is not null && channel is IGuildChannel guildChannel)
                 {

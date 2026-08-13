@@ -86,5 +86,5 @@ public class TrackedUserLog
 
 public sealed record TrackedUser(ulong NetworkID, string Name, ulong RemoteID)
 {
-    public readonly DateTime Time = DateTime.Now;
+    public readonly DateTime Time = DateTime.UtcNow;
 }

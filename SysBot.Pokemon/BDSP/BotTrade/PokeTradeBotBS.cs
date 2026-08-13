@@ -627,10 +627,10 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
     {
         int ctr = 0;
         var time = TimeSpan.FromSeconds(Hub.Config.Trade.MaxDumpTradeTime);
-        var start = DateTime.Now;
+        var start = DateTime.UtcNow;
 
         var bctr = 0;
-        while (ctr < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.Now - start < time)
+        while (ctr < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.UtcNow - start < time)
         {
             // We're no longer talking, so they probably quit on us.
             if (!await IsUnionWork(UnionTalkingOffset, token).ConfigureAwait(false))

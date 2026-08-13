@@ -163,7 +163,7 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
         var previous = list.TryGetPreviousNID(TrainerNID);
         if (previous != null)
         {
-            var delta = DateTime.Now - previous.Time; // Time that has passed since last trade.
+            var delta = DateTime.UtcNow - previous.Time; // Time that has passed since last trade.
             Log($"Last traded with {user.TrainerName} {delta.TotalMinutes:F1} minutes ago (OT: {TrainerName}).");
 
             // Allows setting a cooldown for repeat trades. If the same user is encountered within the cooldown period for the same trade type, the user is warned and the trade will be ignored.

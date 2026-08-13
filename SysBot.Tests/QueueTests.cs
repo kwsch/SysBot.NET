@@ -42,13 +42,13 @@ public class QueueTests
 
         // Sudo add with the same ID
         var id = t1.UserID;
-        var sr = info.AddToTradeQueue(s, id);
+        var sr = info.IsAbleToJoinQueue(s, id);
         sr.Should().Be(QueueResultAdd.AlreadyInQueue);
 
         sr = info.AddToTradeQueue(s, id, true);
         sr.Should().Be(QueueResultAdd.Added);
 
-        var dequeue = queue.TryDequeue(out var first, out uint priority);
+        var dequeue = queue.TryDequeue(out var first, out uint priority, checkReady: false);
         priority.Should().Be(PokeTradePriorities.Tier1); // sudo
         dequeue.Should().BeTrue();
         ReferenceEquals(first, s.Trade).Should().BeTrue();
@@ -63,7 +63,7 @@ public class QueueTests
         count.Should().Be(3);
         queue.Count.Should().Be(3);
 
-        dequeue = queue.TryDequeue(out var second, out priority);
+        dequeue = queue.TryDequeue(out var second, out priority, checkReady: false);
         priority.Should().Be(PokeTradePriorities.TierFree); // sudo
         dequeue.Should().BeTrue();
         ReferenceEquals(second, t1.Trade).Should().BeTrue();
@@ -147,7 +147,7 @@ public class QueueTests
         // Enqueue some favorites
         for (int i = 0; i < count / 10; i++)
         {
-            var s = GetTestTrade(info, count + i + 1, true);
+            var s = GetTestTrade(info, count + i + 1, favor: true);
             var r = info.AddToTradeQueue(s, s.UserID);
             r.Should().Be(QueueResultAdd.Added);
         }
@@ -155,12 +155,12 @@ public class QueueTests
         int expectedPosition = (int)Math.Ceiling(Math.Pow(count, f.Exponent));
         for (int i = 0; i < expectedPosition; i++)
         {
-            queue.TryDequeue(out var detail, out _);
+            queue.TryDequeue(out var detail, out _, checkReady: false);
             detail.IsFavored.Should().Be(false);
         }
 
         {
-            queue.TryDequeue(out var detail, out _);
+            queue.TryDequeue(out var detail, out _, checkReady: false);
             detail.IsFavored.Should().Be(true);
         }
     }

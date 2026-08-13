@@ -17,17 +17,17 @@ public class PokeTradeQueue<TPoke>(PokeTradeType Type)
 
     public void Enqueue(PokeTradeDetail<TPoke> detail, uint priority = PokeTradePriorities.TierFree) => Queue.Add(priority, detail);
 
-    public bool TryDequeue(out PokeTradeDetail<TPoke> detail, out uint priority)
+    public bool TryDequeue(out PokeTradeDetail<TPoke> detail, out uint priority, bool checkReady)
     {
-        var result = Queue.TryDequeue(out var kvp);
+        var result = Queue.TryDequeue(out var kvp, checkReady);
         detail = kvp.Value;
         priority = kvp.Key;
         return result;
     }
 
-    public bool TryPeek(out PokeTradeDetail<TPoke> detail, out uint priority)
+    public bool TryPeek(out PokeTradeDetail<TPoke> detail, out uint priority, bool checkReady = true)
     {
-        var result = Queue.TryPeek(out var kvp);
+        var result = Queue.TryPeek(out var kvp, checkReady);
         detail = kvp.Value;
         priority = kvp.Key;
         return result;

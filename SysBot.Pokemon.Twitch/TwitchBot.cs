@@ -119,13 +119,17 @@ public class TwitchBot<T> where T : PKM, new()
         };
 
         var trade = new TradeEntry<T>(detail, userId, type, name);
-        var added = Info.AddToTradeQueue(trade, userId, sig.IsOwner);
-        if (added == QueueResultAdd.AlreadyInQueue)
+        var canAdd = Info.IsAbleToJoinQueue(trade, userId, sig.IsOwner);
+        if (canAdd != QueueResultAdd.CanAdd)
         {
-            message = $"@{name}: Sorry, you are already in the queue.";
+            if (canAdd == QueueResultAdd.AlreadyInQueue)
+                message = $"@{name}: Sorry, you are already in the queue.";
+            else
+                message = $"@{name}: Sorry, can't add you.";
             return false;
         }
 
+        Info.AddToTradeQueue(trade, userId, sig.IsOwner);
         var position = Info.CheckPosition(userId, type);
         message = $"@{name}: Added to the {type} queue, unique ID: {detail.Id}. Current Position: {position.Position}";
 
@@ -135,6 +139,8 @@ public class TwitchBot<T> where T : PKM, new()
             var eta = Info.Hub.Config.Queues.EstimateDelay(position.Position, botct);
             message += $". Estimated: {eta:F1} minutes.";
         }
+
+        detail.IsReady = true; // Now that we've messaged the user, the trade is ready for a bot to pick up.
         return true;
     }
 

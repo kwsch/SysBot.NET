@@ -493,11 +493,11 @@ public class PokeTradeBotLA(PokeTradeHub<PA8> Hub, PokeBotState Config) : PokeRo
     {
         int ctr = 0;
         var time = TimeSpan.FromSeconds(Hub.Config.Trade.MaxDumpTradeTime);
-        var start = DateTime.Now;
+        var start = DateTime.UtcNow;
 
         var pkprev = new PA8();
         var bctr = 0;
-        while (ctr < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.Now - start < time)
+        while (ctr < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.UtcNow - start < time)
         {
             if (await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
                 break;

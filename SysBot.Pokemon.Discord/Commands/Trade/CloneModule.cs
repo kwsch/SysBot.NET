@@ -16,11 +16,13 @@ public class CloneModule<T> : SlashModuleBase where T : PKM, new()
     public Task CloneAsync(int? code = null) => JoinAsync(code);
     private async Task JoinAsync(int? code)
     {
+        if (!await Context.IsTradeCodeValidOrEmpty(code).ConfigureAwait(false))
+            return;
+
         await DeferAsync(ephemeral: true).ConfigureAwait(false);
 
-        var sig = GetSignificance(Context.User);
         code ??= Info.GetRandomTradeCode();
-        await QueueHelper<T>.AddToQueueAsync(Context, (int)code, sig, new T(), PokeRoutineType.Clone, PokeTradeType.Clone, Context).ConfigureAwait(false);
+        await QueueHelper<T>.AddToQueueAsync(Context, (int)code, new T(), PokeRoutineType.Clone, PokeTradeType.Clone).ConfigureAwait(false);
     }
 
     /*

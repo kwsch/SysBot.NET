@@ -646,11 +646,11 @@ public class PokeTradeBotLZA(PokeTradeHub<PA9> Hub, PokeBotState Config) : PokeR
     {
         int dumped = 0;
         var time = TimeSpan.FromSeconds(Hub.Config.Trade.MaxDumpTradeTime);
-        var start = DateTime.Now;
+        var start = DateTime.UtcNow;
 
         var pkprev = new PA9();
         var pressB = 0;
-        while (dumped < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.Now - start < time)
+        while (dumped < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.UtcNow - start < time)
         {
             if (!await IsOnMenu(MenuState.InBox, token).ConfigureAwait(false))
                 break;

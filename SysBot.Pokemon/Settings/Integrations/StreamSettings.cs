@@ -201,7 +201,7 @@ public class StreamSettings
 
     private void GenerateWaitedTime(DateTime time)
     {
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         var difference = now - time;
         var value = difference.ToString(WaitedTimeFormat);
         File.WriteAllText("waited.txt", value);
@@ -217,7 +217,7 @@ public class StreamSettings
         File.WriteAllText("estimatedTime.txt", wait);
 
         // Expected to be fulfilled at this time
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         var difference = now.AddMinutes(estimate);
         var date = difference.ToString(EstimatedFulfillmentFormat);
         File.WriteAllText("estimatedTimestamp.txt", date);

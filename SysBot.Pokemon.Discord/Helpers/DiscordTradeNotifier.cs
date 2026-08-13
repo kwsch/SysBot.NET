@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using PKHeX.Core;
+using SysBot.Base;
 
 namespace SysBot.Pokemon.Discord;
 
@@ -54,10 +55,13 @@ public sealed record DiscordTradeNotifier<T>(T Data, PokeTradeTrainerInfo Info, 
         await SendNotification(message).ConfigureAwait(false);
         if (result.Species != 0 && Hub.Config.Discord.ReturnPKMs)
             await Trader.SendFilePrivatelyAsync(result, "Here's what you traded me!").ConfigureAwait(false);
+
+        LogUtil.LogInfo($"Total time since queueing: {info.Age:g}");
     }
 
     public async Task SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, string message)
         => await SendNotification(message).ConfigureAwait(false);
+
     private async Task SendNotification(string message, Embed? embed = null)
     {
         // Discord makes all interaction modals stale after 15 minutes.

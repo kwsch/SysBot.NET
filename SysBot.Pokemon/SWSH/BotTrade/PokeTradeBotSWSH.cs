@@ -588,10 +588,10 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
     {
         int ctr = 0;
         var time = TimeSpan.FromSeconds(hub.Config.Trade.MaxDumpTradeTime);
-        var start = DateTime.Now;
+        var start = DateTime.UtcNow;
         var pkprev = new PK8();
         var bctr = 0;
-        while (ctr < hub.Config.Trade.MaxDumpsPerTrade && DateTime.Now - start < time)
+        while (ctr < hub.Config.Trade.MaxDumpsPerTrade && DateTime.UtcNow - start < time)
         {
             if (await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
                 break;

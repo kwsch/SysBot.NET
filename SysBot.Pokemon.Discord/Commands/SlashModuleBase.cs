@@ -1,8 +1,6 @@
 using System;
-using System.Linq;
 using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
 
 namespace SysBot.Pokemon.Discord;
 
@@ -13,24 +11,6 @@ namespace SysBot.Pokemon.Discord;
 [RequireBotPermission(GuildPermission.SendMessages)]
 public abstract class SlashModuleBase : InteractionModuleBase<SocketInteractionContext>
 {
-    private static DiscordManager Manager => SysCordSettings.Manager;
-
-    protected RequestSignificance GetSignificance(IUser user)
-    {
-        // Check user ID.
-        var userId = user.Id;
-        if (userId == Manager.Owner)
-            return RequestSignificance.Owner;
-        if (Manager.CanUseSudo(userId))
-            return RequestSignificance.Favored;
-
-        // Check roles, might be a special role granted.
-        // Stringy names are for user convenience; must trust externally managed guilds the bot is added to (else we should use role IDs).
-        return user is SocketGuildUser g
-            ? Manager.GetSignificance(g.Roles.Select(z => z.Name))
-            : RequestSignificance.None;
-    }
-
     // Used by Sudo commands.
     protected RemoteControlAccess GetReference(IChannel channel) => GetReference(channel.Id, channel.Name);
     protected RemoteControlAccess GetReference(IUser user) => GetReference(user.Id, user.Username);

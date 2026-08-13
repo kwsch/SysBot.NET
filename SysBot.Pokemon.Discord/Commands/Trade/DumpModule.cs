@@ -16,11 +16,13 @@ public class DumpModule<T> : SlashModuleBase where T : PKM, new()
     public async Task DumpAsync(
         [Summary(nameof(code), "Optional; leave blank for a random code")] int? code = null)
     {
+        if (!await Context.IsTradeCodeValidOrEmpty(code).ConfigureAwait(false))
+            return;
+
         await DeferAsync(ephemeral: true).ConfigureAwait(false);
 
-        var sig = GetSignificance(Context.User);
         code ??= Info.GetRandomTradeCode();
-        await QueueHelper<T>.AddToQueueAsync(Context, (int)code, sig, new T(), PokeRoutineType.Dump, PokeTradeType.Dump, Context).ConfigureAwait(false);
+        await QueueHelper<T>.AddToQueueAsync(Context, (int)code, new T(), PokeRoutineType.Dump, PokeTradeType.Dump).ConfigureAwait(false);
     }
 
     /*

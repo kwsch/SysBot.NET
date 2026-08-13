@@ -5,7 +5,7 @@ using PKHeX.Core;
 
 namespace SysBot.Pokemon;
 
-public sealed record PokeTradeDetail<TPoke> : IFavoredEntry where TPoke : PKM, new()
+public sealed record PokeTradeDetail<TPoke> : IFavoredEntry, IReadyStatus where TPoke : PKM, new()
 {
     // ReSharper disable once StaticMemberInGenericType
     /// <summary> Global variable indicating the amount of trades created. </summary>
@@ -32,7 +32,14 @@ public sealed record PokeTradeDetail<TPoke> : IFavoredEntry where TPoke : PKM, n
     public required PokeTradeType Type { get; init; }
 
     /// <summary> Time the object was created at </summary>
-    public readonly DateTime Time = DateTime.Now;
+    public DateTime Time { get; } = DateTime.UtcNow;
+
+    /// <summary> Indicates how old the request is. </summary>
+    public TimeSpan Age => DateTime.UtcNow - Time;
+
+    /// <summary> Internal readiness state to prevent a bot from picking up the trade too early in the event it shouldn't have been queued. </summary>
+    public bool IsReady { get; set; }
+
     /// <summary> Unique incremented ID </summary>
     public readonly int Id = Interlocked.Increment(ref _createdCount) % 3000;
 

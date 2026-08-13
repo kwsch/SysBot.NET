@@ -24,10 +24,9 @@ public static class TwitchCommandsHelper<T> where T : PKM, new()
             return false;
         }
 
-        var set = ShowdownUtil.ConvertToShowdown(showdownSet);
-        if (set == null)
+        if (!ShowdownUtil.TryConvertSingleLine(showdownSet, out var set))
         {
-            message = $"Skipping trade, @{username}: Empty nickname provided for the species.";
+            message = $"Skipping trade, @{username}: Invalid/Empty nickname provided for the species.";
             return false;
         }
         var template = AutoLegalityWrapper.GetTemplate(set);

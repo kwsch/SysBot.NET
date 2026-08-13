@@ -71,7 +71,7 @@ public class HubModule<T> : SlashModuleBase where T : PKM, new()
 
     private static string GetNextName(PokeTradeQueue<T> q)
     {
-        if (!q.TryPeek(out var detail, out _))
+        if (!q.TryPeek(out var detail, out _, checkReady: false)) // can be soon-ready
             return "None!";
 
         var name = detail.Trainer.TrainerName;

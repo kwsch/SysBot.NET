@@ -748,11 +748,11 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
     {
         int ctr = 0;
         var time = TimeSpan.FromSeconds(Hub.Config.Trade.MaxDumpTradeTime);
-        var start = DateTime.Now;
+        var start = DateTime.UtcNow;
 
         var pkprev = new PK9();
         var bctr = 0;
-        while (ctr < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.Now - start < time)
+        while (ctr < Hub.Config.Trade.MaxDumpsPerTrade && DateTime.UtcNow - start < time)
         {
             if (!await IsInBox(PortalOffset, token).ConfigureAwait(false))
                 break;

@@ -27,7 +27,8 @@ public class GenerateTests
     public void ShouldNotGenerate(string set)
     {
         _ = AutoLegalityWrapper.GetTrainerInfo<PK8>();
-        var s = ShowdownUtil.ConvertToShowdown(set);
+        var success = ShowdownUtil.TryConvertSingleLine(set, out var s);
+        success.Should().BeFalse();
         s.Should().BeNull();
     }
 
@@ -55,16 +56,18 @@ public class GenerateTests
         for (int i = 0; i < 10; i++)
         {
             var twitch = set.Replace("\r\n", " ").Replace('\n', ' ');
-            var s = ShowdownUtil.ConvertToShowdown(twitch);
-            var template = s == null ? null : AutoLegalityWrapper.GetTemplate(s);
-            var pk = template == null ? null : sav.GetLegal(template, out _);
-            pk.Should().NotBeNull();
+            if (!ShowdownUtil.TryConvertSingleLine(twitch, out var s))
+                Assert.Fail();
+            var template = AutoLegalityWrapper.GetTemplate(s);
+            var pk = sav.GetLegal(template, out var result);
+            result.Should().Be("Regenerated");
             pk.AbilityNumber.Should().Be(abilNumber);
         }
     }
 
     private const string Gengar =
-        @"Gengar-Gmax @ Life Orb 
+"""
+Gengar-Gmax @ Life Orb 
 Ability: Cursed Body 
 Shiny: Yes 
 EVs: 252 SpA / 4 SpD / 252 Spe 
@@ -72,20 +75,24 @@ Timid Nature
 - Dream Eater 
 - Fling 
 - Giga Impact 
-- Headbutt";
+- Headbutt
+""";
 
     private const string Braviary =
-        @"Braviary (F) @ Master Ball
+"""
+Braviary (F) @ Master Ball
 Ability: Defiant
 EVs: 252 Atk / 4 SpD / 252 Spe
 Jolly Nature
 - Brave Bird
 - Close Combat
 - Tailwind
-- Iron Head";
+- Iron Head
+""";
 
     private const string Drednaw =
-        @"Drednaw-Gmax @ Fossilized Drake 
+"""
+Drednaw-Gmax @ Fossilized Drake 
 Ability: Shell Armor 
 Level: 60 
 EVs: 252 Atk / 4 SpD / 252 Spe 
@@ -93,10 +100,12 @@ Adamant Nature
 - Earthquake 
 - Liquidation 
 - Swords Dance 
-- Head Smash";
+- Head Smash
+""";
 
     private const string Torkoal2 =
-        @"Torkoal (M) @ Assault Vest
+"""
+Torkoal (M) @ Assault Vest
 IVs: 0 Atk
 EVs: 248 HP / 8 Atk / 252 SpA
 Ability: Drought
@@ -104,10 +113,12 @@ Quiet Nature
 - Body Press
 - Earth Power
 - Eruption
-- Fire Blast";
+- Fire Blast
+""";
 
     private const string Charizard4 =
-        @"Charizard @ Choice Scarf 
+"""
+Charizard @ Choice Scarf 
 Ability: Solar Power 
 Level: 50 
 Shiny: Yes 
@@ -116,8 +127,8 @@ Timid Nature
 - Heat Wave 
 - Air Slash 
 - Solar Beam 
-- Beat Up";
+- Beat Up
+""";
 
-    private const string InvalidSpec =
-        "(Pikachu)";
+    private const string InvalidSpec = "(Pikachu)";
 }

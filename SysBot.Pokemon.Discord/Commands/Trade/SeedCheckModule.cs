@@ -17,11 +17,13 @@ public class SeedCheckModule<T> : SlashModuleBase where T : PKM, new()
     public async Task SeedCheckAsync(
         [Summary(nameof(code), "Optional; leave blank for a random code")] int? code = null)
     {
+        if (!await Context.IsTradeCodeValidOrEmpty(code).ConfigureAwait(false))
+            return;
+
         await DeferAsync(ephemeral: true).ConfigureAwait(false);
 
-        var sig = GetSignificance(Context.User);
         code ??= Info.GetRandomTradeCode();
-        await QueueHelper<T>.AddToQueueAsync(Context, (int)code, sig, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed, Context).ConfigureAwait(false);
+        await QueueHelper<T>.AddToQueueAsync(Context, (int)code, new T(), PokeRoutineType.SeedCheck, PokeTradeType.Seed).ConfigureAwait(false);
     }
 
     [SlashCommand("find-frame", "Prints the next shiny frame from a seed.")]

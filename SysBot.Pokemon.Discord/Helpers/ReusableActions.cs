@@ -10,6 +10,10 @@ namespace SysBot.Pokemon.Discord;
 
 public static class ReusableActions
 {
+    /// <summary>
+    /// Weak binding to a function that returns a sprite png data stream for a given PKM.
+    /// This is used to provide a thumbnail in Discord messages.
+    /// </summary>
     public static Func<PKM, MemoryStream>? GetSprite { get; set; }
 
     public static string GetModuleName(string name)
@@ -73,11 +77,11 @@ public static class ReusableActions
         }
     }
 
-    public static string GetFormattedShowdownText(PKM pk, LanguageID language = LanguageID.English)
+    public static string GetFormattedShowdownText(PKM pk, LanguageID displayLanguage = LanguageID.English)
     {
         var config = BattleTemplateConfig.Showdown;
 
-        var settings = new BattleTemplateExportSettings(config, language);
+        var settings = new BattleTemplateExportSettings(config, displayLanguage);
         var showdown = ShowdownParsing.GetShowdownText(pk, settings);
 
         return FormatSetCode(showdown);
@@ -89,17 +93,18 @@ public static class ReusableActions
 
     public static string FormatSetCode(string set) => Format.Code(set, CodeLanguage);
     public static string FormatSetCode(IEnumerable<string> lines) => FormatSetCode(string.Join('\n', lines));
-    public static string FormatSetCode(ShowdownSet set, LanguageID language = Language)
+    public static string FormatSetCode(ShowdownSet set, LanguageID displayLanguage = Language)
     {
         var config = BattleTemplateConfig.Showdown;
-        var settings = new BattleTemplateExportSettings(config, language);
+        var settings = new BattleTemplateExportSettings(config, displayLanguage);
         var lines = set.GetSetLines(settings);
         return FormatSetCode(lines);
     }
 
     public static string FormatSetCode<T>(T trade, LanguageID language = Language) where T : PKM, new()
     {
-        var set = new ShowdownSet(trade);
+        var localization = BattleTemplateLocalization.GetLocalization(Language);
+        var set = new ShowdownSet(trade, localization);
         return FormatSetCode(set, language);
     }
 

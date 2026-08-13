@@ -11,7 +11,7 @@ public static class AutoLegalityExtensionsDiscord
 {
     extension(SocketInteractionContext context)
     {
-        public async Task ReplyWithLegalizedSetAsync(ITrainerInfo sav, ShowdownSet set)
+        public async Task ReplyWithLegalizedSetAsync(ITrainerInfo sav, ShowdownSet set, LanguageID displayLanguage)
         {
             if (set.Species == 0)
             {
@@ -42,33 +42,33 @@ public static class AutoLegalityExtensionsDiscord
                 }
 
                 var message = $"Here's your ({result}) legalized PKM for {species} ({la.EncounterOriginal.Name})!";
-                var formatted = ReusableActions.GetFormattedShowdownText(pk);
+                var formatted = ReusableActions.GetFormattedShowdownText(pk, displayLanguage);
                 await context.SendFileAsync(pk, $"{message}\n{formatted}").ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 LogUtil.LogSafe(ex);
-                var formatted = ReusableActions.FormatSetCode(set);
+                var formatted = ReusableActions.FormatSetCode(set, displayLanguage);
                 var message = $"Oops! An unexpected problem happened with this Showdown Set:\n{formatted}";
                 // No need for everyone to see their goofy set.
                 await context.Interaction.FollowupAsync(message, ephemeral: true).ConfigureAwait(false);
             }
         }
 
-        public async Task ReplyWithLegalizedSetAsync(string content, GameVersion version)
+        public async Task ReplyWithLegalizedSetAsync(string content, GameVersion version, LanguageID displayLanguage = LanguageID.English)
         {
             content = ReusableActions.StripCodeBlock(content);
-            var set = new ShowdownSet(content);
+            var set = ShowdownParsing.GetShowdownSet(content, out _);
             var tr = AutoLegalityWrapper.GetTrainerInfo(version);
-            await context.ReplyWithLegalizedSetAsync(tr, set).ConfigureAwait(false);
+            await context.ReplyWithLegalizedSetAsync(tr, set, displayLanguage).ConfigureAwait(false);
         }
 
-        public async Task ReplyWithLegalizedSetAsync<T>(string content) where T : PKM, new()
+        public async Task ReplyWithLegalizedSetAsync<T>(string content, LanguageID displayLanguage = LanguageID.English) where T : PKM, new()
         {
             content = ReusableActions.StripCodeBlock(content);
-            var set = new ShowdownSet(content);
+            var set = ShowdownParsing.GetShowdownSet(content, out _);
             var tr = AutoLegalityWrapper.GetTrainerInfo<T>();
-            await context.ReplyWithLegalizedSetAsync(tr, set).ConfigureAwait(false);
+            await context.ReplyWithLegalizedSetAsync(tr, set, displayLanguage).ConfigureAwait(false);
         }
 
         public async Task ReplyWithLegalizedSetAsync(IAttachment attachment)
