@@ -94,7 +94,7 @@ public sealed class SysCord<T> where T : PKM, new()
         await _client.LoginAsync(TokenType.Bot, apiToken).ConfigureAwait(false);
 
         var app = await _client.GetApplicationInfoAsync().ConfigureAwait(false);
-        _manager.Owner = app.Owner.Id;
+        _manager.SetOwnership(app);
 
         await _client.StartAsync().ConfigureAwait(false);
         await MonitorStatusAsync(token).ConfigureAwait(false);
@@ -156,7 +156,7 @@ public sealed class SysCord<T> where T : PKM, new()
             return;
         }
 
-        if ((context.Interaction.ChannelId is not { } channel) || (!_manager.CanUseCommandChannel(channel) && context.User.Id != _manager.Owner))
+        if ((context.Interaction.ChannelId is not { } channel) || (!_manager.CanUseCommandChannel(channel) && _manager.IsTeamOrOwner(context.User.Id)))
         {
             // Visibly reply if settings require (so that others can see).
             var ephemeral = !Hub.Config.Discord.ReplyCannotUseCommandInChannel;

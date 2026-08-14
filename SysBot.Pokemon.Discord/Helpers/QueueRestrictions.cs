@@ -61,7 +61,7 @@ public static class QueueRestrictions
         {
             // Check user ID.
             var userId = user.Id;
-            if (userId == Manager.Owner)
+            if (Manager.IsTeamOrOwner(userId))
                 return RequestSignificance.Owner;
 
             // Don't check Team membership for special favor.

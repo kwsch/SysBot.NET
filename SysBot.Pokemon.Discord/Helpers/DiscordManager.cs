@@ -1,12 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Discord;
 
 namespace SysBot.Pokemon.Discord;
 
 public sealed record DiscordManager(DiscordSettings Config)
 {
-    public ulong Owner { get; internal set; }
+    public IUser Owner { get; internal set; } = null!; // late-bind
+    public ITeam? Team { get; set; }
+
+    /// <summary>
+    /// Cache ownership at program startup.
+    /// </summary>
+    internal void SetOwnership(IApplication app) => Owner = (Team = app.Team)?
+        .TeamMembers.First(m => m.Role == TeamRole.Owner).User ?? app.Owner;
+
+    public bool IsTeamOrOwner(ulong userId) => userId == Owner.Id
+        || Team is { } team && team.TeamMembers.Any(m => m.User.Id == userId);
 
     public RemoteControlAccessList BlacklistedUsers => Config.UserBlacklist;
     public RemoteControlAccessList WhitelistedChannels => Config.ChannelWhitelist;
@@ -21,11 +32,12 @@ public sealed record DiscordManager(DiscordSettings Config)
     public RemoteControlAccessList RolesDump => Config.RoleCanDump;
     public RemoteControlAccessList RolesRemoteControl => Config.RoleRemoteControl;
 
-    public bool CanUseSudo(ulong uid) => uid == Owner || SudoDiscord.Contains(uid);
+    public bool IsAnyTeamMember(ulong uid) => Team?.TeamMembers.Any(z => z.User.Id == uid) ?? false;
+    public bool CanUseSudo(ulong uid) => uid == Owner.Id || IsAnyTeamMember(uid) || SudoDiscord.Contains(uid);
     public bool CanUseSudo(IEnumerable<string> roles) => roles.Any(SudoRoles.Contains);
 
     public bool CanUseCommandChannel(ulong channel) => (WhitelistedChannels.List.Count == 0 && WhitelistedChannels.AllowIfEmpty) || WhitelistedChannels.Contains(channel);
-    public bool CanUseCommandUser(ulong uid) => uid == Owner || !BlacklistedUsers.Contains(uid);
+    public bool CanUseCommandUser(ulong uid) => uid == Owner.Id || !BlacklistedUsers.Contains(uid) || IsAnyTeamMember(uid);
 
     public RequestSignificance GetSignificance(IEnumerable<string> roles)
     {

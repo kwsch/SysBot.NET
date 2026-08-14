@@ -24,7 +24,9 @@ public class InfoModule : SlashModuleBase
     [SlashCommand("info", "Displays information about the bot.")]
     public async Task InfoAsync()
     {
-        var app = await Context.Client.GetApplicationInfoAsync().ConfigureAwait(false);
+        var manager = SysCordSettings.Manager;
+        var owner = manager.Owner;
+        var teamLine = manager.Team is { } team ? $"\n- {Format.Bold("Team")}: {team.Name}" : "";
 
         var builder = new EmbedBuilder
         {
@@ -35,7 +37,7 @@ public class InfoModule : SlashModuleBase
         builder.AddField("Info",
 $"""
 - [Source Code]({Repo})
-- {Format.Bold("Owner")}: {app.Owner} ({app.Owner.Id})
+- {Format.Bold("Owner")}: {owner.GlobalName} ({owner.Id}){teamLine}
 - {Format.Bold("Library")}: Discord.Net ({DiscordConfig.Version})
 - {Format.Bold("Started")}: {GetStartTimeRelative()}
 - {Format.Bold("Runtime")}: {RuntimeInformation.FrameworkDescription} {RuntimeInformation.ProcessArchitecture} ({RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture})
