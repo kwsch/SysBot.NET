@@ -27,8 +27,7 @@ public static class QueueRestrictions
             if (uint.TryParse(code, out var parsed) && parsed <= MaxTradeCode)
                 return true;
 
-            await context.Interaction.RespondAsync($"The trade code must be between 0 and {MaxTradeCode}.", ephemeral: true).ConfigureAwait(false);
-            return false;
+            return await context.ReplyBadCodeAsync().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -45,6 +44,11 @@ public static class QueueRestrictions
             if ((uint)code.Value <= MaxTradeCode)
                 return true;
 
+            return await context.ReplyBadCodeAsync().ConfigureAwait(false);
+        }
+
+        private async Task<bool> ReplyBadCodeAsync()
+        {
             await context.Interaction.RespondAsync($"The trade code must be between 0 and {MaxTradeCode}.", ephemeral: true).ConfigureAwait(false);
             return false;
         }

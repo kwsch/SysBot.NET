@@ -36,12 +36,11 @@ public class DumpModule<T> : SlashModuleBase where T : PKM, new()
     [RequireSudo]
     public async Task GetListAsync()
     {
-        string msg = Info.GetTradeList(PokeRoutineType.Dump);
-        var embed = new EmbedBuilder { Color = Color.LightGrey };
+        var embed = new EmbedBuilder { Color = Color.LightGrey, Title = nameof(PokeRoutineType.Dump) };
         embed.AddField(x =>
         {
             x.Name = "Pending Trades";
-            x.Value = msg;
+            x.Value = Info.GetTradeList(PokeRoutineType.Dump);
             x.IsInline = false;
         });
 

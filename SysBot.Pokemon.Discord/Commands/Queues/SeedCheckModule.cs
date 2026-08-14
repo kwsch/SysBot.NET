@@ -9,7 +9,7 @@ namespace SysBot.Pokemon.Discord;
 [RequireContext(ContextType.Guild)]
 public class SeedCheckModule<T> : SlashModuleBase where T : PKM, new()
 {
-    private static TradeQueueInfo<T> Info=>SysCord<T>.Runner.Hub.Queues.Info;
+    private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
 
     [SlashCommand("seed-check", "Checks the seed for a Pokémon.")]
     [RequireQueueRole(PokeRoutineType.SeedCheck)]
@@ -39,7 +39,7 @@ public class SeedCheckModule<T> : SlashModuleBase where T : PKM, new()
 
         var hub = SysCord<T>.Runner.Hub;
         var r = new SeedSearchResult(Z3SearchResult.Success, value, -1, hub.Config.SeedCheckSWSH.ResultDisplayMode);
-        var embed = new EmbedBuilder { Color = Color.LightGrey };
+        var embed = new EmbedBuilder { Color = Color.LightGrey, Title = nameof(PokeRoutineType.SeedCheck) };
         embed.AddField($"Seed: 0x{value:X16}", r.ToString());
         await FollowupAsync($"Here are the details for `{r.Seed:X16}`:", embed: embed.Build()).ConfigureAwait(false);
     }
@@ -55,16 +55,14 @@ public class SeedCheckModule<T> : SlashModuleBase where T : PKM, new()
     [RequireSudo]
     public async Task GetSeedListAsync()
     {
-        string msg = Info.GetTradeList(PokeRoutineType.SeedCheck);
-        var embed = new EmbedBuilder { Color = Color.LightGrey };
+        var embed = new EmbedBuilder { Color = Color.LightGrey, Title = nameof(PokeRoutineType.SeedCheck) };
         embed.AddField(x =>
         {
             x.Name = "Pending Trades";
-            x.Value = msg;
+            x.Value = Info.GetTradeList(PokeRoutineType.SeedCheck);
             x.IsInline = false;
         });
 
         await RespondAsync("These are the users who are currently waiting:", embed: embed.Build()).ConfigureAwait(false);
     }
-
 }

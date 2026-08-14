@@ -12,7 +12,7 @@ namespace SysBot.Pokemon.Discord;
 [Group("trade", "Commands for starting a trade session with the bot.")]
 [RequireContext(ContextType.Guild)]
 [RequireOpenDms]
-public class TradeModule<T> : SlashModuleBase where T : PKM, new()
+public partial class TradeModule<T> : SlashModuleBase where T : PKM, new() // partial, allow other files to have commands in this group
 {
     private static TradeQueueInfo<T> Info => SysCord<T>.Runner.Hub.Queues.Info;
 
@@ -97,39 +97,26 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
         await TradeAttachmentAsync(tradeCode, file, Context).ConfigureAwait(false);
     }
 
-    /*
-     *
-     * SUDO COMMANDS BELOW
-     *
-     */
-
-    [SlashCommand("list", "Prints the users in the trade queues.")]
-    [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
-    [RequireSudo]
-    public async Task GetTradeListAsync()
+    [SlashCommand("item", "Trade a specific item.")]
+    [RequireQueueRole(PokeRoutineType.LinkTrade)]
+    public async Task TradeItemAsync(
+        [Summary(nameof(itemName), "Item name to be traded.")] string itemName,
+        [Summary(nameof(code), "Optional; leave blank for a random code")] int? code = null)
     {
-        var embed = new EmbedBuilder { Color = Color.LightGrey };
-        embed.AddField(x =>
-        {
-            x.Name = "Pending Trades";
-            x.Value = Info.GetTradeList(PokeRoutineType.LinkTrade);
-            x.IsInline = false;
-        });
+        // Re-check if the queue closed in the time between opening the modal and entering the info.
+        if (!await CheckQueue().ConfigureAwait(false))
+            return;
 
-        await RespondAsync("These are the users who are currently waiting:", ephemeral: true, embed: embed.Build()).ConfigureAwait(false);
-    }
+        // Sanity check their inputs.
+        if (!await Context.IsTradeCodeValidOrEmpty(code).ConfigureAwait(false))
+            return;
 
-    [SlashCommand("ban", "Ban an Online ID from trading.")]
-    [DefaultMemberPermissions(GuildPermission.PrioritySpeaker)] // basic gate to hide the commands from untrusted users, but not a full sudo check
-    [RequireSudo]
-    public async Task BanTradeAsync(
-        [Summary(nameof(nnid), "The in-game/online ID of the user to ban from trading.")] ulong nnid,
-        [Summary(nameof(reason), "The reason for banning the user.")] string reason)
-    {
-        // Display not-ephemeral message to the sudo user, since this is a sudo command and they should be aware of the action being taken.
-        await DeferAsync().ConfigureAwait(false);
-        SysCordSettings.HubConfig.TradeAbuse.BannedIDs.AddIfNew(GetReference(nnid, reason));
-        await FollowupAsync($"Done. Online ID {nnid} has been banned for reason: {reason}").ConfigureAwait(false);
+        // Convert, then join the queue.
+        await DeferAsync(ephemeral: true).ConfigureAwait(false);
+        var tradeCode = code ?? Info.GetRandomTradeCode(); // already validated above, so safe to take if provided
+
+        var set = $"Pikachu @ {itemName}"; // Available in *every* game!
+        await TradeTextAsync(tradeCode, set, Context).ConfigureAwait(false);
     }
 
     private async Task TradeTextAsync(int code, string content, IInteractionContext user)
@@ -303,32 +290,4 @@ public class TradeModule<T> : SlashModuleBase where T : PKM, new()
 
         await QueueHelper<T>.AddToQueueAsync(Context, code, pk, PokeRoutineType.LinkTrade, PokeTradeType.Specific).ConfigureAwait(false);
     }
-}
-
-public class TradeSetModal : IModal
-{
-    public string Title => "Trade Showdown Set";
-
-    [InputLabel("Showdown Set")]
-    [ModalTextInput("showdown", TextInputStyle.Paragraph, placeholder: "Paste your Showdown set here...")]
-    public string Showdown { get; set; } = string.Empty;
-
-    [RequiredInput(false)]
-    [InputLabel("Trade Code (optional)")]
-    [ModalTextInput("code", TextInputStyle.Short, placeholder: "Leave blank for a random code", maxLength: 8)]
-    public string? Code { get; set; }
-}
-
-public class TradeBase64Modal : IModal
-{
-    public string Title => "Trade Base64 File";
-
-    [InputLabel("Base64 Text")]
-    [ModalTextInput("base64", TextInputStyle.Paragraph, placeholder: "Paste the Base64 text here...")]
-    public string Base64 { get; set; } = string.Empty;
-
-    [RequiredInput(false)]
-    [InputLabel("Trade Code (optional)")]
-    [ModalTextInput("code", TextInputStyle.Short, placeholder: "Leave blank for a random code", maxLength: 8)]
-    public string? Code { get; set; }
 }

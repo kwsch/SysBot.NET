@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 
 namespace SysBot.Pokemon.Discord;
 
@@ -85,6 +87,81 @@ public class OwnerModule : InteractionModuleBase<SocketInteractionContext>
         var emphasis = Format.Bold("Bot services are going offline.");
         await RespondAsync($"Shutting down... goodbye! {emphasis}").ConfigureAwait(false);
         Environment.Exit(0);
+    }
+
+    [SlashCommand("check", "Checks if the bot has the required permissions in whitelisted channels.")]
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+    public async Task ChannelPermissionTest()
+    {
+        List<GuildPermissionScanResult> results = [];
+        foreach (var guild in Context.Client.Guilds)
+        {
+            var result = new GuildPermissionScanResult { GuildName = guild.Name };
+            foreach (var channel in guild.TextChannels)
+            {
+                if (!SysCordSettings.Settings.ChannelWhitelist.Contains(channel.Id))
+                    continue;
+
+                var missingPerms = GetMissingPerms(guild, channel);
+                if (missingPerms.Count == 0)
+                    continue;
+
+                var c = new GuildChannelPermissionCheck { Channel = channel.Name };
+                c.MissingPermissions.AddRange(missingPerms.Select(p => p.ToString()));
+                result.InvalidChannels.Add(c);
+            }
+
+            if (result.InvalidChannels.Count != 0)
+                results.Add(result);
+        }
+
+        if (results.Count == 0)
+        {
+            await RespondAsync("All permissions for whitelisted channels are correct.", ephemeral: true).ConfigureAwait(false);
+            return;
+        }
+
+        var builder = new EmbedBuilder { Title = "Guilds with Missing Permissions", Color = Color.Red };
+        foreach (var guild in results)
+        {
+            var fieldValue = string.Join("\n", guild.InvalidChannels.Select(c =>
+                $"{c.Channel}: {string.Join(", ", c.MissingPermissions)}"));
+            builder.AddField(guild.GuildName, fieldValue);
+        }
+        await RespondAsync(ephemeral: true, embed: builder.Build()).ConfigureAwait(false);
+    }
+
+    private static ReadOnlySpan<ChannelPermission> RequiredPermissions =>
+    [
+        ChannelPermission.ViewChannel,
+        ChannelPermission.SendMessages,
+        ChannelPermission.EmbedLinks,
+        ChannelPermission.AttachFiles,
+        ChannelPermission.ReadMessageHistory,
+    ];
+
+    private static List<ChannelPermission> GetMissingPerms(SocketGuild guild, SocketTextChannel channel)
+    {
+        List<ChannelPermission> result = [];
+        var botPermissions = guild.CurrentUser.GetPermissions(channel);
+        foreach (var perm in RequiredPermissions)
+        {
+            if (!botPermissions.Has(perm))
+                result.Add(perm);
+        }
+        return result;
+    }
+
+    private sealed class GuildPermissionScanResult
+    {
+        public required string GuildName { get; init; }
+        public List<GuildChannelPermissionCheck> InvalidChannels { get; } = [];
+    }
+
+    private sealed class GuildChannelPermissionCheck
+    {
+        public required string Channel { get; init; }
+        public List<string> MissingPermissions { get; } = [];
     }
 
     private RemoteControlAccess GetReference(ulong id, string name) => new()

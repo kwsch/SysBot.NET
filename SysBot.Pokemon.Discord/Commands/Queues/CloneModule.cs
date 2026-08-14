@@ -14,6 +14,7 @@ public class CloneModule<T> : SlashModuleBase where T : PKM, new()
     [RequireQueueRole(PokeRoutineType.Clone)]
     [RequireOpenDms]
     public Task CloneAsync(int? code = null) => JoinAsync(code);
+
     private async Task JoinAsync(int? code)
     {
         if (!await Context.IsTradeCodeValidOrEmpty(code).ConfigureAwait(false))
@@ -36,16 +37,14 @@ public class CloneModule<T> : SlashModuleBase where T : PKM, new()
     [RequireSudo]
     public async Task GetListAsync()
     {
-        string msg = Info.GetTradeList(PokeRoutineType.Clone);
-        var embed = new EmbedBuilder { Color = Color.LightGrey };
+        var embed = new EmbedBuilder { Color = Color.LightGrey, Title = nameof(PokeRoutineType.Clone) };
         embed.AddField(x =>
         {
             x.Name = "Pending Trades";
-            x.Value = msg;
+            x.Value = Info.GetTradeList(PokeRoutineType.Clone);
             x.IsInline = false;
         });
 
         await RespondAsync("These are the users who are currently waiting:", embed: embed.Build()).ConfigureAwait(false);
     }
-
 }
