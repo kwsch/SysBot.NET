@@ -1,9 +1,9 @@
-using PKHeX.Core;
-using PKHeX.Core.AutoMod;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using PKHeX.Core;
+using PKHeX.Core.AutoMod;
 
 namespace SysBot.Pokemon;
 
@@ -45,7 +45,7 @@ public class LegalitySettings
     public GameVersionPriorityType GameVersionPriority { get; set; } = GameVersionPriorityType.NativeOnly;
 
     [Category(Generate), Description("Specifies the order of games to use to generate encounters. Set PrioritizeGame to \"true\" to enable.")]
-    public List<GameVersion> PriorityOrder { get; set; } = Enum.GetValues<GameVersion>().Where(GameUtil.IsValidSavedVersion).Reverse().ToList();
+    public List<GameVersion> PriorityOrder { get; set; } = [.. Enum.GetValues<GameVersion>().Where(GameUtil.IsValidSavedVersion).Reverse()];
 
     [Category(Generate), Description("Set all possible legal ribbons for any generated Pokémon.")]
     public bool SetAllLegalRibbons { get; set; }

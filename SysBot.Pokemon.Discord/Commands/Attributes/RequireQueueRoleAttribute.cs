@@ -1,21 +1,19 @@
-﻿using Discord.Commands;
-using Discord.WebSocket;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
+using Discord.WebSocket;
 
 namespace SysBot.Pokemon.Discord;
 
 /// <summary>
-/// Requires an assigned role in order to accept commands. Can be used by sudo users if satisfied.
+/// Same as <see cref="RequireRoleAccessAttribute"/> with extra consideration for bots accepting Queue requests.
 /// </summary>
-public sealed class RequireRoleAccessAttribute(string RoleName) : PreconditionAttribute
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+public sealed class RequireQueueRoleAttribute(PokeRoutineType type) : PreconditionAttribute
 {
-    // Create a field to store the specified name
-
-    // Create a constructor so the name can be specified
-
-    public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+    public override Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo command, IServiceProvider services)
     {
         var mgr = SysCordSettings.Manager;
         if (mgr.Config.AllowGlobalSudo && mgr.CanUseSudo(context.User.Id))
@@ -29,8 +27,14 @@ public sealed class RequireRoleAccessAttribute(string RoleName) : PreconditionAt
         if (mgr.CanUseSudo(roles.Select(z => z.Name)))
             return Task.FromResult(PreconditionResult.FromSuccess());
 
-        if (!mgr.GetHasRoleAccess(RoleName, roles.Select(z => z.Name)))
+        // Don't bother checking Owner/Team.
+
+        if (!mgr.GetHasRoleAccess(type, roles.Select(z => z.Name)))
             return Task.FromResult(PreconditionResult.FromError("You do not have the required role to run this command."));
+
+        bool canQueue = SysCordSettings.HubConfig.Queues.CanQueue;
+        if (!canQueue)
+            return Task.FromResult(PreconditionResult.FromError("Sorry, I am not currently accepting queue requests!"));
 
         return Task.FromResult(PreconditionResult.FromSuccess());
     }

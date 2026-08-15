@@ -1,13 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Discord;
 
 namespace SysBot.Pokemon.Discord;
 
-public class DiscordManager(DiscordSettings Config)
+public sealed record DiscordManager(DiscordSettings Config)
 {
-    public readonly DiscordSettings Config = Config;
-    public ulong Owner { get; internal set; }
+    public IUser Owner { get; internal set; } = null!; // late-bind
+    public ITeam? Team { get; set; }
+
+    /// <summary>
+    /// Cache ownership at program startup.
+    /// </summary>
+    internal void SetOwnership(IApplication app) => Owner = (Team = app.Team)?
+        .TeamMembers.First(m => m.Role == TeamRole.Owner).User ?? app.Owner;
+
+    public bool IsTeamOrOwner(ulong userId) => userId == Owner.Id
+        || Team is { } team && team.TeamMembers.Any(m => m.User.Id == userId);
 
     public RemoteControlAccessList BlacklistedUsers => Config.UserBlacklist;
     public RemoteControlAccessList WhitelistedChannels => Config.ChannelWhitelist;
@@ -22,11 +32,12 @@ public class DiscordManager(DiscordSettings Config)
     public RemoteControlAccessList RolesDump => Config.RoleCanDump;
     public RemoteControlAccessList RolesRemoteControl => Config.RoleRemoteControl;
 
-    public bool CanUseSudo(ulong uid) => SudoDiscord.Contains(uid);
+    public bool IsAnyTeamMember(ulong uid) => Team?.TeamMembers.Any(z => z.User.Id == uid) ?? false;
+    public bool CanUseSudo(ulong uid) => uid == Owner.Id || IsAnyTeamMember(uid) || SudoDiscord.Contains(uid);
     public bool CanUseSudo(IEnumerable<string> roles) => roles.Any(SudoRoles.Contains);
 
     public bool CanUseCommandChannel(ulong channel) => (WhitelistedChannels.List.Count == 0 && WhitelistedChannels.AllowIfEmpty) || WhitelistedChannels.Contains(channel);
-    public bool CanUseCommandUser(ulong uid) => !BlacklistedUsers.Contains(uid);
+    public bool CanUseCommandUser(ulong uid) => uid == Owner.Id || !BlacklistedUsers.Contains(uid) || IsAnyTeamMember(uid);
 
     public RequestSignificance GetSignificance(IEnumerable<string> roles)
     {
@@ -41,19 +52,19 @@ public class DiscordManager(DiscordSettings Config)
         return result;
     }
 
-    public bool GetHasRoleAccess(string type, IEnumerable<string> roles)
+    public bool GetHasRoleAccess(PokeRoutineType type, IEnumerable<string> roles)
     {
         var set = GetSet(type);
         return set is { AllowIfEmpty: true, List.Count: 0 } || roles.Any(set.Contains);
     }
 
-    private RemoteControlAccessList GetSet(string type) => type switch
+    private RemoteControlAccessList GetSet(PokeRoutineType type) => type switch
     {
-        nameof(RolesClone) => RolesClone,
-        nameof(RolesTrade) => RolesTrade,
-        nameof(RolesSeed) => RolesSeed,
-        nameof(RolesDump) => RolesDump,
-        nameof(RolesRemoteControl) => RolesRemoteControl,
+        PokeRoutineType.Clone => RolesClone,
+        PokeRoutineType.LinkTrade => RolesTrade,
+        PokeRoutineType.SeedCheck => RolesSeed,
+        PokeRoutineType.Dump => RolesDump,
+        PokeRoutineType.RemoteControl => RolesRemoteControl,
         _ => throw new ArgumentOutOfRangeException(nameof(type)),
     };
 }

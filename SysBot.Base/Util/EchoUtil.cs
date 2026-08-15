@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace SysBot.Base;
@@ -17,10 +17,10 @@ public static class EchoUtil
             }
             catch (Exception ex)
             {
-                LogUtil.LogInfo($"Exception: {ex} occurred while trying to echo: {message} to the forwarder: {fwd}", "Echo");
-                LogUtil.LogSafe(ex, "Echo");
+                LogUtil.LogInfo($"Exception: {ex} occurred while trying to echo: {message} to the forwarder: {fwd}");
+                LogUtil.LogSafe(ex);
             }
         }
-        LogUtil.LogInfo(message, "Echo");
+        LogUtil.LogInfo(message);
     }
 }

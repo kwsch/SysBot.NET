@@ -1,0 +1,101 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord.Interactions;
+using Discord.WebSocket;
+using SysBot.Base;
+
+namespace SysBot.Pokemon.Discord;
+
+[Group("echo", "Control over bot echoes.")]
+public class EchoModule : SudoModuleBase
+{
+    // ReSharper disable NotAccessedPositionalProperty.Local
+    private record EchoChannel(ulong ChannelId, string ChannelName, Action<string> Action);
+
+    private static readonly Dictionary<ulong, EchoChannel> Channels = [];
+
+    public static void RestoreChannels(DiscordSocketClient discord, DiscordSettings cfg)
+    {
+        int count = 0;
+        foreach (var channelAccess in cfg.EchoChannels)
+        {
+            if (discord.GetChannel(channelAccess.ID) is not ISocketMessageChannel channel)
+            {
+                LogUtil.LogInfo($"Failed to add echoes to {channelAccess.Name}.");
+                continue;
+            }
+
+            AddEchoChannel(channel, channelAccess.ID);
+            count++;
+        }
+
+        EchoUtil.Echo($"Added echo notification to {count} Discord channel(s) on Bot startup.");
+    }
+
+    [SlashCommand("here", "Makes the bot echo special messages to this channel.")]
+    public async Task AddEchoAsync()
+    {
+        if (Context.Interaction.Channel is not { } channel)
+        {
+            await RespondAsync("This command must be used in a message channel.", ephemeral: true).ConfigureAwait(false);
+            return;
+        }
+
+        var channelId = channel.Id;
+        if (Channels.ContainsKey(channelId))
+        {
+            await RespondAsync("Already notifying here.").ConfigureAwait(false);
+            return;
+        }
+
+        AddEchoChannel(channel, channelId);
+        SysCordSettings.Settings.EchoChannels.AddIfNew(GetReference(channel));
+        await RespondAsync("Added Echo output to this channel!").ConfigureAwait(false);
+    }
+    private static void AddEchoChannel(ISocketMessageChannel channel, ulong channelId)
+    {
+        var l = Echo;
+        EchoUtil.Forwarders.Add(l);
+        Channels.Add(channelId, new EchoChannel(channelId, channel.Name, l));
+        return;
+
+        void Echo(string message) => channel.SendMessageAsync(message);
+    }
+
+    public static bool IsEchoChannel(ISocketMessageChannel channel) => Channels.ContainsKey(channel.Id);
+
+    [SlashCommand("info", "Dumps the Echo settings.")]
+    public async Task DumpEchoInfoAsync()
+    {
+        await RespondAsync(string.Join('\n', Channels.Select(c => $"{c.Key} - {c.Value}"))).ConfigureAwait(false);
+    }
+
+    [SlashCommand("clear", "Clears Echo settings from this channel.")]
+    public async Task ClearEchosAsync()
+    {
+        var channelId = Context.Interaction.Channel.Id;
+        if (!Channels.TryGetValue(channelId, out var echo))
+        {
+            await RespondAsync("Not echoing in this channel.").ConfigureAwait(false);
+            return;
+        }
+
+        EchoUtil.Forwarders.Remove(echo.Action);
+        Channels.Remove(channelId);
+        SysCordSettings.Settings.EchoChannels.RemoveAll(z => z.ID == channelId);
+        await RespondAsync($"Echoes cleared from channel: {Context.Interaction.Channel.Name}").ConfigureAwait(false);
+    }
+
+    [SlashCommand("clear-all", "Clears all Echo channel settings.")]
+    public async Task ClearEchosAllAsync()
+    {
+        foreach (var l in Channels.Values)
+            EchoUtil.Forwarders.Remove(l.Action);
+
+        Channels.Clear();
+        SysCordSettings.Settings.EchoChannels.Clear();
+        await RespondAsync("Echoes cleared from all channels!").ConfigureAwait(false);
+    }
+}

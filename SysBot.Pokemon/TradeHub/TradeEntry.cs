@@ -19,5 +19,5 @@ public sealed record TradeEntry<T>(PokeTradeDetail<T> Trade, ulong UserID, PokeR
         return type == 0 || type == Type;
     }
 
-    public override string ToString() => $"(ID {Trade.ID}) {Username} {UserID:D19} - {Type}";
+    public override string ToString() => $"(ID {Trade.Id}) {Username} {UserID:D19} - {Type}";
 }

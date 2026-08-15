@@ -1,5 +1,5 @@
-using PKHeX.Core;
 using System;
+using PKHeX.Core;
 using static SysBot.Pokemon.FossilSpecies;
 
 namespace SysBot.Pokemon;

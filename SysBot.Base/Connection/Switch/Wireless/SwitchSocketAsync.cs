@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.Buffers.Binary.BinaryPrimitives;
 using static SysBot.Base.SwitchOffsetTypeUtil;
 
 namespace SysBot.Base;
@@ -34,8 +35,8 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
         }
 
         Log("Connecting to device...");
-        IAsyncResult result = Connection.BeginConnect(Info.IP, Info.Port, null, null);
-        bool success = result.AsyncWaitHandle.WaitOne(5000, true);
+        var result = Connection.BeginConnect(Info.IP, Info.Port, null, null);
+        var success = result.AsyncWaitHandle.WaitOne(5000, true);
         if (!success || !Connection.Connected)
         {
             InitializeSocket();
@@ -58,8 +59,8 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
     public override void Disconnect()
     {
         Log("Disconnecting from device...");
-        IAsyncResult result = Connection.BeginDisconnect(false, null, null);
-        bool success = result.AsyncWaitHandle.WaitOne(5000, true);
+        var result = Connection.BeginDisconnect(false, null, null);
+        var success = result.AsyncWaitHandle.WaitOne(5000, true);
         if (!success || Connection.Connected)
         {
             InitializeSocket();
@@ -71,9 +72,10 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
     }
 
     /// <summary> Only call this if you are sending small commands. </summary>
-    public ValueTask<int> SendAsync(byte[] buffer, CancellationToken token) => Connection.SendAsync(buffer, token);
+    public ValueTask<int> SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken token)
+        => Connection.SendAsync(buffer, token);
 
-    private async Task<byte[]> ReadBytesFromCmdAsync(byte[] cmd, int length, CancellationToken token)
+    private async Task<byte[]> ReadBytesFromCmdAsync(ReadOnlyMemory<byte> cmd, int length, CancellationToken token)
     {
         try
         {
@@ -123,9 +125,9 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
     public Task<byte[]> ReadBytesMainMultiAsync(IReadOnlyDictionary<ulong, int> offsetSizes, CancellationToken token) => ReadMulti(Main, offsetSizes, token);
     public Task<byte[]> ReadBytesAbsoluteMultiAsync(IReadOnlyDictionary<ulong, int> offsetSizes, CancellationToken token) => ReadMulti(Absolute, offsetSizes, token);
 
-    public Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token) => Write(Heap, data, offset, token);
-    public Task WriteBytesMainAsync(Span<byte> data, ulong offset, CancellationToken token) => Write(Main, data.ToArray(), offset, token);
-    public Task WriteBytesAbsoluteAsync(Span<byte> data, ulong offset, CancellationToken token) => Write(Absolute, data.ToArray(), offset, token);
+    public Task WriteBytesAsync(ReadOnlyMemory<byte> data, uint offset, CancellationToken token) => Write(Heap, data, offset, token);
+    public Task WriteBytesMainAsync(ReadOnlyMemory<byte> data, ulong offset, CancellationToken token) => Write(Main, data, offset, token);
+    public Task WriteBytesAbsoluteAsync(ReadOnlyMemory<byte> data, ulong offset, CancellationToken token) => Write(Absolute, data, offset, token);
 
     public async Task<ulong> GetMainNsoBaseAsync(CancellationToken token)
     {
@@ -137,8 +139,7 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
                 Log($"{nameof(GetMainNsoBaseAsync)}: Invalid response length");
                 return 0;
             }
-            Array.Reverse(baseBytes, 0, sizeof(ulong));
-            return BitConverter.ToUInt64(baseBytes, 0);
+            return ReadUInt64BigEndian(baseBytes);
         }
         catch (Exception ex)
         {
@@ -157,8 +158,7 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
                 Log($"{nameof(GetHeapBaseAsync)}: Invalid response length");
                 return 0;
             }
-            Array.Reverse(baseBytes, 0, sizeof(ulong));
-            return BitConverter.ToUInt64(baseBytes, 0);
+            return ReadUInt64BigEndian(baseBytes);
         }
         catch (Exception ex)
         {
@@ -275,11 +275,11 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
         return ReadBytesFromCmdAsync(cmd, totalSize, token);
     }
 
-    private async Task Write(ICommandBuilder b, byte[] data, ulong offset, CancellationToken token)
+    private async Task Write(ICommandBuilder b, ReadOnlyMemory<byte> data, ulong offset, CancellationToken token)
     {
         if (data.Length <= MaximumTransferSize)
         {
-            var cmd = b.Poke(offset, data);
+            var cmd = b.Poke(offset, data.Span);
             await SendAsync(cmd, token).ConfigureAwait(false);
             return;
         }
@@ -289,19 +289,19 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
             var length = byteCount - i;
             if (length > MaximumTransferSize)
                 length = MaximumTransferSize;
-            var cmd = GetPoke(b, data, offset, i, length);
+            var cmd = GetPoke(b, data.Span, offset, i, length);
             await SendAsync(cmd, token).ConfigureAwait(false);
             await Task.Delay((MaximumTransferSize / DelayFactor) + BaseDelay, token).ConfigureAwait(false);
         }
     }
 
-    private static byte[] GetPoke(ICommandBuilder b, byte[] data, ulong offset, int i, int length)
+    private static byte[] GetPoke(ICommandBuilder b, ReadOnlySpan<byte> data, ulong offset, int i, int length)
     {
-        var slice = data.AsSpan(i, length);
+        var slice = data.Slice(i, length);
         return b.Poke(offset + (uint)i, slice);
     }
 
-    public async Task<byte[]> ReadRaw(byte[] command, int length, CancellationToken token)
+    public async Task<byte[]> ReadRaw(ReadOnlyMemory<byte> command, int length, CancellationToken token)
     {
         try
         {
@@ -317,7 +317,7 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
         }
     }
 
-    public async Task SendRaw(byte[] command, CancellationToken token)
+    public async Task SendRaw(ReadOnlyMemory<byte> command, CancellationToken token)
     {
         try
         {
@@ -334,9 +334,9 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
         return ReadBytesFromCmdAsync(SwitchCommand.PointerPeek(jumps, size), size, token);
     }
 
-    public async Task PointerPoke(byte[] data, IEnumerable<long> jumps, CancellationToken token)
+    public async Task PointerPoke(ReadOnlyMemory<byte> data, IEnumerable<long> jumps, CancellationToken token)
     {
-        await SendAsync(SwitchCommand.PointerPoke(jumps, data), token).ConfigureAwait(false);
+        await SendAsync(SwitchCommand.PointerPoke(jumps, data.Span), token).ConfigureAwait(false);
     }
 
     public async Task<ulong> PointerAll(IEnumerable<long> jumps, CancellationToken token)
@@ -346,11 +346,11 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
             var offsetBytes = await ReadBytesFromCmdAsync(SwitchCommand.PointerAll(jumps), sizeof(ulong), token).ConfigureAwait(false);
             if (offsetBytes.Length < sizeof(ulong))
             {
-                Log($"{nameof(PointerAll)}: Invalid response length {offsetBytes?.Length ?? 0}");
+                Log($"{nameof(PointerAll)}: Invalid response length {offsetBytes.Length}");
                 return 0;
             }
-            Array.Reverse(offsetBytes, 0, sizeof(ulong));
-            return BitConverter.ToUInt64(offsetBytes, 0);
+            // Sent visually (big-endian, thanks); interpret as such.
+            return ReadUInt64BigEndian(offsetBytes);
         }
         catch (Exception ex)
         {
@@ -366,11 +366,11 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
             var offsetBytes = await ReadBytesFromCmdAsync(SwitchCommand.PointerRelative(jumps), sizeof(ulong), token).ConfigureAwait(false);
             if (offsetBytes.Length < sizeof(ulong))
             {
-                Log($"{nameof(PointerRelative)}: Invalid response length {offsetBytes?.Length ?? 0}");
+                Log($"{nameof(PointerRelative)}: Invalid response length {offsetBytes.Length}");
                 return 0;
             }
-            Array.Reverse(offsetBytes, 0, sizeof(ulong));
-            return BitConverter.ToUInt64(offsetBytes, 0);
+            // Sent visually (big-endian, thanks); interpret as such.
+            return ReadUInt64BigEndian(offsetBytes);
         }
         catch (Exception ex)
         {
@@ -391,7 +391,7 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
             if (!BitConverter.IsLittleEndian)
                 Array.Reverse(data, 0, size);
 
-            T value = MemoryMarshal.Read<T>(data);
+            var value = MemoryMarshal.Read<T>(data);
             return (true, value);
         }
         catch (Exception ex)

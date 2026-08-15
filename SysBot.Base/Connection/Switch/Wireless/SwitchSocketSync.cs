@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Threading;
+using static System.Buffers.Binary.BinaryPrimitives;
 using static SysBot.Base.SwitchOffsetTypeUtil;
 
 namespace SysBot.Base;
@@ -52,8 +53,8 @@ public sealed class SwitchSocketSync(IWirelessConnectionConfig cfg) : SwitchSock
         InitializeSocket();
     }
 
-    private int Read(byte[] buffer, int size) => Connection.Receive(buffer, size, 0);
-    public int Send(byte[] buffer) => Connection.Send(buffer);
+    private int Read(Span<byte> buffer) => Connection.Receive(buffer, 0);
+    public int Send(ReadOnlySpan<byte> buffer) => Connection.Send(buffer);
 
     private byte[] ReadResponse(int length)
     {
@@ -61,16 +62,16 @@ public sealed class SwitchSocketSync(IWirelessConnectionConfig cfg) : SwitchSock
         Thread.Sleep((MaximumTransferSize / DelayFactor) + BaseDelay);
         var size = (length * 2) + 1;
         var buffer = ArrayPool<byte>.Shared.Rent(size);
-        _ = Read(buffer, size);
-        var mem = buffer.AsMemory(0, size);
+        var mem = buffer.AsSpan(0, size);
+        _ = Read(mem);
         var result = DecodeResult(mem, length);
         ArrayPool<byte>.Shared.Return(buffer, true);
         return result;
     }
-    private static byte[] DecodeResult(ReadOnlyMemory<byte> buffer, int length)
+    private static byte[] DecodeResult(ReadOnlySpan<byte> buffer, int length)
     {
         var result = new byte[length];
-        var span = buffer.Span[..^1]; // Last byte is always a terminator
+        var span = buffer[..^1]; // Last byte is always a terminator
         Decoder.LoadHexBytesTo(span, result);
         return result;
     }
@@ -79,16 +80,14 @@ public sealed class SwitchSocketSync(IWirelessConnectionConfig cfg) : SwitchSock
     {
         Send(SwitchCommand.GetMainNsoBase());
         byte[] baseBytes = ReadResponse(8);
-        Array.Reverse(baseBytes, 0, 8);
-        return BitConverter.ToUInt64(baseBytes, 0);
+        return ReadUInt64BigEndian(baseBytes);
     }
 
     public ulong GetHeapBase()
     {
         Send(SwitchCommand.GetHeapBase());
         byte[] baseBytes = ReadResponse(8);
-        Array.Reverse(baseBytes, 0, 8);
-        return BitConverter.ToUInt64(baseBytes, 0);
+        return ReadUInt64BigEndian(baseBytes);
     }
 
     public byte[] ReadBytes(uint offset, int length) => Read(Heap, offset, length);

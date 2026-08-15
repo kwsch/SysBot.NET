@@ -1,54 +1,34 @@
-﻿using Discord;
-using Discord.Commands;
-using PKHeX.Core;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord;
 
-public class LegalityCheckModule : ModuleBase<SocketCommandContext>
+[RequireContext(ContextType.Guild)]
+public class LegalityCheckModule : SlashModuleBase
 {
-    [Command("lc"), Alias("check", "validate", "verify")]
-    [Summary("Verifies the attachment for legality.")]
-    public async Task LegalityCheck()
-    {
-        var attachments = Context.Message.Attachments;
-        foreach (var att in attachments)
-            await LegalityCheck(att, false).ConfigureAwait(false);
-    }
+    [SlashCommand("legality", "Verifies an attached Pokémon file for legality.")]
+    public Task LegalityCheck(
+        [Summary(nameof(file), "Pokémon file to check.")] IAttachment file,
+        [Summary(nameof(verbose), "Whether to provide a detailed report.")] bool? verbose = null)
+        => CheckAsync(file, verbose ?? false);
 
-    [Command("lcv"), Alias("verbose")]
-    [Summary("Verifies the attachment for legality with a verbose output.")]
-    public async Task LegalityCheckVerbose()
+    private async Task CheckAsync(IAttachment attachment, bool verbose)
     {
-        var attachments = Context.Message.Attachments;
-        foreach (var att in attachments)
-            await LegalityCheck(att, true).ConfigureAwait(false);
-    }
+        await DeferAsync(ephemeral: true).ConfigureAwait(false);
 
-    private async Task LegalityCheck(IAttachment att, bool verbose)
-    {
-        var download = await NetUtil.DownloadPKMAsync(att).ConfigureAwait(false);
+        var download = await attachment.DownloadEntityAsync().ConfigureAwait(false);
         if (!download.Success)
         {
-            await ReplyAsync(download.ErrorMessage).ConfigureAwait(false);
+            await FollowupAsync(download.ErrorMessage).ConfigureAwait(false);
             return;
         }
 
-        var pkm = download.Data!;
-        var la = new LegalityAnalysis(pkm);
-        var builder = new EmbedBuilder
-        {
-            Color = la.Valid ? Color.Green : Color.Red,
-            Description = $"Legality Report for {download.SanitizedFileName}:",
-        };
+        var la = new LegalityAnalysis(download.Data!);
+        var builder = new EmbedBuilder { Color = la.Valid ? Color.Green : Color.Red, Description = $"Legality Report for {download.SanitizedFileName}:" };
+        builder.AddField(la.Valid ? "Valid" : "Invalid", la.Report(verbose));
 
-        builder.AddField(x =>
-        {
-            x.Name = la.Valid ? "Valid" : "Invalid";
-            x.Value = la.Report(verbose);
-            x.IsInline = false;
-        });
-
-        await ReplyAsync("Here's the legality report!", false, builder.Build()).ConfigureAwait(false);
+        await FollowupAsync("Here's the legality report!", embed: builder.Build()).ConfigureAwait(false);
     }
 }

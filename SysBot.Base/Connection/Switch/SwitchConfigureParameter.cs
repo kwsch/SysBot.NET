@@ -1,4 +1,5 @@
-﻿namespace SysBot.Base;
+// ReSharper disable InconsistentNaming - match botbase naming
+namespace SysBot.Base;
 
 /// <summary>
 /// Valid configuration request types for the Nintendo Switch to be sent as a <see cref="SwitchCommand"/>.

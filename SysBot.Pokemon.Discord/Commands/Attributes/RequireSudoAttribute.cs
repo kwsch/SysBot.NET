@@ -1,15 +1,16 @@
-﻿using Discord.Commands;
-using Discord.WebSocket;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
+using Discord.WebSocket;
 
 namespace SysBot.Pokemon.Discord;
 
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public sealed class RequireSudoAttribute : PreconditionAttribute
 {
-    // Override the CheckPermissions method
-    public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+    public override Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo command, IServiceProvider services)
     {
         var mgr = SysCordSettings.Manager;
         if (mgr.Config.AllowGlobalSudo && mgr.CanUseSudo(context.User.Id))
@@ -20,6 +21,10 @@ public sealed class RequireSudoAttribute : PreconditionAttribute
             return Task.FromResult(PreconditionResult.FromError("You must be in a guild to run this command."));
 
         if (mgr.CanUseSudo(gUser.Roles.Select(z => z.Name)))
+            return Task.FromResult(PreconditionResult.FromSuccess());
+
+        // Fallback: check if it is the owner or a team member.
+        if (RequireTeamOrOwnerAttribute.IsTeamOrOwner(context))
             return Task.FromResult(PreconditionResult.FromSuccess());
 
         // Since it wasn't, fail

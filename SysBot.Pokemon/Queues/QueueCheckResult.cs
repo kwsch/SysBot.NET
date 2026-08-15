@@ -20,7 +20,7 @@ public sealed record QueueCheckResult<T>(
         if (!InQueue || Detail is null)
             return "You are not in the queue.";
         var position = $"{Position}/{QueueCount}";
-        var msg = $"You are in the {Detail.Type} queue! Position: {position} (ID {Detail.Trade.ID})";
+        var msg = $"You are in the {Detail.Type} queue! Position: {position} (ID {Detail.Trade.Id})";
         var pk = Detail.Trade.TradeData;
         if (pk.Species != 0)
             msg += $", Receiving: {GameInfo.GetStrings("en").Species[pk.Species]}";

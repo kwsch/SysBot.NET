@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using SysBot.Pokemon;
 
-// ms-lpl, removed from their website but archived on the internet, with alterations to be inheritable
+// ms-lpl, removed from their website but archived on the internet, with alterations to be inheritable and deriving an interface
 
 namespace System.Collections.Concurrent;
 
@@ -10,7 +11,9 @@ namespace System.Collections.Concurrent;
 /// <typeparam name="TKey">Specifies the type of keys used to prioritize values.</typeparam>
 /// <typeparam name="TValue">Specifies the type of elements in the queue.</typeparam>
 [DebuggerDisplay("Count={" + nameof(Count) + "}")]
-public class ConcurrentPriorityQueue<TKey, TValue> : IProducerConsumerCollection<KeyValuePair<TKey, TValue>> where TKey : IComparable<TKey> where TValue : IEquatable<TValue>
+public class ConcurrentPriorityQueue<TKey, TValue> : IProducerConsumerCollection<KeyValuePair<TKey, TValue>>
+    where TKey : IComparable<TKey>
+    where TValue : IEquatable<TValue>, IReadyStatus
 {
     protected readonly Lock _syncLock = new();
     protected readonly MinQueue Queue = new();
@@ -47,16 +50,21 @@ public class ConcurrentPriorityQueue<TKey, TValue> : IProducerConsumerCollection
     /// When this method returns, if the operation was successful, result contains the object removed. If
     /// no object was available to be removed, the value is unspecified.
     /// </param>
+    /// <param name="checkReady">Ensure the object is ready to be dequeued.</param>
     /// <returns>
     /// true if an element was removed and returned from the queue successfully; otherwise, false.
     /// </returns>
-    public bool TryDequeue(out KeyValuePair<TKey, TValue> result)
+    public bool TryDequeue(out KeyValuePair<TKey, TValue> result, bool checkReady = true)
     {
         result = default;
         lock (_syncLock)
         {
             if (Queue.Count == 0)
                 return false;
+
+            if (checkReady && !Queue.Peek().Value.IsReady)
+                return false;
+
             result = Queue.Remove();
             return true;
         }
@@ -67,10 +75,11 @@ public class ConcurrentPriorityQueue<TKey, TValue> : IProducerConsumerCollection
     /// When this method returns, if the operation was successful, result contains the object.
     /// The queue was not modified by the operation.
     /// </param>
+    /// <param name="checkReady">Ensure the object is ready to be dequeued.</param>
     /// <returns>
     /// true if an element was returned from the queue successfully; otherwise, false.
     /// </returns>
-    public bool TryPeek(out KeyValuePair<TKey, TValue> result)
+    public bool TryPeek(out KeyValuePair<TKey, TValue> result, bool checkReady = true)
     {
         result = default;
         lock (_syncLock)
@@ -78,7 +87,7 @@ public class ConcurrentPriorityQueue<TKey, TValue> : IProducerConsumerCollection
             if (Queue.Count == 0)
                 return false;
             result = Queue.Peek();
-            return true;
+            return !checkReady || result.Value.IsReady;
         }
     }
 
@@ -91,7 +100,11 @@ public class ConcurrentPriorityQueue<TKey, TValue> : IProducerConsumerCollection
     /// <summary>Gets the number of elements contained in the queue.</summary>
     public int Count
     {
-        get { lock (_syncLock) return Queue.Count; }
+        get
+        {
+            lock (_syncLock)
+                return Queue.Count;
+        }
     }
 
     /// <summary>Copies the elements of the collection to an array, starting at a particular array index.</summary>
@@ -104,7 +117,8 @@ public class ConcurrentPriorityQueue<TKey, TValue> : IProducerConsumerCollection
     /// <remarks>The elements will not be copied to the array in any guaranteed order.</remarks>
     public void CopyTo(KeyValuePair<TKey, TValue>[] array, int index)
     {
-        lock (_syncLock) Queue.Items.CopyTo(array, index);
+        lock (_syncLock)
+            Queue.Items.CopyTo(array, index);
     }
 
     /// <summary>Copies the elements stored in the queue to a new array.</summary>

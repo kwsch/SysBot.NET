@@ -1,33 +1,51 @@
-using Discord.Commands;
-using PKHeX.Core;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord;
 
-public class LegalizerModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
+[RequireContext(ContextType.Guild)]
+public class LegalizerModule<T> : SlashModuleBase where T : PKM, new()
 {
-    [Command("legalize"), Alias("alm")]
-    [Summary("Tries to legalize the attached pkm data.")]
-    public async Task LegalizeAsync()
+    [SlashCommand("legalize", "Tries to legalize an attached PKM file.")]
+    public async Task LegalizeAsync(
+        [Summary(nameof(file), "The file to legalize.")] IAttachment file)
     {
-        var attachments = Context.Message.Attachments;
-        foreach (var att in attachments)
-            await Context.Channel.ReplyWithLegalizedSetAsync(att).ConfigureAwait(false);
+        await DeferAsync(ephemeral: true).ConfigureAwait(false);
+        await Context.ReplyWithLegalizedSetAsync(file).ConfigureAwait(false);
     }
 
-    [Command("convert"), Alias("showdown")]
-    [Summary("Tries to convert the Showdown Set to pkm data.")]
-    [Priority(1)]
-    public Task ConvertShowdown([Summary("Generation/Format")] byte gen, [Remainder][Summary("Showdown Set")] string content)
+    [SlashCommand("transfer", "Transfers a PKM to another format.")]
+    public async Task TransferAsync(
+        [Summary(nameof(file), "The file to legalize.")] IAttachment file,
+        [Summary(nameof(type), "The target format type.")] string type)
     {
-        return Context.Channel.ReplyWithLegalizedSetAsync(content, gen);
+        await DeferAsync(ephemeral: true).ConfigureAwait(false);
+        var download = await file.DownloadEntityAsync().ConfigureAwait(false);
+        if (!download.Success || download.Data is not { } pk)
+        {
+            await FollowupAsync(download.ErrorMessage).ConfigureAwait(false);
+            return;
+        }
+
+        var blank = EntityBlank.GetBlank(type).GetType();
+        var converted = EntityConverter.ConvertToType(pk, blank, out var result);
+        if (converted is null)
+            await FollowupAsync($"Failed to convert your attachment to {type}: {result}").ConfigureAwait(false);
+        else
+            await Context.SendFileAsync(converted, $"Successfully converted your attached file to {type}.").ConfigureAwait(false);
     }
 
-    [Command("convert"), Alias("showdown")]
-    [Summary("Tries to convert the Showdown Set to pkm data.")]
-    [Priority(0)]
-    public Task ConvertShowdown([Remainder][Summary("Showdown Set")] string content)
+    [SlashCommand("convert", "Converts a Showdown Set to PKM data.")]
+    public async Task ConvertAsync(
+        [Summary(nameof(content), "The Showdown set to convert.")] string content,
+        [Summary(nameof(version), "Optional: Original Trainer version to obtain the encounter with.")] GameVersion? version = null)
     {
-        return Context.Channel.ReplyWithLegalizedSetAsync<T>(content);
+        await DeferAsync(ephemeral: true).ConfigureAwait(false);
+        if (version is null) // assume current format if no version is specified
+            await Context.ReplyWithLegalizedSetAsync<T>(content).ConfigureAwait(false);
+        else
+            await Context.ReplyWithLegalizedSetAsync(content, version.Value).ConfigureAwait(false);
     }
 }

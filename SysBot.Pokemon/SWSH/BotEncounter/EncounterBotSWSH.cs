@@ -1,9 +1,9 @@
-using PKHeX.Core;
-using SysBot.Base;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using PKHeX.Core;
+using SysBot.Base;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Base.SwitchStick;
 
@@ -12,14 +12,19 @@ namespace SysBot.Pokemon;
 public abstract class EncounterBotSWSH : PokeRoutineExecutor8SWSH, IEncounterBot
 {
     protected readonly PokeTradeHub<PK8> Hub;
-    private readonly IDumper DumpSetting;
+    private readonly FolderSettings DumpSetting;
     private readonly EncounterSettings Settings;
     private readonly int[] DesiredMinIVs;
     private readonly int[] DesiredMaxIVs;
     public ICountSettings Counts => Settings;
     public readonly IReadOnlyList<string> UnwantedMarks;
 
-    protected EncounterBotSWSH(PokeBotState Config, PokeTradeHub<PK8> hub) : base(Config)
+    // Cached offsets that stay the same per session.
+    protected ulong OverworldOffset;
+
+    protected int EncounterCount;
+
+    protected EncounterBotSWSH(PokeBotState config, PokeTradeHub<PK8> hub) : base(config)
     {
         Hub = hub;
         Settings = Hub.Config.EncounterSWSH;
@@ -27,11 +32,6 @@ public abstract class EncounterBotSWSH : PokeRoutineExecutor8SWSH, IEncounterBot
         StopConditionSettings.InitializeTargetIVs(Hub.Config, out DesiredMinIVs, out DesiredMaxIVs);
         StopConditionSettings.ReadUnwantedMarks(Hub.Config.StopConditions, out UnwantedMarks);
     }
-
-    // Cached offsets that stay the same per session.
-    protected ulong OverworldOffset;
-
-    protected int encounterCount;
 
     public override async Task MainLoop(CancellationToken token)
     {
@@ -71,9 +71,9 @@ public abstract class EncounterBotSWSH : PokeRoutineExecutor8SWSH, IEncounterBot
     // return true if breaking loop
     protected async Task<bool> HandleEncounter(PK8 pk, CancellationToken token)
     {
-        encounterCount++;
+        EncounterCount++;
         var print = StopConditionSettings.GetPrintName(pk);
-        Log($"Encounter: {encounterCount}{Environment.NewLine}{print}{Environment.NewLine}");
+        Log($"Encounter: {EncounterCount}{Environment.NewLine}{print}{Environment.NewLine}");
 
         var folder = IncrementAndGetDumpFolder(pk);
         if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
@@ -139,7 +139,7 @@ public abstract class EncounterBotSWSH : PokeRoutineExecutor8SWSH, IEncounterBot
         return "encounters";
     }
 
-    private bool IsWaiting;
+    private bool IsWaiting { get; set; }
     public void Acknowledge() => IsWaiting = false;
 
     protected Task ResetStick(CancellationToken token)

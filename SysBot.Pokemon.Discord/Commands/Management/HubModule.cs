@@ -1,72 +1,56 @@
-﻿using Discord;
-using Discord.Commands;
-using PKHeX.Core;
-using SysBot.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
+using PKHeX.Core;
+using SysBot.Base;
 
 namespace SysBot.Pokemon.Discord;
 
-public class HubModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new()
+[RequireContext(ContextType.Guild)]
+public class HubModule<T> : SlashModuleBase where T : PKM, new()
 {
-    [Command("status")]
-    [Alias("stats")]
-    [Summary("Gets the status of the bot environment.")]
+    [SlashCommand("status", "Gets the status of the bot environment.")]
     public async Task GetStatusAsync()
     {
         var me = SysCord<T>.Runner;
         var hub = me.Hub;
 
-        var builder = new EmbedBuilder
-        {
-            Color = Color.Gold,
-        };
-
-        var runner = SysCord<T>.Runner;
-        var allBots = runner.Bots.ConvertAll(z => z.Bot);
-        var botCount = allBots.Count;
+        var builder = new EmbedBuilder { Color = Color.Gold };
+        var all = me.Bots.ConvertAll(z => z.Bot);
         builder.AddField(x =>
         {
             x.Name = "Summary";
             x.Value =
-                $"Bot Count: {botCount}\n" +
-                $"Bot State: {SummarizeBots(allBots)}\n" +
+                $"Bot Count: {all.Count}\n" +
+                $"Bot State: {SummarizeBots(all)}\n" +
                 $"Pool Count: {hub.Ledy.Pool.Count}\n";
             x.IsInline = false;
         });
 
         builder.AddField(x =>
         {
-            var bots = allBots.OfType<ICountBot>();
-            var lines = bots.SelectMany(z => z.Counts.GetNonZeroCounts()).Distinct();
-            var msg = string.Join("\n", lines);
-            if (string.IsNullOrWhiteSpace(msg))
-                msg = "Nothing counted yet!";
+            var lines = all.OfType<ICountBot>().SelectMany(z => z.Counts.GetNonZeroCounts()).Distinct();
             x.Name = "Counts";
-            x.Value = msg;
+            x.Value = string.Join('\n', lines) is { Length: > 0 } msg ? msg : "Nothing counted yet!";
             x.IsInline = false;
         });
 
-        var queues = hub.Queues.AllQueues;
         int count = 0;
-        foreach (var q in queues)
+        foreach (var q in hub.Queues.AllQueues)
         {
-            var c = q.Count;
-            if (c == 0)
+            if (q.Count == 0)
                 continue;
-
-            var nextMsg = GetNextName(q);
+            var next = GetNextName(q);
             builder.AddField(x =>
             {
                 x.Name = $"{q.Type} Queue";
-                x.Value =
-                    $"Next: {nextMsg}\n" +
-                    $"Count: {c}\n";
+                x.Value = $"Next: {next}\nCount: {q.Count}\n";
                 x.IsInline = false;
             });
-            count += c;
+            count += q.Count;
         }
 
         if (count == 0)
@@ -79,25 +63,22 @@ public class HubModule<T> : ModuleBase<SocketCommandContext> where T : PKM, new(
             });
         }
 
-        await ReplyAsync("Bot Status", false, builder.Build()).ConfigureAwait(false);
+        await RespondAsync("Bot Status", ephemeral: true, embed: builder.Build()).ConfigureAwait(false);
     }
 
     private static string GetNextName(PokeTradeQueue<T> q)
     {
-        var next = q.TryPeek(out var detail, out _);
-        if (!next)
+        if (!q.TryPeek(out var detail, out _, checkReady: false)) // can be soon-ready
             return "None!";
 
         var name = detail.Trainer.TrainerName;
 
         // show detail of trade if possible
         var nick = detail.TradeData.Nickname;
-        if (!string.IsNullOrEmpty(nick))
-            name += $" - {nick}";
-        return name;
+        return string.IsNullOrEmpty(nick) ? name : $"{name} - {nick}";
     }
 
-    private static string SummarizeBots(IReadOnlyCollection<RoutineExecutor<PokeBotState>> bots)
+    private static string SummarizeBots(List<RoutineExecutor<PokeBotState>> bots)
     {
         if (bots.Count == 0)
             return "No bots configured.";

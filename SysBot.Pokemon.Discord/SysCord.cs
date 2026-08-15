@@ -1,98 +1,71 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using PKHeX.Core;
 using SysBot.Base;
-using System;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using static Discord.GatewayIntents;
 
 namespace SysBot.Pokemon.Discord;
-
-public static class SysCordSettings
-{
-    public static DiscordManager Manager { get; internal set; } = null!;
-    public static DiscordSettings Settings => Manager.Config;
-    public static PokeTradeHubConfig HubConfig { get; internal set; } = null!;
-}
 
 public sealed class SysCord<T> where T : PKM, new()
 {
     public static PokeBotRunner<T> Runner { get; private set; } = null!;
 
     private readonly DiscordSocketClient _client;
-    private readonly DiscordManager Manager;
+    private readonly DiscordManager _manager;
     public readonly PokeTradeHub<T> Hub;
 
-    // Keep the CommandService and DI container around for use with commands.
-    // These two types require you install the Discord.Net.Commands package.
-    private readonly CommandService _commands;
+    private readonly InteractionService _interactions;
     private readonly IServiceProvider _services;
 
-    // Track loading of Echo/Logging channels, so they aren't loaded multiple times.
     private bool MessageChannelsLoaded { get; set; }
+    private bool CommandsRegistered { get; set; }
 
     public SysCord(PokeBotRunner<T> runner)
     {
         Runner = runner;
         Hub = runner.Hub;
-        Manager = new DiscordManager(Hub.Config.Discord);
+        _manager = new DiscordManager(Hub.Config.Discord);
 
-        SysCordSettings.Manager = Manager;
+        SysCordSettings.Manager = _manager;
         SysCordSettings.HubConfig = Hub.Config;
 
         _client = new DiscordSocketClient(new DiscordSocketConfig
         {
-            // How much logging do you want to see?
             LogLevel = LogSeverity.Info,
-            GatewayIntents = Guilds | GuildMessages | DirectMessages | GuildMembers | GuildPresences | MessageContent,
-            // If you or another service needs to do anything with messages
-            // (ex. checking Reactions, checking the content of edited/deleted messages),
-            // you must set the MessageCacheSize. You may adjust the number as needed.
-            //MessageCacheSize = 50,
+            GatewayIntents = Guilds | GuildMessages | DirectMessages,
         });
 
-        _commands = new CommandService(new CommandServiceConfig
+        _interactions = new InteractionService(_client.Rest, new InteractionServiceConfig
         {
-            // Again, log level:
             LogLevel = LogSeverity.Info,
-
-            // This makes commands get run on the task thread pool instead on the websocket read thread.
-            // This ensures long-running logic can't block the websocket connection.
             DefaultRunMode = Hub.Config.Discord.AsyncCommands ? RunMode.Async : RunMode.Sync,
-
-            // There's a few more properties you can set,
-            // for example, case-insensitive commands.
-            CaseSensitiveCommands = false,
         });
 
-        // Subscribe the logging handler to both the client and the CommandService.
         _client.Log += Log;
-        _commands.Log += Log;
-
-        // Setup your DI container.
+        _interactions.Log += Log;
         _services = ConfigureServices();
+        SysCordSettings.ServiceProvider = _services;
     }
 
-    // If any services require the client, or the CommandService, or something else you keep on hand,
-    // pass them as parameters into this method as needed.
-    // If this method is getting pretty long, you can separate it out into another file using partials.
-    private static ServiceProvider ConfigureServices()
+    private ServiceProvider ConfigureServices()
     {
-        var map = new ServiceCollection();//.AddSingleton(new SomeServiceClass());
-
-        // When all your required services are in the collection, build the container.
-        // Tip: There's an overload taking in a 'validateScopes' bool to make sure
-        // you haven't made any mistakes in your dependency graph.
-        return map.BuildServiceProvider();
+        return new ServiceCollection()
+            .AddSingleton(_client)
+            .AddSingleton(_interactions)
+            .BuildServiceProvider();
     }
-
-    // Example of a logging handler. This can be reused by add-ons
-    // that ask for a Func<LogMessage, Task>.
 
     private static Task Log(LogMessage msg)
     {
@@ -100,9 +73,7 @@ public sealed class SysCord<T> where T : PKM, new()
         Console.ForegroundColor = GetTextColor(msg.Severity);
         Console.WriteLine($"{DateTime.Now,-19} {text}");
         Console.ResetColor();
-
         LogUtil.LogText($"SysCord: {text}");
-
         return Task.CompletedTask;
     }
 
@@ -110,10 +81,8 @@ public sealed class SysCord<T> where T : PKM, new()
     {
         LogSeverity.Critical => ConsoleColor.Red,
         LogSeverity.Error => ConsoleColor.Red,
-
         LogSeverity.Warning => ConsoleColor.Yellow,
         LogSeverity.Info => ConsoleColor.White,
-
         LogSeverity.Verbose => ConsoleColor.DarkGray,
         LogSeverity.Debug => ConsoleColor.DarkGray,
         _ => Console.ForegroundColor,
@@ -121,132 +90,116 @@ public sealed class SysCord<T> where T : PKM, new()
 
     public async Task MainAsync(string apiToken, CancellationToken token)
     {
-        // Centralize the logic for commands into a separate method.
         await InitCommands().ConfigureAwait(false);
-
-        // Login and connect.
         await _client.LoginAsync(TokenType.Bot, apiToken).ConfigureAwait(false);
-        await _client.StartAsync().ConfigureAwait(false);
 
         var app = await _client.GetApplicationInfoAsync().ConfigureAwait(false);
-        Manager.Owner = app.Owner.Id;
+        _manager.SetOwnership(app);
 
-        // Wait infinitely so your bot actually stays connected.
+        await _client.StartAsync().ConfigureAwait(false);
         await MonitorStatusAsync(token).ConfigureAwait(false);
     }
 
     public async Task InitCommands()
     {
-        var assembly = Assembly.GetExecutingAssembly();
-
-        await _commands.AddModulesAsync(assembly, _services).ConfigureAwait(false);
-        var genericTypes = assembly.DefinedTypes.Where(z => z.IsSubclassOf(typeof(ModuleBase<SocketCommandContext>)) && z.IsGenericType);
-        foreach (var t in genericTypes)
-        {
-            var genModule = t.MakeGenericType(typeof(T));
-            await _commands.AddModuleAsync(genModule, _services).ConfigureAwait(false);
-        }
-        var modules = _commands.Modules.ToList();
-
+        // All modules are suffixed with "Module" in their class name.
+        // The blacklist is a comma-separated list of module names (without the "Module" suffix) that should not be added to the bot.
         var blacklist = Hub.Config.Discord.ModuleBlacklist
-            .Replace("Module", "").Split(',', StringSplitOptions.RemoveEmptyEntries)
-            .Select(z => z.Trim()).ToList();
+            .Replace("Module", "")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(z => z.Trim())
+            .ToList();
 
-        foreach (var module in modules)
-        {
-            var name = module.Name;
-            name = name.Replace("Module", "");
-            var gen = name.IndexOf('`');
-            if (gen != -1)
-                name = name[..gen];
-            if (blacklist.Any(z => z.Equals(name, StringComparison.OrdinalIgnoreCase)))
-                await _commands.RemoveModuleAsync(module).ConfigureAwait(false);
-        }
+        var assembly = Assembly.GetExecutingAssembly();
+        await LoadModulesFromAssembly(assembly, blacklist).ConfigureAwait(false);
 
-        // Subscribe a handler to see if a message invokes a command.
-        _client.Ready += LoadLoggingAndEcho;
-        _client.MessageReceived += HandleMessageAsync;
+        _client.Ready += LoadCommandsAndChannels;
+        _client.InteractionCreated += HandleInteractionAsync;
     }
 
-    private async Task HandleMessageAsync(SocketMessage arg)
+    private async Task LoadModulesFromAssembly(Assembly assembly, IReadOnlyList<string> blacklist)
     {
-        // Bail out if it's a System Message.
-        if (arg is not SocketUserMessage msg)
+        var moduleTypes = assembly.DefinedTypes
+            .Where(z => z is { IsAbstract: false, IsGenericTypeDefinition: false } && typeof(InteractionModuleBase<SocketInteractionContext>).IsAssignableFrom(z.AsType()))
+            .Select(z => z.AsType());
+        var genericTypes = assembly.DefinedTypes
+            .Where(z => z is { IsAbstract: false, IsGenericTypeDefinition: true } && typeof(InteractionModuleBase<SocketInteractionContext>).IsAssignableFrom(z.AsType()))
+            .Select(z => z.MakeGenericType(typeof(T)));
+
+        var types = moduleTypes.Concat(genericTypes);
+
+        foreach (var module in types)
+        {
+            var name = ReusableActions.GetModuleName(module.Name);
+            if (IsBlacklisted(name, blacklist))
+                continue;
+
+            var registered = await _interactions.AddModuleAsync(module, _services).ConfigureAwait(false);
+            LogUtil.LogInfo(
+                $"Loaded module {name}: " +
+                $"slash={registered?.SlashCommands.Count ?? -1}, " +
+                $"modal={registered?.ModalCommands.Count ?? -1}, " +
+                $"component={registered?.ComponentCommands.Count ?? -1}");
+        }
+    }
+
+    private static bool IsBlacklisted(string name, IReadOnlyList<string> blacklist)
+        => blacklist.Any(z => z.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+    private async Task HandleInteractionAsync(SocketInteraction interaction)
+    {
+        var context = new SocketInteractionContext(_client, interaction);
+
+        if (!_manager.CanUseCommandUser(context.User.Id))
+        {
+            await RespondErrorAsync(interaction, "You are not permitted to use this command.", ephemeral: true).ConfigureAwait(false);
             return;
+        }
 
-        // We don't want the bot to respond to itself or other bots.
-        if (msg.Author.Id == _client.CurrentUser.Id || msg.Author.IsBot)
+        if ((context.Interaction.ChannelId is not { } channel) || (!_manager.CanUseCommandChannel(channel) && _manager.IsTeamOrOwner(context.User.Id)))
+        {
+            // Visibly reply if settings require (so that others can see).
+            var ephemeral = !Hub.Config.Discord.ReplyCannotUseCommandInChannel;
+            await RespondErrorAsync(interaction, "You can't use that here.", ephemeral: ephemeral).ConfigureAwait(false);
             return;
-
-        // Create a number to track where the prefix ends and the command begins
-        int pos = 0;
-        if (msg.HasStringPrefix(Hub.Config.Discord.CommandPrefix, ref pos))
-        {
-            bool handled = await TryHandleCommandAsync(msg, pos).ConfigureAwait(false);
-            if (handled)
-                return;
         }
 
-        await TryHandleMessageAsync(msg).ConfigureAwait(false);
+        await LogInteractionStart(context, channel).ConfigureAwait(false);
+
+        var result = await _interactions.ExecuteCommandAsync(context, _services).ConfigureAwait(false);
+        if (!result.IsSuccess && !interaction.HasResponded)
+            await RespondErrorAsync(interaction, result.ErrorReason).ConfigureAwait(false);
     }
 
-    private async Task TryHandleMessageAsync(SocketMessage msg)
+    private static async Task LogInteractionStart(SocketInteractionContext context, ulong channelId)
     {
-        // should this be a service?
-        if (msg.Attachments.Count > 0)
+        var interaction = context.Interaction;
+        var (type, identity) = interaction switch
         {
-            var mgr = Manager;
-            var cfg = mgr.Config;
-            if (cfg.ConvertPKMToShowdownSet && (cfg.ConvertPKMReplyAnyChannel || mgr.CanUseCommandChannel(msg.Channel.Id)))
-            {
-                foreach (var att in msg.Attachments)
-                    await msg.Channel.RepostPKMAsShowdownAsync(att).ConfigureAwait(false);
-            }
-        }
+            SocketSlashCommand cmd => ("slash command", $"Command: {cmd.CommandName}"),
+            SocketModal modal => ("modal", $"Modal: {modal.Id}"),
+            SocketMessageComponent c => ("component", $"Component: {c.Id}"),
+            _ => (interaction.Type.ToString(), "Unknown"),
+        };
+        var channel = interaction.Channel?.Name ?? $"Unknown Channel: {channelId}";
+        var location = interaction.IsDMInteraction ? "Direct Messages" : context.Guild?.Name ?? "Unknown Guild";
+        var status = $"Executing {type} from {location}:{channel}:@{context.User.Username}. {identity}";
+
+        await Log(GetLog(LogSeverity.Info, status)).ConfigureAwait(false);
     }
 
-    private async Task<bool> TryHandleCommandAsync(SocketUserMessage msg, int pos)
-    {
-        // Create a Command Context.
-        var context = new SocketCommandContext(_client, msg);
+    private static Task RespondErrorAsync(SocketInteraction interaction, string message, bool ephemeral = true) => interaction.HasResponded
+        ? interaction.FollowupAsync(message, ephemeral: ephemeral)
+        : interaction.RespondAsync(message, ephemeral: ephemeral);
 
-        // Check Permission
-        var mgr = Manager;
-        if (!mgr.CanUseCommandUser(msg.Author.Id))
-        {
-            await msg.Channel.SendMessageAsync("You are not permitted to use this command.").ConfigureAwait(false);
-            return true;
-        }
-        if (!mgr.CanUseCommandChannel(msg.Channel.Id) && msg.Author.Id != mgr.Owner)
-        {
-            if (Hub.Config.Discord.ReplyCannotUseCommandInChannel)
-                await msg.Channel.SendMessageAsync("You can't use that command here.").ConfigureAwait(false);
-            return true;
-        }
-
-        // Execute the command. (result does not indicate a return value, 
-        // rather an object stating if the command executed successfully).
-        var guild = msg.Channel is SocketGuildChannel g ? g.Guild.Name : "Unknown Guild";
-        await Log(new LogMessage(LogSeverity.Info, "Command", $"Executing command from {guild}#{msg.Channel.Name}:@{msg.Author.Username}. Content: {msg}")).ConfigureAwait(false);
-        var result = await _commands.ExecuteAsync(context, pos, _services).ConfigureAwait(false);
-
-        if (result.Error == CommandError.UnknownCommand)
-            return false;
-
-        // Uncomment the following lines if you want the bot
-        // to send a message if it failed.
-        // This does not catch errors from commands with 'RunMode.Async',
-        // subscribe a handler for '_commands.CommandExecuted' to see those.
-        if (!result.IsSuccess)
-            await msg.Channel.SendMessageAsync(result.ErrorReason).ConfigureAwait(false);
-        return true;
-    }
+    private static LogMessage GetLog(LogSeverity severity, string message, [CallerMemberName] string identity = "")
+        => new (severity, identity, message);
 
     private async Task MonitorStatusAsync(CancellationToken token)
     {
-        const int Interval = 20; // seconds
-        // Check datetime for update
-        UserStatus state = UserStatus.Idle;
+        const int interval = 20;
+        var state = UserStatus.Idle;
+
         while (!token.IsCancellationRequested)
         {
             var time = DateTime.Now;
@@ -259,7 +212,7 @@ public sealed class SysCord<T> where T : PKM, new()
                 lastLogged = recent?.LastTime ?? time;
             }
             var delta = time - lastLogged;
-            var gap = TimeSpan.FromSeconds(Interval) - delta;
+            var gap = TimeSpan.FromSeconds(interval) - delta;
 
             bool noQueue = !Hub.Queues.Info.GetCanQueue();
             if (gap <= TimeSpan.Zero)
@@ -284,24 +237,79 @@ public sealed class SysCord<T> where T : PKM, new()
         }
     }
 
-    private async Task LoadLoggingAndEcho()
+    // There is a global rate limit of 200 application command creates per day, per guild
+    // We'll still be good citizens and only trigger an update if the modules were revised.
+    private string ComputeSlashCommandHash()
     {
+        var commands = _interactions.SlashCommands;
+        var json = JsonSerializer.Serialize(commands.Select(c => new {
+            c.Name,
+            c.Description,
+            Params = c.Parameters.Select(p => new { p.Name, p.Description, p.DiscordOptionType })
+        }));
+
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json)));
+    }
+
+    private async Task LoadCommandsAndChannels()
+    {
+        var cfg = Hub.Config.Discord;
+        if (!CommandsRegistered)
+            await RegisterSlashCommands(cfg).ConfigureAwait(false);
+
         if (MessageChannelsLoaded)
             return;
 
         // Restore Echoes
-        EchoModule.RestoreChannels(_client, Hub.Config.Discord);
+        EchoModule.RestoreChannels(_client, cfg);
 
         // Restore Logging
-        LogModule.RestoreLogging(_client, Hub.Config.Discord);
-        TradeStartModule<T>.RestoreTradeStarting(_client);
+        LogModule.RestoreLogging(_client, cfg);
+        TradeStartModule<T>.RestoreTradeStarting(_client, cfg);
 
         // Don't let it load more than once in case of Discord hiccups.
-        await Log(new LogMessage(LogSeverity.Info, "LoadLoggingAndEcho()", "Logging and Echo channels loaded!")).ConfigureAwait(false);
+        const string status = "Logging and Echo channels loaded!";
+        await Log(GetLog(LogSeverity.Info, status)).ConfigureAwait(false);
         MessageChannelsLoaded = true;
 
-        var game = Hub.Config.Discord.BotGameStatus;
+        var game = cfg.BotGameStatus;
         if (!string.IsNullOrWhiteSpace(game))
             await _client.SetGameAsync(game).ConfigureAwait(false);
+    }
+
+    private async Task RegisterSlashCommands(DiscordSettings cfg)
+    {
+        var hash = ComputeSlashCommandHash();
+        if (hash == cfg.SlashCommandHash)
+        {
+            LogUtil.LogInfo("Skipped registering interactions; no signature changes detected.");
+            UpdateRegisteredCounts();
+            return;
+        }
+
+        try
+        {
+            // deleteMissing=true removes obsolete application commands left behind by previous versions of the bot.
+            // Global commands have a TTL of 1 hour
+            await _interactions.RegisterCommandsGloballyAsync(deleteMissing: true).ConfigureAwait(false);
+            CommandsRegistered = true;
+
+            UpdateRegisteredCounts();
+            cfg.SlashCommandHash = hash;
+
+            var message = $"Registered interactions. Hash: {hash[..6]}";
+            LogUtil.LogInfo(message);
+        }
+        catch (Exception ex)
+        {
+            LogUtil.LogSafe(ex);
+        }
+    }
+
+    private void UpdateRegisteredCounts()
+    {
+        var commands = _interactions.SlashCommands.Count;
+        var modals = _interactions.ModalCommands.Count;
+        SysCordSettings.SetCommandsRegistered(commands, modals);
     }
 }

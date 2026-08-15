@@ -7,7 +7,7 @@ namespace SysBot.Pokemon;
 /// <summary>
 /// Allows Enqueue requests to have favored requests inserted ahead of a fraction of unfavored requests.
 /// </summary>
-public sealed class FavoredCPQ<TKey, TValue> : ConcurrentPriorityQueue<TKey, TValue> where TKey : IComparable<TKey> where TValue : IEquatable<TValue>, IFavoredEntry
+public sealed class FavoredCPQ<TKey, TValue> : ConcurrentPriorityQueue<TKey, TValue> where TKey : IComparable<TKey> where TValue : IEquatable<TValue>, IFavoredEntry, IReadyStatus
 {
     public IFavoredCPQSetting Settings { get; set; }
 

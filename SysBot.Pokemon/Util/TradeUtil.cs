@@ -1,15 +1,15 @@
-﻿using SysBot.Base;
 using System;
 using System.Collections.Generic;
+using SysBot.Base;
 using static SysBot.Base.SwitchButton;
 
 namespace SysBot.Pokemon;
 
 public static class TradeUtil
 {
-    public static int GetCodeDigit(int code, int c)
+    public static int GetCodeDigit(int code, int indexOfChar)
     {
-        for (int i = 7; i > c; i--)
+        for (int i = 7; i > indexOfChar; i--)
             code /= 10;
         return code % 10;
     }

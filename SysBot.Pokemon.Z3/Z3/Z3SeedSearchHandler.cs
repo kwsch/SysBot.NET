@@ -1,14 +1,16 @@
-using PKHeX.Core;
 using System;
+using System.Threading.Tasks;
+using PKHeX.Core;
 
 namespace SysBot.Pokemon.Z3;
 
 public class Z3SeedSearchHandler<T> : ISeedSearchHandler<T> where T : PKM, new()
 {
-    public void CalculateAndNotify(T pkm, PokeTradeDetail<T> detail, SeedCheckSettings settings, PokeRoutineExecutor<T> bot)
+    public async Task CalculateAndNotify(T pkm, PokeTradeDetail<T> detail, SeedCheckSettings settings,
+        PokeRoutineExecutor<T> bot)
     {
         // Let PKHeX try and deduce it first. Usually will be the best match.
-        if (TryPKHeX(pkm, detail, settings, bot) && !settings.ShowAllZ3Results)
+        if (await TryPKHeX(pkm, detail, settings, bot).ConfigureAwait(false) && !settings.ShowAllZ3Results)
             return;
 
         var ec = pkm.EncryptionConstant;
@@ -25,30 +27,30 @@ public class Z3SeedSearchHandler<T> : ISeedSearchHandler<T> where T : PKM, new()
             foreach (var match in matches)
             {
                 var lump = new PokeTradeSummary("Calculated Seed:", match);
-                detail.SendNotification(bot, lump);
+                await detail.SendNotification(bot, lump).ConfigureAwait(false);
             }
         }
         else
         {
             var match = Z3Search.GetFirstSeed(ec, pid, IVs, settings.ResultDisplayMode);
             var lump = new PokeTradeSummary("Calculated Seed:", match);
-            detail.SendNotification(bot, lump);
+            await detail.SendNotification(bot, lump).ConfigureAwait(false);
         }
     }
 
-    private static bool TryPKHeX(T pk, PokeTradeDetail<T> detail, SeedCheckSettings settings, PokeRoutineExecutor<T> bot)
+    private static async Task<bool> TryPKHeX(T pk, PokeTradeDetail<T> detail, SeedCheckSettings settings, PokeRoutineExecutor<T> bot)
     {
         var la = new LegalityAnalysis(pk);
         var enc = la.Info.EncounterMatch;
-        if (enc is not ISeedCorrelation64<PKM> x)
+        if (enc is not ISeedCorrelation64<PKM> correlated)
             return false;
-        if (x.TryGetSeed(pk, out var seed) != SeedCorrelationResult.Success)
+        if (correlated.TryGetSeed(pk, out var seed) != SeedCorrelationResult.Success)
             return false;
 
         var flawless = enc is IFlawlessIVCount f ? f.FlawlessIVCount : 0;
         var result = new SeedSearchResult(Z3SearchResult.Success, seed, flawless, settings.ResultDisplayMode);
         var lump = new PokeTradeSummary("Calculated Seed:", result);
-        detail.SendNotification(bot, lump);
+        await detail.SendNotification(bot, lump).ConfigureAwait(false);
         return true;
     }
 }

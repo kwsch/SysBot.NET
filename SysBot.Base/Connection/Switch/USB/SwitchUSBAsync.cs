@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.Buffers.Binary.BinaryPrimitives;
 using static SysBot.Base.SwitchOffsetTypeUtil;
 
 namespace SysBot.Base;
@@ -17,10 +18,10 @@ namespace SysBot.Base;
 /// </remarks>
 public sealed class SwitchUSBAsync(int Port) : SwitchUSB(Port), ISwitchConnectionAsync
 {
-    public ValueTask<int> SendAsync(byte[] data, CancellationToken token)
+    public ValueTask<int> SendAsync(ReadOnlyMemory<byte> data, CancellationToken token)
     {
         Debug.Assert(data.Length < MaximumTransferSize);
-        var res = Task.Run(() => Send(data), token);
+        var res = Task.Run(() => Send(data.Span), token);
         return new ValueTask<int>(res);
     }
 
@@ -32,18 +33,16 @@ public sealed class SwitchUSBAsync(int Port) : SwitchUSB(Port), ISwitchConnectio
     public Task<byte[]> ReadBytesMainMultiAsync(IReadOnlyDictionary<ulong, int> offsetSizes, CancellationToken token) => Task.Run(() => ReadMulti(Main, offsetSizes), token);
     public Task<byte[]> ReadBytesAbsoluteMultiAsync(IReadOnlyDictionary<ulong, int> offsetSizes, CancellationToken token) => Task.Run(() => ReadMulti(Absolute, offsetSizes), token);
 
-    public Task WriteBytesAsync(byte[] data, uint offset, CancellationToken token) => Task.Run(() => Write(Heap, data, offset), token);
+    public Task WriteBytesAsync(ReadOnlyMemory<byte> data, uint offset, CancellationToken token) => Task.Run(() => Write(Heap, data.Span, offset), token);
 
-    public Task WriteBytesMainAsync(Span<byte> data, ulong offset, CancellationToken token)
+    public Task WriteBytesMainAsync(ReadOnlyMemory<byte> data, ulong offset, CancellationToken token)
     {
-        var arr = data.ToArray();
-        return Task.Run(() => Write(Main, arr, offset), token);
+        return Task.Run(() => Write(Main, data.Span, offset), token);
     }
 
-    public Task WriteBytesAbsoluteAsync(Span<byte> data, ulong offset, CancellationToken token)
+    public Task WriteBytesAbsoluteAsync(ReadOnlyMemory<byte> data, ulong offset, CancellationToken token)
     {
-        var arr = data.ToArray();
-        return Task.Run(() => Write(Absolute, arr, offset), token);
+        return Task.Run(() => Write(Absolute, data.Span, offset), token);
     }
 
     public Task<ulong> GetMainNsoBaseAsync(CancellationToken token)
@@ -51,13 +50,13 @@ public sealed class SwitchUSBAsync(int Port) : SwitchUSB(Port), ISwitchConnectio
         return Task.Run<ulong>(() =>
         {
             Send(SwitchCommand.GetMainNsoBase(false));
-            byte[] baseBytes = ReadBulkUSB();
+            var baseBytes = ReadBulkUSB();
             if (baseBytes.Length < sizeof(ulong))
             {
                 Log($"{nameof(GetMainNsoBaseAsync)}: Invalid response length");
                 return 0;
             }
-            return BitConverter.ToUInt64(baseBytes, 0);
+            return ReadUInt64LittleEndian(baseBytes);
         }, token);
     }
 
@@ -66,37 +65,37 @@ public sealed class SwitchUSBAsync(int Port) : SwitchUSB(Port), ISwitchConnectio
         return Task.Run<ulong>(() =>
         {
             Send(SwitchCommand.GetHeapBase(false));
-            byte[] baseBytes = ReadBulkUSB();
+            var baseBytes = ReadBulkUSB();
             if (baseBytes.Length < sizeof(ulong))
             {
                 Log($"{nameof(GetHeapBaseAsync)}: Invalid response length");
                 return 0;
             }
-            return BitConverter.ToUInt64(baseBytes, 0);
+            return ReadUInt64LittleEndian(baseBytes);
         }, token);
     }
 
     public Task<string> GetTitleID(CancellationToken token)
     {
-        return Task.Run<string>(() =>
+        return Task.Run(() =>
         {
             Send(SwitchCommand.GetTitleID(false));
-            byte[] baseBytes = ReadBulkUSB();
+            var baseBytes = ReadBulkUSB();
             if (baseBytes.Length == 0)
             {
                 Log($"{nameof(GetTitleID)}: Invalid response");
                 return string.Empty;
             }
-            return BitConverter.ToUInt64(baseBytes, 0).ToString("X16").Trim();
+            return ReadUInt64LittleEndian(baseBytes).ToString("X16").Trim();
         }, token);
     }
 
     public Task<string> GetBotbaseVersion(CancellationToken token)
     {
-        return Task.Run<string>(() =>
+        return Task.Run(() =>
         {
             Send(SwitchCommand.GetBotbaseVersion(false));
-            byte[] baseBytes = ReadBulkUSB();
+            var baseBytes = ReadBulkUSB();
             if (baseBytes.Length == 0)
             {
                 Log($"{nameof(GetBotbaseVersion)}: Invalid response");
@@ -108,10 +107,10 @@ public sealed class SwitchUSBAsync(int Port) : SwitchUSB(Port), ISwitchConnectio
 
     public Task<string> GetGameInfo(string info, CancellationToken token)
     {
-        return Task.Run<string>(() =>
+        return Task.Run(() =>
         {
             Send(SwitchCommand.GetGameInfo(info, false));
-            byte[] baseBytes = ReadBulkUSB();
+            var baseBytes = ReadBulkUSB();
             if (baseBytes.Length == 0)
             {
                 Log($"{nameof(GetGameInfo)}: Invalid response");
@@ -123,10 +122,10 @@ public sealed class SwitchUSBAsync(int Port) : SwitchUSB(Port), ISwitchConnectio
 
     public Task<bool> IsProgramRunning(ulong pid, CancellationToken token)
     {
-        return Task.Run<bool>(() =>
+        return Task.Run(() =>
         {
             Send(SwitchCommand.IsProgramRunning(pid, false));
-            byte[] baseBytes = ReadBulkUSB();
+            var baseBytes = ReadBulkUSB();
             if (baseBytes.Length == 0)
             {
                 Log($"{nameof(IsProgramRunning)}: Invalid response");
@@ -136,19 +135,14 @@ public sealed class SwitchUSBAsync(int Port) : SwitchUSB(Port), ISwitchConnectio
         }, token);
     }
 
-    public Task<byte[]> ReadRaw(byte[] command, int length, CancellationToken token)
+    public Task<byte[]> ReadRaw(ReadOnlyMemory<byte> command, int length, CancellationToken token) => Task.Run(() =>
     {
-        return Task.Run(() =>
-        {
-            Send(command);
-            return ReadBulkUSB();
-        }, token);
-    }
+        Send(command.Span);
+        return ReadBulkUSB();
+    }, token);
 
-    public Task SendRaw(byte[] command, CancellationToken token)
-    {
-        return Task.Run(() => Send(command), token);
-    }
+    public Task SendRaw(ReadOnlyMemory<byte> command, CancellationToken token)
+        => Task.Run(() => Send(command.Span), token);
 
     public Task<byte[]> PointerPeek(int size, IEnumerable<long> jumps, CancellationToken token)
     {
@@ -159,9 +153,9 @@ public sealed class SwitchUSBAsync(int Port) : SwitchUSB(Port), ISwitchConnectio
         }, token);
     }
 
-    public Task PointerPoke(byte[] data, IEnumerable<long> jumps, CancellationToken token)
+    public Task PointerPoke(ReadOnlyMemory<byte> data, IEnumerable<long> jumps, CancellationToken token)
     {
-        return Task.Run(() => Send(SwitchCommand.PointerPoke(jumps, data, false)), token);
+        return Task.Run(() => Send(SwitchCommand.PointerPoke(jumps, data.Span, false)), token);
     }
 
     public Task<ulong> PointerAll(IEnumerable<long> jumps, CancellationToken token)
@@ -169,13 +163,13 @@ public sealed class SwitchUSBAsync(int Port) : SwitchUSB(Port), ISwitchConnectio
         return Task.Run<ulong>(() =>
         {
             Send(SwitchCommand.PointerAll(jumps, false));
-            byte[] baseBytes = ReadBulkUSB();
+            var baseBytes = ReadBulkUSB();
             if (baseBytes.Length < sizeof(ulong))
             {
-                Log($"{nameof(PointerAll)}: Invalid response length {baseBytes?.Length ?? 0}");
+                Log($"{nameof(PointerAll)}: Invalid response length {baseBytes.Length}");
                 return 0;
             }
-            return BitConverter.ToUInt64(baseBytes, 0);
+            return ReadUInt64LittleEndian(baseBytes);
         }, token);
     }
 
@@ -184,13 +178,13 @@ public sealed class SwitchUSBAsync(int Port) : SwitchUSB(Port), ISwitchConnectio
         return Task.Run<ulong>(() =>
         {
             Send(SwitchCommand.PointerRelative(jumps, false));
-            byte[] baseBytes = ReadBulkUSB();
+            var baseBytes = ReadBulkUSB();
             if (baseBytes.Length < sizeof(ulong))
             {
-                Log($"{nameof(PointerRelative)}: Invalid response length {baseBytes?.Length ?? 0}");
+                Log($"{nameof(PointerRelative)}: Invalid response length {baseBytes.Length}");
                 return 0;
             }
-            return BitConverter.ToUInt64(baseBytes, 0);
+            return ReadUInt64LittleEndian(baseBytes);
         }, token);
     }
 
@@ -206,7 +200,7 @@ public sealed class SwitchUSBAsync(int Port) : SwitchUSB(Port), ISwitchConnectio
             if (!BitConverter.IsLittleEndian)
                 Array.Reverse(data, 0, size);
 
-            T value = MemoryMarshal.Read<T>(data);
+            var value = MemoryMarshal.Read<T>(data);
             return (true, value);
         }
         catch (Exception ex)

@@ -1,9 +1,9 @@
-using PKHeX.Core;
-using PKHeX.Core.AutoMod;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using PKHeX.Core;
+using PKHeX.Core.AutoMod;
 
 namespace SysBot.Pokemon;
 
@@ -55,7 +55,7 @@ public static class AutoLegalityWrapper
         // We need all the encounter types present, so add the missing ones at the end.
         var missing = EncounterPriority.Except(cfg.PrioritizeEncounters);
         cfg.PrioritizeEncounters.AddRange(missing);
-        cfg.PrioritizeEncounters = cfg.PrioritizeEncounters.Distinct().ToList(); // Don't allow duplicates.
+        cfg.PrioritizeEncounters = [.. cfg.PrioritizeEncounters.Distinct()]; // Don't allow duplicates.
         EncounterMovesetGenerator.PriorityList = cfg.PrioritizeEncounters;
     }
 
@@ -178,7 +178,8 @@ public static class AutoLegalityWrapper
         throw new ArgumentException("Type does not have a recognized trainer fetch.", typeof(T).Name);
     }
 
-    public static ITrainerInfo GetTrainerInfo(byte gen) => TrainerSettings.GetSavedTrainerData((EntityContext)gen);
+    public static ITrainerInfo GetTrainerInfo(GameVersion version) => TrainerSettings.GetSavedTrainerData(version);
+    public static ITrainerInfo GetTrainerInfo(EntityContext context) => TrainerSettings.GetSavedTrainerData(context);
 
     public static PKM GetLegal(this ITrainerInfo sav, IBattleTemplate set, out string res)
     {

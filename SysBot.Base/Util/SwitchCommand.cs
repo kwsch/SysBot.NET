@@ -19,8 +19,6 @@ public static class SwitchCommand
         return Encoder.GetBytes(command);
     }
 
-    private static string ToHex(byte[] data)
-        => string.Concat(data.Select(z => $"{z:X2}"));
     private static string Encode(IEnumerable<long> jumps)
         => string.Concat(jumps.Select(z => $" {z}"));
     private static string Encode(IReadOnlyDictionary<ulong, int> offsetSizeDictionary)
@@ -248,7 +246,7 @@ public static class SwitchCommand
     /// <param name="data">Data to write</param>
     /// <param name="crlf">Line terminator (unused by USB protocol)</param>
     /// <returns>Encoded command bytes</returns>
-    public static byte[] PointerPoke(IEnumerable<long> jumps, byte[] data, bool crlf = true)
+    public static byte[] PointerPoke(IEnumerable<long> jumps, ReadOnlySpan<byte> data, bool crlf = true)
         => Encode($"pointerPoke 0x{ToHex(data)}{Encode(jumps)}", crlf);
 
     /// <summary>

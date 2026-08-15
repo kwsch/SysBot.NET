@@ -1,9 +1,9 @@
-using PKHeX.Core;
-using SysBot.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using PKHeX.Core;
+using SysBot.Base;
 
 namespace SysBot.Pokemon;
 
@@ -15,7 +15,14 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
     where T : PKM, new()
 {
     private readonly Lock _sync = new();
-    private readonly List<TradeEntry<T>> UsersInQueue = [];
+
+    /// <summary>
+    /// Currently queued users, including those currently being handled via trade bots (actively trading).
+    /// </summary>
+    /// <remarks>
+    /// We need to keep track of users currently being traded. They can re-join AFTER their trade completes.
+    /// </remarks>
+    private readonly List<TradeEntry<T>> _queue = [];
     public readonly PokeTradeHub<T> Hub = Hub;
 
     public int Count
@@ -23,7 +30,7 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
         get
         {
             lock (_sync)
-                return UsersInQueue.Count;
+                return _queue.Count;
         }
     }
 
@@ -34,32 +41,32 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
         if (!Hub.Config.Queues.CanQueue)
             return false;
         lock (_sync)
-            return UsersInQueue.Count < Hub.Config.Queues.MaxQueueCount && Hub.TradeBotsReady;
+            return _queue.Count < Hub.Config.Queues.MaxQueueCount && Hub.TradeBotsReady;
     }
 
     public TradeEntry<T>? GetDetail(ulong uid)
     {
         lock (_sync)
-            return UsersInQueue.Find(z => z.UserID == uid);
+            return _queue.Find(z => z.UserID == uid);
     }
 
     public QueueCheckResult<T> CheckPosition(ulong uid, PokeRoutineType type = 0)
     {
         lock (_sync)
         {
-            var index = UsersInQueue.FindIndex(z => z.Equals(uid, type));
+            var index = _queue.FindIndex(z => z.Equals(uid, type));
             if (index < 0)
                 return QueueCheckResult<T>.None;
 
-            var entry = UsersInQueue[index];
+            var entry = _queue[index];
             var actualIndex = 1;
             for (int i = 0; i < index; i++)
             {
-                if (UsersInQueue[i].Type == entry.Type)
+                if (_queue[i].Type == entry.Type)
                     actualIndex++;
             }
 
-            var inQueue = UsersInQueue.Count(z => z.Type == entry.Type);
+            var inQueue = _queue.Count(z => z.Type == entry.Type);
 
             return new QueueCheckResult<T>(true, entry, actualIndex, inQueue);
         }
@@ -87,7 +94,7 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
         lock (_sync)
         {
             Hub.Queues.ClearAll();
-            UsersInQueue.Clear();
+            _queue.Clear();
         }
     }
 
@@ -97,13 +104,13 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
         return ClearTrade(details);
     }
 
-    public QueueResultRemove ClearTrade(ulong userID)
+    public QueueResultRemove ClearTrade(ulong userId)
     {
-        var details = GetIsUserQueued(z => z.UserID == userID);
+        var details = GetIsUserQueued(z => z.UserID == userId);
         return ClearTrade(details);
     }
 
-    private QueueResultRemove ClearTrade(ICollection<TradeEntry<T>> details)
+    private QueueResultRemove ClearTrade(IReadOnlyCollection<TradeEntry<T>> details)
     {
         if (details.Count == 0)
             return QueueResultRemove.NotInQueue;
@@ -140,7 +147,7 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
                 {
                     int removed = queue.Remove(detail.Trade);
                     if (removed != 0)
-                        UsersInQueue.Remove(detail);
+                        _queue.Remove(detail);
                     removedCount += removed;
                 }
             }
@@ -149,47 +156,59 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
         return removedCount;
     }
 
-    public IEnumerable<string> GetUserList(string fmt)
+    public string[] GetUserList(string format)
     {
         lock (_sync)
-        {
-            return UsersInQueue.Select(z => string.Format(fmt, z.Trade.ID, z.Trade.Code, z.Trade.Type, z.Username, (Species)z.Trade.TradeData.Species));
-        }
+            return [.. _queue.Select(z => FormatUser(format, z))];
     }
 
-    public IList<TradeEntry<T>> GetIsUserQueued(Func<TradeEntry<T>, bool> match)
+    private static string FormatUser(string format, TradeEntry<T> z)
+        => string.Format(format, z.Trade.Id, z.Trade.Code, z.Trade.Type, z.Username, (Species)z.Trade.TradeData.Species);
+
+    public IReadOnlyList<TradeEntry<T>> GetIsUserQueued(Func<TradeEntry<T>, bool> match)
     {
         lock (_sync)
-        {
-            return UsersInQueue.Where(match).ToArray();
-        }
+            return [.. _queue.Where(match)];
     }
 
     public bool Remove(TradeEntry<T> detail)
     {
         lock (_sync)
         {
-            LogUtil.LogInfo($"Removing {detail.Trade.Trainer.TrainerName}", nameof(TradeQueueInfo<T>));
-            return UsersInQueue.Remove(detail);
+            LogUtil.LogInfo($"Removing {detail.Trade.Trainer.TrainerName}", nameof(TradeQueueInfo<>));
+            return _queue.Remove(detail);
         }
     }
 
-    public QueueResultAdd AddToTradeQueue(TradeEntry<T> trade, ulong userID, bool sudo = false)
+    public QueueResultAdd IsAbleToJoinQueue(TradeEntry<T> trade, ulong userId, bool sudo = false)
     {
         lock (_sync)
         {
-            if (UsersInQueue.Any(z => z.UserID == userID) && !sudo)
+            if (_queue.Any(z => z.UserID == userId) && !sudo)
+                return QueueResultAdd.AlreadyInQueue;
+            return QueueResultAdd.CanAdd;
+        }
+    }
+
+    public QueueResultAdd AddToTradeQueue(TradeEntry<T> trade, ulong userId, bool sudo = false)
+    {
+        lock (_sync)
+        {
+            // Check again. The check above should immediately precede an Add operation, but ya never know.
+            if (_queue.Any(z => z.UserID == userId) && !sudo)
                 return QueueResultAdd.AlreadyInQueue;
 
+            // Update the trade data based on settings.
             if (Hub.Config.Legality.ResetHOMETracker && trade.Trade.TradeData is IHomeTrack t)
                 t.Tracker = 0;
 
+            // Enqueue with the proper priority.
             var priority = sudo ? PokeTradePriorities.Tier1 : PokeTradePriorities.TierFree;
             var queue = Hub.Queues.GetQueue(trade.Type);
-
             queue.Enqueue(trade.Trade, priority);
-            UsersInQueue.Add(trade);
+            _queue.Add(trade);
 
+            // Once the trade is finished, remove the user from the list of currently queued users.
             trade.Trade.Notifier.OnFinish = _ => Remove(trade);
             return QueueResultAdd.Added;
         }
@@ -200,6 +219,6 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
     public int UserCount(Func<TradeEntry<T>, bool> func)
     {
         lock (_sync)
-            return UsersInQueue.Count(func);
+            return _queue.Count(func);
     }
 }

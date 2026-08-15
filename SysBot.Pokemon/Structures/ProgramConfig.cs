@@ -1,5 +1,5 @@
-using SysBot.Base;
 using System.Text.Json.Serialization;
+using SysBot.Base;
 
 namespace SysBot.Pokemon;
 
@@ -7,7 +7,7 @@ public class ProgramConfig : BotList<PokeBotState>
 {
     public ProgramMode Mode { get; set; } = ProgramMode.LZA;
     public PokeTradeHubConfig Hub { get; set; } = new();
-    public bool DarkMode { get; set; }
+    public bool? DarkMode { get; set; }
     public int Width { get; set; }
     public int Height { get; set; }
 }
