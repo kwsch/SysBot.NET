@@ -22,7 +22,7 @@ public static class InitUtil
         ProgramMode.SWSH => Get(GameVersion.SW),
         ProgramMode.BDSP => Get(GameVersion.BD),
         ProgramMode.LA   => Get(GameVersion.PLA),
-        ProgramMode.SV   => Get(GameVersion.SV),
+        ProgramMode.SV   => Get(GameVersion.SL),
         ProgramMode.LZA  => Get(GameVersion.ZA),
         _                => throw new System.ArgumentOutOfRangeException(nameof(mode)),
     };
