@@ -68,6 +68,8 @@ public abstract class PokeRoutineExecutorBase(IConsoleBotManaged<IConsoleConnect
 
     public override void SoftStop() => Config.Pause();
 
+    public override void Resume() => Config.Resume();
+
     public Task Click(SwitchButton b, int delayMin, int delayMax, CancellationToken token) =>
         Click(b, Util.Rand.Next(delayMin, delayMax), token);
 
