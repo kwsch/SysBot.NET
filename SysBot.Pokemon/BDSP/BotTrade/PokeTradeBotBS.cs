@@ -54,8 +54,8 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
             var sav = await IdentifyTrainer(token).ConfigureAwait(false);
             RecentTrainerCache.SetRecentTrainer(sav);
 
-            await RestartGameIfCantLeaveUnionRoom(token).ConfigureAwait(false);
             await InitializeSessionOffsets(token).ConfigureAwait(false);
+            await RestartGameIfCantLeaveUnionRoom(token).ConfigureAwait(false);
 
             Log($"Starting main {nameof(PokeTradeBotBS)} loop.");
             await InnerLoop(sav, token).ConfigureAwait(false);
