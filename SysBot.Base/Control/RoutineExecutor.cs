@@ -37,8 +37,14 @@ public abstract class RoutineExecutor<T>(IConsoleBotManaged<IConsoleConnection, 
         Connection.Connect();
         Log("Initializing connection with console...");
         await InitialStartup(token).ConfigureAwait(false);
-        await MainLoop(token).ConfigureAwait(false);
-        Connection.Disconnect();
+        try
+        {
+            await MainLoop(token).ConfigureAwait(false);
+        }
+        finally
+        {
+            Connection.Disconnect();
+        }
     }
 
     public abstract Task MainLoop(CancellationToken token);
