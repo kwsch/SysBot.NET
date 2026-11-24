@@ -190,6 +190,9 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
             result = PokeTradeResult.ExceptionInternal;
         }
 
+        if (detail.Type != PokeTradeType.Random || !Hub.Config.Distribution.RemainInUnionRoomBDSP)
+            await RestartGameIfCantLeaveUnionRoom(token).ConfigureAwait(false);
+
         await HandleAbortedTrade(detail, type, priority, result).ConfigureAwait(false);
     }
 
@@ -241,6 +244,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         }
 
         await RequestUnionRoomTrade(token).ConfigureAwait(false);
+        Log("Waiting for trainer...");
         await poke.TradeSearching(this).ConfigureAwait(false);
         var waitPartner = Hub.Config.Trade.TradeWaitTime;
 
@@ -525,6 +529,7 @@ public class PokeTradeBotBS(PokeTradeHub<PB8> Hub, PokeBotState Config) : PokeRo
         Log("Attempting to open the Y menu.");
         await Click(Y, 1_000, token).ConfigureAwait(false);
         await Click(A, 0_400, token).ConfigureAwait(false);
+        Log("Calling for a Trade.");
         await Click(DDOWN, 0_400, token).ConfigureAwait(false);
         await Click(DDOWN, 0_400, token).ConfigureAwait(false);
         await Click(A, 0_100, token).ConfigureAwait(false);
