@@ -45,4 +45,5 @@ public abstract class RoutineExecutor<T>(IConsoleBotManaged<IConsoleConnection, 
     public abstract Task InitialStartup(CancellationToken token);
     public abstract void SoftStop();
     public abstract Task HardStop();
+    public abstract void Resume();
 }
